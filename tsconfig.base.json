@@ -1,0 +1,30 @@
+{
+  // The rules every part of the component is checked with, as doctor's are.
+  // Each part's own tsconfig.json adds only what that part may use: Bun and
+  // the DOM for scripts/ and tests/, the DOM alone for source/ and
+  // playground/.
+  "compilerOptions": {
+    "target": "ES2024",
+    "module": "Preserve",
+    "moduleResolution": "bundler",
+    "moduleDetection": "force",
+    // Bun bundles and runs the code; tsc only checks it
+    "noEmit": true,
+    // imports name the file they import, extension included
+    "allowImportingTsExtensions": true,
+    // only syntax that erasing the types leaves as plain JavaScript: no
+    // enums, namespaces or parameter properties, and `import type` for
+    // anything only types use
+    "verbatimModuleSyntax": true,
+    "erasableSyntaxOnly": true,
+    "isolatedModules": true,
+    "strict": true,
+    "noUncheckedIndexedAccess": true,
+    "exactOptionalPropertyTypes": true,
+    "noPropertyAccessFromIndexSignature": true,
+    "noImplicitOverride": true,
+    "noImplicitReturns": true,
+    "noFallthroughCasesInSwitch": true,
+    "skipLibCheck": true
+  }
+}

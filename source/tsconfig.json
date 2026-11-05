@@ -1,0 +1,9 @@
+{
+  // source/, the editor itself, which runs in the browser: the DOM, no Bun
+  "extends": "../tsconfig.base.json",
+  "compilerOptions": {
+    "lib": ["ES2024", "DOM", "DOM.Iterable"],
+    "types": []
+  },
+  "include": ["./**/*"]
+}

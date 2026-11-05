@@ -1,0 +1,16 @@
+{
+  "name": "text-editor_javascript",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "check": "tsc -p tsconfig.json && tsc -p playground && tsc -p source",
+    "test": "bun test",
+    "playground": "bun scripts/servePlayground.ts"
+  },
+  "devDependencies": {
+    "@types/bun": "1.4.4",
+    "fast-check": "4.10.2",
+    "playwright-core": "1.64.1",
+    "typescript": "7.0.2"
+  }
+}

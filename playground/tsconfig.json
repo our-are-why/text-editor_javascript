@@ -1,0 +1,11 @@
+{
+  // playground/, its scenes and examples among it, which run in the browser:
+  // the DOM, no Bun; and what source/ declares for the stylesheets it
+  // imports, as they import source/
+  "extends": "../tsconfig.base.json",
+  "compilerOptions": {
+    "lib": ["ES2024", "DOM", "DOM.Iterable"],
+    "types": []
+  },
+  "include": ["./**/*", "../source/stylesheets.d.ts"]
+}

@@ -1,0 +1,20 @@
+# Shared dev tooling comes from image_develop-base: see
+# .apple-container/image_develop-base/
+FROM image_develop-base
+
+# Bun installs the packages, runs the tests (bun test) and bundles what the
+# browser tests load. It's one binary; copy it straight out of its official
+# multi-arch image, which is built on the same Debian release as the base:
+# https://bun.com/docs/installation
+COPY --from=oven/bun:1.4.4-slim@sha256:1846adf22496bd711036aae8be147e57bdebbaea2e5264e3e0b5af1db187d9a4 \
+    /usr/local/bin/bun /usr/local/bin/bun
+
+# Chromium runs the browser tests, driven through playwright-core: Debian's
+# own build, which has arm64, rather than one Playwright downloads. The base
+# has no fonts, and text has to be drawn to be measured and selected.
+USER root
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    chromium \
+    fonts-liberation \
+    && rm -rf /var/lib/apt/lists/*
+USER coder

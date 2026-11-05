@@ -1,0 +1,332 @@
+:root {
+  color-scheme: light dark;
+  --ground: #fafaf9;
+  --surface: #ffffff;
+  --sunken: #f1f2f4;
+  --ink: #1f2328;
+  --muted: #5f6672;
+  --line: #d8dbe0;
+  --accent: #2f6feb;
+  --holds: #1a7f37;
+  --fails: #cf222e;
+  /* the system's own on macOS and Windows; not system-ui, which in the
+     container's Chromium is whatever font fontconfig defaults to */
+  font: 15px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --ground: #16181c;
+    --surface: #1d2026;
+    --sunken: #23262d;
+    --ink: #e5e7eb;
+    --muted: #9ba2ad;
+    --line: #31353d;
+    --accent: #6f9fff;
+    --holds: #3fb950;
+    --fails: #f85149;
+  }
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  display: grid;
+  grid-template-columns: 14rem minmax(0, 1fr);
+  background: var(--ground);
+  color: var(--ink);
+}
+
+nav {
+  padding: 1.25rem 1rem;
+  border-right: 1px solid var(--line);
+}
+
+nav .home {
+  color: var(--ink);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+nav ul {
+  margin: 1rem 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+nav li a {
+  display: block;
+  padding: 0.3rem 0.5rem;
+  border-radius: 6px;
+  color: var(--muted);
+  text-decoration: none;
+}
+
+nav li a:hover,
+nav li a[aria-current="page"] {
+  background: var(--sunken);
+  color: var(--ink);
+}
+
+main {
+  max-width: 52rem;
+  padding: 1.5rem 2rem 3rem;
+}
+
+h1 {
+  margin: 0 0 0.25rem;
+  font-size: 1.4rem;
+}
+
+.about {
+  max-width: 40rem;
+  margin: 0 0 1.25rem;
+  color: var(--muted);
+}
+
+.stage {
+  margin-bottom: 1.5rem;
+}
+
+/* the view in the playground's colours, as a host sets its own */
+.stage,
+.scene {
+  --view-ground: var(--surface);
+  --view-ink: var(--ink);
+}
+
+.stage .htmlView_editor,
+.scene .htmlView_editor {
+  border: 1px solid var(--line);
+}
+
+/* the gallery: scenes in a grid of tiles, some the grid's whole width */
+main.gallery {
+  max-width: 96rem;
+}
+
+.scenes {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 30rem), 1fr));
+  gap: 2.25rem 1.75rem;
+  align-items: start;
+}
+
+.scene {
+  min-width: 0;
+  margin: 0;
+}
+
+.scene.wide {
+  grid-column: 1 / -1;
+}
+
+.scene.narrow .htmlView_editor {
+  max-width: 18rem;
+}
+
+.scene figcaption {
+  display: grid;
+  gap: 0.15rem;
+  max-width: 46rem;
+  margin-bottom: 0.6rem;
+}
+
+.scene .title {
+  color: var(--ink);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.scene .title:hover {
+  color: var(--accent);
+}
+
+.scene .look {
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.scene:target .htmlView_editor {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 25%, transparent);
+}
+
+/* a scene whose lines are labelled and checked: the labels, the view and what
+   must hold of it, side by side, across the gallery's whole width */
+.scene:has(.invariants li) {
+  grid-column: 1 / -1;
+}
+
+.scene .body {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem 1.25rem;
+  align-items: flex-start;
+}
+
+.scene .drawn {
+  position: relative;
+  flex: 1 1 0;
+  min-width: 0;
+}
+
+.scene.narrow .drawn {
+  flex: none;
+}
+
+.scene .labels:empty,
+.scene .invariants:empty {
+  display: none;
+}
+
+/* each label beside its line, at the line's top, placed once it's laid out */
+.scene .labels {
+  position: relative;
+  flex: none;
+  align-self: stretch;
+  width: 11rem;
+  color: var(--muted);
+  font-size: 0.75rem;
+}
+
+.scene .labels > div {
+  position: absolute;
+  right: 0;
+  white-space: nowrap;
+}
+
+.scene .labels > .lit {
+  color: var(--accent);
+  font-weight: 600;
+}
+
+/* the lines pointed at, outlined over the view, which doesn't know it */
+.scene .overlay {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.scene .overlay > div {
+  position: absolute;
+  outline: 2px solid var(--accent);
+  background: color-mix(in srgb, var(--accent) 10%, transparent);
+}
+
+.scene .invariants {
+  display: grid;
+  gap: 0.25rem;
+  flex: 1 1 18rem;
+  max-width: 30rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: 0.9rem;
+}
+
+.scene .invariants li {
+  padding: 0.3rem 0.6rem;
+  border-left: 2px solid transparent;
+  cursor: default;
+}
+
+.scene .invariants li:hover,
+.scene .invariants li:focus,
+.scene .invariants li.touches {
+  border-left-color: var(--accent);
+  background: var(--sunken);
+  outline: none;
+}
+
+.scene .verdict {
+  display: inline-block;
+  width: 1.25rem;
+  font-weight: 700;
+}
+
+.scene .verdict.holds {
+  color: var(--holds);
+}
+
+.scene .verdict.fails {
+  color: var(--fails);
+}
+
+.scene .failing:not(:empty)::before {
+  content: " fails: ";
+  color: var(--muted);
+}
+
+.scene .failing {
+  color: var(--fails);
+}
+
+.log header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+}
+
+.log h2 {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.8rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.log button {
+  padding: 0.15rem 0.6rem;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: none;
+  color: var(--muted);
+  font: inherit;
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+
+.log button:hover {
+  color: var(--ink);
+}
+
+.log ol {
+  max-height: 18rem;
+  margin: 0.5rem 0 0;
+  padding: 0.5rem 1rem 0.5rem 2.75rem;
+  overflow: auto;
+  border-radius: 8px;
+  background: var(--sunken);
+  font: 13px/1.7 ui-monospace, "SF Mono", Menlo, monospace;
+}
+
+.log ol:empty::before {
+  content: "nothing yet";
+  margin-left: -1.75rem;
+  color: var(--muted);
+}
+
+.field + .field::before {
+  content: " · ";
+  color: var(--muted);
+}
+
+.field .name {
+  color: var(--muted);
+}
+
+@media (max-width: 40rem) {
+  body {
+    grid-template-columns: 1fr;
+  }
+
+  nav {
+    border-right: 0;
+    border-bottom: 1px solid var(--line);
+  }
+
+  main {
+    padding: 1.25rem 1rem 2rem;
+  }
+}
