@@ -1,4 +1,5 @@
 import type { _Scene_ } from "../scene.ts"
+import { parseLines_ViewModel } from "../../source/HtmlView_Editor.ts"
 
 export {
   oneLine
@@ -12,5 +13,5 @@ const oneLine: _Scene_ = {
   variables: {},
   labels: [],
   invariants: [],
-  model__HtmlView_Editor: { lines: [{ text: "A single line, and nothing after it." }] },
+  model__HtmlView_Editor: { lines: parseLines_ViewModel("A single line, and nothing after it.") },
 }

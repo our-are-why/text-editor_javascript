@@ -1,4 +1,5 @@
 import type { _Invariant_Scene_, _Scene_ } from "../scene.ts"
+import { parseLines_ViewModel } from "../../source/HtmlView_Editor.ts"
 
 export {
   type _Case_Everything_,
@@ -92,7 +93,7 @@ const everything: _Scene_ = {
   variables: {},
   labels: cases_Everything.map(({ label }) => label),
   invariants: invariants_Everything,
-  model__HtmlView_Editor: { lines: cases_Everything.map(({ text }) => ({ text })) },
+  model__HtmlView_Editor: { lines: cases_Everything.flatMap(({ text }) => parseLines_ViewModel(text)) },
 }
 
 // a line's label, by its place, or where it is when it's past the document's

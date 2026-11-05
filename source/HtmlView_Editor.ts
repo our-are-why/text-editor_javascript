@@ -4,7 +4,9 @@ export {
   _HtmlView_Editor_,
   type _Api__HtmlView_Editor_,
   type _ViewModel_Editor_,
-  type _Line_ViewModel_
+  type _Line_ViewModel_,
+  type _Text_Line_NonTerminated_,
+  parseLines_ViewModel
 }
 
 class _HtmlView_Editor_ {
@@ -36,8 +38,22 @@ interface _ViewModel_Editor_ {
 }
 
 interface _Line_ViewModel_ {
-  text: string
+  text: _Text_Line_NonTerminated_
 }
+
+type _Text_Line_NonTerminated_ = string & { [proof__Text_Line_NonTerminated]: true }
+
+declare const proof__Text_Line_NonTerminated: unique symbol
+
+function parseLines_ViewModel(
+  text_multiLine: string
+): Array<_Line_ViewModel_> {
+  return text_multiLine.split(REGEXP_LINEBREAK).map((text_line) => ({
+    text: text_line as _Text_Line_NonTerminated_
+  }))
+}
+
+const REGEXP_LINEBREAK = /\r\n|[\n\r\v\f\u0085\u2028\u2029]/
 
 interface _Api___draw__HtmlView_Editor_ {
   containerElement__HtmlView_Editor: HTMLElement

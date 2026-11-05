@@ -1,4 +1,5 @@
 import type { _Scene_ } from "../scene.ts"
+import { parseLines_ViewModel } from "../../source/HtmlView_Editor.ts"
 
 export {
   code
@@ -43,5 +44,5 @@ const code: _Scene_ = {
   variables: {},
   labels: [],
   invariants: [],
-  model__HtmlView_Editor: { lines: readingTime.split("\n").map((text) => ({ text })) },
+  model__HtmlView_Editor: { lines: parseLines_ViewModel(readingTime) },
 }
