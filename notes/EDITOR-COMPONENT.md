@@ -55,7 +55,9 @@ What doctor needs, and what any host would:
 - extended where it's needed: a part of a document, or the whole of one,
   given its own look and behavior by a module;
 - a document shown with its proposals in it, many, one after another or
-  side by side, each with its state, waiting, accepted or rejected;
+  side by side, each with its state, waiting, accepted or rejected, all of
+  them at once, each change styled word by word;
+- its proposals its own, of whatever shape, given to the editor as changes;
 - each decided where it's shown: accepted, rejected, reopened;
 - each edited in place, with every normal editing behavior, selection across
   its lines, Enter, Backspace, paste, undo, and edits kept inside it; an
@@ -92,66 +94,390 @@ could be.
 The heart of it is a model, plain code with no screen in it, of any text:
 code, Markdown, an essay, a report.
 
-- **a document:** its text, as lines of characters. What kind of text it is,
-  code in some language, Markdown, prose, isn't the model's to say; to the
-  model, it's text.
+- **a document:** its text, as lines of characters, each proven to hold no
+  line break; and over each line's text an overlay, marks over ranges of it,
+  how it looks and what it links to, as doctor's text has, a dimension of
+  its own, usually empty for code and Markdown, whose look comes from their
+  syntax. What kind of text it is, code in some language, Markdown, prose,
+  isn't the model's to say; to the model, it's text.
 - **regions:** parts of the text given a kind by a module, and with it how
   they look and what editing means in them: a block of code in Markdown, a
   heading, a function, a quoted reply; or the whole document, as a file of
   code is one. They move with every edit, as anchors do, and nest, a block
   of code in a list item in a section. Which kinds there are is the
   modules' to say.
-- **a proposal:** a change to the document, as the operations that make it:
-  text written, taken out or moved; with an id, a state, waiting, accepted
-  or rejected, and its rounds, each a version of it and who wrote it.
-  Proposals don't nest; a change asked of one is a round of it.
-- **anchors:** where a proposal is, held as positions in the document that
-  move with every edit, so a proposal stays on what it's about however the
+- **changes, from sources:** what's proposed for the document, as diffs, each
+  from a source, an id the host gives it and the editor only hands back.
+  Proposals themselves, with their states, rounds and authors, are the
+  host's, below.
+- **anchors:** where a change is, held as positions in the document that
+  move with every edit, so a change stays on what it's about however the
   document around it changes, and says so when what it hung on is gone.
-- **one history:** every edit, to the document or inside a proposal, is a
+- **one history:** every edit, to the document or inside a change, is a
   transaction, undone and redone as one, mapped through the anchors.
 
+Positions count code points, as doctor's do, so a host and its agent, in
+any language, agree on them; UTF-16, which the DOM counts, is the view's
+alone.
+
+**marks** are the host's, or a module's: of kinds they name, with the data
+each kind needs, never a set the editor fixes, as doctor's five contrasts
+would be. They come two ways: stored, in the overlay, as doctor's are, for
+rich text, made by commands, never typed, and carried across when the
+characters under them are edited; or derived, read from the text's syntax by
+a region's module, as Markdown's `**bold**` is, or a code tokenizer's
+keywords, worked out each time and stored nowhere. Either way, the
+projection turns them into **segments**: a line's text, flat, in order, cut
+wherever anything over it begins or ends, each segment its text and the data
+of everything over it, from what the host or module says each kind of mark
+carries: `data-marks="bold italic"`, a link's `data-link`. The view knows no
+marks: it draws each segment as one span, carrying its data, and nothing
+nests, so nothing's ranked and nothing's chosen, every mark cut at every
+edge alike, as Monaco draws its decorations. What a mark looks like is a
+stylesheet's, from the data; what one does, a link followed, is a command,
+with the mark's data, which the host acts on: a page opened, a node gone to.
+Doctor's links were marks too, never syntax: its lines hold only characters.
+
 Still open: whether regions are only read from the text, as Markdown's are
-by parsing it, or can also be held by the model, as a host marking a part
-of a document would.
+by parsing it, or can also be held by the model, as a host marking a part of
+a document would.
 
 From the model come the questions the editor answers, without a screen:
-what the document is with a proposal applied, or with all that are
-accepted; whether a proposal still fits; what a round changed since the one
-before, words added, changed and taken out.
+what the document is with a source's changes applied, or with all that are
+accepted; whether a change still fits; what changed within one, words
+added, changed and taken out, restyled; and, given a source's changes as
+they were the round before, what a round changed since.
+
+## proposals and changes
+
+Two layers, kept apart, so the editor's model isn't tangled with any host's:
+
+- **the host's proposals:** what they mean, how they're grouped, their
+  rounds, states and authors, and what accepting one does. Doctor has its
+  own, `_Proposal_Task_`, its text changed by `WRITE` and styled by `STYLE`,
+  each a dimension of its own; another host would have others.
+- **an adapter,** the host's code: its proposals turned into the editor's
+  changes, each tagged with the proposal it's from, and the editor's events,
+  a change edited, a decision asked for, turned back into its proposals'.
+  Doctor's would apply a proposal's `WRITE` and `STYLE` to what they hold,
+  and send each span's next state, text and overlay together.
+- **the editor's changes:** what it shows, edits inside, and reports on, per
+  source. It decides nothing of what a proposal means: asked to accept, it
+  tells the host, which sends the document as it now is.
+
+```ts
+// a document: one line at least, each its text and its marks
+interface _Document_Model_ {
+  lines: _NonEmpty_<_Text_Model_>
+}
+
+interface _Text_Model_ {
+  text: _Text_Line_NonTerminated_
+  overlay: Array<_Mark_Text_>
+}
+
+// a mark over a range of a line's text: a kind the host names, bold, a link,
+// and what that kind needs, a link's target; what it means is the host's
+interface _Mark_Text_ extends _Range_Text_ {
+  kind: _Kind_Mark_
+  data: _Data_Mark_
+}
+
+// what one source proposes, as changes to the document
+interface _Changes_Source_ {
+  source: _Id_Source_
+  changes: _NonEmpty_<_Change_>
+}
+
+type _Change_ = _REPLACE_Change_ | _MOVE_Change_
+
+// what every change has: its span, and what it becomes, one line or several;
+// a change that takes text out becomes one empty line, as "" parses to one
+interface __BASE_Change_<Kind extends string> {
+  kind: Kind
+  range: _Range_Document_
+  next: _NonEmpty_<_Text_Model_>
+}
+
+// a span and what it becomes: an empty span puts text in
+interface _REPLACE_Change_ extends __BASE_Change_<"replace"> {}
+
+// a span taken from where it is, and what it reads as where it goes
+interface _MOVE_Change_ extends __BASE_Change_<"move"> {
+  to: _Position_Document_
+}
+
+interface _Range_Document_ {
+  from: _Position_Document_
+  to: _Position_Document_
+}
+
+// a line's index, and a code point's offset in it: both proofs, made only by
+// the parsers that check them
+interface _Position_Document_ {
+  line: _Index_Line_
+  offset: _Offset_Text_
+}
+```
+
+A sketch. It was written out once, as `source/Model_Editor.ts`, and taken
+back out: the view's scenes come first, written by hand as what's shown, and
+the projection from a document and its changes to what they show is what
+settles these types. A source's id, a mark's kind and its data are the
+host's, given and only handed back; offsets and line indices are proofs. The line's text proof, `_Text_Line_NonTerminated_`, and its parser
+move to the model once there is one, as the model can't depend on the view.
+What the parsers at the boundary check, once there are: ranges inside the
+document, `from` not after `to`; marks inside their line; changes from
+different sources never overlapping.
+
+- **a change is a complete next state, of its span:** what the span becomes,
+  text and overlay. What changed within it is never written down: it's
+  derived, as doctor derives it, by `compareTexts` in its
+  `source/shared/text.ts`, the text cut into words, runs of spaces and other
+  characters, the two compared word by word, then the marks of the words
+  kept compared character by character; so: removed, inserted, replaced,
+  replaced and restyled, restyled. How fine is a presentation's choice, a
+  region's kind's: words for prose, tokens for code. So the two never
+  disagree, an agent's slip shows as a change, and what a round changed is
+  the same comparison, of two rounds.
+- **spans, not lines:** a span is any range, a phrase in a long line of
+  prose, a sentence, lines. A line is a granularity a host can choose:
+  doctor's adapter would send a span for each line it changes, as its holders
+  are lines; another host, a sentence. The editor assumes nothing.
+- **one source, many changes:** what's decided together is one source;
+  what's decided apart, two. The editor needs no groups of its own.
+- **moves:** explicit, as doctor's `MOVE` is, never only a removal and an
+  insertion, which loses what moved, and shows a move edited on the way as
+  all new. What a move is, within a line, from line to line within what's
+  shown together, or out to somewhere else in the document, follows from
+  where its ends are, and isn't stored; one that splits is several moves of
+  one source. Moves of whole lines come first; within a line, and splits,
+  after spans and frames work, the derived differences showing them till
+  then as what's taken out and put in.
+- **for now:** changes from different sources never overlap, nor does a
+  move's span or where it goes fall in another source's; positions are as
+  the document has them now, anchors that carry them through what's
+  accepted coming after.
+
+Where an agent writes the changes, as doctor's does, it writes them as
+agents write edits reliably: the text as it is, quoted exactly, and what it
+becomes, in full, small, a sentence to a function; never a line number or an
+offset, which they get wrong. The quote is found where it matches once, or
+the change is refused, and why, not found, or found twice, as `str_replace`
+does; then turned into changes. Asked for granular changes, agents do worst;
+asked for whole files, they're slow, and leave parts out, or change what
+they weren't asked to. The parser for it is the host's, or one the editor
+offers it.
 
 ## how it shows them
 
-As a document editor's suggesting mode does, the proposal's own words are
-**in the document**, as real content you edit, marked; what it replaces is
-shown beside them, read-only. So:
+As a document editor's suggesting mode does, a change's own words are **in
+the document**, as real content you edit, marked; what it replaces is shown
+beside them, read-only. So:
 
 - what's added reads in place, green, and is edited where it is;
 - what's changed in place shows its new words, with the old ones beside;
-- what's taken out shows, struck, where it was; what's moved shows where it
-  goes, a mark where it was;
-- each proposal has its bar, where it's decided, drawn by the host.
+- what's taken out shows, struck, where it was;
+- what's moved shows at both its ends: within a line, both in it; within
+  what's shown together, linked in the margin; out to somewhere else, a
+  mark where it leaves, "moves to line 40", and where it lands, "moved from
+  line 12", each going to the other, as doctor's do.
 
-Editing inside a proposal changes the proposal: a selection across its
+**every proposal shown at once:** all of them, each change styled as what
+it is, word by word, none hidden behind or put aside for another. Which
+proposal a change is from isn't its colour, which keeps its meaning; it's
+shown by pointing: at a change, its proposal's changes outlined and its bar
+lit, the others still showing; the keyboard moving from change to change
+does the same, the one it's on current.
+
+**overlays and perspectives:** what a run of text is, and how it looks, kept
+apart, so how it looks can be changed, and refined in a context, without
+the document or its changes changing:
+
+- **an overlay** is a layer of runs over the document's text, the host's or
+  a module's, each run saying what it is, never how it looks: the changes, a
+  proposal's; a tokenizer's syntax; spelling; whatever a host marks out.
+  Several can lie over the same text; the projection cuts a line's text into
+  segments wherever any overlay's runs begin or end, each carrying the data
+  of every run over it, from every layer.
+- **drawn two ways:** an overlay's runs are on the text, or under it.
+  - **on the text:** a run is only data on the segments it covers, each a
+    flat span: no element is a run, so no run stays whole, and none is
+    ranked over another; overlapping runs are no matter. What reads as
+    continuous across spans, colour, background, underline, strike, a
+    perspective draws from the data. What has edges, a box, a ring, round
+    corners, would break at every span, so it's drawn under the text. A
+    span has room for one role, so what a change means isn't told by the
+    text's markup: the proposals' list, and a line's description, say it.
+  - **under it:** each run a text underlay, a stretch of text from one
+    position to another, with data as a segment has, drawn behind the text
+    it covers. It never moves the text, and nothing in it depends on how
+    the text's cut into segments or drawn in spans: text underlays overlap
+    freely, and draw what a span can't, as doctor's change boxes in the
+    document were Monaco's decorations behind the text. They're pointed
+    through, as what's pointed at is the text.
+  - **one `<svg>` for each run of lines:** text is drawn in runs of lines:
+    the unframed lines between frames, and a frame's `CURRENT_LINES` and
+    `PROPOSAL_LINES`, each drawn by the same component wherever it is, with
+    one `<svg>` behind its lines; a frame's list has none. A run's svg holds
+    everything behind its text, in one order: search's matches, then the
+    proposals' targets, with their changes, then the selection, on top. A
+    section's tint is the run's own background, under the svg, as the svg
+    is inside the run; the lines have none, so nothing covers it.
+    Each underlay is one `<path>`, tracing every row it covers, wrapped or
+    across lines, as one shape, so a fill or an edge goes round all of it,
+    with no seams between rows; and SVG's paint gives changes more than
+    colour to be told apart by, a stroke following the shape, dashed, a
+    pattern's fill.
+  - **across runs:** what's in more than one run, a proposal, before in
+    `CURRENT_LINES` and after in `PROPOSAL_LINES`, or the selection, which
+    follows the document's order, through a frame's `CURRENT_LINES` and
+    past its proposed lines and list, is a group in each run it passes
+    through, each carrying its data, `data-source`, so a perspective styles
+    it as one.
+  - **a proposal's target** is a group, `<g data-source>`, in each of its
+    frame's text runs: a path from its first change to its last, the words
+    it leaves as they are between them too, `data-underlay="targets"`, and
+    in the group, a path for each of its changes, `data-change`, its kind.
+    The changes' colours are drawn there, not as the spans' backgrounds: a
+    span keeps only what's the text's own, a strike through what's taken
+    out, its ink.
+  - **measured** from the view model's positions, never read back from the
+    DOM, with a `Range` over the text nodes from any offset to any other,
+    as the selection's ends and search's matches fall anywhere, not only
+    where the text's cut into spans; once the run's drawn and in the page,
+    from the run, and again whenever the view's size changes. Only the
+    lines on the screen are drawn, so it's measured over a screenful, and
+    search over a whole document costs what a page of it does.
+  - **in the view model,** runs and frames: unframed lines one after
+    another a run of their own, beside the frames, and a frame's two text
+    sections runs too, each run with an id, unique in the view, its element
+    found by it; text underlays a run's, not a line's, each end a line and
+    an offset in it, as a stretch can cross lines.
+  - **drawn so far:** runs, each one `<svg class="underlays_htmlView">`
+    first in it, a `<g>` for each of its groups, a `<path>` for each
+    underlay; proposals' targets and their changes, worked out by the
+    playground as the projection will; the changes' colours on the paths,
+    not the spans. A path is one shape where each row it covers reaches
+    over the one after it; where one doesn't, as a stretch from a line's
+    last word to the next line's first, it's in pieces, still one path.
+    The measuring walks the view model's runs, `runs`, and finds each
+    one's lines and svg by its id, drawn as `data-run`; the class keeps the
+    runs it last drew, to measure them again when the view's size changes.
+    Not yet: search, the selection, drawing only what's visible.
+- **in the DOM, data, not style:** what a run is, is `data-*` attributes on
+  the spans it covers, each overlay's under names of its own: the changes'
+  `data-change`, its kind, `data-side`, `data-source`; marks' `data-marks`.
+  The editor ships no look for any of them: its own stylesheet is layout,
+  rows, gutters, frames, where text underlays go; without a perspective, a
+  change looks like the text around it.
+- **a perspective** is how the overlays look, and which show: an attribute
+  on the view's container, `data-perspective`, and stylesheets keyed on it
+  and on the runs' data, so switching is one attribute set, the browser
+  restyling all of it, nothing drawn again. The editor offers one,
+  "changes", doctor's colours, in `source/perspectives/changes.css`, which a
+  host uses or puts its own in place of. One could mute every change but
+  replacements and split those by what kind of replacement each is, from a
+  `data-detail`; which is on, and how it's turned on, is the host's. A
+  perspective needing other elements, not only another look, is drawn again
+  from the overlays by another mapping: rarer, and later.
+
+**frames:** a range of the document's lines, taken out of the flow and
+shown in place of themselves, with their possible future. Each line of the
+document is drawn once, in the flow or in a frame, and the lines after a
+frame are numbered as the document numbers them, what's proposed not the
+document's till it's accepted. A frame's text sits where the document's
+would, every line in it, as they are or as proposed, at the same left and
+the same width as every line around it, in the rhythm of the lines, as
+doctor's proposals' lines sit where the document's words are: its rows'
+bands run from edge to edge, over the view's padding. A frame is made of
+parts, in order:
+
+- **CURRENT_LINES:** the lines as they are, numbered as the document numbers
+  them: what the proposals are read against, their backdrop;
+- **PROPOSAL_LINES:** the same lines as the proposals would leave them,
+  their changes marked;
+- **PROPOSAL_LIST:** the frame's list of the proposals in it, one item each,
+  in the order their first changes come: the editor's, linking each item to
+  its changes, which one's current, the keyboard moving between them, a list
+  with items to a screen reader. Each item is drawn by the editor, from what
+  the host says in the view model: its title, why it's proposed, and its
+  actions, each a label and a command.
+
+There's one layout, doctor's: `CURRENT_LINES`, its lines with what's changed
+in them marked, then `PROPOSAL_LINES`, then `PROPOSAL_LIST`. Proposed words
+are never drawn inside a document line, as an inline diff would: a current
+line holds only the document's text, a proposed line only the proposals', so
+no line mixes the two, and a line's offsets are its own text's positions. A
+frame is the view model's, not the model's: proposals don't belong to one,
+so it can be loose, and change, and nothing be anchored again. By default
+it's the lines proposals touch, run together where they'd meet; a host can
+widen one, a function's lines for what's in the function. Frames never
+overlap, and never hold frames. With one proposal one reads as doctor's does
+now: its lines, its version under them, its bar. Later: a frame folded, to
+its lines alone, what it would do put away, as doctor folds a proposal.
+
+**the gutter:** a line is a row of two cells, its gutter, then its text, so
+its gutter keeps to its row however its text wraps, in a frame or not, and
+nothing's measured to line them up. In the gutter: a label, the document's
+number for the line, or, for a line proposed, none, but a sign: `+` where
+it's put in, `~` where it's changed in place; as wide as the longest label,
+which the view model says, `charCount_Max__Label_Gutter`, worked out when
+it's built, by `viewModelOf__Blocks`, so every row's text starts at the same
+left. Then a lane, its look not yet decided; later, where folding goes; in a
+frame, the frame's bar, one light grey, down the lane of every row in it,
+and on down beside its list, one bar down the whole frame, the list's items
+starting where the lines' text does. Each part of a frame has one background
+of its own, the same for every row in it: what a line becomes, taken out,
+changed in place, put in, isn't drawn across its row, for now, though the
+view model says it. The view model says each line's label, as the text it
+shows, `"12"`, `"+"`, `"~"`, `""`, already decided, and what the line
+becomes; the view only draws them.
+
+**proposal items, the editor's:** each proposal's item, in a frame's list,
+is drawn by the editor, not left to the host: its title, why it's proposed,
+and its actions, a button each, from what the host says in the view model,
+`{ source, title, rationale, actions }`, an action a label and a command,
+`{ command: "accept", label: "Accept" }`. Which actions there are, and what
+they're called, is the host's; reviewing, the buttons, the keyboard, focus
+moving between the text and the list, a screen reader's list, is the
+editor's, the same in every host. A button carries only its command, as
+`data-command`: choosing it is a command, through the pipeline, which the
+host hears as an observer and acts on, what accepting means beyond the text
+its own; till the pipeline's built, the buttons are drawn and do nothing.
+There were slots once, room left in each item for the host to draw in;
+they're gone. If a host needs something no item has, one's added for it.
+
+Deciding is a command, on the current proposal or one named: accept, reject,
+revise, amend; an item's actions are the editor's buttons for them, or,
+where a host wants controls of its own by a change, the editor says where
+each change's spans are on the screen.
+
+Still to be tried, in the gallery: whether a change says which proposal
+it's from with a mark of its own, a numbered tag, or only when it's pointed
+at, pointing for now.
+
+Editing inside a change changes its next state: a selection across its
 lines, Enter making a line, Backspace joining two, pasting, undo, all as
-anywhere else, and kept inside it, so an edit can't leak out of a proposal
-into the document. Editing outside one changes the document, or, in
-suggesting mode, makes a proposal of your own, divided as anyone's are: a
-change in place for each line, a run of new lines as one.
+anywhere else, and kept inside it, so an edit can't leak out of a change
+into the document; it's told to the host as its source's, for its proposal's
+next round. Editing outside one changes the document, or, in suggesting
+mode, makes changes of your own, a source of your own.
 
 ## how it's built
 
 Four parts, as Monaco's are, its text model, view model and view, and the
 editor that holds them:
 
-1. **the model**, above: the document, its proposals, their anchors and the
-   one history. Plain data and functions over it, with no screen in it, and
-   knowing nothing of the editors that show it, so several can show one.
+1. **the model**, above: the document, the changes sources propose to it,
+   their anchors and the one history. Plain data and functions over it, with
+   no screen in it, and knowing nothing of the editors that show it, so
+   several can show one.
 2. **the view model**: what one editor shows of the model, worked out from
-   it without a screen: where each proposal sits in the flow, which parts
-   are edited and which only read, which proposal each part belongs to,
-   where old words show beside new ones, and how each region looks, as its
-   module says. And that editor's own selection,
+   it without a screen: where each change sits in the flow, what changed
+   within it, which parts are edited and which only read, which source each
+   part is from, the frames and their parts, where old words show beside new ones, and
+   how each region looks, as its module says. And that editor's own selection,
    caret and composition, in the model's positions, kept inside a proposal
    when they're in one. Positions in what's shown and positions in the model
    are converted here.
@@ -163,7 +489,7 @@ editor that holds them:
 4. **the editor**: what holds the three together, and the host's interface
    to them: commands in, through one pipeline; what they did out, to
    observers; and its modules. A host gives it a document and its
-   proposals, tells it what's new from elsewhere, and acts from its own
+   proposals, as changes, tells it what's new from elsewhere, and acts from its own
    controls, all by commands, and hears what's edited and decided as an
    observer.
 
@@ -172,7 +498,15 @@ The model doesn't hold them together: that would put a screen in it.
 What holds state, the DOM and its listeners, the view and the editor, is a
 class, so its fields show when it's inspected in the browser's tools, which
 a closure's don't. Data stays plain, as `type-construction.md` says: the
-model and the view model are data, and functions over it.
+model and the view model are data, and functions over it. The view is a
+class, `_View_TextEditor_`, in `source/View_TextEditor.tsx`, holding what
+lasts between draws: its container, its components, and an observer of the
+container's size. `draw(viewModel_TextEditor)` draws the view model into the
+container, as an element of its own, `.htmlView_editor`, leaving the
+container as the host made it, its classes, styles and attributes the
+host's; then draws the text underlays, and the observer draws them again
+whenever the container's size changes. The view model's types and parsers
+are `source/ViewModel_TextEditor.ts`.
 
 How it's drawn:
 
@@ -182,9 +516,52 @@ How it's drawn:
 - **only what changed is drawn again:** each line keeps its element, found
   by its id, and a line that's the same object it was is passed over; the
   view model is worked out again only for the lines a transaction touched.
+- **only what's visible is drawn:** the lines on the screen, so what's drawn
+  for a line, its spans, its underlays, search's matches on it, costs what
+  a screenful does, however long the document is.
 - **layout is read once a frame, after drawing:** reading it between writes
   makes the browser lay the page out again each time, which is where editors
   get slow; each line's measurements are kept until the line changes.
+- **written in JSX, as descriptions:** the drawing reads as Preact's would,
+  and works as it does: JSX makes descriptions, and one step,
+  `draw__Node_Jsx` in `source/Jsx.ts`, ours, makes them into elements in a
+  container. A component can give text, or nothing, or a DOM node a host
+  made its own way. Nothing a host has to load, so it's as portable as
+  hand-written DOM; no diffing yet. Nothing's done to an element in the
+  drawing: once it's all drawn and in the page, the view measures the text
+  underlays. It's built of components named after what they draw,
+  `Line_Run__Html` drawing `.line_htmlView`: the units a reconciler would
+  pass over when their props haven't changed, comparing descriptions, which
+  is what they're for. Which lines are drawn again is decided a line at a
+  time, as above, not by comparing whole trees.
+- **drawn from component maps, not switches:** what the view model says a
+  thing is, a block's kind, a frame part's, picks its component from a map,
+  `_ComponentMap__View_TextEditor_`, by kind: polymorphism where the data
+  decides. Which map, the configuration decides, upstream: a host passes
+  one, the editor's own, `COMPONENTMAP__VIEW_TEXTEDITOR`, or one with its
+  own components in some places, its own proposals list, its own lines,
+  through `line`, one component beside the maps, as a line isn't a kind, and
+  they draw wherever the editor's would, lines inside frames too, as the map
+  is passed down the tree, not imported. Nothing is defaulted: a host passes
+  the map even when it's the editor's. Which parts a frame has, its layout,
+  is already decided upstream, in the view model. A host's component keeps
+  what the text underlays are measured by: a run is `.run_htmlView`, with
+  its id as `data-run` and its `<svg class="underlays_htmlView">` in it;
+  each of its lines is `.line_htmlView`, right inside it, its text
+  `.text_htmlView`, right inside that. Where a run with underlays to draw
+  is missing any of it, none of them are drawn, as its positions would
+  land on the wrong text, and the measuring says so, a warning in the
+  console naming the run and what's missing; a run with nothing behind it
+  says nothing.
+- **the dispatchers stay:** `Block_TextEditor__Html` and
+  `Section_Frame__Html` look each kind up in its map. The data does carry
+  its component's reference, by name: its kind. Carrying the component
+  itself doesn't type: where it's drawn, a union's components ask for data
+  that's every kind at once. Choosing components when the view model is
+  built, the view model made of descriptions, would do without them, but the
+  view model would stop being plain data, readable by observers and agents,
+  clonable, and free of any one view; that's kept, and the dispatchers are
+  its price.
 
 ## input
 
@@ -482,7 +859,10 @@ What doctor worked out holds for the component:
   changed, a mark where words were taken out;
 - amendments: a note on words of a proposal, or on the whole of it, asked
   for its next round, as one quick one or a draft sent together;
-- a proposal of new lines side by side is one, however many it spans.
+- a proposal of new lines side by side is one, however many it spans;
+- what changed derived, never stored: `compareTexts`, word by word, then
+  marks over the words kept, its five kinds;
+- a move shown at both its ends, each going to the other.
 
 ## the first thing it has to do
 
@@ -492,7 +872,8 @@ Backspace, paste and undo working there as in the document, edits kept
 inside the proposal they're in, and each proposal accepted or rejected.
 Then, in order: suggesting mode, your edits made proposals; what a round
 changed since the one before; amendments; and doctor's editor replaced by
-it, through a binding from doctor's documents and tasks to its model.
+it, through an adapter from doctor's documents and proposals to its
+document and changes.
 
 ## still to find out
 
@@ -513,7 +894,10 @@ Before anything's built on them:
 ## not to begin with
 
 Editing by several people at once; proposals of proposals; a proposal across
-documents; anything doctor's tasks say, which stay doctor's.
+documents; anything doctor's tasks say, which stay doctor's; changes from
+different sources over the same text, and proposals competing for the same
+words; moves within a line, and moves that split, after moves of whole
+lines.
 
 Editing text written right to left, or both ways in one line: it's shown as
 the browser lays it out, but edited in the order it's written, which isn't

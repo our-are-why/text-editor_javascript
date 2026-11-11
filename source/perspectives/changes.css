@@ -1,0 +1,47 @@
+/* The "changes" perspective: how the proposals' changes look while a host
+   has it on, `data-perspective="changes"` on the view's container. Each colour
+   means one thing, as doctor's do: green put in, red taken out, yellow
+   changed in place, solid where words are replaced, dashed where they're
+   restyled; what's taken out struck. A change is only data: on each segment
+   it covers, `data-change`, its kind, `data-side`, `data-source`, for what's
+   the text's own, its ink, a strike, an underline; and on a text underlay
+   behind them, a path with the same data, for what runs on behind the text,
+   a band, unbroken across spans, rows and lines, in its proposal's group,
+   with its target, `data-underlay="targets"`. A host can use this, or put
+   its own in its place. */
+
+[data-perspective="changes"] [data-side="before"]:not([data-change="restyled"]) {
+  text-decoration: line-through;
+}
+
+[data-perspective="changes"] [data-change="removed"] {
+  color: var(--view-removed, #cf222e);
+}
+
+[data-perspective="changes"] [data-change^="replaced"][data-side="before"] {
+  color: var(--view-changed-ink, #9a6700);
+}
+
+[data-perspective="changes"] [data-change="restyled"],
+[data-perspective="changes"] [data-change="replacedRestyled"][data-side="after"] {
+  text-decoration: underline dashed var(--view-changed-line, #bf8700);
+  text-underline-offset: 3px;
+}
+
+[data-perspective="changes"] .underlay_htmlView[data-change="inserted"] {
+  fill: var(--view-inserted, color-mix(in srgb, #2da44e 24%, transparent));
+}
+
+[data-perspective="changes"] .underlay_htmlView[data-change^="replaced"][data-side="after"] {
+  fill: var(--view-changed, color-mix(in srgb, #d4a72c 30%, transparent));
+}
+
+/* a proposal's target in a run of lines, from its first change there to its
+   last, the words it leaves as they are between them too: one soft shape
+   behind them, round every row it's on, whatever they're marked as */
+[data-perspective="changes"] .underlay_htmlView[data-underlay="targets"] {
+  fill: var(--view-target, color-mix(in srgb, CanvasText 5%, transparent));
+  stroke: var(--view-target-edge, color-mix(in srgb, CanvasText 22%, transparent));
+  stroke-width: 1px;
+  stroke-linejoin: round;
+}

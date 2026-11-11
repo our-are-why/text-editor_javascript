@@ -2,6 +2,10 @@
   "name": "text-editor_javascript",
   "private": true,
   "type": "module",
+  "imports": {
+    "#jsx/jsx-runtime": "./source/Jsx.ts",
+    "#jsx/jsx-dev-runtime": "./source/Jsx.ts"
+  },
   "scripts": {
     "check": "tsc -p tsconfig.json && tsc -p playground && tsc -p source",
     "test": "bun test",

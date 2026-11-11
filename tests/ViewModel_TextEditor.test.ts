@@ -1,6 +1,6 @@
 import { expect, test } from "bun:test"
 import fc from "fast-check"
-import { parseLines_ViewModel } from "../source/HtmlView_Editor.ts"
+import { parseTexts_Line } from "../source/ViewModel_TextEditor.ts"
 
 // every line break a text can hold: each ends a line, "\r\n" as one
 const lineBreaks = ["\r\n", "\n", "\r", "\v", "\f", "\u0085", "\u2028", "\u2029"]
@@ -32,7 +32,7 @@ function linesOf(
 test("a text parses into its lines, each without its line break, and nothing else lost", () => {
   fc.assert(
     fc.property(pieces, (pieces) => {
-      const texts: Array<string> = parseLines_ViewModel(pieces.join("")).map(({ text }) => text)
+      const texts: Array<string> = parseTexts_Line(pieces.join(""))
       expect(texts).toEqual(linesOf(pieces))
     }),
     { numRuns: 1000 }

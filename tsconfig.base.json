@@ -18,6 +18,11 @@
     "verbatimModuleSyntax": true,
     "erasableSyntaxOnly": true,
     "isolatedModules": true,
+    // JSX made into real elements by source/Jsx.ts, which package.json's
+    // imports map #jsx/jsx-runtime to, and #jsx/jsx-dev-runtime, which Bun
+    // asks for when it bundles for development, for tsc and Bun alike
+    "jsx": "react-jsx",
+    "jsxImportSource": "#jsx",
     "strict": true,
     "noUncheckedIndexedAccess": true,
     "exactOptionalPropertyTypes": true,

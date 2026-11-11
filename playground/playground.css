@@ -330,3 +330,28 @@ main.gallery {
     padding: 1.25rem 1rem 2rem;
   }
 }
+
+/* the playground's marks, styled as a host styles its own, from the data a
+   segment carries: each mark a word of `data-marks`, a link its
+   `data-link`; code needs nothing, the view's font being monospace already */
+.htmlView_editor [data-marks~="bold"] {
+  font-weight: bold;
+}
+
+.htmlView_editor [data-marks~="italic"] {
+  font-style: italic;
+}
+
+.htmlView_editor [data-marks~="highlighted"] {
+  background: var(--view-highlight, Mark);
+}
+
+.htmlView_editor [data-marks~="struck"] {
+  text-decoration: line-through;
+}
+
+.htmlView_editor [data-link] {
+  color: var(--view-link, LinkText);
+  text-decoration: underline;
+}
+

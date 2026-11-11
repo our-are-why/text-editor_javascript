@@ -1,0 +1,177 @@
+/* the view's look, from variables a host sets anywhere above it to its own,
+   in VS Code its theme's; each falls back to the page's own colours, and a
+   monospace font */
+.htmlView_editor {
+  padding: var(--view-padding-block, 0.75rem) var(--view-padding-inline, 1rem);
+  background: var(--view-ground, Canvas);
+  color: var(--view-ink, CanvasText);
+  font-family: var(--view-font, ui-monospace, "SF Mono", Menlo, Consolas, monospace);
+  font-size: var(--view-font-size, 13px);
+  line-height: var(--view-line-height, 1.6);
+  tab-size: var(--view-tab-size, 4);
+  /* the gutter's spacing, said once, for whatever lines up with it */
+  --gutterGap_htmlView: 0.5rem;
+  --laneWidth_htmlView: 3px;
+  --gutterEnd_htmlView: 0.75rem;
+}
+
+/* A run of lines, one after another, and behind them one svg, as big as
+   the run, holding its text underlays: a group for each thing they're of,
+   a proposal, and in it a path for each, tracing every row it covers, on
+   one line or several, as one shape. They're measured once the run's
+   drawn, and again when the view's size changes; how one looks is a
+   perspective's, and without one, it's nothing. The run is its own
+   stacking context, so the svg's behind its lines' text but in front of
+   whatever's behind the run, as a frame's tint is. Nothing in it is
+   pointed at: what's pointed at is the text. */
+.htmlView_editor .run_htmlView {
+  position: relative;
+  isolation: isolate;
+}
+
+.htmlView_editor .underlays_htmlView {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  pointer-events: none;
+}
+
+.htmlView_editor :where(.underlay_htmlView) {
+  fill: none;
+}
+
+/* A line, a row of two cells: its gutter, then its text. The text keeps its
+   spaces and tabs and wraps where it's too long for the view; the row keeps
+   its height when the text's empty. */
+.htmlView_editor .line_htmlView {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  min-height: 1lh;
+}
+
+.htmlView_editor .text_htmlView {
+  grid-area: 1 / 2;
+  min-width: 0;
+  white-space: pre-wrap;
+  overflow-wrap: break-word;
+}
+
+/* A line's gutter: its label, the document's number for it or a sign, as
+   wide as the longest label, which the view model says, so every row's
+   text starts at the same left; then a lane, its look not yet decided. Its
+   number at the top of a line that wraps. */
+.htmlView_editor .gutter_htmlView {
+  grid-area: 1 / 1;
+  display: flex;
+  gap: var(--gutterGap_htmlView);
+  padding-right: var(--gutterEnd_htmlView);
+  color: var(--view-gutter-ink, color-mix(in srgb, CanvasText 40%, transparent));
+  user-select: none;
+}
+
+.htmlView_editor .label_htmlView {
+  width: var(--labelWidth_htmlView);
+  text-align: right;
+}
+
+.htmlView_editor .marker_htmlView {
+  width: var(--laneWidth_htmlView);
+}
+
+/* A frame: a range of the document's lines, in place of themselves, with
+   their possible future. Its text sits where theirs would, at the same left
+   and the same width as every line around it, in the rhythm of the lines:
+   it reaches out over the view's padding, each part's background running
+   from edge to edge, one for all its rows. */
+.htmlView_editor .frame_htmlView {
+  margin-inline: calc(-1 * var(--view-padding-inline, 1rem));
+}
+
+.htmlView_editor .frame_htmlView .line_htmlView {
+  padding-inline: var(--view-padding-inline, 1rem);
+}
+
+/* the frame's bar, down the lane of every row in it, one light grey */
+.htmlView_editor .frame_htmlView .marker_htmlView {
+  background: var(--view-frame-bar, color-mix(in srgb, CanvasText 30%, transparent));
+}
+
+/* the lines as they are: what the proposals are read against */
+.htmlView_editor .current_htmlView {
+  background: var(--view-current, color-mix(in srgb, CanvasText 5%, transparent));
+}
+
+/* the same lines as proposed, set apart by a rule taking no room */
+.htmlView_editor .proposed_htmlView {
+  background: var(--view-proposed, color-mix(in srgb, #2da44e 7%, transparent));
+  box-shadow: inset 0 1px var(--view-proposed-rule, color-mix(in srgb, CanvasText 18%, transparent));
+}
+
+/* The proposals in a frame, one item each, a shade darker than the lines
+   they're about: their items start where the lines' text does, and the
+   frame's bar runs on down beside them, where it is in the lines' lanes,
+   so it's one bar down the whole frame. */
+.htmlView_editor .proposals_htmlView {
+  position: relative;
+  margin: 0;
+  padding-block: 0.25rem;
+  padding-inline: calc(var(--view-padding-inline, 1rem) + var(--labelWidth_htmlView) + var(--gutterGap_htmlView) + var(--laneWidth_htmlView) + var(--gutterEnd_htmlView)) var(--view-padding-inline, 1rem);
+  list-style: none;
+  background: var(--view-proposals, color-mix(in srgb, CanvasText 9%, transparent));
+}
+
+.htmlView_editor .proposals_htmlView::before {
+  content: "";
+  position: absolute;
+  inset-block: 0;
+  left: calc(var(--view-padding-inline, 1rem) + var(--labelWidth_htmlView) + var(--gutterGap_htmlView));
+  width: var(--laneWidth_htmlView);
+  background: var(--view-frame-bar, color-mix(in srgb, CanvasText 30%, transparent));
+}
+
+
+/* A proposal's item: its title, why it's proposed, then what can be done
+   with it, one button each, in the interface's font, not the text's; a
+   rationale that's empty takes no room. What an action does is the host's:
+   its button carries only its command. */
+.htmlView_editor .item_htmlView {
+  display: grid;
+  justify-items: start;
+  gap: 0.2rem;
+  padding-block: 0.4rem;
+  font-family: var(--view-ui-font, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif);
+  font-size: var(--view-ui-font-size, 13px);
+  line-height: 1.45;
+}
+
+.htmlView_editor .title_htmlView {
+  font-weight: 600;
+}
+
+.htmlView_editor .rationale_htmlView {
+  margin: 0;
+  color: var(--view-rationale-ink, color-mix(in srgb, CanvasText 65%, transparent));
+}
+
+.htmlView_editor .rationale_htmlView:empty {
+  display: none;
+}
+
+.htmlView_editor .actions_htmlView {
+  display: flex;
+  gap: 0.4rem;
+  margin-top: 0.15rem;
+}
+
+.htmlView_editor .action_htmlView {
+  padding: 0.1rem 0.65rem;
+  border: 1px solid var(--view-action-edge, color-mix(in srgb, CanvasText 25%, transparent));
+  border-radius: 4px;
+  background: var(--view-action-ground, Canvas);
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+}

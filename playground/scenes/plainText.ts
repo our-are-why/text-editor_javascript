@@ -1,5 +1,6 @@
 import type { _Scene_ } from "../scene.ts"
-import { parseLines_ViewModel } from "../../source/HtmlView_Editor.ts"
+import { viewModelOf__Blocks } from "../../source/ViewModel_TextEditor.ts"
+import { blocksOf__Text } from "../lines.ts"
 
 export {
   movingTheWorkshop,
@@ -46,5 +47,5 @@ const plainText: _Scene_ = {
   variables: {},
   labels: [],
   invariants: [],
-  model__HtmlView_Editor: { lines: parseLines_ViewModel(movingTheWorkshop) },
+  viewModel_TextEditor: viewModelOf__Blocks(blocksOf__Text(movingTheWorkshop)),
 }

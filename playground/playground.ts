@@ -1,6 +1,7 @@
+import "../source/perspectives/changes.css"
 import { examples } from "./examples/index.ts"
 import { scenes } from "./scenes/index.ts"
-import { _HtmlView_Editor_ } from "../source/HtmlView_Editor.ts"
+import { _View_TextEditor_, COMPONENTMAP__VIEW_TEXTEDITOR } from "../source/View_TextEditor.tsx"
 import type { _Entry_Log_, _Example_ } from "./example.ts"
 import type { _Invariant_Scene_, _Scene_ } from "./scene.ts"
 
@@ -67,7 +68,7 @@ function gallery(): void {
   grid.append(...scenes.map(drawScene))
   main.append(
     make("h1", "", "Gallery"),
-    make("p", "about", "Every scene, drawn by the view from what it's given, written by hand; under each title, what to check. First the main example, Everything, which the tests draw too; then the simplest first."),
+    make("p", "about", "Every scene, drawn by the view from what it's given, written by hand; under each title, what to check. First the main example, Everything, which the tests draw too; then proposals, while they're being worked out; then the simplest first."),
     grid,
   )
 }
@@ -88,8 +89,14 @@ function drawScene(
   const caption = document.createElement("figcaption")
   caption.append(title, make("span", "look", scene.look))
 
+  // the view, in the "changes" perspective, which the playground, as host,
+  // has on for every scene
   const containerElement = document.createElement("div")
-  new _HtmlView_Editor_({ containerElement }).draw(scene.model__HtmlView_Editor)
+  containerElement.dataset["perspective"] = "changes"
+  new _View_TextEditor_({
+    containerElement,
+    componentMap: COMPONENTMAP__VIEW_TEXTEDITOR
+  }).draw(scene.viewModel_TextEditor)
   const overlay = make("div", "overlay")
   const drawn = make("div", "drawn")
   drawn.append(containerElement, overlay)
@@ -103,7 +110,7 @@ function drawScene(
   body.append(gutter, drawn, list)
   figure.append(caption, body)
 
-  const lineElements = () => [...containerElement.children]
+  const lineElements = () => [...containerElement.querySelectorAll(".line_htmlView")]
   const placesOf = (concerns: "every line" | Array<string>) =>
     concerns === "every line" ? lineElements().map((_, index) => index) : concerns.map((label) => scene.labels.indexOf(label))
 
@@ -121,6 +128,19 @@ function drawScene(
     }))
     labels.forEach((label, index) => label.classList.toggle("lit", places.includes(index)))
   }
+  // a proposal's changes outlined, each row of each
+  const lightSource = (source: string) => {
+    const origin = drawn.getBoundingClientRect()
+    const changes = [...containerElement.querySelectorAll(`.text_htmlView [data-source="${CSS.escape(source)}"]`)]
+    overlay.replaceChildren(...changes.flatMap((element) => [...element.getClientRects()].map((row) => {
+      const outline = make("div", "")
+      outline.style.top = `${row.top - origin.top}px`
+      outline.style.left = `${row.left - origin.left}px`
+      outline.style.width = `${row.width}px`
+      outline.style.height = `${row.height}px`
+      return outline
+    })))
+  }
   const unlight = () => {
     light([])
     for (const { item } of checks) item.classList.remove("touches")
@@ -134,8 +154,15 @@ function drawScene(
     item.addEventListener("mouseleave", unlight)
     item.addEventListener("blur", unlight)
   }
-  // pointing at a line outlines it, and marks the invariants about it
+  // pointing at a change outlines all of its proposal's changes; pointing at
+  // a line outlines it, and marks the invariants about it
   containerElement.addEventListener("mouseover", (event) => {
+    const source = event.target instanceof Element ? event.target.closest("[data-source]")?.getAttribute("data-source") : null
+    if (typeof source === "string") {
+      unlight()
+      lightSource(source)
+      return
+    }
     const line = event.target instanceof Element ? event.target.closest(".line_htmlView") : null
     const place = line === null ? -1 : lineElements().indexOf(line)
     light(place === -1 ? [] : [place])
@@ -144,10 +171,11 @@ function drawScene(
   containerElement.addEventListener("mouseleave", unlight)
 
   // the labels placed beside their lines, and every invariant checked, once
-  // the scene's laid out, and again when fonts arrive or the window resizes
+  // the scene's laid out and its text underlays drawn, the frame after it's
+  // first laid out, and again when fonts arrive or the window resizes
   const measure = () => {
     const top = gutter.getBoundingClientRect().top
-    const row = getComputedStyle(containerElement).lineHeight
+    const row = getComputedStyle(containerElement.querySelector(".htmlView_editor") ?? containerElement).lineHeight
     labels.forEach((label, index) => {
       label.style.top = `${(lineElements()[index]?.getBoundingClientRect().top ?? top) - top}px`
       label.style.lineHeight = row
@@ -159,7 +187,7 @@ function drawScene(
       failing.textContent = names.join(", ")
     }
   }
-  requestAnimationFrame(measure)
+  requestAnimationFrame(() => requestAnimationFrame(measure))
   document.fonts.ready.then(measure)
   window.addEventListener("resize", measure)
   return figure

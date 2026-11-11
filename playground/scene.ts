@@ -1,4 +1,4 @@
-import type { _ViewModel_Editor_ } from "../source/HtmlView_Editor.ts"
+import type { _ViewModel_TextEditor_ } from "../source/ViewModel_TextEditor.ts"
 
 export {
   type _Size_Scene_,
@@ -30,7 +30,7 @@ interface _Scene_ {
   // what must hold of the scene once it's drawn, checked in the gallery as in
   // the tests; [] for a scene that's only looked at
   invariants: Array<_Invariant_Scene_>
-  model__HtmlView_Editor: _ViewModel_Editor_
+  viewModel_TextEditor: _ViewModel_TextEditor_
 }
 
 // something that must hold of a scene once it's drawn

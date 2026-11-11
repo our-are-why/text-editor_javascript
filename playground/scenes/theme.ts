@@ -1,5 +1,6 @@
 import type { _Scene_ } from "../scene.ts"
-import { parseLines_ViewModel } from "../../source/HtmlView_Editor.ts"
+import { viewModelOf__Blocks } from "../../source/ViewModel_TextEditor.ts"
+import { blocksOf__Text } from "../lines.ts"
 import { fieldNotes } from "./markdown.ts"
 
 export {
@@ -18,9 +19,10 @@ const theme: _Scene_ = {
     "--view-font-size": "12px",
     "--view-line-height": "1.5",
     "--view-tab-size": "8",
-    "--view-padding": "0.5rem 0.75rem",
+    "--view-padding-block": "0.5rem",
+    "--view-padding-inline": "0.75rem",
   },
   labels: [],
   invariants: [],
-  model__HtmlView_Editor: { lines: parseLines_ViewModel(fieldNotes) },
+  viewModel_TextEditor: viewModelOf__Blocks(blocksOf__Text(fieldNotes)),
 }
