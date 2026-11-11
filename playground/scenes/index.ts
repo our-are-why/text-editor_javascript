@@ -10,6 +10,7 @@ import { plainText } from "./plainText.ts"
 import { prose } from "./prose.ts"
 import { proposalsCode } from "./proposalsCode.ts"
 import { proposalsProse } from "./proposalsProse.ts"
+import { proposalsThread } from "./proposalsThread.ts"
 import { scripts } from "./scripts.ts"
 import { theme } from "./theme.ts"
 
@@ -20,4 +21,4 @@ export {
 // every scene, in the order the gallery draws them: the main example, which
 // the tests draw too; proposals, while they're being worked out; then the
 // simplest first
-const scenes: Array<_Scene_> = [everything, proposalsProse, proposalsCode, empty, oneLine, plainText, prose, code, markdown, theme, longWords, narrow, scripts]
+const scenes: Array<_Scene_> = [everything, proposalsProse, proposalsCode, proposalsThread, empty, oneLine, plainText, prose, code, markdown, theme, longWords, narrow, scripts]

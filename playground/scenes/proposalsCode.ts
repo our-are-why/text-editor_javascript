@@ -1,7 +1,7 @@
 import type { _Scene_ } from "../scene.ts"
-import { parseTexts_Line, viewModelOf__Blocks } from "../../source/ViewModel_TextEditor.ts"
+import { parseTexts_Line, viewModelOf__Blocks, MODULE_PLAINTEXT } from "../../source/ViewModel_TextEditor.ts"
 import { actions_Review } from "../items.ts"
-import { blocksWith__Frame, lineOf } from "../lines.ts"
+import { blocksWith__Frames, lineOf } from "../lines.ts"
 import { attributesOf__Change } from "../looks.ts"
 import { readingTime } from "./code.ts"
 
@@ -26,9 +26,10 @@ const proposalsCode: _Scene_ = {
   variables: {},
   labels: [],
   invariants: [],
-  viewModel_TextEditor: viewModelOf__Blocks(blocksWith__Frame({
+  viewModel_TextEditor: viewModelOf__Blocks(blocksWith__Frames({
     multilineText: readingTime,
-    frame: {
+    module_Language: MODULE_PLAINTEXT,
+    frames: [{
       kind: "FRAME",
       range: { first: 11, last: 17 },
       parts: [
@@ -78,22 +79,25 @@ const proposalsCode: _Scene_ = {
               title: "A faster reader: 250 words a minute",
               rationale: "Adults read prose at about 250 words a minute; 230 makes every estimate a little long.",
               actions: actions_Review,
+          places: "",
             },
             {
               source: "check",
               title: "Drop the check on wordsPerMinute",
               rationale: "Every caller passes a positive whole number, so the check only ever throws in tests.",
               actions: actions_Review,
+          places: "",
             },
             {
               source: "minutes",
               title: "Name the minutes before rounding them",
               rationale: "With a name, the rounding reads as one step on a value you already understand.",
               actions: actions_Review,
+          places: "",
             },
           ],
         },
       ],
-    },
+    }],
   })),
 }

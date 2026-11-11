@@ -6,7 +6,9 @@ export {
   attributesOf__Link,
   type _Side_Change_,
   type _Kind_Change_,
-  attributesOf__Change
+  attributesOf__Change,
+  attributesOf__Nested,
+  attributesOf__Span
 }
 
 // the marks the playground's scenes use, as a host would name them: the
@@ -52,4 +54,28 @@ function attributesOf__Change({
   source
 }: _Api___attributesOf__Change_): _Attributes_Element_ {
   return { "data-change": kind, "data-side": side, "data-source": source }
+}
+
+interface _Api___attributesOf__Nested_ {
+  kind: _Kind_Change_
+  source: string
+}
+
+// a change nested inside another proposal's on the same words, a removal,
+// so it applies only if that's rejected: its kind and source, under names of
+// their own, so the removal's stay as they are on the segment
+function attributesOf__Nested({
+  kind,
+  source
+}: _Api___attributesOf__Nested_): _Attributes_Element_ {
+  return { "data-nested-change": kind, "data-nested-source": source }
+}
+
+// text of a proposal's span that its changes leave as it is: what the agent
+// sent as the span's next state, of which only some differs. The proposal's
+// target runs over all of its span, its changes ringed inside it
+function attributesOf__Span(
+  source: string
+): _Attributes_Element_ {
+  return { "data-span": source }
 }

@@ -1,47 +1,66 @@
 /* The "changes" perspective: how the proposals' changes look while a host
-   has it on, `data-perspective="changes"` on the view's container. Each colour
-   means one thing, as doctor's do: green put in, red taken out, yellow
-   changed in place, solid where words are replaced, dashed where they're
-   restyled; what's taken out struck. A change is only data: on each segment
-   it covers, `data-change`, its kind, `data-side`, `data-source`, for what's
-   the text's own, its ink, a strike, an underline; and on a text underlay
-   behind them, a path with the same data, for what runs on behind the text,
-   a band, unbroken across spans, rows and lines, in its proposal's group,
-   with its target, `data-underlay="targets"`. A host can use this, or put
-   its own in its place. */
+   has it on, `data-perspective="changes"` on the view's container, as
+   doctor shows them. Never with the text's own colour, a strike or an
+   underline, which are the text's, its marks' and its syntax's: a change
+   is a ring round its words, red where they go, yellow where they're
+   replaced, green where they're new, dashed where only their look changes,
+   dotted where they're inside another proposal's removal, so apply only
+   if it's rejected; and a line in a frame says what it becomes in its
+   gutter, its label in the same colours, never with a band across its
+   text. A ring is a text underlay's path, behind the text, one shape over
+   every span, row and line its words are on, each change's data on it:
+   `data-change`, its kind, `data-side`, `data-source`, and `data-within`
+   when it's inside another's removal. A proposal's target,
+   `data-underlay="targets"`, is drawn but not shown: what it targets, its
+   lines' labels say. A host can use this, or put its own in its place. */
 
-[data-perspective="changes"] [data-side="before"]:not([data-change="restyled"]) {
-  text-decoration: line-through;
+[data-perspective="changes"] .underlay_htmlView[data-change] {
+  stroke: var(--edge);
+  stroke-width: 1px;
+  stroke-linejoin: round;
 }
 
-[data-perspective="changes"] [data-change="removed"] {
-  color: var(--view-removed, #cf222e);
+[data-perspective="changes"] .underlay_htmlView[data-change="removed"] {
+  --edge: var(--view-removed-edge, light-dark(#e51400, #f14c4c));
 }
 
-[data-perspective="changes"] [data-change^="replaced"][data-side="before"] {
-  color: var(--view-changed-ink, #9a6700);
-}
-
-[data-perspective="changes"] [data-change="restyled"],
-[data-perspective="changes"] [data-change="replacedRestyled"][data-side="after"] {
-  text-decoration: underline dashed var(--view-changed-line, #bf8700);
-  text-underline-offset: 3px;
+[data-perspective="changes"] .underlay_htmlView[data-change^="replaced"],
+[data-perspective="changes"] .underlay_htmlView[data-change="restyled"] {
+  --edge: var(--view-changed-edge, light-dark(#bf8803, #cca700));
 }
 
 [data-perspective="changes"] .underlay_htmlView[data-change="inserted"] {
-  fill: var(--view-inserted, color-mix(in srgb, #2da44e 24%, transparent));
+  --edge: var(--view-inserted-edge, light-dark(#388a34, #89d185));
 }
 
-[data-perspective="changes"] .underlay_htmlView[data-change^="replaced"][data-side="after"] {
-  fill: var(--view-changed, color-mix(in srgb, #d4a72c 30%, transparent));
+/* only its look: dashed; replaced and restyled both: dashed, but less */
+[data-perspective="changes"] .underlay_htmlView[data-change="restyled"] {
+  stroke-dasharray: 3 2;
 }
 
-/* a proposal's target in a run of lines, from its first change there to its
-   last, the words it leaves as they are between them too: one soft shape
-   behind them, round every row it's on, whatever they're marked as */
-[data-perspective="changes"] .underlay_htmlView[data-underlay="targets"] {
-  fill: var(--view-target, color-mix(in srgb, CanvasText 5%, transparent));
-  stroke: var(--view-target-edge, color-mix(in srgb, CanvasText 22%, transparent));
-  stroke-width: 1px;
-  stroke-linejoin: round;
+[data-perspective="changes"] .underlay_htmlView[data-change="replacedRestyled"] {
+  stroke-dasharray: 6 2;
+}
+
+/* inside another proposal's removal, `data-within` its source: it applies
+   only if that's rejected */
+[data-perspective="changes"] .underlay_htmlView[data-within] {
+  stroke-dasharray: 1 2;
+}
+
+/* which lines change, said in the gutter, each line's label in the colour
+   of what the line becomes: a number, as it is, red where it's taken out,
+   yellow where it's changed in place; a sign, as proposed, green + where
+   it's put in, yellow ~ where it's changed. Every line, changed or not, on
+   its section's one band; the rings say which words. */
+[data-perspective="changes"] .line_htmlView[data-marker="removed"] .label_htmlView {
+  color: var(--view-removed-label, light-dark(#ad0707, #c74e39));
+}
+
+[data-perspective="changes"] .line_htmlView[data-marker="changed"] .label_htmlView {
+  color: var(--view-changed-label, light-dark(#9a6700, #cca700));
+}
+
+[data-perspective="changes"] .line_htmlView[data-marker="inserted"] .label_htmlView {
+  color: var(--view-inserted-label, light-dark(#388a34, #89d185));
 }

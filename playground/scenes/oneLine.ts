@@ -1,5 +1,5 @@
 import type { _Scene_ } from "../scene.ts"
-import { viewModelOf__Blocks } from "../../source/ViewModel_TextEditor.ts"
+import { viewModelOf__Blocks, MODULE_PLAINTEXT } from "../../source/ViewModel_TextEditor.ts"
 import { blocksOf__Text } from "../lines.ts"
 
 export {
@@ -14,5 +14,5 @@ const oneLine: _Scene_ = {
   variables: {},
   labels: [],
   invariants: [],
-  viewModel_TextEditor: viewModelOf__Blocks(blocksOf__Text("A single line, and nothing after it.")),
+  viewModel_TextEditor: viewModelOf__Blocks(blocksOf__Text("A single line, and nothing after it.", MODULE_PLAINTEXT)),
 }

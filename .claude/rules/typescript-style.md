@@ -62,7 +62,8 @@ scene's template literal, is content: leave it as written.
 - **No defaults.** What a function, component or constructor takes, it's
   given: no optional options, no default values, nothing falling back to
   the editor's own when a caller says nothing. A caller passes even what
-  the editor ships, as a host passes `COMPONENTMAP__VIEW_TEXTEDITOR`.
+  the editor ships, as a host passes `COMPONENTMAP__VIEW_TEXTEDITOR`, and
+  `MODULE_PLAINTEXT` for text with no syntax.
 - **Plain classes.** Classes are for what holds state, the DOM and
   listeners; data stays plain. Fields are ordinary: no `#private`, no
   TypeScript `private`, no `readonly`. Encapsulation isn't enforced; things

@@ -228,7 +228,8 @@ host's, given and only handed back; offsets and line indices are proofs. The lin
 move to the model once there is one, as the model can't depend on the view.
 What the parsers at the boundary check, once there are: ranges inside the
 document, `from` not after `to`; marks inside their line; changes from
-different sources never overlapping.
+different sources never crossing, one only ever wholly inside another's
+removal.
 
 - **a change is a complete next state, of its span:** what the span becomes,
   text and overlay. What changed within it is never written down: it's
@@ -254,10 +255,20 @@ different sources never overlapping.
   one source. Moves of whole lines come first; within a line, and splits,
   after spans and frames work, the derived differences showing them till
   then as what's taken out and put in.
-- **for now:** changes from different sources never overlap, nor does a
-  move's span or where it goes fall in another source's; positions are as
-  the document has them now, anchors that carry them through what's
-  accepted coming after.
+- **nested, never crossing:** a change from one source may lie wholly inside
+  another source's removal, as a rename's place does inside lines another
+  proposal takes out: it's the inside one's fallback there, applying only if
+  the removal's rejected. Decided in any order, the two come to the same:
+  both taken, the removal takes the lines, and the inside change, what it
+  hung on gone, is dropped, as an anchor says when what it hung on is gone;
+  the removal rejected, the inside change applies; the inside one taken
+  first, the removal's anchors carry through it, and it takes the same
+  lines. Changes that cross, neither inside the other, are a conflict the
+  agent resolves, or the host splits, never the editor.
+- **for now:** besides nesting, changes from different sources never
+  overlap, nor does a move's span or where it goes fall in another source's;
+  positions are as the document has them now, anchors that carry them
+  through what's accepted coming after.
 
 Where an agent writes the changes, as doctor's does, it writes them as
 agents write edits reliably: the text as it is, quoted exactly, and what it
@@ -277,11 +288,11 @@ beside them, read-only. So:
 
 - what's added reads in place, green, and is edited where it is;
 - what's changed in place shows its new words, with the old ones beside;
-- what's taken out shows, struck, where it was;
-- what's moved shows at both its ends: within a line, both in it; within
-  what's shown together, linked in the margin; out to somewhere else, a
-  mark where it leaves, "moves to line 40", and where it lands, "moved from
-  line 12", each going to the other, as doctor's do.
+- what's taken out shows where it was, ringed, never struck, a strike being
+a document's own mark; - what's moved shows at both its ends: within a line,
+both in it; within what's shown together, linked in the margin; out to
+somewhere else, a mark where it leaves, "moves to line 40", and where it
+lands, "moved from line 12", each going to the other, as doctor's do.
 
 **every proposal shown at once:** all of them, each change styled as what
 it is, word by word, none hidden behind or put aside for another. Which
@@ -299,7 +310,30 @@ the document or its changes changing:
   proposal's; a tokenizer's syntax; spelling; whatever a host marks out.
   Several can lie over the same text; the projection cuts a line's text into
   segments wherever any overlay's runs begin or end, each carrying the data
-  of every run over it, from every layer.
+  of every run over it, from every layer. For now that's
+  `segmentsOf__Stretches`, a line's text and the stretches of it runs
+  cover, `_Stretch_Line_`; where two give the same attribute, its value is
+  their words together, once each, as a stylesheet finds with `~=`, as
+  marks are.
+- **syntax** is an overlay like any other: a language's module gives each
+  stretch of code what it is, `data-syntax`, a keyword, a string, a
+  comment, and a host's stylesheet, its theme, colours it. It's worked out a
+  line at a time, each line from the state the one before it left, inside a
+  block comment, a template literal, a substitution in one, so a change
+  works out its own line again, and the lines after it only until one
+  starts as it did before; a line needs every line above it worked out,
+  but none below, so lines past the screen wait until they're drawn. The
+  seam is the editor's, `_Module_Language_`: a state to start from,
+  `state_Start`, its own and never looked into, and
+  `syntaxOf__Line({ text, state_Before })`, giving a line's stretches and
+  `state_After`, a new one, never the one it was given, changed. The
+  editor drives it, for now in `parseLines_ViewModel`, a line at a time,
+  each from the state the one before left, and cuts each line at its
+  stretches; a host only chooses the module. Plain text is a module too,
+  `MODULE_PLAINTEXT`, marking nothing, passed as any other is, nothing
+  falling back to it. The playground's JavaScript tokenizer,
+  `module_JavaScript` in `playground/syntax.ts`, stands in for a real
+  one, its example, `?example=javascript`, drawn with it.
 - **drawn two ways:** an overlay's runs are on the text, or under it.
   - **on the text:** a run is only data on the segments it covers, each a
     flat span: no element is a run, so no run stays whole, and none is
@@ -321,9 +355,11 @@ the document or its changes changing:
     `PROPOSAL_LINES`, each drawn by the same component wherever it is, with
     one `<svg>` behind its lines; a frame's list has none. A run's svg holds
     everything behind its text, in one order: search's matches, then the
-    proposals' targets, with their changes, then the selection, on top. A
-    section's tint is the run's own background, under the svg, as the svg
-    is inside the run; the lines have none, so nothing covers it.
+    proposals' targets, with their changes, then the selection, on top. In
+    the run, its own stacking context, the svg's over its lines'
+    backgrounds, as a band a perspective might give a line, and under
+    their text: the svg at `z-index: 0`, the text at 1; a
+    section's background is under all of it.
     Each underlay is one `<path>`, tracing every row it covers, wrapped or
     across lines, as one shape, so a fill or an edge goes round all of it,
     with no seams between rows; and SVG's paint gives changes more than
@@ -336,35 +372,46 @@ the document or its changes changing:
     through, each carrying its data, `data-source`, so a perspective styles
     it as one.
   - **a proposal's target** is a group, `<g data-source>`, in each of its
-    frame's text runs: a path from its first change to its last, the words
-    it leaves as they are between them too, `data-underlay="targets"`, and
-    in the group, a path for each of its changes, `data-change`, its kind.
-    The changes' colours are drawn there, not as the spans' backgrounds: a
-    span keeps only what's the text's own, a strike through what's taken
-    out, its ink.
+    frame's text runs: a path over its span, all it covers, what the agent
+    sent a next state for, whose changes are worked out inside it, the words
+    they leave as they are between and round them too, a whole function,
+    say, of which a line's middle differs; with no span sent past its
+    changes, from its first change to its last, `data-underlay="targets"`;
+    and in the group, a path for each of its changes, `data-change`, its
+    kind, without the spaces at its ends, so its ring is round its words
+    alone. A change is drawn there, a ring round its words in the "changes"
+    perspective, as doctor's are, never on the spans: a span keeps only
+    what's the text's own, its marks and its syntax. The target is drawn
+    too, but the perspective shows none: what a proposal targets, its lines'
+    labels say. Shown, filled or outlined, a target reads well for one
+    proposal alone, a function sent whole with a line's middle changed; but
+    where several proposals' targets cover the same lines, as in a function
+    every proposal touches, they stack into patches or cross into a maze,
+    and say nothing of which covers what, so none. Shown for one proposal
+    at a time, the one pointed at, or current, is still open.
   - **measured** from the view model's positions, never read back from the
-    DOM, with a `Range` over the text nodes from any offset to any other,
-    as the selection's ends and search's matches fall anywhere, not only
-    where the text's cut into spans; once the run's drawn and in the page,
-    from the run, and again whenever the view's size changes. Only the
-    lines on the screen are drawn, so it's measured over a screenful, and
-    search over a whole document costs what a page of it does.
-  - **in the view model,** runs and frames: unframed lines one after
-    another a run of their own, beside the frames, and a frame's two text
-    sections runs too, each run with an id, unique in the view, its element
-    found by it; text underlays a run's, not a line's, each end a line and
-    an offset in it, as a stretch can cross lines.
+    DOM, with a `Range` over the text nodes from any offset to any other, as
+    the selection's ends and search's matches fall anywhere, not only where
+    the text's cut into spans; once the run's drawn and in the page, from
+    the run, and again whenever the view's size changes. Only the lines on
+    the screen are drawn, so it's measured over a screenful, and search over
+    a whole document costs what a page of it does.
+  - **in the view model,** runs and frames: unframed lines one after another
+    a run of their own, beside the frames, and a frame's two text sections
+    runs too, each run with an id, unique in the view, its element found by
+    it; text underlays a run's, not a line's, each end a line and an offset
+    in it, as a stretch can cross lines.
   - **drawn so far:** runs, each one `<svg class="underlays_htmlView">`
     first in it, a `<g>` for each of its groups, a `<path>` for each
     underlay; proposals' targets and their changes, worked out by the
     playground as the projection will; the changes' colours on the paths,
-    not the spans. A path is one shape where each row it covers reaches
-    over the one after it; where one doesn't, as a stretch from a line's
-    last word to the next line's first, it's in pieces, still one path.
-    The measuring walks the view model's runs, `runs`, and finds each
-    one's lines and svg by its id, drawn as `data-run`; the class keeps the
-    runs it last drew, to measure them again when the view's size changes.
-    Not yet: search, the selection, drawing only what's visible.
+    not the spans. A path is one shape where each row it covers reaches over
+    the one after it; where one doesn't, as a stretch from a line's last
+    word to the next line's first, it's in pieces, still one path. The
+    measuring walks the view model's runs, `runs`, and finds each one's
+    lines and svg by its id, drawn as `data-run`; the class keeps the runs
+    it last drew, to measure them again when the view's size changes. Not
+    yet: search, the selection, drawing only what's visible.
 - **in the DOM, data, not style:** what a run is, is `data-*` attributes on
   the spans it covers, each overlay's under names of its own: the changes'
   `data-change`, its kind, `data-side`, `data-source`; marks' `data-marks`.
@@ -372,15 +419,23 @@ the document or its changes changing:
   rows, gutters, frames, where text underlays go; without a perspective, a
   change looks like the text around it.
 - **a perspective** is how the overlays look, and which show: an attribute
-  on the view's container, `data-perspective`, and stylesheets keyed on it
-  and on the runs' data, so switching is one attribute set, the browser
-  restyling all of it, nothing drawn again. The editor offers one,
-  "changes", doctor's colours, in `source/perspectives/changes.css`, which a
-  host uses or puts its own in place of. One could mute every change but
-  replacements and split those by what kind of replacement each is, from a
-  `data-detail`; which is on, and how it's turned on, is the host's. A
-  perspective needing other elements, not only another look, is drawn again
-  from the overlays by another mapping: rarer, and later.
+on the view's container, `data-perspective`, and stylesheets keyed on it and
+on the runs' data, so switching is one attribute set, the browser restyling
+all of it, nothing drawn again. The editor offers one, "changes", doctor's
+look, in `source/perspectives/changes.css`, which a host uses or puts its
+own in place of: a ring round a change's words, red where they go, yellow
+where they're replaced, green where they're new, dashed where only their
+look changes; a line in a frame saying what it becomes in its gutter, its
+label in the same colours, a number red taken out, yellow changed in place,
+a sign green put in, yellow changed, never with a band across its text,
+which doctor has, so the code stays even, and the gutter's where to look for
+which lines change. Never the text's own colour, a strike or an underline:
+those are the text's, its marks' and its syntax's, which show through every
+change. One could mute every change but replacements and split those by what
+kind of replacement each is, from a `data-detail`; which is on, and how it's
+turned on, is the host's. A perspective needing other elements, not only
+another look, is drawn again from the overlays by another mapping: rarer,
+and later.
 
 **frames:** a range of the document's lines, taken out of the flow and
 shown in place of themselves, with their possible future. Each line of the
@@ -397,11 +452,12 @@ parts, in order:
   them: what the proposals are read against, their backdrop;
 - **PROPOSAL_LINES:** the same lines as the proposals would leave them,
   their changes marked;
-- **PROPOSAL_LIST:** the frame's list of the proposals in it, one item each,
-  in the order their first changes come: the editor's, linking each item to
-  its changes, which one's current, the keyboard moving between them, a list
-  with items to a screen reader. Each item is drawn by the editor, from what
-  the host says in the view model: its title, why it's proposed, and its
+- **PROPOSAL_LIST:** the frame's list of the decisions present in it, a
+  proposal with any of its places in the frame, one item each, in the order
+  their first changes come: the editor's, linking each item to its changes,
+  which one's current, the keyboard moving between them, a list with items
+  to a screen reader. Each item is drawn by the editor, from what the host
+  says in the view model: its title, where it is, why it's proposed, and its
   actions, each a label and a command.
 
 There's one layout, doctor's: `CURRENT_LINES`, its lines with what's changed
@@ -417,6 +473,39 @@ overlap, and never hold frames. With one proposal one reads as doctor's does
 now: its lines, its version under them, its bar. Later: a frame folded, to
 its lines alone, what it would do put away, as doctor folds a proposal.
 
+**a proposal is a decision, a change a place, a frame a view of places:**
+three things, kept apart. A proposal, a source, is what's decided, at once,
+wherever its changes are; a change is a place, anchored in the text; a frame
+is only some lines, near each other, shown with what they'd become, and its
+list the decisions present there. So a proposal isn't a frame's, and one can
+run through many:
+
+- **a thread** is a proposal with places in several frames, as a rename is,
+  everywhere its name is. Every frame it runs through lists it, the item
+  saying where it is, how many of its places are in this frame, of how many,
+  "6 of 9 places", its actions deciding it everywhere, in every frame at
+  once; for a proposal wholly in one frame it says nothing. Later: a way to
+  step to its next place, once commands are; its rationale once, where it's
+  first listed, the others pointing to it, if every frame's saying it again
+  is noise; a mechanical one, a rename, maybe no frame at all, its places
+  ringed where they are, one item for it. Across documents it's the host's,
+  which knows each source's id in each document: an item can say "and 4
+  places in other files" from what the host gives, and deciding in one
+  editor is a command the host sends on to the others.
+- **nested places:** where a thread's place is inside another proposal's
+  removal, its change there is nested, as above, and shown so: on the lines
+  as they are, inside the removal's ring, its own ring dotted, `data-within`
+  the removal's source; on the lines as proposed, every proposal taken, gone
+  with the removal, as it would be; and its item, in that frame, says it, "1
+  only if “Drop the onRetry hook” is rejected". A place is counted once: on
+  the lines as they are, every change but a put-in one; on those as
+  proposed, every put-in one.
+
+Where a place is, which frame it's in, and so what an item says, is the view
+model's; for now the playground's `blocksWith__Frames`, as the projection
+will. The gallery's "proposals-thread" scene shows it alone; the JavaScript
+example, `?example=javascript`, among every other case so far.
+
 **the gutter:** a line is a row of two cells, its gutter, then its text, so
 its gutter keeps to its row however its text wraps, in a frame or not, and
 nothing's measured to line them up. In the gutter: a label, the document's
@@ -424,15 +513,17 @@ number for the line, or, for a line proposed, none, but a sign: `+` where
 it's put in, `~` where it's changed in place; as wide as the longest label,
 which the view model says, `charCount_Max__Label_Gutter`, worked out when
 it's built, by `viewModelOf__Blocks`, so every row's text starts at the same
-left. Then a lane, its look not yet decided; later, where folding goes; in a
-frame, the frame's bar, one light grey, down the lane of every row in it,
-and on down beside its list, one bar down the whole frame, the list's items
-starting where the lines' text does. Each part of a frame has one background
-of its own, the same for every row in it: what a line becomes, taken out,
-changed in place, put in, isn't drawn across its row, for now, though the
-view model says it. The view model says each line's label, as the text it
-shows, `"12"`, `"+"`, `"~"`, `""`, already decided, and what the line
-becomes; the view only draws them.
+left. Then a lane, where folding goes, later. A frame, as doctor draws a
+proposal: a bar down it, green, in the lane, at the gutter's right, between
+the numbers and the text, beside everything in it, its list too; its lines
+as they are on a neutral band, every one, changed or not, so they read as
+one, set apart from the document around them, each saying what it becomes in
+its gutter, as a perspective says; its lines as proposed on a green band;
+its list on the same green a shade darker, each item's title and why on the
+left, its actions on the right, the first the main one; the list's items
+starting where the lines' text does. The view model says each line's label,
+as the text it shows, `"12"`, `"+"`, `"~"`, `""`, already decided, and what
+the line becomes; the view only draws them.
 
 **proposal items, the editor's:** each proposal's item, in a frame's list,
 is drawn by the editor, not left to the host: its title, why it's proposed,
@@ -895,9 +986,9 @@ Before anything's built on them:
 
 Editing by several people at once; proposals of proposals; a proposal across
 documents; anything doctor's tasks say, which stay doctor's; changes from
-different sources over the same text, and proposals competing for the same
-words; moves within a line, and moves that split, after moves of whole
-lines.
+different sources crossing over the same text, beyond one inside another's
+removal, and proposals competing for the same words; moves within a line,
+and moves that split, after moves of whole lines.
 
 Editing text written right to left, or both ways in one line: it's shown as
 the browser lays it out, but edited in the order it's written, which isn't

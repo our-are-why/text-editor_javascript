@@ -59,7 +59,7 @@ describe("beside it: what can't live in one document", () => {
         containerElement,
         componentMap: window.COMPONENTMAP__VIEW_TEXTEDITOR
       })
-      for (const multilineText of ["one\ntwo\nthree", "four"]) view_TextEditor.draw(window.viewModelOf__Blocks([{ kind: "LINES", run: { id: "document", lines: window.parseLines_ViewModel(multilineText), groups: [] } }]))
+      for (const multilineText of ["one\ntwo\nthree", "four"]) view_TextEditor.draw(window.viewModelOf__Blocks([{ kind: "LINES", run: { id: "document", lines: window.parseLines_ViewModel({ multilineText, module_Language: window.MODULE_PLAINTEXT }), groups: [] } }]))
       return [...containerElement.querySelectorAll(".text_htmlView")].map((element) => element.textContent)
     })
     expect(lines).toEqual(["four"])
@@ -68,7 +68,7 @@ describe("beside it: what can't live in one document", () => {
   test("a host's own components draw in place of the editor's, wherever what they draw is", async () => {
     const drawn = await opened.page.evaluate(() => {
       const containerElement = document.createElement("div")
-      const lineOf = (text: string) => window.parseLines_ViewModel(text)[0]
+      const lineOf = (text: string) => window.parseLines_ViewModel({ multilineText: text, module_Language: window.MODULE_PLAINTEXT })[0]
       new window._View_TextEditor_({
         containerElement,
         componentMap: {
@@ -96,7 +96,7 @@ describe("beside it: what can't live in one document", () => {
           parts: [
             { kind: "CURRENT_LINES", run: { id: "current", lines: [lineOf("two")], groups: [] } },
             { kind: "PROPOSAL_LINES", run: { id: "proposed", lines: [lineOf("two, proposed")], groups: [] } },
-            { kind: "PROPOSAL_LIST", items: [{ source: "most", title: "Most of the orders", rationale: "", actions: [] }] }
+            { kind: "PROPOSAL_LIST", items: [{ source: "most", title: "Most of the orders", places: "", rationale: "", actions: [] }] }
           ]
         },
         { kind: "LINES", run: { id: "after", lines: [lineOf("three")], groups: [] } }
@@ -138,7 +138,7 @@ describe("beside it: what can't live in one document", () => {
           new window._View_TextEditor_({
             containerElement,
             componentMap
-          }).draw(window.viewModelOf__Blocks([{ kind: "LINES", run: { id: "document", lines: window.parseLines_ViewModel("one\ntwo"), groups } }]))
+          }).draw(window.viewModelOf__Blocks([{ kind: "LINES", run: { id: "document", lines: window.parseLines_ViewModel({ multilineText: "one\ntwo", module_Language: window.MODULE_PLAINTEXT }), groups } }]))
         } finally {
           console.warn = warn
         }
@@ -163,7 +163,7 @@ describe("beside it: what can't live in one document", () => {
     })
   })
 
-  test("each proposal's item shows its title, then why it's proposed, then its actions, each a button carrying its command", async () => {
+  test("each proposal's item shows its title, where it is, why it's proposed, and its actions, each a button carrying its command, where it is and why only when they say something", async () => {
     const items = await opened.page.evaluate(() => {
       const containerElement = document.createElement("div")
       document.body.append(containerElement)
@@ -174,12 +174,12 @@ describe("beside it: what can't live in one document", () => {
         kind: "FRAME",
         range: { first: 1, last: 1 },
         parts: [
-          { kind: "CURRENT_LINES", run: { id: "current", lines: window.parseLines_ViewModel("one"), groups: [] } },
+          { kind: "CURRENT_LINES", run: { id: "current", lines: window.parseLines_ViewModel({ multilineText: "one", module_Language: window.MODULE_PLAINTEXT }), groups: [] } },
           {
             kind: "PROPOSAL_LIST",
             items: [
-              { source: "most", title: "Most of the orders", rationale: "Most of them need the lathe.", actions: [{ command: "accept", label: "Accept" }, { command: "reject", label: "Reject" }] },
-              { source: "all", title: "All of them", rationale: "", actions: [{ command: "accept", label: "Take it" }] }
+              { source: "most", title: "Most of the orders", places: "2 of 5 places, 1 only if “Cut the lathe” is rejected", rationale: "Most of them need the lathe.", actions: [{ command: "accept", label: "Accept" }, { command: "reject", label: "Reject" }] },
+              { source: "all", title: "All of them", places: "", rationale: "", actions: [{ command: "accept", label: "Take it" }] }
             ]
           }
         ]
@@ -188,13 +188,14 @@ describe("beside it: what can't live in one document", () => {
         source: itemElement.getAttribute("data-source"),
         shown: [...itemElement.children].filter((element) => getComputedStyle(element).display !== "none").map((element) => element.className),
         title: itemElement.querySelector(".title_htmlView")?.textContent,
+        places: itemElement.querySelector(".places_htmlView")?.textContent,
         rationale: itemElement.querySelector(".rationale_htmlView")?.textContent,
         actions: [...itemElement.querySelectorAll(".actions_htmlView > button")].map((buttonElement) => `${buttonElement.getAttribute("type")} ${buttonElement.getAttribute("data-command")}: ${buttonElement.textContent}`)
       }))
     })
     expect(items).toEqual([
-      { source: "most", shown: ["title_htmlView", "rationale_htmlView", "actions_htmlView"], title: "Most of the orders", rationale: "Most of them need the lathe.", actions: ["button accept: Accept", "button reject: Reject"] },
-      { source: "all", shown: ["title_htmlView", "actions_htmlView"], title: "All of them", rationale: "", actions: ["button accept: Take it"] }
+      { source: "most", shown: ["title_htmlView", "places_htmlView", "rationale_htmlView", "actions_htmlView"], title: "Most of the orders", places: "2 of 5 places, 1 only if “Cut the lathe” is rejected", rationale: "Most of them need the lathe.", actions: ["button accept: Accept", "button reject: Reject"] },
+      { source: "all", shown: ["title_htmlView", "actions_htmlView"], title: "All of them", places: "", rationale: "", actions: ["button accept: Take it"] }
     ])
   })
 
@@ -268,7 +269,7 @@ describe("beside it: what can't live in one document", () => {
         kind: "LINES",
         run: {
           id: "document",
-          lines: window.parseLines_ViewModel("one line\nand the next"),
+          lines: window.parseLines_ViewModel({ multilineText: "one line\nand the next", module_Language: window.MODULE_PLAINTEXT }),
           groups: [{
             attributes: { "data-source": "most" },
             underlays: [
@@ -286,7 +287,10 @@ describe("beside it: what can't live in one document", () => {
         svgs: containerElement.querySelectorAll(".run_htmlView > svg").length,
         lines: runElement?.querySelectorAll(":scope > .line_htmlView").length,
         isolated: runElement === null ? "" : getComputedStyle(runElement).isolation,
-        behind: getComputedStyle(svgElement).zIndex,
+        stacked: [
+          getComputedStyle(svgElement).zIndex,
+          getComputedStyle(runElement?.querySelector(".text_htmlView") ?? svgElement).zIndex
+        ],
         groups: [...svgElement.children].map((groupElement) => ({
           tag: groupElement.localName,
           source: groupElement.getAttribute("data-source"),
@@ -304,7 +308,7 @@ describe("beside it: what can't live in one document", () => {
       svgs: 1,
       lines: 2,
       isolated: "isolate",
-      behind: "-1",
+      stacked: ["0", "1"],
       groups: [{
         tag: "g",
         source: "most",
@@ -321,7 +325,7 @@ describe("beside it: what can't live in one document", () => {
       const containerElement = document.createElement("div")
       containerElement.style.width = "60rem"
       document.body.append(containerElement)
-      const lines = window.parseLines_ViewModel("a line of words, boxed whole, long enough to wrap once the view's narrow")
+      const lines = window.parseLines_ViewModel({ multilineText: "a line of words, boxed whole, long enough to wrap once the view's narrow", module_Language: window.MODULE_PLAINTEXT })
       new window._View_TextEditor_({
         containerElement,
         componentMap: window.COMPONENTMAP__VIEW_TEXTEDITOR

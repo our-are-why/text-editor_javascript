@@ -1,7 +1,7 @@
 import type { _Scene_ } from "../scene.ts"
-import { viewModelOf__Blocks } from "../../source/ViewModel_TextEditor.ts"
+import { viewModelOf__Blocks, MODULE_PLAINTEXT } from "../../source/ViewModel_TextEditor.ts"
 import { actions_Review } from "../items.ts"
-import { blocksWith__Frame, lineOf } from "../lines.ts"
+import { blocksWith__Frames, lineOf } from "../lines.ts"
 import { attributesOf__Change, attributesOf__Marks } from "../looks.ts"
 import { movingTheWorkshop } from "./plainText.ts"
 
@@ -21,9 +21,10 @@ const proposalsProse: _Scene_ = {
   variables: {},
   labels: [],
   invariants: [],
-  viewModel_TextEditor: viewModelOf__Blocks(blocksWith__Frame({
+  viewModel_TextEditor: viewModelOf__Blocks(blocksWith__Frames({
     multilineText: movingTheWorkshop,
-    frame: {
+    module_Language: MODULE_PLAINTEXT,
+    frames: [{
       kind: "FRAME",
       range: { first: 22, last: 22 },
       parts: [
@@ -69,28 +70,32 @@ const proposalsProse: _Scene_ = {
               title: "Make “can't slip” bold",
               rationale: "It's the one thing in the note that can't move, so it should be the first thing anyone skimming it sees.",
               actions: actions_Review,
+          places: "",
             },
             {
               source: "reason",
               title: "Take out why it can't slip",
               rationale: "The lathe and its supply are already in the list of what goes first; saying it again here only lengthens the sentence.",
               actions: actions_Review,
+          places: "",
             },
             {
               source: "most",
               title: "Most of the orders sent out, not half finished",
               rationale: "The lathe holds up most of the orders, not half, and what's held up is getting them to customers, not finishing them.",
               actions: actions_Review,
+          places: "",
             },
             {
               source: "weeks",
               title: "Two weeks, in bold",
               rationale: "There's two weeks of slack, not one, and it's the number people will plan around.",
               actions: actions_Review,
+          places: "",
             },
           ],
         },
       ],
-    },
+    }],
   })),
 }

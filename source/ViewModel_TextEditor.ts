@@ -9,6 +9,10 @@ export {
   type _Marker_Gutter_,
   type _Segment_Line_,
   type _Attributes_Element_,
+  type _Stretch_Line_,
+  type _Module_Language_,
+  type _Api___syntaxOf__Line_,
+  type _Syntax_Line_,
   type _Group_Underlay_,
   type _Underlay_Text_,
   type _Position_Run_,
@@ -24,7 +28,9 @@ export {
   type _Text_Line_NonTerminated_,
   type _NonEmpty_,
   viewModelOf__Blocks,
+  segmentsOf__Stretches,
   parseLines_ViewModel,
+  MODULE_PLAINTEXT,
   parseTexts_Line
 }
 
@@ -69,6 +75,12 @@ interface _Segment_Line_ {
 
 interface _Attributes_Element_ {
   [name: string]: string
+}
+
+interface _Stretch_Line_ {
+  from: number
+  to: number
+  attributes: _Attributes_Element_
 }
 
 interface _Group_Underlay_ {
@@ -118,6 +130,7 @@ interface _PROPOSALS_Part__Frame_ extends __BASE_Part__Frame_<"PROPOSAL_LIST"> {
 interface _Item_Proposals_ {
   source: string
   title: string
+  places: string
   rationale: string
   actions: Array<_Action_Item_>
 }
@@ -155,46 +168,149 @@ function runsOf__Blocks(
   )
 }
 
-function parseLines_ViewModel(
+interface _Api___segmentsOf__Stretches_ {
+  text: _Text_Line_NonTerminated_
+  stretches: Array<_Stretch_Line_>
+}
+
+function segmentsOf__Stretches({
+  text,
+  stretches
+}: _Api___segmentsOf__Stretches_): Array<_Segment_Line_> {
+  const stretches_Text = stretches
+    .map((stretch) => ({
+      ...stretch,
+      from: Math.max(
+        0,
+        stretch.from
+      ),
+      to: Math.min(
+        text.length,
+        stretch.to
+      )
+    }))
+    .filter((stretch) => stretch.from < stretch.to)
+  const edges = [...new Set([
+    0,
+    ...stretches_Text.flatMap((stretch) => [
+      stretch.from,
+      stretch.to
+    ]),
+    text.length
+  ])].toSorted((
+    edge,
+    edge_other
+  ) => edge - edge_other)
+  return edges.slice(1).map((
+    to,
+    index
+  ) => {
+    const from = edges[index] ?? to
+    return {
+      text: parseTexts_Line(text.slice(
+        from,
+        to
+      ))[0],
+      attributes: attributesOf__Stretches(stretches_Text.filter((stretch) => stretch.from <= from && stretch.to >= to))
+    }
+  }).filter((segment) => segment.text !== "")
+}
+
+function attributesOf__Stretches(
+  stretches: Array<_Stretch_Line_>
+): _Attributes_Element_ {
+  const entries_Name = Map.groupBy(
+    stretches.flatMap((stretch) => Object.entries(stretch.attributes)),
+    (entry) => entry[0]
+  )
+  return Object.fromEntries([...entries_Name].map(([
+    name,
+    entries
+  ]) => [
+    name,
+    [...new Set(entries.flatMap((entry) => entry[1].split(" ")).filter((word) => word !== ""))].join(" ")
+  ]))
+}
+
+interface _Api___parseLines_ViewModel_<State> {
   multilineText: string
-): _NonEmpty_<_Line_Run_> {
+  module_Language: _Module_Language_<State>
+}
+
+function parseLines_ViewModel<State>({
+  multilineText,
+  module_Language
+}: _Api___parseLines_ViewModel_<State>): _NonEmpty_<_Line_Run_> {
   const [
     first,
     ...rest
   ] = parseTexts_Line(multilineText)
+  const syntax_First = module_Language.syntaxOf__Line({
+    text: first,
+    state_Before: module_Language.state_Start
+  })
+  const lines_Rest: Array<_Line_Run_> = []
+  let state_Before = syntax_First.state_After
+  for (const [
+    index,
+    text
+  ] of rest.entries()) {
+    const syntax_Line = module_Language.syntaxOf__Line({
+      text,
+      state_Before
+    })
+    lines_Rest.push(lineOf__Text({
+      text,
+      number: index + 2,
+      stretches: syntax_Line.stretches
+    }))
+    state_Before = syntax_Line.state_After
+  }
   return [
     lineOf__Text({
       text: first,
-      number: 1
+      number: 1,
+      stretches: syntax_First.stretches
     }),
-    ...rest.map((
-      text,
-      index
-    ) => lineOf__Text({
-      text,
-      number: index + 2
-    }))
+    ...lines_Rest
   ]
+}
+
+interface _Module_Language_<State> {
+  state_Start: State
+  syntaxOf__Line: (api_Line: _Api___syntaxOf__Line_<State>) => _Syntax_Line_<State>
+}
+
+interface _Api___syntaxOf__Line_<State> {
+  text: _Text_Line_NonTerminated_
+  state_Before: State
+}
+
+interface _Syntax_Line_<State> {
+  stretches: Array<_Stretch_Line_>
+  state_After: State
 }
 
 interface _Api___lineOf__Text_ {
   text: _Text_Line_NonTerminated_
   number: number
+  stretches: Array<_Stretch_Line_>
 }
 
 function lineOf__Text({
   text,
-  number
+  number,
+  stretches
 }: _Api___lineOf__Text_): _Line_Run_ {
   return {
     gutter: {
       label: String(number),
       marker: "none"
     },
-    segments: text === "" ? [] : [{
+    segments: segmentsOf__Stretches({
       text,
-      attributes: {}
-    }]
+      stretches
+    })
   }
 }
 
@@ -217,3 +333,11 @@ type _NonEmpty_<Item> = [
   Item,
   ...Array<Item>
 ]
+
+const MODULE_PLAINTEXT: _Module_Language_<null> = {
+  state_Start: null,
+  syntaxOf__Line: () => ({
+    stretches: [],
+    state_After: null
+  })
+}

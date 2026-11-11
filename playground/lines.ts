@@ -1,4 +1,4 @@
-import { type _Attributes_Element_, type _Line_Run_, type _Segment_Line_, parseTexts_Line, type _Block_ViewModel_, parseLines_ViewModel, type _FRAME_Block__ViewModel_, type _Part_Frame_, type _Run_Lines_, type _Marker_Gutter_, type _Group_Underlay_, type _Underlay_Text_, type _Position_Run_ } from "../source/ViewModel_TextEditor.ts"
+import { type _Attributes_Element_, type _Line_Run_, type _Segment_Line_, parseTexts_Line, type _Block_ViewModel_, parseLines_ViewModel, type _Module_Language_, segmentsOf__Stretches, type _Stretch_Line_, type _FRAME_Block__ViewModel_, type _Part_Frame_, type _Run_Lines_, type _Marker_Gutter_, type _Group_Underlay_, type _Underlay_Text_, type _Position_Run_, type _Item_Proposals_, type _NonEmpty_ } from "../source/ViewModel_TextEditor.ts"
 
 export {
   type _Piece_Line_,
@@ -7,7 +7,7 @@ export {
   blocksOf__Text,
   blocksOf__Lines,
   textElementsIn,
-  blocksWith__Frame,
+  blocksWith__Frames,
   groupsOf__Lines
 }
 
@@ -38,11 +38,12 @@ function lineOf(
 }
 
 // a document's text, its lines numbered from 1, as one run, "document", with
-// nothing behind it
-function blocksOf__Text(
-  multilineText: string
+// nothing behind it, its syntax as the language module given says
+function blocksOf__Text<State>(
+  multilineText: string,
+  module_Language: _Module_Language_<State>
 ): Array<_Block_ViewModel_> {
-  return blocksOf__Lines("document", parseLines_ViewModel(multilineText))
+  return blocksOf__Lines("document", parseLines_ViewModel({ multilineText, module_Language }))
 }
 
 // lines as one run, by its id, unique in the view, with nothing behind them;
@@ -62,53 +63,147 @@ function textElementsIn(
   return [...containerElement.querySelectorAll(".line_htmlView > .text_htmlView")]
 }
 
-interface _Api___blocksWith__Frame_ {
+interface _Api___blocksWith__Frames_<State> {
   multilineText: string
-  frame: _FRAME_Block__ViewModel_
+  module_Language: _Module_Language_<State>
+  frames: Array<_FRAME_Block__ViewModel_>
 }
 
-// a document's lines with a frame in place of the lines it's of, numbered
-// from 1 as the document numbers them: those before it, one run, "before",
-// the frame, its sections' runs by the ids the scene gives them, those after
-// it, another, "after". A frame whose lines as they are aren't as many as
-// it's of is a mistake in the scene, and throws
-function blocksWith__Frame({
+// a document's lines with frames in place of the lines they're of, numbered
+// from 1 as the document numbers them: the lines between frames, each
+// stretch of them a run of its own, its id "lines-" and its first line's
+// number; each frame, its sections' runs by the ids the scene gives them.
+// Every line's syntax is the language module's, a frame's lines' too: those
+// as they are, as the document's are; those proposed, as they'd be in the
+// document the proposals would leave, so each starts from the state the line
+// before it would leave. Then each proposal's item, in every frame's list,
+// says where it is, from the places of it every frame has. A frame whose
+// lines as they are aren't the document's, or that overlaps another, is a
+// mistake in the scene, and throws
+function blocksWith__Frames<State>({
   multilineText,
-  frame
-}: _Api___blocksWith__Frame_): Array<_Block_ViewModel_> {
-  const lines = parseLines_ViewModel(multilineText)
+  module_Language,
+  frames
+}: _Api___blocksWith__Frames_<State>): Array<_Block_ViewModel_> {
+  const lines = parseLines_ViewModel({ multilineText, module_Language })
+  const texts = parseTexts_Line(multilineText)
+  const ordered = frames.toSorted((one, other) => one.range.first - other.range.first)
+  ordered.forEach((frame, index) => {
+    const next = ordered[index + 1]
+    if (next !== undefined && next.range.first <= frame.range.last) throw new Error(`frames of lines ${frame.range.first} to ${frame.range.last} and ${next.range.first} to ${next.range.last} overlap`)
+  })
+  const framed = ordered.map((frame) => framedOf(frame, lines, texts, module_Language))
+  const titles = new Map(framed.flatMap((frame) => frame.parts.flatMap((part) => part.kind === "PROPOSAL_LIST" ? part.items.map((item): [string, string] => [item.source, item.title]) : [])))
+  const places_All = framed.flatMap(placesOf)
+  const blocks: Array<_Block_ViewModel_> = []
+  let next = 1
+  for (const frame of framed) {
+    blocks.push(...blocksOf__Lines(`lines-${next}`, lines.slice(next - 1, frame.range.first - 1)))
+    const places_Here = placesOf(frame)
+    const [part, ...more] = frame.parts
+    const placed = (part_Frame: _Part_Frame_): _Part_Frame_ =>
+      part_Frame.kind !== "PROPOSAL_LIST" ? part_Frame : {
+        ...part_Frame,
+        items: placedItems(part_Frame.items, (item) => ({ ...item, places: placesText(item.source, places_Here, places_All, titles) })),
+      }
+    blocks.push({ ...frame, parts: [placed(part), ...more.map(placed)] })
+    next = frame.range.last + 1
+  }
+  blocks.push(...blocksOf__Lines(`lines-${next}`, lines.slice(next - 1)))
+  return blocks
+}
+
+// a frame, its lines numbered, signed and given their syntax and groups. A
+// line as it is, numbered as the document numbers it, with its syntax in
+// the document; one proposed, unnumbered, but for a sign: + where it's put
+// in, ~ where it's changed, with its syntax in the document the proposals
+// would leave; each run with its proposals' groups behind it
+function framedOf<State>(
+  frame: _FRAME_Block__ViewModel_,
+  lines: Array<_Line_Run_>,
+  texts: Array<string>,
+  module_Language: _Module_Language_<State>
+): _FRAME_Block__ViewModel_ {
+  const before = texts.slice(0, frame.range.first - 1)
   const size = frame.range.last - frame.range.first + 1
   for (const part of frame.parts) {
     if (part.kind === "CURRENT_LINES" && part.run.lines.length !== size) throw new Error(`a frame of ${size} lines shows ${part.run.lines.length} as they are`)
   }
-  // a line as it is, numbered as the document numbers it; one proposed,
-  // unnumbered, but for a sign: + where it's put in, ~ where it's changed;
-  // each run with its proposals' groups behind it
   const numbered = (line: _Line_Run_, index: number): _Line_Run_ => ({
-    ...line,
+    ...withSyntax(line, lines[frame.range.first - 1 + index]),
     gutter: { label: String(frame.range.first + index), marker: markerOf(line) },
   })
-  const signed = (line: _Line_Run_): _Line_Run_ => ({
-    ...line,
-    gutter: { label: signs[markerOf(line)], marker: markerOf(line) },
-  })
+  const signedIn = (lines_Proposed: Array<_Line_Run_>): Array<_Line_Run_> => {
+    const syntax = parseLines_ViewModel({ multilineText: [...before, ...lines_Proposed.map(textOf)].join("\n"), module_Language }).slice(before.length)
+    return lines_Proposed.map((line, index) => ({
+      ...withSyntax(line, syntax[index]),
+      gutter: { label: signs[markerOf(line)], marker: markerOf(line) },
+    }))
+  }
   const runOf = (run: _Run_Lines_, lines_Run: Array<_Line_Run_>): _Run_Lines_ => ({ id: run.id, lines: lines_Run, groups: groupsOf__Lines(lines_Run) })
   const withGutters = (part: _Part_Frame_): _Part_Frame_ => {
     switch (part.kind) {
       case "CURRENT_LINES":
         return { kind: "CURRENT_LINES", run: runOf(part.run, part.run.lines.map(numbered)) }
       case "PROPOSAL_LINES":
-        return { kind: "PROPOSAL_LINES", run: runOf(part.run, part.run.lines.map(signed)) }
+        return { kind: "PROPOSAL_LINES", run: runOf(part.run, signedIn(part.run.lines)) }
       case "PROPOSAL_LIST":
         return part
     }
   }
   const [part, ...more] = frame.parts
-  return [
-    ...blocksOf__Lines("before", lines.slice(0, frame.range.first - 1)),
-    { ...frame, parts: [withGutters(part), ...more.map(withGutters)] },
-    ...blocksOf__Lines("after", lines.slice(frame.range.last)),
-  ]
+  return { ...frame, parts: [withGutters(part), ...more.map(withGutters)] }
+}
+
+// a place of a proposal: one of its changes, by its source, and, when it's
+// inside another proposal's removal, that one's source
+interface _Place_Proposal_ {
+  source: string
+  within: string | null
+}
+
+// a frame's places, each counted once: on its lines as they are, every
+// change but a put-in one, which has no words there; on its lines as
+// proposed, every put-in one
+function placesOf(
+  frame: _FRAME_Block__ViewModel_
+): Array<_Place_Proposal_> {
+  return frame.parts.flatMap((part) => {
+    if (part.kind === "PROPOSAL_LIST") return []
+    const counted = (change: string) => part.kind === "CURRENT_LINES" ? change !== "inserted" : change === "inserted"
+    return part.run.groups.flatMap((group) => group.underlays.flatMap((underlay) => {
+      const change = underlay.attributes["data-change"]
+      const source = underlay.attributes["data-source"]
+      return change === undefined || source === undefined || !counted(change) ? [] : [{ source, within: underlay.attributes["data-within"] ?? null }]
+    }))
+  })
+}
+
+// a list's items, each made anew, the list still none empty
+function placedItems(
+  items: _NonEmpty_<_Item_Proposals_>,
+  place: (item: _Item_Proposals_) => _Item_Proposals_
+): _NonEmpty_<_Item_Proposals_> {
+  const [item, ...more] = items
+  return [place(item), ...more.map(place)]
+}
+
+// where a proposal is, as its item says it in a frame: how many of its
+// places are here, of how many in all, when that's not all of them; and of
+// those here, how many only if another proposal, whose removal they're
+// inside, is rejected. Nothing for a proposal wholly here, inside nothing
+function placesText(
+  source: string,
+  places_Here: Array<_Place_Proposal_>,
+  places_All: Array<_Place_Proposal_>,
+  titles: Map<string, string>
+): string {
+  const here = places_Here.filter((place) => place.source === source)
+  const all = places_All.filter((place) => place.source === source)
+  const within = Map.groupBy(here.flatMap((place) => place.within === null ? [] : [place.within]), (source_Within) => source_Within)
+  if (here.length === all.length && within.size === 0) return ""
+  const count = here.length === all.length ? `${here.length} ${here.length === 1 ? "place" : "places"}` : `${here.length} of ${all.length} places`
+  return [count, ...[...within].map(([source_Within, places]) => `${places.length} only if “${titles.get(source_Within) ?? source_Within}” is rejected`)].join(", ")
 }
 
 // what a line becomes, as its changes say: taken out, when it's all taken
@@ -132,9 +227,42 @@ const signs: Record<_Marker_Gutter_, string> = {
   none: ""
 }
 
-// a stretch of a run's text one change covers, and the change's data
+// a line's text: its segments', run together
+function textOf(
+  line: _Line_Run_
+): string {
+  return line.segments.map((segment) => segment.text).join("")
+}
+
+// a line, with the syntax of the same text, worked out on its own, over it
+// too: cut wherever either's segments begin or end, each segment carrying
+// the data of both. Syntax of another text is a mistake in the scene, and
+// throws
+function withSyntax(
+  line: _Line_Run_,
+  syntax: _Line_Run_ | undefined
+): _Line_Run_ {
+  const text = textOf(line)
+  if (syntax === undefined || textOf(syntax) !== text) throw new Error(`a frame's line isn't the document's: ${JSON.stringify(text)}`)
+  return { ...line, segments: segmentsOf__Stretches({ text: parseTexts_Line(text)[0], stretches: [...stretchesOf(line.segments), ...stretchesOf(syntax.segments)] }) }
+}
+
+// a line's segments as stretches of its text, each where it lies, carrying
+// its data
+function stretchesOf(
+  segments: Array<_Segment_Line_>
+): Array<_Stretch_Line_> {
+  return segments.map((segment, index) => {
+    const from = segments.slice(0, index).reduce((length, each) => length + each.text.length, 0)
+    return { from, to: from + segment.text.length, attributes: segment.attributes }
+  })
+}
+
+// a stretch of a run's text a proposal covers: a change, and its data; or
+// text of the proposal's span its changes leave as it is
 interface _Stretch_Change_ {
   source: string
+  change: boolean
   underlay: _Underlay_Text_
 }
 
@@ -142,36 +270,51 @@ interface _Stretch_Change_ {
 const names_Change = ["data-change", "data-side", "data-source"]
 
 // each proposal's group behind a run of lines, in the order they first come:
-// its target, from its first change in the run to its last, the words it
-// leaves as they are between them too, on one line or across several; then
-// each of its changes, a change's segments that run on into each other,
-// along a line or from one line's end to the next one's start, as one
+// its target, its span, all it covers in the run, from its first change, or
+// the start of its span, data-span, where that's before it, to its last, or
+// its span's end, the words it leaves as they are between and round them
+// too, on one line or across several, without the spaces at its ends; then
+// each of its changes, those inside another proposal's removal too, as a
+// segment's nested change says them, saying whose, data-within; a change's
+// segments that run on into each other, along a line or from one line's end
+// to the next one's start, as one, without the spaces at its ends, so its
+// ring is round its words alone
 function groupsOf__Lines(
   lines: Array<_Line_Run_>
 ): Array<_Group_Underlay_> {
   const stretches = lines.flatMap((line, index_Line) => line.segments.flatMap((segment, index): Array<_Stretch_Change_> => {
     const offset = line.segments.slice(0, index).reduce((length, each) => length + each.text.length, 0)
     const source = segment.attributes["data-source"]
-    return source === undefined ? [] : [{
-      source,
-      underlay: {
-        from: { line: index_Line, offset },
-        to: { line: index_Line, offset: offset + segment.text.length },
-        attributes: Object.fromEntries(Object.entries(segment.attributes).filter(([name]) => names_Change.includes(name))),
+    const from = { line: index_Line, offset }
+    const to = { line: index_Line, offset: offset + segment.text.length }
+    const nested_Source = segment.attributes["data-nested-source"]
+    const nested_Change = segment.attributes["data-nested-change"]
+    const span = segment.attributes["data-span"]
+    if (source === undefined) return span === undefined ? [] : [{ source: span, change: false, underlay: { from, to, attributes: {} } }]
+    return [
+      {
+        source,
+        change: true,
+        underlay: { from, to, attributes: Object.fromEntries(Object.entries(segment.attributes).filter(([name]) => names_Change.includes(name))) },
       },
-    }]
+      ...(nested_Source === undefined || nested_Change === undefined ? [] : [{
+        source: nested_Source,
+        change: true,
+        underlay: { from, to, attributes: { "data-change": nested_Change, "data-side": segment.attributes["data-side"] ?? "before", "data-source": nested_Source, "data-within": source } },
+      }]),
+    ]
   }))
   return [...Map.groupBy(stretches, (stretch) => stretch.source)].map(([source, stretches_Source]) => {
-    const changes = stretches_Source.reduce((merged: Array<_Underlay_Text_>, { underlay }) => {
+    const changes = stretches_Source.filter((stretch) => stretch.change).reduce((merged: Array<_Underlay_Text_>, { underlay }) => {
       const last = merged.at(-1)
       return last !== undefined && runsInto(lines, last, underlay)
         ? [...merged.slice(0, -1), { ...last, to: underlay.to }]
         : [...merged, underlay]
-    }, [])
+    }, []).map((change) => trimmed(lines, change))
     return {
       attributes: { "data-source": source },
       underlays: [
-        { from: changes[0]?.from ?? start, to: changes.at(-1)?.to ?? start, attributes: { "data-underlay": "targets" } },
+        trimmed(lines, { from: stretches_Source[0]?.underlay.from ?? start, to: stretches_Source.at(-1)?.underlay.to ?? start, attributes: { "data-underlay": "targets" } }),
         ...changes,
       ],
     }
@@ -194,4 +337,30 @@ function runsInto(
     (after.from.line === before.to.line && after.from.offset === before.to.offset) ||
     (after.from.line === before.to.line + 1 && after.from.offset === 0 && before.to.offset === length)
   return contiguous && JSON.stringify(Object.entries(before.attributes).toSorted()) === JSON.stringify(Object.entries(after.attributes).toSorted())
+}
+
+// a change's stretch without the spaces at its ends, its start moved on past
+// them and its end back, across a line's end where it runs across lines;
+// the lines between keep theirs, so it stays one shape. One that's only
+// spaces is kept as it is, so it still shows
+function trimmed(
+  lines: Array<_Line_Run_>,
+  underlay: _Underlay_Text_
+): _Underlay_Text_ {
+  const textAt = (line: number) => (lines[line]?.segments ?? []).map((segment) => segment.text).join("")
+  const isBefore = (one: _Position_Run_, other: _Position_Run_) => one.line < other.line || (one.line === other.line && one.offset < other.offset)
+  let from = underlay.from
+  let to = underlay.to
+  while (isBefore(from, to)) {
+    const text = textAt(from.line)
+    if (from.offset >= text.length) from = { line: from.line + 1, offset: 0 }
+    else if (/\s/.test(text[from.offset] ?? "")) from = { line: from.line, offset: from.offset + 1 }
+    else break
+  }
+  while (isBefore(from, to)) {
+    if (to.offset === 0) to = { line: to.line - 1, offset: textAt(to.line - 1).length }
+    else if (/\s/.test(textAt(to.line)[to.offset - 1] ?? "")) to = { line: to.line, offset: to.offset - 1 }
+    else break
+  }
+  return isBefore(from, to) ? { ...underlay, from, to } : underlay
 }

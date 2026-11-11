@@ -376,6 +376,7 @@ function Item_ProposalList__Html({
       data-source={item_ProposalList.source}
     >
       <span class="title_htmlView">{item_ProposalList.title}</span>
+      <p class="places_htmlView">{item_ProposalList.places}</p>
       <p class="rationale_htmlView">{item_ProposalList.rationale}</p>
       <div class="actions_htmlView">
         {item_ProposalList.actions.map((action_Item) => <Action_Item__Html action_Item={action_Item} />)}

@@ -355,3 +355,36 @@ main.gallery {
   text-decoration: underline;
 }
 
+
+/* the playground's syntax colours, as a host's theme colours code, from the
+   data a segment carries, `data-syntax`, what the playground's tokenizer
+   says a stretch of code is; punctuation, operators and other names keep
+   the view's ink */
+.htmlView_editor [data-syntax="comment"] {
+  color: light-dark(#6e7781, #8b949e);
+}
+
+.htmlView_editor [data-syntax="string"] {
+  color: light-dark(#0a3069, #a5d6ff);
+}
+
+.htmlView_editor [data-syntax="regexp"] {
+  color: light-dark(#116329, #7ee787);
+}
+
+.htmlView_editor [data-syntax="number"],
+.htmlView_editor [data-syntax="literal"] {
+  color: light-dark(#0550ae, #79c0ff);
+}
+
+.htmlView_editor [data-syntax="keyword"] {
+  color: light-dark(#cf222e, #ff7b72);
+}
+
+.htmlView_editor [data-syntax="function"] {
+  color: light-dark(#8250df, #d2a8ff);
+}
+
+.htmlView_editor [data-syntax="property"] {
+  color: light-dark(#953800, #ffa657);
+}

@@ -21,9 +21,9 @@
    one line or several, as one shape. They're measured once the run's
    drawn, and again when the view's size changes; how one looks is a
    perspective's, and without one, it's nothing. The run is its own
-   stacking context, so the svg's behind its lines' text but in front of
-   whatever's behind the run, as a frame's tint is. Nothing in it is
-   pointed at: what's pointed at is the text. */
+   stacking context, and in it the svg's over its lines' backgrounds, as a
+   band a perspective might give a line, but under their text, which is over
+   it. Nothing in it is pointed at: what's pointed at is the text. */
 .htmlView_editor .run_htmlView {
   position: relative;
   isolation: isolate;
@@ -32,7 +32,7 @@
 .htmlView_editor .underlays_htmlView {
   position: absolute;
   inset: 0;
-  z-index: -1;
+  z-index: 0;
   width: 100%;
   height: 100%;
   overflow: visible;
@@ -53,6 +53,8 @@
 }
 
 .htmlView_editor .text_htmlView {
+  position: relative;
+  z-index: 1;
   grid-area: 1 / 2;
   min-width: 0;
   white-space: pre-wrap;
@@ -82,65 +84,72 @@
 }
 
 /* A frame: a range of the document's lines, in place of themselves, with
-   their possible future. Its text sits where theirs would, at the same left
-   and the same width as every line around it, in the rhythm of the lines:
-   it reaches out over the view's padding, each part's background running
-   from edge to edge, one for all its rows. */
+   their possible future, as doctor shows a proposal. Its text sits where
+   theirs would, at the same left and the same width as every line around
+   it, in the rhythm of the lines: it reaches out over the view's padding,
+   each part's background running from edge to edge. A bar down it, in the
+   gutter's lane, at its right, between the numbers and the text, beside
+   everything in it and on down beside its list, one bar, over every
+   part's background: green, as the frame's proposals add or change. */
 .htmlView_editor .frame_htmlView {
+  position: relative;
   margin-inline: calc(-1 * var(--view-padding-inline, 1rem));
+}
+
+.htmlView_editor .frame_htmlView::before {
+  content: "";
+  position: absolute;
+  inset-block: 0;
+  left: calc(var(--view-padding-inline, 1rem) + var(--labelWidth_htmlView) + var(--gutterGap_htmlView));
+  z-index: 1;
+  width: var(--laneWidth_htmlView);
+  background: var(--view-frame-bar, light-dark(#587c0c, #81b88b));
 }
 
 .htmlView_editor .frame_htmlView .line_htmlView {
   padding-inline: var(--view-padding-inline, 1rem);
 }
 
-/* the frame's bar, down the lane of every row in it, one light grey */
-.htmlView_editor .frame_htmlView .marker_htmlView {
-  background: var(--view-frame-bar, color-mix(in srgb, CanvasText 30%, transparent));
-}
-
-/* the lines as they are: what the proposals are read against */
+/* the lines as they are, every one, changed or not, on a neutral band, so
+   they read as one, set apart from the document around the frame, however
+   far a host widens it past what changes; what a line becomes, a
+   perspective says in its gutter */
 .htmlView_editor .current_htmlView {
   background: var(--view-current, color-mix(in srgb, CanvasText 5%, transparent));
 }
 
-/* the same lines as proposed, set apart by a rule taking no room */
+/* the lines as proposed, beneath those as they are, on a green band, as
+   what a proposal adds is */
 .htmlView_editor .proposed_htmlView {
-  background: var(--view-proposed, color-mix(in srgb, #2da44e 7%, transparent));
-  box-shadow: inset 0 1px var(--view-proposed-rule, color-mix(in srgb, CanvasText 18%, transparent));
+  background: var(--view-proposed, rgb(155 185 85 / 20%));
 }
 
-/* The proposals in a frame, one item each, a shade darker than the lines
-   they're about: their items start where the lines' text does, and the
-   frame's bar runs on down beside them, where it is in the lines' lanes,
-   so it's one bar down the whole frame. */
+/* The proposals in a frame, one item each, closing it, on the proposed
+   lines' band a shade darker, as doctor's actions are: their items start
+   where the lines' text does. */
 .htmlView_editor .proposals_htmlView {
-  position: relative;
   margin: 0;
   padding-block: 0.25rem;
   padding-inline: calc(var(--view-padding-inline, 1rem) + var(--labelWidth_htmlView) + var(--gutterGap_htmlView) + var(--laneWidth_htmlView) + var(--gutterEnd_htmlView)) var(--view-padding-inline, 1rem);
   list-style: none;
-  background: var(--view-proposals, color-mix(in srgb, CanvasText 9%, transparent));
+  background:
+    linear-gradient(var(--view-proposals-shade, rgb(0 0 0 / 25%)), var(--view-proposals-shade, rgb(0 0 0 / 25%))),
+    var(--view-proposed, rgb(155 185 85 / 20%));
 }
 
-.htmlView_editor .proposals_htmlView::before {
-  content: "";
-  position: absolute;
-  inset-block: 0;
-  left: calc(var(--view-padding-inline, 1rem) + var(--labelWidth_htmlView) + var(--gutterGap_htmlView));
-  width: var(--laneWidth_htmlView);
-  background: var(--view-frame-bar, color-mix(in srgb, CanvasText 30%, transparent));
-}
-
-
-/* A proposal's item: its title, why it's proposed, then what can be done
-   with it, one button each, in the interface's font, not the text's; a
-   rationale that's empty takes no room. What an action does is the host's:
-   its button carries only its command. */
+/* A proposal's item: its title, where it is, and why it's proposed, on the
+   left, then on the right what can be done with it, one button each, the
+   first the main one, in the interface's font, not the text's. Where it is
+   says how many of a thread's places are in this frame, and of them, how
+   many only if another proposal is rejected; for a proposal wholly here,
+   it's empty, and, as an empty rationale does, takes no room. What an
+   action does is the host's: its button carries only its command. */
 .htmlView_editor .item_htmlView {
   display: grid;
-  justify-items: start;
-  gap: 0.2rem;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  column-gap: 1rem;
+  row-gap: 0.1rem;
   padding-block: 0.4rem;
   font-family: var(--view-ui-font, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif);
   font-size: var(--view-ui-font-size, 13px);
@@ -148,30 +157,46 @@
 }
 
 .htmlView_editor .title_htmlView {
+  grid-column: 1;
   font-weight: 600;
 }
 
+.htmlView_editor .places_htmlView {
+  grid-column: 1;
+  margin: 0;
+  color: var(--view-places-ink, color-mix(in srgb, CanvasText 65%, transparent));
+  font-size: 0.92em;
+  font-style: italic;
+}
+
 .htmlView_editor .rationale_htmlView {
+  grid-column: 1;
   margin: 0;
   color: var(--view-rationale-ink, color-mix(in srgb, CanvasText 65%, transparent));
 }
 
-.htmlView_editor .rationale_htmlView:empty {
+.htmlView_editor :is(.places_htmlView, .rationale_htmlView):empty {
   display: none;
 }
 
 .htmlView_editor .actions_htmlView {
+  grid-column: 2;
+  grid-row: 1 / span 3;
   display: flex;
   gap: 0.4rem;
-  margin-top: 0.15rem;
 }
 
 .htmlView_editor .action_htmlView {
-  padding: 0.1rem 0.65rem;
-  border: 1px solid var(--view-action-edge, color-mix(in srgb, CanvasText 25%, transparent));
-  border-radius: 4px;
-  background: var(--view-action-ground, Canvas);
-  color: inherit;
+  padding: 0.15rem 0.6rem;
+  border: none;
+  border-radius: 2px;
+  background: var(--view-action-ground, light-dark(#e5e5e5, #313131));
+  color: var(--view-action-ink, light-dark(#3b3b3b, #cccccc));
   font: inherit;
   cursor: pointer;
+}
+
+.htmlView_editor .action_htmlView:first-child {
+  background: var(--view-action-main-ground, light-dark(#005fb8, #0078d4));
+  color: var(--view-action-main-ink, #ffffff);
 }

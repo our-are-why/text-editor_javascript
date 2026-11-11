@@ -1,5 +1,5 @@
 import type { _Scene_ } from "../scene.ts"
-import { viewModelOf__Blocks } from "../../source/ViewModel_TextEditor.ts"
+import { viewModelOf__Blocks, MODULE_PLAINTEXT } from "../../source/ViewModel_TextEditor.ts"
 import { blocksOf__Text } from "../lines.ts"
 import { fieldNotes } from "./markdown.ts"
 
@@ -24,5 +24,5 @@ const theme: _Scene_ = {
   },
   labels: [],
   invariants: [],
-  viewModel_TextEditor: viewModelOf__Blocks(blocksOf__Text(fieldNotes)),
+  viewModel_TextEditor: viewModelOf__Blocks(blocksOf__Text(fieldNotes, MODULE_PLAINTEXT)),
 }

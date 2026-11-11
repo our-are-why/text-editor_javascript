@@ -1,5 +1,5 @@
 import type { _Scene_ } from "../scene.ts"
-import { viewModelOf__Blocks } from "../../source/ViewModel_TextEditor.ts"
+import { viewModelOf__Blocks, MODULE_PLAINTEXT } from "../../source/ViewModel_TextEditor.ts"
 import { blocksOf__Text } from "../lines.ts"
 import { movingTheWorkshop } from "./plainText.ts"
 
@@ -15,5 +15,5 @@ const narrow: _Scene_ = {
   variables: {},
   labels: [],
   invariants: [],
-  viewModel_TextEditor: viewModelOf__Blocks(blocksOf__Text(movingTheWorkshop)),
+  viewModel_TextEditor: viewModelOf__Blocks(blocksOf__Text(movingTheWorkshop, MODULE_PLAINTEXT)),
 }
