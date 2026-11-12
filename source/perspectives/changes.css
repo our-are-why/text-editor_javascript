@@ -14,40 +14,49 @@
    only its changes', which its group, `data-source`, says are its. A host
    can use this, or put its own in its place. */
 
-[data-perspective="changes"] .underlay_htmlView[data-change] {
+[data-perspective="changes"] :is(.underlay_htmlView, .seam_htmlView)[data-change] {
   stroke: var(--edge);
   stroke-width: 1px;
   stroke-linejoin: round;
 }
 
-[data-perspective="changes"] .underlay_htmlView[data-change="removed"] {
+[data-perspective="changes"] :is(.underlay_htmlView, .seam_htmlView)[data-change="removed"] {
   --edge: var(--view-removed-edge, light-dark(#e51400, #f14c4c));
 }
 
-[data-perspective="changes"] .underlay_htmlView[data-change^="replaced"],
-[data-perspective="changes"] .underlay_htmlView[data-change="restyled"] {
+[data-perspective="changes"] :is(.underlay_htmlView, .seam_htmlView)[data-change^="replaced"],
+[data-perspective="changes"] :is(.underlay_htmlView, .seam_htmlView)[data-change="restyled"] {
   --edge: var(--view-changed-edge, light-dark(#bf8803, #cca700));
 }
 
-[data-perspective="changes"] .underlay_htmlView[data-change="inserted"] {
+[data-perspective="changes"] :is(.underlay_htmlView, .seam_htmlView)[data-change="inserted"] {
   --edge: var(--view-inserted-edge, light-dark(#388a34, #89d185));
 }
 
 /* only its look: dashed; replaced and restyled both: dashed, but less */
-[data-perspective="changes"] .underlay_htmlView[data-change="restyled"] {
+[data-perspective="changes"] :is(.underlay_htmlView, .seam_htmlView)[data-change="restyled"] {
   stroke-dasharray: 3 2;
 }
 
-[data-perspective="changes"] .underlay_htmlView[data-change="replacedRestyled"] {
+[data-perspective="changes"] :is(.underlay_htmlView, .seam_htmlView)[data-change="replacedRestyled"] {
   stroke-dasharray: 6 2;
 }
 
 /* inside another proposal's removal, `data-within` its source: it applies
    only if that's rejected, so it's there, but latent, a solid ring at half
    strength, whatever its kind's dash would be */
-[data-perspective="changes"] .underlay_htmlView[data-within] {
+[data-perspective="changes"] :is(.underlay_htmlView, .seam_htmlView)[data-within] {
   stroke-dasharray: none;
   stroke-opacity: 0.5;
+}
+
+/* where a wrap, or a line break, cuts a ring in two, its sides at the cut,
+   `seam_htmlView`, the first part's right side and the next part's left,
+   which aren't its ends: dashed, so its two parts read as one; the view
+   fits the dashes to each side, a dash at each end, flush with the outer
+   edges of the ring's top and bottom */
+[data-perspective="changes"] .seam_htmlView[data-change] {
+  stroke-dasharray: 2 2;
 }
 
 /* which lines change, said in the gutter, each line's label in the colour
@@ -70,7 +79,7 @@
 /* the proposal pointed at, `data-pointed` on its groups and its items, in
    every frame it's in, the others still showing: its rings heavier, its
    items lit */
-[data-perspective="changes"] .group_htmlView[data-pointed] > .underlay_htmlView[data-change] {
+[data-perspective="changes"] .group_htmlView[data-pointed] > :is(.underlay_htmlView, .seam_htmlView)[data-change] {
   stroke-width: 2px;
 }
 

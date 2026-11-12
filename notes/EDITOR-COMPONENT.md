@@ -362,7 +362,7 @@ the document or its changes changing:
     `z-index: 0`, the text at 1; a section's background is under all of it.
     Each underlay is one `<path>`, tracing every row it covers, wrapped or
     across lines, as one shape, so a fill or an edge goes round all of it,
-    with no seams between rows; and SVG's paint gives changes more than
+    with no lines between its rows; and SVG's paint gives changes more than
     colour to be told apart by, a stroke following the shape, dashed, a
     pattern's fill. A shape has room round its words as a perspective says,
     read from the run's svg when it's measured: short of its rows' top and
@@ -454,11 +454,24 @@ the document or its changes changing:
     projection will; the changes' colours on the paths, not the spans. A
     path is one shape where each row it covers reaches over the one after
     it; where one doesn't, as a stretch from a line's last word to the next
-    line's first, it's in pieces, still one path. The measuring walks the
-    view model's runs, `runs`, and finds each one's lines and svg by its id,
-    drawn as `data-run`; the class keeps the runs it last drew, to measure
-    them again when the view's size changes. Not yet: search, the selection,
-    drawing only what's visible.
+    line's first, or one a wrap cuts, its end on one row and its start on
+    the next, it's in pieces, still one path, each open at the cut: the
+    sides there, the first piece's right and the next's left, aren't its
+    ends, so they're drawn apart, a path each after it, `seam_htmlView`,
+    carrying its data, for a perspective to draw as it will, so the pieces
+    read as one; the "changes" perspective dashes them, as its ring,
+    otherwise. Native dashing starts at a path's start and stops wherever
+    its length runs out, so a side's dashes sat differently each time; the
+    view reaches each side half its stroke past the ring's top and bottom,
+    which end at their lines' middles, so its end dashes are flush with
+    their outer edges, the corner square, and fits its dash pattern to it,
+    as the perspective gives it, setting its `pathLength` so it holds a
+    whole number of the pattern and its first dash again: a dash at each
+    end, the rest even between. The measuring walks the view model's runs,
+    `runs`, and finds each one's lines and svg by its id, drawn as
+    `data-run`; the class keeps the runs it last drew, to measure them again
+    when the view's size changes. Not yet: search, the selection, drawing
+    only what's visible.
 - **in the DOM, data, not style:** what a run is, is `data-*` attributes on
   the spans it covers, each overlay's under names of its own: the changes'
   `data-change`, its kind, `data-side`, `data-source`; marks' `data-marks`.

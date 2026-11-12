@@ -468,15 +468,25 @@ function drawTextUnderlay$__View_TextEditor({
           {...measure_Group.attributes}
           class="group_htmlView"
         >
-          {measure_Group.measure$_Underlay.map((measure_Underlay) => (
+          {measure_Group.measure$_Underlay.map((measure_Underlay) => [
             <path
               {...measure_Underlay.attributes}
               class="underlay_htmlView"
               d={measure_Underlay.d}
-            />
-          ))}
+            />,
+            measure_Underlay.d_Seam$.map((d_Seam) => (
+              <path
+                {...measure_Underlay.attributes}
+                class="seam_htmlView"
+                d={d_Seam}
+              />
+            ))
+          ])}
         </g>
       ))
+    })
+    fit__Seam$({
+      svgElement_underlay$
     })
   }
 }
@@ -847,6 +857,7 @@ interface _Measure_Group_ {
 interface _Measure_Underlay_ {
   attributes: _Attributes_Element_
   d: string
+  d_Seam$: Array<string>
 }
 
 interface _Api___measureOf__Drawn_Run_ {
@@ -882,7 +893,7 @@ function measureOf__Drawn_Run({
         .filter((measure_Box) => group_Underlay.underlays.includes(measure_Box.underlay_Text))
         .map((measure_Box) => ({
           attributes: measure_Box.underlay_Text.attributes,
-          d: dOf__Measure_Box({
+          ...pathOf__Measure_Box({
             measure_Box,
             measure$_Box,
             inset_Underlay
@@ -1122,17 +1133,17 @@ interface _Measure_Box_ {
   box$_Row: Array<_Box_Row_>
 }
 
-interface _Api___dOf__Measure_Box_ {
+interface _Api___pathOf__Measure_Box_ {
   measure_Box: _Measure_Box_
   measure$_Box: Array<_Measure_Box_>
   inset_Underlay: _Inset_Underlay_
 }
 
-function dOf__Measure_Box({
+function pathOf__Measure_Box({
   measure_Box,
   measure$_Box,
   inset_Underlay
-}: _Api___dOf__Measure_Box_): string {
+}: _Api___pathOf__Measure_Box_): _Path_Underlay_ {
   const gap = 2 * inset_Underlay.block
   const box$_Sibling = measure$_Box
     .filter((measure_Box_other) => measure_Box_other !== measure_Box && !isWithin__Underlay$_Text({
@@ -1149,20 +1160,33 @@ function dOf__Measure_Box({
       underlay_Text_outer: measure_Box_other.underlay_Text
     }))
     .flatMap((measure_Box_other) => measure_Box_other.box$_Row)
-  return chain$Of__Box$_Row(measure_Box.box$_Row)
-    .map((chain_Box$) => dOf__Chain_Box$({
-      chain_Box$: roomed$Of__Chain_Box$({
-        chain_Box$,
-        box$_Sibling,
-        box$_Container,
-        reach: -inset_Underlay.inline,
-        block: inset_Underlay.block * (1 + 2 * measure_Box.depth),
-        gap,
-        clear: inset_Underlay.clear
-      }),
+  const chain$ = chain$Of__Box$_Row(measure_Box.box$_Row)
+  const path$_Chain = chain$.map((
+    chain_Box$,
+    index
+  ) => pathOf__Chain_Box$({
+    chain_Box$: roomed$Of__Chain_Box$({
+      chain_Box$,
+      box$_Sibling,
+      box$_Container,
+      reach: -inset_Underlay.inline,
+      block: inset_Underlay.block * (1 + 2 * measure_Box.depth),
+      gap,
       clear: inset_Underlay.clear
-    }))
-    .join(" ")
+    }),
+    clear: inset_Underlay.clear,
+    isSeam_Left: index > 0,
+    isSeam_Right: index < chain$.length - 1
+  }))
+  return {
+    d: path$_Chain.map((path_Chain) => path_Chain.d).join(" "),
+    d_Seam$: path$_Chain.flatMap((path_Chain) => path_Chain.d_Seam$)
+  }
+}
+
+interface _Path_Underlay_ {
+  d: string
+  d_Seam$: Array<string>
 }
 
 function chain$Of__Box$_Row(
@@ -1254,15 +1278,19 @@ function roomed$Of__Chain_Box$({
   })
 }
 
-interface _Api___dOf__Chain_Box$_ {
+interface _Api___pathOf__Chain_Box$_ {
   chain_Box$: Array<_Box_Row_>
   clear: number
+  isSeam_Left: boolean
+  isSeam_Right: boolean
 }
 
-function dOf__Chain_Box$({
+function pathOf__Chain_Box$({
   chain_Box$,
-  clear
-}: _Api___dOf__Chain_Box$_): string {
+  clear,
+  isSeam_Left,
+  isSeam_Right
+}: _Api___pathOf__Chain_Box$_): _Path_Underlay_ {
   const corner$ = [
     ...chain_Box$.flatMap((box_Row) => [
       {
@@ -1285,12 +1313,17 @@ function dOf__Chain_Box$({
       }
     ])
   ]
-  const index$_Open = [
-    ...(chain_Box$.at(-1)?.free_Right ?? Infinity) < clear ? [2 * chain_Box$.length - 2] : [],
-    ...(chain_Box$[0]?.free_Left ?? Infinity) < clear ? [4 * chain_Box$.length - 2] : []
+  const index_Right = 2 * chain_Box$.length - 2
+  const index_Left = 4 * chain_Box$.length - 2
+  const index$_Seam = [
+    ...isSeam_Right ? [index_Right] : [],
+    ...isSeam_Left ? [index_Left] : []
   ]
-  const index_Start = index$_Open[0]
-  if (index_Start === undefined) return `M ${corner$.map((corner) => `${corner.x} ${corner.y}`).join(" L ")} Z`
+  const index$_Open = [
+    ...(chain_Box$.at(-1)?.free_Right ?? Infinity) < clear ? [index_Right] : [],
+    ...(chain_Box$[0]?.free_Left ?? Infinity) < clear ? [index_Left] : [],
+    ...index$_Seam
+  ]
   const pointOf = (index: number) => {
     const corner = corner$[index % corner$.length] ?? {
       x: 0,
@@ -1298,6 +1331,29 @@ function dOf__Chain_Box$({
     }
     return `${corner.x} ${corner.y}`
   }
+  return {
+    d: dOf__Corner$({
+      corner$,
+      index$_Open,
+      pointOf
+    }),
+    d_Seam$: index$_Seam.map((index_Edge) => `M ${pointOf(index_Edge)} L ${pointOf(index_Edge + 1)}`)
+  }
+}
+
+interface _Api___dOf__Corner$_ {
+  corner$: Array<_Corner_Path_>
+  index$_Open: Array<number>
+  pointOf: (index: number) => string
+}
+
+function dOf__Corner$({
+  corner$,
+  index$_Open,
+  pointOf
+}: _Api___dOf__Corner$_): string {
+  const index_Start = index$_Open[0]
+  if (index_Start === undefined) return `M ${corner$.map((corner) => `${corner.x} ${corner.y}`).join(" L ")} Z`
   return [
     `M ${pointOf(index_Start + 1)}`,
     ...corner$.slice(1).map((
@@ -1309,6 +1365,68 @@ function dOf__Chain_Box$({
     })
   ].join(" ")
 }
+
+interface _Corner_Path_ {
+  x: number
+  y: number
+}
+
+interface _Api___fit__Seam$_ {
+  svgElement_underlay$: Element
+}
+
+function fit__Seam$({
+  svgElement_underlay$
+}: _Api___fit__Seam$_): void {
+  for (const pathElement_seam of svgElement_underlay$.querySelectorAll(".seam_htmlView")) {
+    if (!(pathElement_seam instanceof SVGPathElement)) continue
+    const style = getComputedStyle(pathElement_seam)
+    const length = pathElement_seam.getTotalLength()
+    if (length <= 0) continue
+    const point_Start = pathElement_seam.getPointAtLength(0)
+    const point_End = pathElement_seam.getPointAtLength(length)
+    const reach = lengthOf__Value(style.strokeWidth) / 2 / length
+    const x_Reach = (point_End.x - point_Start.x) * reach
+    const y_Reach = (point_End.y - point_Start.y) * reach
+    pathElement_seam.setAttribute(
+      "d",
+      `M ${point_Start.x - x_Reach} ${point_Start.y - y_Reach} L ${point_End.x + x_Reach} ${point_End.y + y_Reach}`
+    )
+    const length$_Dash = length$Of__Dasharray(style.strokeDasharray)
+    const length_First = length$_Dash[0]
+    const period = length$_Dash.reduce(
+      (
+        sum,
+        length
+      ) => sum + length,
+      0
+    )
+    if (length_First === undefined || period <= 0) continue
+    const count = Math.max(
+      0,
+      Math.round((pathElement_seam.getTotalLength() - length_First) / period)
+    )
+    const length_Path = count * period + length_First
+    if (length_Path > 0) {
+      pathElement_seam.setAttribute(
+        "pathLength",
+        String(length_Path)
+      )
+    }
+  }
+}
+
+function length$Of__Dasharray(
+  value: string
+): Array<number> {
+  const length$ = (value.match(REGEXP_LENGTH) ?? []).map(Number)
+  return length$.length % 2 === 1 ? [
+    ...length$,
+    ...length$
+  ] : length$
+}
+
+const REGEXP_LENGTH = /\d*\.?\d+/g
 
 interface _Point_Screen_ {
   x: number

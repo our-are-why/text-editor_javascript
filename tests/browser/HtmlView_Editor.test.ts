@@ -616,6 +616,88 @@ describe("beside it: what can't live in one document", () => {
     })
   })
 
+  test("a ring a line break or a wrap cuts in two, its parts not one over the other, has its sides at the cut drawn apart from it, as seams, a path each: the first part's right side and the next part's left, the ring open there, reaching half a stroke past its top and bottom, flush with their outer edges, their dashes fitted to them, whole, one at each end; one whose parts are one over the other is one shape, with none", async () => {
+    const cuts = await opened.page.evaluate(async () => {
+      const containerElement = document.createElement("div")
+      containerElement.style.width = "20rem"
+      containerElement.style.setProperty("--view-font-size", "14px")
+      containerElement.dataset["perspective"] = "changes"
+      document.body.append(containerElement)
+      const view = new window._View_TextEditor_({
+        containerElement,
+        componentMap: window.COMPONENTMAP__VIEW_TEXTEDITOR
+      })
+      const words = "aaaa bbbb cccc dddd eeee ffff gggg hhhh iiii jjjj kkkk llll mmmm nnnn oooo pppp"
+      const lines = window.parseLines_ViewModel({ multilineText: `the first line ends with this\nand the next starts here\n${words}`, module_Language: window.MODULE_PLAINTEXT })
+      const change = { "data-change": "removed", "data-side": "before", "data-source": "most" }
+      const stretch = (line: number, from: number, lineTo: number, to: number) => ({ from: { line, offset: from }, to: { line: lineTo, offset: to }, attributes: change })
+      const draw = (underlays: Array<ReturnType<typeof stretch>>) => view.draw(window.viewModelOf__Blocks([{
+        kind: "LINES",
+        run: { id: "document", lines, groups: [{ attributes: { "data-source": "most" }, underlays }] }
+      }]))
+      // where the words wrap: the first character on the line's second row
+      draw([])
+      const text = containerElement.querySelectorAll(".text_htmlView")[2]?.firstChild?.firstChild
+      if (!(text instanceof Text)) throw new Error("the words weren't drawn")
+      const topOf = (at: number) => {
+        const range = document.createRange()
+        range.setStart(text, at)
+        range.setEnd(text, at + 1)
+        return range.getBoundingClientRect().top
+      }
+      const wrap = [...words].findIndex((_, at) => topOf(at) > topOf(0) + 1)
+      // this to and, cut by the line break; the last word on the words'
+      // first row to the first on their second, cut by the wrap; and from
+      // the first row's second word to the second row's second, its parts
+      // one over the other
+      draw([stretch(0, 25, 1, 3), stretch(2, wrap - 5, 2, wrap + 4), stretch(2, 5, 2, wrap + 9)])
+      await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)))
+      const numbersOf = (element: Element | undefined) => (element?.getAttribute("d") ?? "").match(/-?[\d.]+/g)?.map(Number) ?? []
+      // a seam's dashes, as the perspective gives them, fitted: a whole
+      // number of the pattern, and its first dash again, so a dash at each
+      // end, each dash scaled no more than a third from its own length
+      const isFitted = (seamElement: Element) => {
+        if (!(seamElement instanceof SVGPathElement)) return false
+        const lengths = (getComputedStyle(seamElement).strokeDasharray.match(/\d*\.?\d+/g) ?? []).map(Number)
+        const period = lengths.reduce((sum, length) => sum + length, 0)
+        const length_Path = Number(seamElement.getAttribute("pathLength"))
+        const repeats = (length_Path - (lengths[0] ?? 0)) / period
+        const scale = seamElement.getTotalLength() / length_Path
+        return lengths.length > 0 && Math.abs(repeats - Math.round(repeats)) < 0.001 && scale > 0.75 && scale < 1.34
+      }
+      return [...containerElement.querySelectorAll(".underlay_htmlView")].map((ringElement) => {
+        const box = ringElement instanceof SVGPathElement ? ringElement.getBBox() : new DOMRect()
+        const seamElements: Array<Element> = []
+        for (let element = ringElement.nextElementSibling; element?.classList.contains("seam_htmlView"); element = element.nextElementSibling) seamElements.push(element)
+        const [x1, y1, x2, y2] = numbersOf(seamElements[0])
+        const [x3, y3, x4, y4] = numbersOf(seamElements[1])
+        return {
+          wrapped: wrap > 0,
+          ringShapes: (ringElement.getAttribute("d")?.match(/M/g) ?? []).length,
+          ringClosed: ringElement.getAttribute("d")?.includes("Z") ?? false,
+          seams: seamElements.map((seamElement) => (seamElement.getAttribute("d")?.match(/M/g) ?? []).length),
+          seamsUpright: seamElements.length === 0 || (x1 === x2 && x3 === x4),
+          firstAtRingsRight: seamElements.length === 0 || x1 === box.x + box.width,
+          nextAtRingsLeft: seamElements.length === 0 || x3 === box.x,
+          nextBelowFirst: seamElements.length === 0 || Math.min(y3 ?? 0, y4 ?? 0) > Math.max(y1 ?? 0, y2 ?? 0) - 0.01,
+          flush: seamElements.length === 0 || (() => {
+            const halfStroke = Number.parseFloat(getComputedStyle(seamElements[0] ?? ringElement).strokeWidth) / 2
+            return halfStroke > 0 && Math.abs(Math.min(y1 ?? 0, y2 ?? 0) - (box.y - halfStroke)) < 0.01 && Math.abs(Math.max(y3 ?? 0, y4 ?? 0) - (box.y + box.height + halfStroke)) < 0.01
+          })(),
+          dashesFitted: seamElements.every(isFitted),
+          seamAttributes: seamElements.map((seamElement) => [...seamElement.attributes].map((attribute) => attribute.name).filter((name) => name.startsWith("data-")))
+        }
+      })
+    })
+    const attributes = ["data-change", "data-side", "data-source"]
+    const cut = { wrapped: true, ringShapes: 2, ringClosed: false, seams: [1, 1], seamsUpright: true, firstAtRingsRight: true, nextAtRingsLeft: true, nextBelowFirst: true, flush: true, dashesFitted: true, seamAttributes: [attributes, attributes] }
+    expect(cuts).toEqual([
+      cut,
+      cut,
+      { wrapped: true, ringShapes: 1, ringClosed: true, seams: [], seamsUpright: true, firstAtRingsRight: true, nextAtRingsLeft: true, nextBelowFirst: true, flush: true, dashesFitted: true, seamAttributes: [] }
+    ])
+  })
+
   test("a text underlay is drawn again, as one shape over all its rows, when the view's width changes", async () => {
     const rows = await opened.page.evaluate(async () => {
       const containerElement = document.createElement("div")

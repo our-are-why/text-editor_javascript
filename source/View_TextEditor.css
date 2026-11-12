@@ -91,7 +91,7 @@
   initial-value: 0px;
 }
 
-.htmlView_editor :where(.underlay_htmlView) {
+.htmlView_editor :where(.underlay_htmlView, .seam_htmlView) {
   fill: none;
 }
 
