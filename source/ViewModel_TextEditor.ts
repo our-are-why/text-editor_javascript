@@ -7,6 +7,8 @@ export {
   type _Line_Run_,
   type _Gutter_Line_,
   type _Marker_Gutter_,
+  type _Note_Line_,
+  type _Target_Note_,
   type _Segment_Line_,
   type _Attributes_Element_,
   type _Stretch_Line_,
@@ -59,6 +61,7 @@ interface _Run_Lines_ {
 
 interface _Line_Run_ {
   gutter: _Gutter_Line_
+  note: _Note_Line_ | null
   segments: Array<_Segment_Line_>
 }
 
@@ -67,7 +70,17 @@ interface _Gutter_Line_ {
   marker: _Marker_Gutter_
 }
 
-type _Marker_Gutter_ = "none" | "removed" | "changed" | "inserted"
+type _Marker_Gutter_ = "none" | "removed" | "changed" | "inserted" | "moved"
+
+interface _Note_Line_ {
+  label: string
+  target: _Target_Note_
+}
+
+interface _Target_Note_ {
+  source: string
+  side: string
+}
 
 interface _Segment_Line_ {
   text: _Text_Line_NonTerminated_
@@ -430,6 +443,7 @@ function lineOf__Text({
       label: String(number),
       marker: "none"
     },
+    note: null,
     segments: segmentsOf__Stretches({
       text,
       stretches

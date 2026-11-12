@@ -3,11 +3,11 @@
    doctor shows them. Never with the text's own colour, a strike or an
    underline, which are the text's, its marks' and its syntax's: a change
    is a ring round its words, red where they go, yellow where they're
-   replaced, green where they're new, dashed where only their look changes,
-   ghosted, at half strength, where they're inside another proposal's
-   removal, so apply only if it's rejected; and a line in a frame says what it becomes in its
-   gutter, its label in the same colours, never with a band across its
-   text. A ring is a text underlay's path, behind the text, one shape over
+   replaced, green where they're new, blue where they're moved, at both
+   ends, dashed where only their look changes, ghosted, at half strength,
+   where they're inside another proposal's removal, so apply only if it's
+   rejected; and a line in a frame says what it becomes in its gutter, its
+   label in the same colours, never with a band across its text. A ring is a text underlay's path, behind the text, one shape over
    every span, row and line its words are on, each change's data on it:
    `data-change`, its kind, `data-side`, `data-source`, and `data-within`
    when it's inside another's removal; a proposal has no ring of its own,
@@ -31,6 +31,13 @@
 
 [data-perspective="changes"] :is(.underlay_htmlView, .seam_htmlView)[data-change="inserted"] {
   --edge: var(--view-inserted-edge, light-dark(#388a34, #89d185));
+}
+
+/* moved: neither lost nor new, so neither red nor green; where it leaves
+   and where it lands; what it changes on the way, rings of their own
+   inside it */
+[data-perspective="changes"] :is(.underlay_htmlView, .seam_htmlView)[data-change="moved"] {
+  --edge: var(--view-moved-edge, light-dark(#2f6fdf, #6ea2ff));
 }
 
 /* only its look: dashed; replaced and restyled both: dashed, but less */
@@ -61,9 +68,10 @@
 
 /* which lines change, said in the gutter, each line's label in the colour
    of what the line becomes: a number, as it is, red where it's taken out,
-   yellow where it's changed in place; a sign, as proposed, green + where
-   it's put in, yellow ~ where it's changed. Every line, changed or not, on
-   its section's one band; the rings say which words. */
+   yellow where it's changed in place, blue where it's moved away; a sign,
+   as proposed, green + where it's put in, yellow ~ where it's changed, blue
+   → where it's moved in. Every line, changed or not, on its section's one
+   band; the rings say which words. */
 [data-perspective="changes"] .line_htmlView[data-marker="removed"] .label_htmlView {
   color: var(--view-removed-label, light-dark(#ad0707, #c74e39));
 }
@@ -74,6 +82,13 @@
 
 [data-perspective="changes"] .line_htmlView[data-marker="inserted"] .label_htmlView {
   color: var(--view-inserted-label, light-dark(#388a34, #89d185));
+}
+
+/* a moved line: its number where it leaves, its → where it lands, and the
+   note on its first line going to its other end, in the move's blue */
+[data-perspective="changes"] .line_htmlView[data-marker="moved"] .label_htmlView,
+[data-perspective="changes"] .line_htmlView[data-marker="moved"] .note_htmlView {
+  color: var(--view-moved-label, light-dark(#2f6fdf, #6ea2ff));
 }
 
 /* the proposal pointed at, `data-pointed` on its groups and its items, in
@@ -97,11 +112,15 @@
    another's stretch, as a nested change is, inside it, further from its
    row's top and bottom. At a 14px font, 3px past, 3px clear and 1px short,
    so two rings are 2px apart; in ems, so at any other size they keep to
-   the font as they do at 14px. */
+   the font as they do at 14px. A ring over several lines hugs them, its
+   side stepping in and out with their ends, but never by less than half
+   an em: less than a character, so lines ending in one column, but for
+   room made in one, share an end. */
 [data-perspective="changes"] {
   --view-underlay-inset-block: calc(1em / 14);
   --view-underlay-inset-inline: calc(-3em / 14);
   --view-underlay-clear-inline: calc(3em / 14);
+  --view-underlay-step: 0.5em;
 }
 
 /* where a change's end presses on another character, as code's tokens do

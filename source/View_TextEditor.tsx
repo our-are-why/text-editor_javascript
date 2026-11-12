@@ -6,6 +6,7 @@ import {
 } from "./Jsx.ts"
 import type {
   _ViewModel_TextEditor_,
+  _Target_Note_,
   _Block_ViewModel_,
   __BASE_Block__ViewModel_,
   _LINES_Block__ViewModel_,
@@ -13,6 +14,7 @@ import type {
   _Line_Run_,
   _Gutter_Line_,
   _Segment_Line_,
+  _Note_Line_,
   _FRAME_Block__ViewModel_,
   _Range_Lines_,
   _Part_Frame_,
@@ -102,6 +104,15 @@ class _View_TextEditor_ {
     return sourceAt__View_TextEditor({
       containerElement_View: this.containerElement,
       point_Screen
+    })
+  }
+
+  reveal(
+    target_Note: _Target_Note_
+  ): void {
+    reveal__View_TextEditor({
+      containerElement_View: this.containerElement,
+      target_Note
     })
   }
 }
@@ -232,7 +243,10 @@ function Line_Run__Html({
       data-marker={line_Run.gutter.marker}
     >
       <Gutter_Line__Html gutter_Line={line_Run.gutter} />
-      <Text_Line__Html segment$_Line={line_Run.segments} />
+      <Text_Line__Html
+        segment$_Line={line_Run.segments}
+        note_Line={line_Run.note}
+      />
     </div>
   )
 }
@@ -257,14 +271,17 @@ function Gutter_Line__Html({
 
 interface _Api___Text_Line__Html_ {
   segment$_Line: Array<_Segment_Line_>
+  note_Line: _Note_Line_ | null
 }
 
 function Text_Line__Html({
-  segment$_Line
+  segment$_Line,
+  note_Line
 }: _Api___Text_Line__Html_): JSX.Element {
   return (
     <div class="text_htmlView">
       {segment$_Line.map((segment_Line) => <Segment_Text__Html segment_Line={segment_Line} />)}
+      {note_Line !== null && <Note_Line__Html note_Line={note_Line} />}
     </div>
   )
 }
@@ -277,6 +294,24 @@ function Segment_Text__Html({
   segment_Line
 }: _Api___Segment_Text__Html_): JSX.Element {
   return <span {...segment_Line.attributes}>{segment_Line.text}</span>
+}
+
+interface _Api___Note_Line__Html_ {
+  note_Line: _Note_Line_
+}
+
+function Note_Line__Html({
+  note_Line
+}: _Api___Note_Line__Html_): JSX.Element {
+  return (
+    <button
+      type="button"
+      class="note_htmlView"
+      aria-label={note_Line.label}
+      data-target-source={note_Line.target.source}
+      data-target-side={note_Line.target.side}
+    />
+  )
 }
 
 interface _Api___FRAME_Block_TextEditor__Html_ {
@@ -595,6 +630,7 @@ interface _Inset_Underlay_ {
   block: number
   inline: number
   clear: number
+  step: number
 }
 
 function insetOf__Element(
@@ -604,7 +640,8 @@ function insetOf__Element(
   return {
     block: lengthOf__Value(style.getPropertyValue("--insetBlock_underlay_htmlView")),
     inline: lengthOf__Value(style.getPropertyValue("--insetInline_underlay_htmlView")),
-    clear: lengthOf__Value(style.getPropertyValue("--clearInline_underlay_htmlView"))
+    clear: lengthOf__Value(style.getPropertyValue("--clearInline_underlay_htmlView")),
+    step: lengthOf__Value(style.getPropertyValue("--step_underlay_htmlView"))
   }
 }
 
@@ -975,6 +1012,8 @@ function box$Of__Underlay_Text({
       divElement_text,
       from: index === 0 ? underlay_Text.from.offset : 0,
       to: underlay_Text.from.line + index === underlay_Text.to.line ? underlay_Text.to.offset : Infinity,
+      isStart: index === 0,
+      isEnd: underlay_Text.from.line + index === underlay_Text.to.line,
       origin,
       ink$_Glyph_View
     }))
@@ -984,6 +1023,8 @@ interface _Api___box$Of__Stretch_Line_ {
   divElement_text: Element
   from: number
   to: number
+  isStart: boolean
+  isEnd: boolean
   origin: DOMRect
   ink$_Glyph_View: Map<string, _Ink_Glyph_>
 }
@@ -992,6 +1033,8 @@ function box$Of__Stretch_Line({
   divElement_text,
   from,
   to,
+  isStart,
+  isEnd,
   origin,
   ink$_Glyph_View
 }: _Api___box$Of__Stretch_Line_): Array<_Box_Row_> {
@@ -1063,6 +1106,9 @@ function box$Of__Stretch_Line({
     }),
     ink$_Glyph_View
   })
+  const extent_Note = extentOf__Note({
+    divElement_text
+  })
   const isOn = (
     extent: _Extent_Character_ | null,
     row: number
@@ -1076,11 +1122,11 @@ function box$Of__Stretch_Line({
   ) => {
     const isFirst = index === 0
     const isLast = index === entry$_Row.length - 1
-    const left = isFirst && isOn(
+    const left = isStart && isFirst && isOn(
       extent_First,
       row
     ) ? extent_First.left : Math.min(...rect$_Row.map((rect) => rect.left))
-    const right = isLast && isOn(
+    const right = isEnd && isLast && isOn(
       extent_Last,
       row
     ) ? extent_Last.right : Math.max(...rect$_Row.map((rect) => rect.right))
@@ -1096,9 +1142,29 @@ function box$Of__Stretch_Line({
       free_Right: isLast && isOn(
         extent_After,
         row
-      ) ? extent_After.left - right : Infinity
+      ) ? extent_After.left - right : isLast && isOn(
+        extent_Note,
+        row
+      ) ? extent_Note.left - right : Infinity
     }
   })
+}
+
+interface _Api___extentOf__Note_ {
+  divElement_text: Element
+}
+
+function extentOf__Note({
+  divElement_text
+}: _Api___extentOf__Note_): _Extent_Character_ | null {
+  const buttonElement_note = divElement_text.querySelector(":scope > .note_htmlView")
+  if (buttonElement_note === null) return null
+  const rect = buttonElement_note.getBoundingClientRect()
+  return {
+    rect,
+    left: rect.left,
+    right: rect.right
+  }
 }
 
 interface _Api___indexOf__Visible_ {
@@ -1165,14 +1231,17 @@ function pathOf__Measure_Box({
     chain_Box$,
     index
   ) => pathOf__Chain_Box$({
-    chain_Box$: roomed$Of__Chain_Box$({
-      chain_Box$,
-      box$_Sibling,
-      box$_Container,
-      reach: -inset_Underlay.inline,
-      block: inset_Underlay.block * (1 + 2 * measure_Box.depth),
-      gap,
-      clear: inset_Underlay.clear
+    chain_Box$: levelled$Of__Chain_Box$({
+      chain_Box$: roomed$Of__Chain_Box$({
+        chain_Box$,
+        box$_Sibling,
+        box$_Container,
+        reach: -inset_Underlay.inline,
+        block: inset_Underlay.block * (1 + 2 * measure_Box.depth),
+        gap,
+        clear: inset_Underlay.clear
+      }),
+      step: inset_Underlay.step
     }),
     clear: inset_Underlay.clear,
     isSeam_Left: index > 0,
@@ -1278,6 +1347,66 @@ function roomed$Of__Chain_Box$({
   })
 }
 
+interface _Api___levelled$Of__Chain_Box$_ {
+  chain_Box$: Array<_Box_Row_>
+  step: number
+}
+
+function levelled$Of__Chain_Box$({
+  chain_Box$,
+  step
+}: _Api___levelled$Of__Chain_Box$_): Array<_Box_Row_> {
+  const right$ = levelled$Of__Edge$({
+    edge$: chain_Box$.map((box_Row) => box_Row.right),
+    isOpen$: chain_Box$.map((box_Row) => box_Row.free_Right === Infinity),
+    step,
+    sign: 1
+  })
+  const left$ = levelled$Of__Edge$({
+    edge$: chain_Box$.map((box_Row) => box_Row.left),
+    isOpen$: chain_Box$.map((box_Row) => box_Row.free_Left === Infinity),
+    step,
+    sign: -1
+  })
+  return chain_Box$.map((
+    box_Row,
+    index
+  ) => ({
+    ...box_Row,
+    left: left$[index] ?? box_Row.left,
+    right: right$[index] ?? box_Row.right
+  }))
+}
+
+interface _Api___levelled$Of__Edge$_ {
+  edge$: Array<number>
+  isOpen$: Array<boolean>
+  step: number
+  sign: number
+}
+
+function levelled$Of__Edge$({
+  edge$,
+  isOpen$,
+  step,
+  sign
+}: _Api___levelled$Of__Edge$_): Array<number> {
+  const group$: Array<Array<number>> = []
+  edge$.forEach((
+    edge,
+    index
+  ) => {
+    const group = group$.at(-1)
+    const outer = group === undefined ? undefined : Math.max(...group.map((index_Group) => sign * (edge$[index_Group] ?? 0)))
+    if (isOpen$[index] === true && group !== undefined && outer !== undefined && isOpen$[group[0] ?? -1] === true && Math.abs(sign * edge - outer) < step) group.push(index)
+    else group$.push([index])
+  })
+  return group$.flatMap((group) => {
+    const outer = sign * Math.max(...group.map((index_Group) => sign * (edge$[index_Group] ?? 0)))
+    return group.map(() => outer)
+  })
+}
+
 interface _Api___pathOf__Chain_Box$_ {
   chain_Box$: Array<_Box_Row_>
   clear: number
@@ -1334,8 +1463,7 @@ function pathOf__Chain_Box$({
   return {
     d: dOf__Corner$({
       corner$,
-      index$_Open,
-      pointOf
+      index$_Open
     }),
     d_Seam$: index$_Seam.map((index_Edge) => `M ${pointOf(index_Edge)} L ${pointOf(index_Edge + 1)}`)
   }
@@ -1344,27 +1472,45 @@ function pathOf__Chain_Box$({
 interface _Api___dOf__Corner$_ {
   corner$: Array<_Corner_Path_>
   index$_Open: Array<number>
-  pointOf: (index: number) => string
 }
 
 function dOf__Corner$({
   corner$,
-  index$_Open,
-  pointOf
+  index$_Open
 }: _Api___dOf__Corner$_): string {
-  const index_Start = index$_Open[0]
-  if (index_Start === undefined) return `M ${corner$.map((corner) => `${corner.x} ${corner.y}`).join(" L ")} Z`
-  return [
-    `M ${pointOf(index_Start + 1)}`,
-    ...corner$.slice(1).map((
-      _,
-      step
-    ) => {
-      const index_Edge = (index_Start + 1 + step) % corner$.length
-      return `${index$_Open.includes(index_Edge) ? "M" : "L"} ${pointOf(index_Edge + 1)}`
-    })
-  ].join(" ")
+  const index_Start = index$_Open[0] ?? corner$.length - 1
+  const command$ = corner$.map((
+    _,
+    step
+  ) => {
+    const index_Edge = (index_Start + step) % corner$.length
+    return {
+      isMove: step === 0 || index$_Open.includes(index_Edge),
+      corner: corner$[(index_Edge + 1) % corner$.length] ?? {
+        x: 0,
+        y: 0
+      }
+    }
+  })
+  const isLevel = (
+    length: number,
+    length_other: number
+  ) => Math.abs(length - length_other) < 0.01
+  const command$_Kept = command$.filter((
+    command,
+    index
+  ) => {
+    const command_Before = command$[index - 1]
+    const command_After = command$[index + 1]
+    if (command.isMove || command_Before === undefined) return true
+    const isAgain = isLevel(command.corner.x, command_Before.corner.x) && isLevel(command.corner.y, command_Before.corner.y)
+    const isThrough = command_After !== undefined && !command_After.isMove && (isLevel(command_Before.corner.x, command.corner.x) && isLevel(command.corner.x, command_After.corner.x) || isLevel(command_Before.corner.y, command.corner.y) && isLevel(command.corner.y, command_After.corner.y))
+    return !isAgain && !isThrough
+  })
+  const d = command$_Kept.map((command) => `${command.isMove ? "M" : "L"} ${command.corner.x} ${command.corner.y}`).join(" ")
+  return index$_Open.length === 0 ? `${d} Z` : d
 }
+
 
 interface _Corner_Path_ {
   x: number
@@ -1435,6 +1581,24 @@ interface _Point_Screen_ {
 
 interface _Layout_View_ {
   sourceAt: (point_Screen: _Point_Screen_) => string | null
+}
+
+interface _Api___reveal__View_TextEditor_ {
+  containerElement_View: HTMLElement
+  target_Note: _Target_Note_
+}
+
+function reveal__View_TextEditor({
+  containerElement_View,
+  target_Note
+}: _Api___reveal__View_TextEditor_): void {
+  containerElement_View
+    .querySelector(`.text_htmlView [data-source="${CSS.escape(target_Note.source)}"][data-side="${CSS.escape(target_Note.side)}"]`)
+    ?.closest(".line_htmlView")
+    ?.scrollIntoView({
+      block: "center",
+      behavior: "smooth"
+    })
 }
 
 interface _Api___sourceAt__View_TextEditor_ {

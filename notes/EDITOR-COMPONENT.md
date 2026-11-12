@@ -289,10 +289,28 @@ beside them, read-only. So:
 - what's added reads in place, green, and is edited where it is;
 - what's changed in place shows its new words, with the old ones beside;
 - what's taken out shows where it was, ringed, never struck, a strike being
-a document's own mark; - what's moved shows at both its ends: within a line,
-both in it; within what's shown together, linked in the margin; out to
-somewhere else, a mark where it leaves, "moves to line 40", and where it
-lands, "moved from line 12", each going to the other, as doctor's do.
+  a document's own mark;
+- what's moved shows at both its ends: within a line, both in it; within
+  what's shown together, linked in the margin; out to somewhere else, a mark
+  where it leaves, "moves to line 40", and where it lands, "moved from line
+  12", each going to the other, as doctor's do. Drawn so far, for whole
+  lines, the playground standing in for the projection: a change of its own
+  kind, `moved`, its two ends its two sides, "before" where it leaves,
+  "after" where it lands, ringed blue, as it's neither lost nor new; its
+  lines numbered blue where it leaves, signed → where it lands; each end's
+  first line with words has a note, a line's `note`, its label and its
+  target, a change's side by its proposal, which the view draws after its
+  text as a button holding no text, its label its `aria-label`, drawn by
+  CSS, so nothing that reads or measures the text meets it; pressed, it goes
+  to the other end. Where it leaves, it says only which way, "moves up": the
+  line it goes to means little to a reader, and needn't hold once other
+  proposals are decided; where it lands, where it's from, "moved up from
+  lines 41–50", the document's lines as they are, numbered in the frame it
+  leaves; its item, at both ends, which lines and which way, "moves lines
+  41–50 up". What it changes on the way, `data-edit` on a segment, is ringed
+  inside it, its own proposal's, at full strength, not another's fallback.
+  Not yet: the link in the margin between two ends shown together, moves
+  within a line, and a move split in pieces.
 
 **every proposal shown at once:** all of them, each change styled as what it
 is, word by word, none hidden behind or put aside for another. Which
@@ -452,10 +470,24 @@ the document or its changes changing:
     first in it, a `<g>` for each of its groups, a `<path>` for each
     underlay; proposals' changes, worked out by the playground as the
     projection will; the changes' colours on the paths, not the spans. A
-    path is one shape where each row it covers reaches over the one after
-    it; where one doesn't, as a stretch from a line's last word to the next
-    line's first, or one a wrap cuts, its end on one row and its start on
-    the next, it's in pieces, still one path, each open at the cut: the
+    ring over several lines hugs them, one outline, its side stepping in and
+    out with their ends: each row's ends are its character cells', but the
+    change's own start and end, which are its ink's, so lines ending in one
+    column end at one place, and no step is a sliver of a glyph's margin;
+    and, as a perspective says, `--view-underlay-step`, rows with nothing
+    past them whose ends are nearer than a step share one, the further out,
+    as where room made in a line moves its end on by less than a character.
+    The outline holds no point twice and none on the way along a side. A row
+    with something past it, a character or a line's note, which shows, keeps
+    its end, clear of it. Tight was first drawn wrong, every row's ends at
+    its glyphs' ink wherever a glyph was there, so a side jogged a pixel
+    where one line began with a glyph and the others with spaces, lines
+    ending in one column stepped by a glyph's margin, and points repeated:
+    it read as broken; squared to a rectangle instead, it hid where lines
+    end. A path is one shape where each row it covers reaches over the one
+    after it; where one doesn't, as a stretch from a line's last word to the
+    next line's first, or one a wrap cuts, its end on one row and its start
+    on the next, it's in pieces, still one path, each open at the cut: the
     sides there, the first piece's right and the next's left, aren't its
     ends, so they're drawn apart, a path each after it, `seam_htmlView`,
     carrying its data, for a perspective to draw as it will, so the pieces
@@ -675,13 +707,18 @@ drawn on the next frame, all of it again for now, each line keeping its
 element by its id to come. What's drawn is the state's view model:
 `pointedAt__ViewModel` marks the pointed proposal's groups and items
 `data-pointed`, an item's `attributes` drawn on it as a group's are, and the
-perspective says how it looks. One command so far, `POINT`, a point on the
+perspective says how it looks. Two commands so far: `POINT`, a point on the
 screen or none, its handler asking the view what proposal's there,
-`sourceAt`, as a point's resolved by lowering, not by its source; one
-module, `MODULE_MOUSE`, in `source/modules/mouse.ts`, a pointer over
-something a `POINT` there, leaving the editor a `POINT` at nothing. Not yet:
-the model, lowering's stages, results beyond taken, observers, the keyboard
-and the current proposal.
+`sourceAt`, as a point's resolved by lowering, not by its source; and
+`JUMP`, to a note's target, its handler keeping it in the state, which the
+editor, once it's drawn, has the view reveal, `reveal`, scrolling it to the
+middle, then forgets, as scrolling is something done, not a state to draw.
+It doesn't point at what it reveals: pointing is the mouse's, and the
+scroll moves what's under it. One module, `MODULE_MOUSE`, in
+`source/modules/mouse.ts`, a pointer over something a `POINT` there,
+leaving the editor a `POINT` at nothing, a click on a note a `JUMP`.
+Not yet: the model, lowering's stages, results beyond taken, observers, the
+keyboard and the current proposal.
 
 How it's drawn:
 

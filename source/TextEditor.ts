@@ -6,6 +6,7 @@ import {
 } from "./View_TextEditor.tsx"
 import {
   type _ViewModel_TextEditor_,
+  type _Target_Note_,
   pointedAt__ViewModel
 } from "./ViewModel_TextEditor.ts"
 
@@ -18,6 +19,7 @@ export {
   type _Command_TextEditor_,
   type __BASE_Command_,
   type _POINT_Command_,
+  type _JUMP_Command_,
   type _HandlerMap__TextEditor_,
   HANDLERMAP__TEXTEDITOR
 }
@@ -43,7 +45,8 @@ class _TextEditor_ {
     this.modules = modules
     this.state = {
       viewModel_TextEditor,
-      source_Pointed: null
+      source_Pointed: null,
+      target_Revealed: null
     }
     this.request_Draw = null
     for (const event of eventsOf__Modules(this.modules)) {
@@ -87,6 +90,13 @@ class _TextEditor_ {
     this.request_Draw = requestAnimationFrame(() => {
       this.request_Draw = null
       this.view.draw(viewModelOf__State(this.state))
+      if (this.state.target_Revealed !== null) {
+        this.view.reveal(this.state.target_Revealed)
+        this.state = {
+          ...this.state,
+          target_Revealed: null
+        }
+      }
     })
   }
 }
@@ -108,7 +118,7 @@ interface _Adapter_Module_ {
   commandOf__Event: (event: Event) => _Command_TextEditor_ | null
 }
 
-type _Command_TextEditor_ = _POINT_Command_
+type _Command_TextEditor_ = _POINT_Command_ | _JUMP_Command_
 
 interface __BASE_Command_<Kind extends string> {
   kind: Kind
@@ -118,9 +128,14 @@ interface _POINT_Command_ extends __BASE_Command_<"POINT"> {
   point_Screen: _Point_Screen_ | null
 }
 
+interface _JUMP_Command_ extends __BASE_Command_<"JUMP"> {
+  target_Note: _Target_Note_
+}
+
 interface _State_TextEditor_ {
   viewModel_TextEditor: _ViewModel_TextEditor_
   source_Pointed: string | null
+  target_Revealed: _Target_Note_ | null
 }
 
 function eventsOf__Modules(
@@ -186,10 +201,21 @@ function POINT_stateAfter__Command({
     }
 }
 
+function JUMP_stateAfter__Command({
+  state,
+  command
+}: _Api___stateAfter__Command_<"JUMP">): _State_TextEditor_ {
+  return {
+    ...state,
+    target_Revealed: command.target_Note
+  }
+}
+
 type _HandlerMap__TextEditor_ = {
   [Kind in _Command_TextEditor_["kind"]]: (api_Handler: _Api___stateAfter__Command_<Kind>) => _State_TextEditor_
 }
 
 const HANDLERMAP__TEXTEDITOR: _HandlerMap__TextEditor_ = {
-  POINT: POINT_stateAfter__Command
+  POINT: POINT_stateAfter__Command,
+  JUMP: JUMP_stateAfter__Command
 }

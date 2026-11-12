@@ -4,8 +4,8 @@ import { _TextEditor_ } from "../../source/TextEditor.ts"
 import { MODULE_MOUSE } from "../../source/modules/mouse.ts"
 import { viewModelOf__Blocks, parseTexts_Line, type _FRAME_Block__ViewModel_, type _Item_Proposals_ } from "../../source/ViewModel_TextEditor.ts"
 import { actions_Review } from "../items.ts"
-import { blocksWith__Frames, lineOf } from "../lines.ts"
-import { attributesOf__Change, attributesOf__Nested, type _Kind_Change_, type _Side_Change_ } from "../looks.ts"
+import { blocksWith__Frames, lineOf, type _Move_Proposal_ } from "../lines.ts"
+import { attributesOf__Change, attributesOf__Nested, type _Kind_Change_, type _Side_Change_, attributesOf__Edit } from "../looks.ts"
 import { module_JavaScript } from "../syntax.ts"
 
 export {
@@ -83,6 +83,9 @@ const errors = (side: _Side_Change_) => attributesOf__Change({ side, kind: "repl
 const aborted = attributesOf__Change({ side: "after", kind: "inserted", source: "aborted" })
 const cap = (side: _Side_Change_, kind: _Kind_Change_) => attributesOf__Change({ side, kind, source: "cap" })
 const timeout = (side: _Side_Change_, kind: _Kind_Change_) => attributesOf__Change({ side, kind, source: "timeout" })
+const sleep = (side: _Side_Change_) => attributesOf__Change({ side, kind: "moved", source: "sleep" })
+const sleepRenamed = (side: _Side_Change_) => ({ ...sleep(side), ...attributesOf__Edit("replaced") })
+const status = (side: _Side_Change_) => attributesOf__Change({ side, kind: "moved", source: "status" })
 
 // each proposal's item, listed in every frame it's in
 const item_Header: _Item_Proposals_ = {
@@ -148,14 +151,35 @@ const item_Timeout: _Item_Proposals_ = {
   attributes: {},
 }
 
-// the module's frames, five, seven proposals through them, every case so
+const item_Sleep: _Item_Proposals_ = {
+  source: "sleep",
+  title: "Move sleep up, beside the delays it waits out",
+  places: "",
+  rationale: "Read from the top, sleep comes before retry, which waits on it, next to the constants it's given; on the way, its ms is named delayMs, as DELAY_MS is.",
+  actions: actions_Review,
+  attributes: {},
+}
+
+const item_Status: _Item_Proposals_ = {
+  source: "status",
+  title: "Work out the status first",
+  places: "",
+  rationale: "With the status read before either check, isRetryable reads top to bottom as its answers: the network failing, then the server's codes.",
+  actions: actions_Review,
+  attributes: {},
+}
+
+// the module's frames, seven, nine proposals through them, every case so
 // far once: the opening comment taken out whole, leaving nothing proposed;
-// the doc comment's options, a removal inside a line, a thread's place
-// nested in it; retry, replacements far apart, words put into a line, a line
-// taken out whole, the thread's place in it nested too; backoff, the
-// thread's last places, and a line put in, with replacements under it; and
-// isRetryable, a function the agent sent whole, of which only a comment's
-// last words and a line's middle differ, the lines round them as they are.
+// the blank line after the constants, where sleep lands, moved up from the
+// module's end, renamed on the way, its two ends in two frames, the one it
+// leaves leaving nothing; the doc comment's options, a removal inside a
+// line, a thread's place nested in it; retry, replacements far apart, words
+// put into a line, a line taken out whole, the thread's place in it nested
+// too; backoff, the thread's last places, and a line put in, with
+// replacements under it; and isRetryable, a function the agent sent whole,
+// of which only a comment's last words and a line's middle differ, the
+// lines round them as they are, and a line moved up, both its ends there.
 // The thread, round, runs through three frames, its nine places counted in
 // each
 const frames_retry: Array<_FRAME_Block__ViewModel_> = [
@@ -172,6 +196,35 @@ const frames_retry: Array<_FRAME_Block__ViewModel_> = [
       },
       { kind: "PROPOSAL_LINES", run: { id: "header-proposed", lines: [], groups: [] } },
       { kind: "PROPOSAL_LIST", items: [item_Header] },
+    ],
+  },
+  {
+    kind: "FRAME",
+    range: { first: 6, last: 6 },
+    parts: [
+      {
+        kind: "CURRENT_LINES",
+        run: { id: "constants-current", lines: [
+          lineOf(textAt(6)),
+        ], groups: [] },
+      },
+      {
+        kind: "PROPOSAL_LINES",
+        run: { id: "constants-proposed", lines: [
+          lineOf(textAt(41)),
+          lineOf({ text: "function sleep(", attributes: sleep("after") }, { text: "delayMs", attributes: sleepRenamed("after") }, { text: ", signal) {", attributes: sleep("after") }),
+          lineOf({ text: textAt(43), attributes: sleep("after") }),
+          lineOf({ text: "    const timer = setTimeout(resolve, ", attributes: sleep("after") }, { text: "delayMs", attributes: sleepRenamed("after") }, { text: ");", attributes: sleep("after") }),
+          lineOf({ text: textAt(45), attributes: sleep("after") }),
+          lineOf({ text: textAt(46), attributes: sleep("after") }),
+          lineOf({ text: textAt(47), attributes: sleep("after") }),
+          lineOf({ text: textAt(48), attributes: sleep("after") }),
+          lineOf({ text: textAt(49), attributes: sleep("after") }),
+          lineOf({ text: textAt(50), attributes: sleep("after") }),
+          lineOf(textAt(6)),
+        ], groups: [] },
+      },
+      { kind: "PROPOSAL_LIST", items: [item_Sleep] },
     ],
   },
   {
@@ -274,7 +327,7 @@ const frames_retry: Array<_FRAME_Block__ViewModel_> = [
         run: { id: "retryable-current", lines: [
           lineOf(textAt(36)),
           lineOf("  if (error instanceof TypeError) return true; // the network failed, ", { text: "not the server", attributes: timeout("before", "replaced") }),
-          lineOf(textAt(38)),
+          lineOf({ text: textAt(38), attributes: status("before") }),
           lineOf(textAt(39)),
           lineOf(textAt(40)),
         ], groups: [] },
@@ -283,21 +336,52 @@ const frames_retry: Array<_FRAME_Block__ViewModel_> = [
         kind: "PROPOSAL_LINES",
         run: { id: "retryable-proposed", lines: [
           lineOf(textAt(36)),
+          lineOf({ text: textAt(38), attributes: status("after") }),
           lineOf("  if (error instanceof TypeError) return true; // the network failed, ", { text: "before any answer", attributes: timeout("after", "replaced") }),
-          lineOf(textAt(38)),
           lineOf("  return ", { text: "status === 408 || ", attributes: timeout("after", "inserted") }, "status === 429 || (status >= 500 && status !== 501);"),
           lineOf(textAt(40)),
         ], groups: [] },
       },
-      { kind: "PROPOSAL_LIST", items: [item_Timeout] },
+      { kind: "PROPOSAL_LIST", items: [item_Timeout, item_Status] },
     ],
   },
+  {
+    kind: "FRAME",
+    range: { first: 41, last: 50 },
+    parts: [
+      {
+        kind: "CURRENT_LINES",
+        run: { id: "sleep-current", lines: [
+          lineOf(textAt(41)),
+          lineOf({ text: "function sleep(", attributes: sleep("before") }, { text: "ms", attributes: sleepRenamed("before") }, { text: ", signal) {", attributes: sleep("before") }),
+          lineOf({ text: textAt(43), attributes: sleep("before") }),
+          lineOf({ text: "    const timer = setTimeout(resolve, ", attributes: sleep("before") }, { text: "ms", attributes: sleepRenamed("before") }, { text: ");", attributes: sleep("before") }),
+          lineOf({ text: textAt(45), attributes: sleep("before") }),
+          lineOf({ text: textAt(46), attributes: sleep("before") }),
+          lineOf({ text: textAt(47), attributes: sleep("before") }),
+          lineOf({ text: textAt(48), attributes: sleep("before") }),
+          lineOf({ text: textAt(49), attributes: sleep("before") }),
+          lineOf({ text: textAt(50), attributes: sleep("before") }),
+        ], groups: [] },
+      },
+      { kind: "PROPOSAL_LINES", run: { id: "sleep-proposed", lines: [], groups: [] } },
+      { kind: "PROPOSAL_LIST", items: [item_Sleep] },
+    ],
+  },
+]
+
+// the module's moves: sleep, its blank line before it taken along, up to
+// before the blank line after the constants; and isRetryable's status, up a
+// line
+const moves_retry: Array<_Move_Proposal_> = [
+  { source: "sleep", range: { first: 41, last: 50 }, to: 6 },
+  { source: "status", range: { first: 38, last: 38 }, to: 37 },
 ]
 
 const javascript: _Example_ = {
   name: "javascript",
   title: "JavaScript",
-  about: "A JavaScript module, drawn whole by the view on a page of its own, as code is: numbered from 1, its indents kept as they're written, its syntax coloured, a language module's, the playground's JavaScript tokenizer, the colours the playground's, as a host's theme. Five frames, seven proposals through them, each case so far once. The opening comment, taken out whole, leaves nothing proposed. The doc comment's options lose onRetry, inside the line. In retry: every error kept, three lines far apart changed; words put into a line, so as it is, it shows nowhere; the onRetry call taken out whole. In backoff: a line put in, with replacements under it. Through three frames, a thread: the counter n renamed round, in nine places, each frame listing it with how many are there; two of them, in the doc comment and the onRetry call, inside the onRetry removal, ringed faint, applying only if it's rejected. In isRetryable, a function the agent sent whole, of which only a comment's last words and the middle of its return differ. Point at a change, or an item, to see its proposal: its rings heavier, its items lit, in every frame it's in.",
+  about: "A JavaScript module, drawn whole by the view on a page of its own, as code is: numbered from 1, its indents kept as they're written, its syntax coloured, a language module's, the playground's JavaScript tokenizer, the colours the playground's, as a host's theme. Seven frames, nine proposals through them, each case so far once. The opening comment, taken out whole, leaves nothing proposed. The doc comment's options lose onRetry, inside the line. In retry: every error kept, three lines far apart changed; words put into a line, so as it is, it shows nowhere; the onRetry call taken out whole. In backoff: a line put in, with replacements under it. Through three frames, a thread: the counter n renamed round, in nine places, each frame listing it with how many are there; two of them, in the doc comment and the onRetry call, inside the onRetry removal, ringed faint, applying only if it's rejected. In isRetryable, a function the agent sent whole, of which only a comment's last words and the middle of its return differ; and its status worked out a line earlier, a move with both its ends in the frame. Another move takes sleep from the module's end up beside the constants, naming its ms delayMs on the way: its two ends in two frames, each with a note beside its first line: press it to go to the other end. Where it leaves, the note says only which way it moves, as the line it goes to would mean little, and needn't hold once other proposals are decided. A move is ringed blue, numbered blue where it leaves and signed → where it lands, its edits on the way ringed inside it. Point at a change, or an item, to see its proposal: its rings heavier, its items lit, in every frame it's in.",
   // the editor, in the "changes" perspective, drawing the module into the
   // stage, its syntax JavaScript's, its frames as above, with the mouse, so
   // pointing at a proposal shows it; nothing to report
@@ -312,7 +396,8 @@ const javascript: _Example_ = {
       viewModel_TextEditor: viewModelOf__Blocks(blocksWith__Frames({
         multilineText: retry,
         module_Language: module_JavaScript,
-        frames: frames_retry
+        frames: frames_retry,
+        moves: moves_retry
       }))
     })
   },

@@ -101,5 +101,6 @@ const proposalsProse: _Scene_ = {
         },
       ],
     }],
+    moves: [],
   })),
 }

@@ -25,6 +25,23 @@ const MODULE_MOUSE: _Module_TextEditor_ = {
         kind: "POINT",
         point_Screen: null
       })
+    },
+    {
+      event: "click",
+      commandOf__Event: (event) => {
+        const element_Note = event.target instanceof Element ? event.target.closest(".note_htmlView") : null
+        const source = element_Note?.getAttribute("data-target-source")
+        const side = element_Note?.getAttribute("data-target-side")
+        return typeof source === "string" && typeof side === "string"
+          ? {
+            kind: "JUMP",
+            target_Note: {
+              source,
+              side
+            }
+          }
+          : null
+      }
     }
   ]
 }

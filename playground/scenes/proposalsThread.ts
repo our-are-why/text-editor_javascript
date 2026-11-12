@@ -150,5 +150,6 @@ const proposalsThread: _Scene_ = {
         ],
       },
     ],
+    moves: [],
   })),
 }

@@ -698,6 +698,154 @@ describe("beside it: what can't live in one document", () => {
     ])
   })
 
+  test("a line's note, as the view model says it, is a button after its text, its label shown, going where it says, but holding no text, so it's never part of the line's; a line without one has none", async () => {
+    const notes = await opened.page.evaluate(() => {
+      const containerElement = document.createElement("div")
+      document.body.append(containerElement)
+      const [moving, staying] = window.parseLines_ViewModel({ multilineText: "function sleep(ms) {\n}", module_Language: window.MODULE_PLAINTEXT })
+      if (moving === undefined || staying === undefined) throw new Error("the lines weren't parsed")
+      new window._View_TextEditor_({
+        containerElement,
+        componentMap: window.COMPONENTMAP__VIEW_TEXTEDITOR
+      }).draw(window.viewModelOf__Blocks([{
+        kind: "LINES",
+        run: { id: "document", lines: [{ ...moving, note: { label: "moves up", target: { source: "move", side: "after" } } }, staying], groups: [] }
+      }]))
+      return [...containerElement.querySelectorAll(".text_htmlView")].map((textElement) => {
+        const buttonElement = textElement.querySelector(":scope > .note_htmlView")
+        return {
+          text: textElement.textContent,
+          note: buttonElement === null ? null : {
+            tag: buttonElement.localName,
+            last: buttonElement === textElement.lastElementChild,
+            label: buttonElement.getAttribute("aria-label"),
+            shown: getComputedStyle(buttonElement, "::before").content,
+            target: [buttonElement.getAttribute("data-target-source"), buttonElement.getAttribute("data-target-side")]
+          }
+        }
+      })
+    })
+    expect(notes).toEqual([
+      { text: "function sleep(ms) {", note: { tag: "button", last: true, label: "moves up", shown: '"moves up"', target: ["move", "after"] } },
+      { text: "}", note: null }
+    ])
+  })
+
+  test("pressing a move's note goes to its other end: the editor scrolls it into view; and back", async () => {
+    await opened.page.setViewportSize({ width: 900, height: 400 })
+    await opened.page.evaluate(() => {
+      const containerElement = document.createElement("div")
+      containerElement.id = "jumping"
+      containerElement.style.width = "40rem"
+      containerElement.dataset["perspective"] = "changes"
+      document.body.prepend(containerElement)
+      // a long document, its first line moving to its end, ninety lines on
+      const texts = ["moving", ...Array.from({ length: 90 }, (_, index) => `line ${index + 2}`), "moving"]
+      const lines = window.parseLines_ViewModel({ multilineText: texts.join("\n"), module_Language: window.MODULE_PLAINTEXT })
+      const moved = (side: string) => ({ "data-change": "moved", "data-side": side, "data-source": "move" })
+      const marked = lines.map((line, index) => index === 0 || index === lines.length - 1 ? {
+        ...line,
+        note: index === 0 ? { label: "moves down", target: { source: "move", side: "after" } } : { label: "moved down from line 1", target: { source: "move", side: "before" } },
+        segments: line.segments.map((segment) => ({ ...segment, attributes: moved(index === 0 ? "before" : "after") }))
+      } : line)
+      new window._TextEditor_({
+        containerElement,
+        componentMap: window.COMPONENTMAP__VIEW_TEXTEDITOR,
+        modules: [window.MODULE_MOUSE],
+        viewModel_TextEditor: window.viewModelOf__Blocks([{
+          kind: "LINES",
+          run: { id: "document", lines: marked, groups: [{ attributes: { "data-source": "move" }, underlays: [{ from: { line: 0, offset: 0 }, to: { line: 0, offset: 6 }, attributes: moved("before") }, { from: { line: lines.length - 1, offset: 0 }, to: { line: lines.length - 1, offset: 6 }, attributes: moved("after") }] }] }
+        }])
+      })
+      scrollTo(0, 0)
+    })
+    // which ends are in view
+    const shown = () => opened.page.evaluate(() => Object.fromEntries(["before", "after"].map((side) => {
+      const rect = document.querySelector(`#jumping .text_htmlView [data-side="${side}"]`)?.getBoundingClientRect()
+      return [side, rect !== undefined && rect.top >= 0 && rect.bottom <= innerHeight]
+    })))
+    // an end come into view, all of it, as the page scrolls to it
+    const arrived = (side: string) => opened.page.waitForFunction((side) => {
+      const rect = document.querySelector(`#jumping .text_htmlView [data-side="${side}"]`)?.getBoundingClientRect()
+      return rect !== undefined && rect.top >= 0 && rect.bottom <= innerHeight
+    }, side, { timeout: 3000 })
+    expect(await shown()).toEqual({ before: true, after: false })
+    await opened.page.click('#jumping .note_htmlView[data-target-side="after"]')
+    await arrived("after")
+    expect(await shown()).toEqual({ before: false, after: true })
+    await opened.page.click('#jumping .note_htmlView[data-target-side="before"]')
+    await arrived("before")
+    expect(await shown()).toEqual({ before: true, after: false })
+    await opened.page.evaluate(() => document.querySelector("#jumping")?.remove())
+    await opened.page.setViewportSize({ width: 1280, height: 720 })
+  })
+
+  test("a ring over several lines hugs them, one outline, nothing in it twice or on the way: its left side straight where its rows start at their lines' starts, its right stepping with their ends, never by less than half an em, so lines ending in one column, but for room made in one, share an end; a short last row stays short; a line's note shows, so the row it follows stops short of it", async () => {
+    const shape = await opened.page.evaluate(async () => {
+      const containerElement = document.createElement("div")
+      containerElement.style.width = "40rem"
+      containerElement.style.setProperty("--view-font-size", "14px")
+      containerElement.dataset["perspective"] = "changes"
+      document.body.append(containerElement)
+      const lines = window.parseLines_ViewModel({ multilineText: "go {\n  a line much longer than the first one\n  run(a, b);\n  run(a, c);\n}", module_Language: window.MODULE_PLAINTEXT })
+      const [first, long, plain, pressed, last] = lines
+      if (first === undefined || long === undefined || plain === undefined || pressed === undefined || last === undefined) throw new Error("the lines weren't parsed")
+      const change = { "data-change": "moved", "data-side": "before", "data-source": "move" }
+      const edit = { "data-change": "replaced", "data-side": "before", "data-source": "move" }
+      const [segment] = pressed.segments
+      if (segment === undefined) throw new Error("the line has no segment")
+      const textOf = (text: string) => window.parseLines_ViewModel({ multilineText: text, module_Language: window.MODULE_PLAINTEXT })[0]?.segments[0]?.text ?? segment.text
+      // c, an edit on the way, its own span, pressed on by ), so room's made
+      // after it, and its line ends further out than the line above, by less
+      // than a character
+      const pressed_Cut = { ...pressed, segments: [{ text: textOf("  run(a, "), attributes: change }, { text: textOf("c"), attributes: { ...change, "data-edit": "replaced" } }, { text: textOf(");"), attributes: change }] }
+      new window._View_TextEditor_({
+        containerElement,
+        componentMap: window.COMPONENTMAP__VIEW_TEXTEDITOR
+      }).draw(window.viewModelOf__Blocks([{
+        kind: "LINES",
+        run: { id: "document", lines: [{ ...first, note: { label: "moves up", target: { source: "move", side: "after" } } }, long, plain, pressed_Cut, last], groups: [{ attributes: { "data-source": "move" }, underlays: [{ from: { line: 0, offset: 0 }, to: { line: 4, offset: 1 }, attributes: change }, { from: { line: 3, offset: 9 }, to: { line: 3, offset: 10 }, attributes: edit }] }] }
+      }]))
+      await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)))
+      const path = containerElement.querySelector(".underlay_htmlView")
+      const origin = containerElement.querySelector(".underlays_htmlView")?.getBoundingClientRect()
+      const texts = [...containerElement.querySelectorAll(".text_htmlView")]
+      const [textFirst, textLong, textPlain, textPressed, textLast] = texts
+      if (!(path instanceof SVGPathElement) || origin === undefined || textFirst === undefined || textLong === undefined || textPlain === undefined || textPressed === undefined || textLast === undefined) throw new Error("the ring wasn't drawn")
+      const middleOf = (element: Element) => {
+        const rect = element.getBoundingClientRect()
+        return rect.top + rect.height / 2 - origin.top
+      }
+      // where a line's text ends: its last segment's, not its note's
+      const rightOf = (element: Element) => (element.querySelector(":scope > span:last-of-type") ?? element).getBoundingClientRect().right - origin.left
+      const inside = (x: number, element: Element) => path.isPointInFill(new DOMPoint(x, middleOf(element)))
+      const d = path.getAttribute("d") ?? ""
+      const points = (d.match(/-?[\d.]+ -?[\d.]+/g) ?? []).map((pair) => pair.split(" ").map(Number))
+      const isLevel = (one: number, other: number) => Math.abs(one - other) < 0.01
+      const halfEm = 7
+      const noteLeft = (textFirst.querySelector(".note_htmlView")?.getBoundingClientRect().left ?? 0) - origin.left
+      const leftmost = Math.min(...points.map(([x]) => x ?? 0))
+      return {
+        oneOutline: (d.match(/M/g) ?? []).length === 1 && d.trim().endsWith("Z"),
+        nothingTwice: points.every(([x, y], index) => index === 0 || !(isLevel(x ?? 0, points[index - 1]?.[0] ?? NaN) && isLevel(y ?? 0, points[index - 1]?.[1] ?? NaN))),
+        nothingOnTheWay: points.every(([x, y], index) => {
+          const [xBefore, yBefore] = points[index - 1] ?? [NaN, NaN]
+          const [xAfter, yAfter] = points[index + 1] ?? [NaN, NaN]
+          return !(isLevel(xBefore ?? NaN, x ?? 0) && isLevel(x ?? 0, xAfter ?? NaN)) && !(isLevel(yBefore ?? NaN, y ?? 0) && isLevel(y ?? 0, yAfter ?? NaN))
+        }),
+        leftStraight: points.filter(([x]) => isLevel(x ?? 0, leftmost)).length === 2,
+        stepsHalfAnEmOrMore: points.every(([x, y], index) => {
+          const [xAfter, yAfter] = points[index + 1] ?? [NaN, NaN]
+          return !isLevel(y ?? 0, yAfter ?? NaN) || Math.abs((xAfter ?? 0) - (x ?? 0)) >= halfEm
+        }),
+        roomShared: rightOf(textPressed) > rightOf(textPlain) && inside(rightOf(textPressed) + 1, textPlain),
+        lastShort: !inside(rightOf(textLong) - 5, textLast),
+        firstStopsShortOfNote: !inside(noteLeft - 3, textFirst) && inside(rightOf(textFirst) + 1, textFirst)
+      }
+    })
+    expect(shape).toEqual({ oneOutline: true, nothingTwice: true, nothingOnTheWay: true, leftStraight: true, stepsHalfAnEmOrMore: true, roomShared: true, lastShort: true, firstStopsShortOfNote: true })
+  })
+
   test("a text underlay is drawn again, as one shape over all its rows, when the view's width changes", async () => {
     const rows = await opened.page.evaluate(async () => {
       const containerElement = document.createElement("div")
@@ -813,7 +961,7 @@ async function drawnOf(
     new window._View_TextEditor_({
       containerElement,
       componentMap: window.COMPONENTMAP__VIEW_TEXTEDITOR
-    }).draw(window.viewModelOf__Blocks([{ kind: "LINES", run: { id: "line", lines: [{ gutter: { label: "", marker: "none" }, segments: segments_Line }], groups: [] } }]))
+    }).draw(window.viewModelOf__Blocks([{ kind: "LINES", run: { id: "line", lines: [{ gutter: { label: "", marker: "none" }, note: null, segments: segments_Line }], groups: [] } }]))
     const textElement = containerElement.querySelector(".text_htmlView")
     if (textElement === null) throw new Error("the line's text wasn't drawn")
     return [...textElement.childNodes].map((node) => ({

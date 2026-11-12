@@ -66,13 +66,16 @@
   --insetBlock_underlay_htmlView: var(--view-underlay-inset-block, 0px);
   --insetInline_underlay_htmlView: var(--view-underlay-inset-inline, 0px);
   --clearInline_underlay_htmlView: var(--view-underlay-clear-inline, var(--view-underlay-inset-block, 0px));
+  --step_underlay_htmlView: var(--view-underlay-step, 0px);
 }
 
 /* the underlays' lengths, as a perspective or a host gives them, in any
    unit, resolved here, on the run's svg, where the font is the view's, so
    a length in ems is the view's font's, and one given as a calc() is
    worked out; the view reads them as pixels. The clearance, given none,
-   is the block inset. */
+   is the block inset. The step is the least a ring's side steps in or out,
+   from one row to the next: rows with nothing past them whose ends are
+   nearer than it share one, the further out. */
 @property --insetBlock_underlay_htmlView {
   syntax: "<length>";
   inherits: false;
@@ -86,6 +89,12 @@
 }
 
 @property --clearInline_underlay_htmlView {
+  syntax: "<length>";
+  inherits: false;
+  initial-value: 0px;
+}
+
+@property --step_underlay_htmlView {
   syntax: "<length>";
   inherits: false;
   initial-value: 0px;
@@ -111,6 +120,33 @@
   min-width: 0;
   white-space: pre-wrap;
   overflow-wrap: break-word;
+}
+
+/* A line's note, what the view model says beside it, a button going
+   somewhere, as to a move's other end: after its text, in the gutter's
+   ink, smaller; its label its aria-label, drawn by ::before, so it holds no
+   text, and nothing that reads or measures the line's text meets it */
+.htmlView_editor .note_htmlView {
+  margin: 0;
+  margin-inline-start: 2ch;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--view-note-ink, var(--view-gutter-ink, color-mix(in srgb, CanvasText 40%, transparent)));
+  font-family: var(--view-note-font, system-ui, sans-serif);
+  font-size: 0.85em;
+  line-height: inherit;
+  white-space: nowrap;
+  cursor: pointer;
+  user-select: none;
+}
+
+.htmlView_editor .note_htmlView::before {
+  content: attr(aria-label);
+}
+
+.htmlView_editor .note_htmlView:is(:hover, :focus-visible) {
+  text-decoration: underline;
 }
 
 /* A line's gutter: its label, the document's number for it or a sign, as

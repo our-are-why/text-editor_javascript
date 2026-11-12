@@ -7,7 +7,8 @@ export {
   type _Side_Change_,
   type _Kind_Change_,
   attributesOf__Change,
-  attributesOf__Nested
+  attributesOf__Nested,
+  attributesOf__Edit
 }
 
 // the marks the playground's scenes use, as a host would name them: the
@@ -34,8 +35,9 @@ function attributesOf__Link(
 // becomes, put in
 type _Side_Change_ = "before" | "after"
 
-// what happened to a stretch, as doctor's comparison names it
-type _Kind_Change_ = "inserted" | "removed" | "replaced" | "replacedRestyled" | "restyled"
+// what happened to a stretch, as doctor's comparison names it; or moved,
+// taken from where it is and put somewhere else, by a move
+type _Kind_Change_ = "inserted" | "removed" | "replaced" | "replacedRestyled" | "restyled" | "moved"
 
 interface _Api___attributesOf__Change_ {
   side: _Side_Change_
@@ -68,5 +70,15 @@ function attributesOf__Nested({
   source
 }: _Api___attributesOf__Nested_): _Attributes_Element_ {
   return { "data-nested-change": kind, "data-nested-source": source }
+}
+
+// what a move's words become on the way, where it changes them, a stretch of
+// what it moves: the edit's kind, under a name of its own, so the move's stay
+// as they are on the segment; it's the move's own proposal's, so it's ringed
+// inside the move's ring, at full strength
+function attributesOf__Edit(
+  kind: _Kind_Change_
+): _Attributes_Element_ {
+  return { "data-edit": kind }
 }
 

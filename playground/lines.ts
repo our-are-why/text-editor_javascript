@@ -1,4 +1,4 @@
-import { type _Attributes_Element_, type _Line_Run_, type _Segment_Line_, parseTexts_Line, type _Block_ViewModel_, parseLines_ViewModel, type _Module_Language_, segmentsOf__Stretches, type _Stretch_Line_, type _FRAME_Block__ViewModel_, type _Part_Frame_, type _Run_Lines_, type _Marker_Gutter_, type _Group_Underlay_, type _Underlay_Text_, type _Position_Run_, type _Item_Proposals_, type _NonEmpty_ } from "../source/ViewModel_TextEditor.ts"
+import { type _Attributes_Element_, type _Line_Run_, type _Segment_Line_, parseTexts_Line, type _Block_ViewModel_, parseLines_ViewModel, type _Module_Language_, segmentsOf__Stretches, type _Stretch_Line_, type _FRAME_Block__ViewModel_, type _Part_Frame_, type _Run_Lines_, type _Marker_Gutter_, type _Group_Underlay_, type _Underlay_Text_, type _Position_Run_, type _Item_Proposals_, type _NonEmpty_, type _Range_Lines_ } from "../source/ViewModel_TextEditor.ts"
 
 export {
   type _Piece_Line_,
@@ -7,6 +7,7 @@ export {
   blocksOf__Text,
   blocksOf__Lines,
   textElementsIn,
+  type _Move_Proposal_,
   blocksWith__Frames,
   groupsOf__Lines
 }
@@ -28,6 +29,7 @@ function lineOf(
 ): _Line_Run_ {
   return {
     gutter: { label: "", marker: "none" },
+    note: null,
     segments: pieces.flatMap((piece): Array<_Segment_Line_> => {
       const { text, attributes } = typeof piece === "string" ? { text: piece, attributes: {} } : piece
       const [text_line, ...more] = parseTexts_Line(text)
@@ -67,6 +69,17 @@ interface _Api___blocksWith__Frames_<State> {
   multilineText: string
   module_Language: _Module_Language_<State>
   frames: Array<_FRAME_Block__ViewModel_>
+  moves: Array<_Move_Proposal_>
+}
+
+// a proposal's move: the lines it takes, numbered as the document numbers
+// them, and the line, as it is, it puts them before. Its words are written
+// on the frames' lines, moved, as every change's are; this says where it
+// goes, as the projection will know it from the move
+interface _Move_Proposal_ {
+  source: string
+  range: _Range_Lines_
+  to: number
 }
 
 // a document's lines with frames in place of the lines they're of, numbered
@@ -76,14 +89,20 @@ interface _Api___blocksWith__Frames_<State> {
 // Every line's syntax is the language module's, a frame's lines' too: those
 // as they are, as the document's are; those proposed, as they'd be in the
 // document the proposals would leave, so each starts from the state the line
-// before it would leave. Then each proposal's item, in every frame's list,
-// says where it is, from the places of it every frame has. A frame whose
+// before it would leave. Each end of a move, on its first line with words,
+// has a note that goes to its other end: where it leaves, saying only which
+// way it moves, as a line number there would mean little, and needn't hold
+// once other proposals are decided; where it lands, where it's from, the
+// document's lines as they are. Then each proposal's item, in every frame's
+// list, says where it is, from the places of it every frame has, or, a
+// move's, where it goes. A frame whose
 // lines as they are aren't the document's, or that overlaps another, is a
 // mistake in the scene, and throws
 function blocksWith__Frames<State>({
   multilineText,
   module_Language,
-  frames
+  frames,
+  moves
 }: _Api___blocksWith__Frames_<State>): Array<_Block_ViewModel_> {
   const lines = parseLines_ViewModel({ multilineText, module_Language })
   const texts = parseTexts_Line(multilineText)
@@ -92,7 +111,7 @@ function blocksWith__Frames<State>({
     const next = ordered[index + 1]
     if (next !== undefined && next.range.first <= frame.range.last) throw new Error(`frames of lines ${frame.range.first} to ${frame.range.last} and ${next.range.first} to ${next.range.last} overlap`)
   })
-  const framed = ordered.map((frame) => framedOf(frame, lines, texts, module_Language))
+  const framed = ordered.map((frame) => framedOf(frame, lines, texts, module_Language, moves))
   const titles = new Map(framed.flatMap((frame) => frame.parts.flatMap((part) => part.kind === "PROPOSAL_LIST" ? part.items.map((item): [string, string] => [item.source, item.title]) : [])))
   const places_All = framed.flatMap(placesOf)
   const blocks: Array<_Block_ViewModel_> = []
@@ -104,7 +123,7 @@ function blocksWith__Frames<State>({
     const placed = (part_Frame: _Part_Frame_): _Part_Frame_ =>
       part_Frame.kind !== "PROPOSAL_LIST" ? part_Frame : {
         ...part_Frame,
-        items: placedItems(part_Frame.items, (item) => ({ ...item, places: placesText(item.source, places_Here, places_All, titles) })),
+        items: placedItems(part_Frame.items, (item) => ({ ...item, places: placesText(item.source, places_Here, places_All, titles, moves) })),
       }
     blocks.push({ ...frame, parts: [placed(part), ...more.map(placed)] })
     next = frame.range.last + 1
@@ -116,29 +135,41 @@ function blocksWith__Frames<State>({
 // a frame, its lines numbered, signed and given their syntax and groups. A
 // line as it is, numbered as the document numbers it, with its syntax in
 // the document; one proposed, unnumbered, but for a sign: + where it's put
-// in, ~ where it's changed, with its syntax in the document the proposals
-// would leave; each run with its proposals' groups behind it
+// in, ~ where it's changed, → where it's moved in, with its syntax in the
+// document the proposals would leave; each run with its proposals' groups
+// behind it. A move's first line with words, where it leaves, and its first
+// line moved in, where it lands, each have a note going to the other
 function framedOf<State>(
   frame: _FRAME_Block__ViewModel_,
   lines: Array<_Line_Run_>,
   texts: Array<string>,
-  module_Language: _Module_Language_<State>
+  module_Language: _Module_Language_<State>,
+  moves: Array<_Move_Proposal_>
 ): _FRAME_Block__ViewModel_ {
   const before = texts.slice(0, frame.range.first - 1)
   const size = frame.range.last - frame.range.first + 1
   for (const part of frame.parts) {
     if (part.kind === "CURRENT_LINES" && part.run.lines.length !== size) throw new Error(`a frame of ${size} lines shows ${part.run.lines.length} as they are`)
   }
-  const numbered = (line: _Line_Run_, index: number): _Line_Run_ => ({
-    ...withSyntax(line, lines[frame.range.first - 1 + index]),
-    gutter: { label: String(frame.range.first + index), marker: markerOf(line) },
-  })
+  const numbered = (line: _Line_Run_, index: number): _Line_Run_ => {
+    const leaving = moves.find((move) => firstWordedOf(move.range, texts) === frame.range.first + index)
+    return {
+      ...withSyntax(line, lines[frame.range.first - 1 + index]),
+      gutter: { label: String(frame.range.first + index), marker: markerOf(line) },
+      note: leaving === undefined ? null : { label: `moves ${wayOf(leaving)}`, target: { source: leaving.source, side: "after" } },
+    }
+  }
   const signedIn = (lines_Proposed: Array<_Line_Run_>): Array<_Line_Run_> => {
     const syntax = parseLines_ViewModel({ multilineText: [...before, ...lines_Proposed.map(textOf)].join("\n"), module_Language }).slice(before.length)
-    return lines_Proposed.map((line, index) => ({
-      ...withSyntax(line, syntax[index]),
-      gutter: { label: signs[markerOf(line)], marker: markerOf(line) },
-    }))
+    const landing = (index: number) => moves.find((move) => lines_Proposed.findIndex((each) => each.segments.some((segment) => segment.attributes["data-change"] === "moved" && segment.attributes["data-side"] === "after" && segment.attributes["data-source"] === move.source)) === index)
+    return lines_Proposed.map((line, index) => {
+      const move = landing(index)
+      return {
+        ...withSyntax(line, syntax[index]),
+        gutter: { label: signs[markerOf(line)], marker: markerOf(line) },
+        note: move === undefined ? null : { label: `moved ${wayOf(move)} from ${linesText(move.range)}`, target: { source: move.source, side: "before" } },
+      }
+    })
   }
   const runOf = (run: _Run_Lines_, lines_Run: Array<_Line_Run_>): _Run_Lines_ => ({ id: run.id, lines: lines_Run, groups: groupsOf__Lines(lines_Run) })
   const withGutters = (part: _Part_Frame_): _Part_Frame_ => {
@@ -153,6 +184,35 @@ function framedOf<State>(
   }
   const [part, ...more] = frame.parts
   return { ...frame, parts: [withGutters(part), ...more.map(withGutters)] }
+}
+
+// a move's first line with words on it, by its number, which says where the
+// move goes: its first line may be a blank one, taken along to keep the
+// lines apart where it lands
+function firstWordedOf(
+  range: _Range_Lines_,
+  texts: Array<string>
+): number {
+  for (let number = range.first; number <= range.last; number++) {
+    if ((texts[number - 1] ?? "").trim() !== "") return number
+  }
+  return range.first
+}
+
+// which way a move goes in the document: up, to before its lines, or down
+function wayOf(
+  move: _Move_Proposal_
+): _Way_Move_ {
+  return move.to < move.range.first ? "up" : "down"
+}
+
+type _Way_Move_ = "up" | "down"
+
+// lines, by their numbers, as an item or a note says them
+function linesText(
+  range: _Range_Lines_
+): string {
+  return range.first === range.last ? `line ${range.first}` : `lines ${range.first}–${range.last}`
 }
 
 // a place of a proposal: one of its changes, by its source, and, when it's
@@ -188,16 +248,20 @@ function placedItems(
   return [place(item), ...more.map(place)]
 }
 
-// where a proposal is, as its item says it in a frame: how many of its
-// places are here, of how many in all, when that's not all of them; and of
-// those here, how many only if another proposal, whose removal they're
-// inside, is rejected. Nothing for a proposal wholly here, inside nothing
+// where a proposal is, as its item says it in a frame: a move, which lines
+// and which way, at both its ends; otherwise, how many of its places are here, of how
+// many in all, when that's not all of them; and of those here, how many only
+// if another proposal, whose removal they're inside, is rejected. Nothing for
+// a proposal wholly here, inside nothing
 function placesText(
   source: string,
   places_Here: Array<_Place_Proposal_>,
   places_All: Array<_Place_Proposal_>,
-  titles: Map<string, string>
+  titles: Map<string, string>,
+  moves: Array<_Move_Proposal_>
 ): string {
+  const move = moves.find((each) => each.source === source)
+  if (move !== undefined) return `moves ${linesText(move.range)} ${wayOf(move)}`
   const here = places_Here.filter((place) => place.source === source)
   const all = places_All.filter((place) => place.source === source)
   const within = Map.groupBy(here.flatMap((place) => place.within === null ? [] : [place.within]), (source_Within) => source_Within)
@@ -207,22 +271,25 @@ function placesText(
 }
 
 // what a line becomes, as its changes say: taken out, when it's all taken
-// out; put in, when it's all put in; changed in place, when any of it's
-// changed; or nothing
+// out; put in, when it's all put in; moved, when it's all moved, edited on
+// the way or not; changed in place, when any of it's changed; or nothing
 function markerOf(
   line: _Line_Run_
 ): _Marker_Gutter_ {
   const all = (change: string) => line.segments.length > 0 && line.segments.every((segment) => segment.attributes["data-change"] === change)
   if (all("removed")) return "removed"
   if (all("inserted")) return "inserted"
+  if (all("moved")) return "moved"
   return line.segments.some((segment) => "data-source" in segment.attributes) ? "changed" : "none"
 }
 
 // the sign a proposed line's gutter shows for what it is: + put in, ~ changed
-// in place; none for a line the proposals leave as it was
+// in place, → moved in from elsewhere; none for a line the proposals leave as
+// it was
 const signs: Record<_Marker_Gutter_, string> = {
   inserted: "+",
   changed: "~",
+  moved: "→",
   removed: "",
   none: ""
 }
@@ -270,10 +337,12 @@ const names_Change = ["data-change", "data-side", "data-source"]
 // each proposal's group behind a run of lines, in the order they first come,
 // its changes in it and nothing else, no path for the proposal as a whole:
 // those inside another proposal's removal too, as a segment's nested change
-// says them, saying whose, data-within; a change's segments that run on into
-// each other, along a line or from one line's end to the next one's start,
-// as one, without the spaces at its ends, so its ring is round its words
-// alone
+// says them, saying whose, data-within; and the edits a move makes on the
+// way, as a segment's edit says them, the move's own; a change's segments
+// that run on into each other, along a line or from one line's end to the
+// next one's start, as one, however many edits are inside it, without the
+// spaces at its ends, so its ring is round its words alone; in the order
+// they start
 function groupsOf__Lines(
   lines: Array<_Line_Run_>
 ): Array<_Group_Underlay_> {
@@ -284,6 +353,7 @@ function groupsOf__Lines(
     const to = { line: index_Line, offset: offset + segment.text.length }
     const nested_Source = segment.attributes["data-nested-source"]
     const nested_Change = segment.attributes["data-nested-change"]
+    const edit = segment.attributes["data-edit"]
     return source === undefined ? [] : [
       {
         source,
@@ -293,15 +363,23 @@ function groupsOf__Lines(
         source: nested_Source,
         underlay: { from, to, attributes: { "data-change": nested_Change, "data-side": segment.attributes["data-side"] ?? "before", "data-source": nested_Source, "data-within": source } },
       }]),
+      ...(edit === undefined ? [] : [{
+        source,
+        underlay: { from, to, attributes: { "data-change": edit, "data-side": segment.attributes["data-side"] ?? "before", "data-source": source } },
+      }]),
     ]
   }))
+  const alike = ({ underlay }: _Stretch_Change_) => JSON.stringify(Object.entries(underlay.attributes).toSorted())
   return [...Map.groupBy(stretches, (stretch) => stretch.source)].map(([source, stretches_Source]) => {
-    const changes = stretches_Source.reduce((merged: Array<_Underlay_Text_>, { underlay }) => {
-      const last = merged.at(-1)
-      return last !== undefined && runsInto(lines, last, underlay)
-        ? [...merged.slice(0, -1), { ...last, to: underlay.to }]
-        : [...merged, underlay]
-    }, []).map((change) => trimmed(lines, change))
+    const changes = [...Map.groupBy(stretches_Source, alike).values()]
+      .flatMap((stretches_Alike) => stretches_Alike.reduce((merged: Array<_Underlay_Text_>, { underlay }) => {
+        const last = merged.at(-1)
+        return last !== undefined && runsInto(lines, last, underlay)
+          ? [...merged.slice(0, -1), { ...last, to: underlay.to }]
+          : [...merged, underlay]
+      }, []))
+      .map((change) => trimmed(lines, change))
+      .toSorted((one, other) => one.from.line - other.from.line || one.from.offset - other.from.offset)
     return {
       attributes: { "data-source": source },
       underlays: changes,
