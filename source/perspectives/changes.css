@@ -3,7 +3,7 @@
    doctor shows them. Never with the text's own colour, a strike or an
    underline, which are the text's, its marks' and its syntax's: a change
    is a ring round its words, red where they go, yellow where they're
-   replaced, green where they're new, blue where they're moved, at both
+   replaced, green where they're new, brown where they're moved, at both
    ends, dashed where only their look changes, ghosted, at half strength,
    where they're inside another proposal's removal, so apply only if it's
    rejected; and a line in a frame says what it becomes in its gutter, its
@@ -33,11 +33,14 @@
   --edge: var(--view-inserted-edge, light-dark(#388a34, #89d185));
 }
 
-/* moved: neither lost nor new, so neither red nor green; where it leaves
-   and where it lands; what it changes on the way, rings of their own
-   inside it */
+/* moved: neither lost nor new, so neither red nor green, but both, as
+   doctor's moves are: brown; in the dark, doctor's own, the red where it
+   leaves and the green where it lands mixed, and darkened from the tan
+   that makes; in the light, a lighter tan, as that's too dark there, near
+   the text's ink and syntax's browns; at both its ends; what it changes on
+   the way, rings of their own inside it */
 [data-perspective="changes"] :is(.underlay_htmlView, .seam_htmlView)[data-change="moved"] {
-  --edge: var(--view-moved-edge, light-dark(#2f6fdf, #6ea2ff));
+  --edge: var(--view-moved-edge, light-dark(#a2733f, #977254));
 }
 
 /* only its look: dashed; replaced and restyled both: dashed, but less */
@@ -68,10 +71,10 @@
 
 /* which lines change, said in the gutter, each line's label in the colour
    of what the line becomes: a number, as it is, red where it's taken out,
-   yellow where it's changed in place, blue where it's moved away; a sign,
-   as proposed, green + where it's put in, yellow ~ where it's changed, blue
-   → where it's moved in. Every line, changed or not, on its section's one
-   band; the rings say which words. */
+   yellow where it's changed in place, brown where it's moved away; a sign,
+   as proposed, green + where it's put in, yellow ~ where it's changed,
+   brown → where it's moved in. Every line, changed or not, on its section's
+   one band; the rings say which words. */
 [data-perspective="changes"] .line_htmlView[data-marker="removed"] .label_htmlView {
   color: var(--view-removed-label, light-dark(#ad0707, #c74e39));
 }
@@ -85,10 +88,10 @@
 }
 
 /* a moved line: its number where it leaves, its → where it lands, and the
-   note on its first line going to its other end, in the move's blue */
+   note on its first line going to its other end, in the move's brown */
 [data-perspective="changes"] .line_htmlView[data-marker="moved"] .label_htmlView,
 [data-perspective="changes"] .line_htmlView[data-marker="moved"] .note_htmlView {
-  color: var(--view-moved-label, light-dark(#2f6fdf, #6ea2ff));
+  color: var(--view-moved-label, light-dark(#a2733f, #977254));
 }
 
 /* the proposal pointed at, `data-pointed` on its groups and its items, in

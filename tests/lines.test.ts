@@ -1,6 +1,6 @@
 import { expect, test } from "bun:test"
 import { MODULE_PLAINTEXT, type _Block_ViewModel_, type _Item_Proposals_ } from "../source/ViewModel_TextEditor.ts"
-import { blocksWith__Frames, lineOf } from "../playground/lines.ts"
+import { blocksWith__Frames, lineOf, blankOf } from "../playground/lines.ts"
 import { attributesOf__Change, attributesOf__Edit, type _Side_Change_ } from "../playground/looks.ts"
 
 // a text, its lines 2 and 3 moved down to before line 6, gamma renamed
@@ -70,4 +70,34 @@ test("a move is one ring over all it moves, at each end, whatever it changes on 
 test("a move's item says which lines it moves, and which way, never to which line, at both its ends", () => {
   const places = blocks.flatMap((block) => block.kind === "FRAME" ? block.parts.flatMap((part) => part.kind === "PROPOSAL_LIST" ? part.items.map((each) => each.places) : []) : [])
   expect(places).toEqual(["moves lines 2–3 down", "moves lines 2–3 down"])
+})
+
+test("a frame whose range is empty is a point before its first line, holding no lines as they are, the lines round it as they were; a blank line taken out or put in says so in its gutter, having no words to", () => {
+  const blocks_Point = blocksWith__Frames({
+    multilineText: "alpha\nbeta\n\ngamma",
+    module_Language: MODULE_PLAINTEXT,
+    frames: [
+      {
+        kind: "FRAME",
+        range: { first: 3, last: 2 },
+        parts: [
+          { kind: "PROPOSAL_LINES", run: { id: "point-proposed", lines: [blankOf("inserted"), lineOf({ text: "new", attributes: attributesOf__Change({ side: "after", kind: "inserted", source: "new" }) })], groups: [] } },
+          { kind: "PROPOSAL_LIST", items: [{ ...item, source: "new" }] },
+        ],
+      },
+      {
+        kind: "FRAME",
+        range: { first: 3, last: 3 },
+        parts: [
+          { kind: "CURRENT_LINES", run: { id: "blank-current", lines: [blankOf("removed")], groups: [] } },
+          { kind: "PROPOSAL_LINES", run: { id: "blank-proposed", lines: [], groups: [] } },
+          { kind: "PROPOSAL_LIST", items: [{ ...item, source: "gap" }] },
+        ],
+      },
+    ],
+    moves: [],
+  })
+  expect(blocks_Point.map((block) => block.kind === "LINES" ? `${block.run.id}: ${block.run.lines.map((line) => line.gutter.label).join(" ")}` : `frame ${block.range.first}-${block.range.last}`)).toEqual(["lines-1: 1 2", "frame 3-2", "frame 3-3", "lines-4: 4"])
+  expect(runOf(blocks_Point, "point-proposed").lines.map((line) => [line.gutter.label, line.gutter.marker])).toEqual([["+", "inserted"], ["+", "inserted"]])
+  expect(runOf(blocks_Point, "blank-current").lines.map((line) => [line.gutter.label, line.gutter.marker])).toEqual([["3", "removed"]])
 })

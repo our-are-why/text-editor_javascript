@@ -4,7 +4,7 @@ import { _TextEditor_ } from "../../source/TextEditor.ts"
 import { MODULE_MOUSE } from "../../source/modules/mouse.ts"
 import { viewModelOf__Blocks, parseTexts_Line, type _FRAME_Block__ViewModel_, type _Item_Proposals_ } from "../../source/ViewModel_TextEditor.ts"
 import { actions_Review } from "../items.ts"
-import { blocksWith__Frames, lineOf, type _Move_Proposal_ } from "../lines.ts"
+import { blocksWith__Frames, lineOf, blankOf, type _Move_Proposal_ } from "../lines.ts"
 import { attributesOf__Change, attributesOf__Nested, type _Kind_Change_, type _Side_Change_, attributesOf__Edit } from "../looks.ts"
 import { module_JavaScript } from "../syntax.ts"
 
@@ -171,17 +171,18 @@ const item_Status: _Item_Proposals_ = {
 
 // the module's frames, seven, nine proposals through them, every case so
 // far once: the opening comment taken out whole, leaving nothing proposed;
-// the blank line after the constants, where sleep lands, moved up from the
-// module's end, renamed on the way, its two ends in two frames, the one it
-// leaves leaving nothing; the doc comment's options, a removal inside a
-// line, a thread's place nested in it; retry, replacements far apart, words
-// put into a line, a line taken out whole, the thread's place in it nested
-// too; backoff, the thread's last places, and a line put in, with
-// replacements under it; and isRetryable, a function the agent sent whole,
-// of which only a comment's last words and a line's middle differ, the
-// lines round them as they are, and a line moved up, both its ends there.
-// The thread, round, runs through three frames, its nine places counted in
-// each
+// a point before the blank line after the constants, no lines as they are,
+// where sleep lands, moved up from the module's end, renamed on the way, a
+// blank line put in before it, its two ends in two frames, the one it
+// leaves taking out the blank line before it and leaving nothing; the doc
+// comment's options, a removal inside a line, a thread's place nested in
+// it; retry, replacements far apart, words put into a line, a line taken
+// out whole, the thread's place in it nested too; backoff, the thread's
+// last places, and a line put in, with replacements under it; and
+// isRetryable, a function the agent sent whole, of which only a comment's
+// last words and a line's middle differ, the lines round them as they are,
+// and a line moved up, both its ends there. The thread, round, runs through
+// three frames, its nine places counted in each
 const frames_retry: Array<_FRAME_Block__ViewModel_> = [
   {
     kind: "FRAME",
@@ -200,18 +201,12 @@ const frames_retry: Array<_FRAME_Block__ViewModel_> = [
   },
   {
     kind: "FRAME",
-    range: { first: 6, last: 6 },
+    range: { first: 6, last: 5 },
     parts: [
-      {
-        kind: "CURRENT_LINES",
-        run: { id: "constants-current", lines: [
-          lineOf(textAt(6)),
-        ], groups: [] },
-      },
       {
         kind: "PROPOSAL_LINES",
         run: { id: "constants-proposed", lines: [
-          lineOf(textAt(41)),
+          blankOf("inserted"),
           lineOf({ text: "function sleep(", attributes: sleep("after") }, { text: "delayMs", attributes: sleepRenamed("after") }, { text: ", signal) {", attributes: sleep("after") }),
           lineOf({ text: textAt(43), attributes: sleep("after") }),
           lineOf({ text: "    const timer = setTimeout(resolve, ", attributes: sleep("after") }, { text: "delayMs", attributes: sleepRenamed("after") }, { text: ");", attributes: sleep("after") }),
@@ -221,7 +216,6 @@ const frames_retry: Array<_FRAME_Block__ViewModel_> = [
           lineOf({ text: textAt(48), attributes: sleep("after") }),
           lineOf({ text: textAt(49), attributes: sleep("after") }),
           lineOf({ text: textAt(50), attributes: sleep("after") }),
-          lineOf(textAt(6)),
         ], groups: [] },
       },
       { kind: "PROPOSAL_LIST", items: [item_Sleep] },
@@ -352,7 +346,7 @@ const frames_retry: Array<_FRAME_Block__ViewModel_> = [
       {
         kind: "CURRENT_LINES",
         run: { id: "sleep-current", lines: [
-          lineOf(textAt(41)),
+          blankOf("removed"),
           lineOf({ text: "function sleep(", attributes: sleep("before") }, { text: "ms", attributes: sleepRenamed("before") }, { text: ", signal) {", attributes: sleep("before") }),
           lineOf({ text: textAt(43), attributes: sleep("before") }),
           lineOf({ text: "    const timer = setTimeout(resolve, ", attributes: sleep("before") }, { text: "ms", attributes: sleepRenamed("before") }, { text: ");", attributes: sleep("before") }),
@@ -370,18 +364,19 @@ const frames_retry: Array<_FRAME_Block__ViewModel_> = [
   },
 ]
 
-// the module's moves: sleep, its blank line before it taken along, up to
-// before the blank line after the constants; and isRetryable's status, up a
-// line
+// the module's moves: sleep, alone, up to before the blank line after the
+// constants, a blank line put in before it where it lands, and the one
+// before it taken out where it leaves, so each gap stays one line; and
+// isRetryable's status, up a line
 const moves_retry: Array<_Move_Proposal_> = [
-  { source: "sleep", range: { first: 41, last: 50 }, to: 6 },
+  { source: "sleep", range: { first: 42, last: 50 }, to: 6 },
   { source: "status", range: { first: 38, last: 38 }, to: 37 },
 ]
 
 const javascript: _Example_ = {
   name: "javascript",
   title: "JavaScript",
-  about: "A JavaScript module, drawn whole by the view on a page of its own, as code is: numbered from 1, its indents kept as they're written, its syntax coloured, a language module's, the playground's JavaScript tokenizer, the colours the playground's, as a host's theme. Seven frames, nine proposals through them, each case so far once. The opening comment, taken out whole, leaves nothing proposed. The doc comment's options lose onRetry, inside the line. In retry: every error kept, three lines far apart changed; words put into a line, so as it is, it shows nowhere; the onRetry call taken out whole. In backoff: a line put in, with replacements under it. Through three frames, a thread: the counter n renamed round, in nine places, each frame listing it with how many are there; two of them, in the doc comment and the onRetry call, inside the onRetry removal, ringed faint, applying only if it's rejected. In isRetryable, a function the agent sent whole, of which only a comment's last words and the middle of its return differ; and its status worked out a line earlier, a move with both its ends in the frame. Another move takes sleep from the module's end up beside the constants, naming its ms delayMs on the way: its two ends in two frames, each with a note beside its first line: press it to go to the other end. Where it leaves, the note says only which way it moves, as the line it goes to would mean little, and needn't hold once other proposals are decided. A move is ringed blue, numbered blue where it leaves and signed → where it lands, its edits on the way ringed inside it. Point at a change, or an item, to see its proposal: its rings heavier, its items lit, in every frame it's in.",
+  about: "A JavaScript module, drawn whole by the view on a page of its own, as code is: numbered from 1, its indents kept as they're written, its syntax coloured, a language module's, the playground's JavaScript tokenizer, the colours the playground's, as a host's theme. Seven frames, nine proposals through them, each case so far once. The opening comment, taken out whole, leaves nothing proposed. The doc comment's options lose onRetry, inside the line. In retry: every error kept, three lines far apart changed; words put into a line, so as it is, it shows nowhere; the onRetry call taken out whole. In backoff: a line put in, with replacements under it. Through three frames, a thread: the counter n renamed round, in nine places, each frame listing it with how many are there; two of them, in the doc comment and the onRetry call, inside the onRetry removal, ringed faint, applying only if it's rejected. In isRetryable, a function the agent sent whole, of which only a comment's last words and the middle of its return differ; and its status worked out a line earlier, a move with both its ends in the frame. Another move takes sleep from the module's end up beside the constants, naming its ms delayMs on the way: its two ends in two frames, each with a note beside its first line: press it to go to the other end. Where it leaves, the note says only which way it moves, as the line it goes to would mean little, and needn't hold once other proposals are decided. A move is ringed brown, as doctor's are, numbered brown where it leaves and signed → where it lands, its edits on the way ringed inside it. Point at a change, or an item, to see its proposal: its rings heavier, its items lit, in every frame it's in.",
   // the editor, in the "changes" perspective, drawing the module into the
   // stage, its syntax JavaScript's, its frames as above, with the mouse, so
   // pointing at a proposal shows it; nothing to report

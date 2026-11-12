@@ -296,21 +296,29 @@ beside them, read-only. So:
   12", each going to the other, as doctor's do. Drawn so far, for whole
   lines, the playground standing in for the projection: a change of its own
   kind, `moved`, its two ends its two sides, "before" where it leaves,
-  "after" where it lands, ringed blue, as it's neither lost nor new; its
-  lines numbered blue where it leaves, signed → where it lands; each end's
-  first line with words has a note, a line's `note`, its label and its
-  target, a change's side by its proposal, which the view draws after its
-  text as a button holding no text, its label its `aria-label`, drawn by
-  CSS, so nothing that reads or measures the text meets it; pressed, it goes
-  to the other end. Where it leaves, it says only which way, "moves up": the
-  line it goes to means little to a reader, and needn't hold once other
-  proposals are decided; where it lands, where it's from, "moved up from
-  lines 41–50", the document's lines as they are, numbered in the frame it
-  leaves; its item, at both ends, which lines and which way, "moves lines
-  41–50 up". What it changes on the way, `data-edit` on a segment, is ringed
-  inside it, its own proposal's, at full strength, not another's fallback.
-  Not yet: the link in the margin between two ends shown together, moves
-  within a line, and a move split in pieces.
+  "after" where it lands, ringed brown, as doctor's moves are, neither lost
+  nor new but both, in the dark doctor's own, its red and green mixed,
+  darkened, in the light a lighter tan, as that's too dark there, near the
+  text's ink and the syntax's browns; its lines numbered brown where it
+  leaves, signed → where it lands; each end's first line with words has a
+  note, a line's `note`, its label and its target, a change's side by its
+  proposal, which the view draws after its text as a button holding no text,
+  its label its `aria-label`, drawn by CSS, so nothing that reads or
+  measures the text meets it; pressed, it goes to the other end. Where it
+  leaves, it says only which way, "moves up": the line it goes to means
+  little to a reader, and needn't hold once other proposals are decided;
+  where it lands, where it's from, "moved up from lines 42–50", the
+  document's lines as they are, numbered in the frame it leaves; its item,
+  at both ends, which lines and which way, "moves lines 42–50 up". What it
+  changes on the way, `data-edit` on a segment, is ringed inside it, its own
+  proposal's, at full strength, not another's fallback. A move takes only
+  its lines; the blank lines round them are its own changes, at each end as
+  the context needs: taken out where it leaves, so no gap's left twice, put
+  in where it lands, before it or after, or both; a blank line says so only
+  in its gutter, its number red where it's taken out, + where it's put in,
+  having no words to ring. It lands in a frame that's a point, before a
+  line, with nothing as it is there. Not yet: the link in the margin between
+  two ends shown together, moves within a line, and a move split in pieces.
 
 **every proposal shown at once:** all of them, each change styled as what it
 is, word by word, none hidden behind or put aside for another. Which
@@ -532,7 +540,10 @@ the document or its changes changing:
   from the overlays by another mapping: rarer, and later.
 
 **frames:** a range of the document's lines, taken out of the flow and
-shown in place of themselves, with their possible future. Each line of the
+shown in place of themselves, with their possible future; or a point
+between two lines, its range empty, its last line the one before its
+first, with no lines as they are, only what's proposed there, as where a
+move lands: "before line 6". Each line of the
 document is drawn once, in the flow or in a frame, and the lines after a
 frame are numbered as the document numbers them, what's proposed not the
 document's till it's accepted. A frame's text sits where the document's

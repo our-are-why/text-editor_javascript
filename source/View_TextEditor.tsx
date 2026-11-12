@@ -341,7 +341,7 @@ function FRAME_Block_TextEditor__Html({
 function labelOf__Range_Line$(
   range_Line$: _Range_Lines_
 ): string {
-  return range_Line$.first === range_Line$.last ? `line ${range_Line$.first}` : `lines ${range_Line$.first} to ${range_Line$.last}`
+  return range_Line$.last < range_Line$.first ? `before line ${range_Line$.first}` : range_Line$.first === range_Line$.last ? `line ${range_Line$.first}` : `lines ${range_Line$.first} to ${range_Line$.last}`
 }
 
 interface _Api___Section_Frame__Html_<Kind extends _Part_Frame_["kind"]> {

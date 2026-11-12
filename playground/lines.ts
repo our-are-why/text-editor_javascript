@@ -4,6 +4,7 @@ export {
   type _Piece_Line_,
   type _Marked_Piece_,
   lineOf,
+  blankOf,
   blocksOf__Text,
   blocksOf__Lines,
   textElementsIn,
@@ -37,6 +38,15 @@ function lineOf(
       return text_line === "" ? [] : [{ text: text_line, attributes }]
     }),
   }
+}
+
+// a blank line a proposal takes out or puts in: having no words to carry
+// the change, it says it only in the gutter, by its marker, which the
+// frame keeps, as there are none to work it out from
+function blankOf(
+  marker: _Marker_Gutter_
+): _Line_Run_ {
+  return { gutter: { label: "", marker }, note: null, segments: [] }
 }
 
 // a document's text, its lines numbered from 1, as one run, "document", with
@@ -97,7 +107,10 @@ interface _Move_Proposal_ {
 // list, says where it is, from the places of it every frame has, or, a
 // move's, where it goes. A frame whose
 // lines as they are aren't the document's, or that overlaps another, is a
-// mistake in the scene, and throws
+// mistake in the scene, and throws. A frame whose range is empty, its last
+// line the one before its first, is a point between two lines, before its
+// first, with no lines as they are: where a move lands, as nothing there
+// changes
 function blocksWith__Frames<State>({
   multilineText,
   module_Language,
@@ -272,10 +285,12 @@ function placesText(
 
 // what a line becomes, as its changes say: taken out, when it's all taken
 // out; put in, when it's all put in; moved, when it's all moved, edited on
-// the way or not; changed in place, when any of it's changed; or nothing
+// the way or not; changed in place, when any of it's changed; or nothing. A
+// blank line, with no words to say it, as its gutter already says
 function markerOf(
   line: _Line_Run_
 ): _Marker_Gutter_ {
+  if (line.segments.length === 0) return line.gutter.marker
   const all = (change: string) => line.segments.length > 0 && line.segments.every((segment) => segment.attributes["data-change"] === change)
   if (all("removed")) return "removed"
   if (all("inserted")) return "inserted"

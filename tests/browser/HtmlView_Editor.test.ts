@@ -731,6 +731,27 @@ describe("beside it: what can't live in one document", () => {
     ])
   })
 
+  test("a frame whose range is empty is a point between two lines: it says it's before its first, and draws only what it's given, no lines as they are", async () => {
+    const drawn = await opened.page.evaluate(() => {
+      const containerElement = document.createElement("div")
+      document.body.append(containerElement)
+      const lines = window.parseLines_ViewModel({ multilineText: "new", module_Language: window.MODULE_PLAINTEXT })
+      new window._View_TextEditor_({
+        containerElement,
+        componentMap: window.COMPONENTMAP__VIEW_TEXTEDITOR
+      }).draw(window.viewModelOf__Blocks([{
+        kind: "FRAME",
+        range: { first: 6, last: 5 },
+        parts: [{ kind: "PROPOSAL_LINES", run: { id: "point", lines, groups: [] } }]
+      }]))
+      const frameElement = containerElement.querySelector(".frame_htmlView")
+      const drawn_Frame = { label: frameElement?.getAttribute("aria-label"), current: frameElement?.querySelectorAll(".current_htmlView").length, proposed: frameElement?.querySelectorAll(".proposed_htmlView .line_htmlView").length }
+      containerElement.remove()
+      return drawn_Frame
+    })
+    expect(drawn).toEqual({ label: "before line 6", current: 0, proposed: 1 })
+  })
+
   test("pressing a move's note goes to its other end: the editor scrolls it into view; and back", async () => {
     await opened.page.setViewportSize({ width: 900, height: 400 })
     await opened.page.evaluate(() => {
