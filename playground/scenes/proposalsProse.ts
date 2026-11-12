@@ -70,6 +70,7 @@ const proposalsProse: _Scene_ = {
               title: "Make “can't slip” bold",
               rationale: "It's the one thing in the note that can't move, so it should be the first thing anyone skimming it sees.",
               actions: actions_Review,
+              attributes: {},
           places: "",
             },
             {
@@ -77,6 +78,7 @@ const proposalsProse: _Scene_ = {
               title: "Take out why it can't slip",
               rationale: "The lathe and its supply are already in the list of what goes first; saying it again here only lengthens the sentence.",
               actions: actions_Review,
+              attributes: {},
           places: "",
             },
             {
@@ -84,6 +86,7 @@ const proposalsProse: _Scene_ = {
               title: "Most of the orders sent out, not half finished",
               rationale: "The lathe holds up most of the orders, not half, and what's held up is getting them to customers, not finishing them.",
               actions: actions_Review,
+              attributes: {},
           places: "",
             },
             {
@@ -91,6 +94,7 @@ const proposalsProse: _Scene_ = {
               title: "Two weeks, in bold",
               rationale: "There's two weeks of slack, not one, and it's the number people will plan around.",
               actions: actions_Review,
+              attributes: {},
           places: "",
             },
           ],

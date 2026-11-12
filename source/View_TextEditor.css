@@ -18,15 +18,41 @@
 /* A run of lines, one after another, and behind them one svg, as big as
    the run, holding its text underlays: a group for each thing they're of,
    a proposal, and in it a path for each, tracing every row it covers, on
-   one line or several, as one shape. They're measured once the run's
-   drawn, and again when the view's size changes; how one looks is a
-   perspective's, and without one, it's nothing. The run is its own
-   stacking context, and in it the svg's over its lines' backgrounds, as a
-   band a perspective might give a line, but under their text, which is over
-   it. Nothing in it is pointed at: what's pointed at is the text. */
+   one line or several, as one shape, with room as a perspective says:
+   short of its top and bottom by --view-underlay-inset-block; short of its
+   words' ends by --view-underlay-inset-inline, or, where that's below
+   zero, past them, but only where a space or the row's end is beyond
+   them, never into another character, and never nearer an underlay
+   beside it on its row than twice the block inset; and one inside
+   another's stretch inside it, further from its top and bottom, so
+   neighbours never meet. Where a change's end presses on another
+   character, the view works out the room it lacks, from their ink, past
+   it by the inline inset, and clear of the other's by
+   --view-underlay-clear-inline, or of another change's, starting there,
+   by twice the block inset, and gives it to the element at that edge, the
+   span ending or starting there, as --view-room-inline-end or -start; a
+   perspective makes the room, padding it, or doesn't. They're measured
+   once the run's drawn, and again when the view's size or its container's
+   attributes change; how one looks is a perspective's, and without one,
+   it's nothing. The run is its own stacking context, and in
+   it the svg's over its lines' backgrounds, as a band a perspective might
+   give a line, but under their text, which is over it. Nothing in it is
+   pointed at: what's pointed at is the text. */
 .htmlView_editor .run_htmlView {
   position: relative;
   isolation: isolate;
+}
+
+@property --view-room-inline-start {
+  syntax: "<length>";
+  inherits: false;
+  initial-value: 0px;
+}
+
+@property --view-room-inline-end {
+  syntax: "<length>";
+  inherits: false;
+  initial-value: 0px;
 }
 
 .htmlView_editor .underlays_htmlView {
@@ -37,6 +63,32 @@
   height: 100%;
   overflow: visible;
   pointer-events: none;
+  --insetBlock_underlay_htmlView: var(--view-underlay-inset-block, 0px);
+  --insetInline_underlay_htmlView: var(--view-underlay-inset-inline, 0px);
+  --clearInline_underlay_htmlView: var(--view-underlay-clear-inline, var(--view-underlay-inset-block, 0px));
+}
+
+/* the underlays' lengths, as a perspective or a host gives them, in any
+   unit, resolved here, on the run's svg, where the font is the view's, so
+   a length in ems is the view's font's, and one given as a calc() is
+   worked out; the view reads them as pixels. The clearance, given none,
+   is the block inset. */
+@property --insetBlock_underlay_htmlView {
+  syntax: "<length>";
+  inherits: false;
+  initial-value: 0px;
+}
+
+@property --insetInline_underlay_htmlView {
+  syntax: "<length>";
+  inherits: false;
+  initial-value: 0px;
+}
+
+@property --clearInline_underlay_htmlView {
+  syntax: "<length>";
+  inherits: false;
+  initial-value: 0px;
 }
 
 .htmlView_editor :where(.underlay_htmlView) {
@@ -143,7 +195,9 @@
    says how many of a thread's places are in this frame, and of them, how
    many only if another proposal is rejected; for a proposal wholly here,
    it's empty, and, as an empty rationale does, takes no room. What an
-   action does is the host's: its button carries only its command. */
+   action does is the host's: its button carries only its command. It
+   reaches a little past the text on either side, so a perspective that
+   lights it, as the proposal pointed at, has room to. */
 .htmlView_editor .item_htmlView {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
@@ -151,6 +205,9 @@
   column-gap: 1rem;
   row-gap: 0.1rem;
   padding-block: 0.4rem;
+  margin-inline: -0.5rem;
+  padding-inline: 0.5rem;
+  border-radius: 3px;
   font-family: var(--view-ui-font, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif);
   font-size: var(--view-ui-font-size, 13px);
   line-height: 1.45;

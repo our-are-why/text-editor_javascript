@@ -1,6 +1,6 @@
 import { expect, test } from "bun:test"
 import fc from "fast-check"
-import { parseTexts_Line, segmentsOf__Stretches, parseLines_ViewModel, MODULE_PLAINTEXT, type _Stretch_Line_, type _Module_Language_ } from "../source/ViewModel_TextEditor.ts"
+import { parseTexts_Line, segmentsOf__Stretches, parseLines_ViewModel, MODULE_PLAINTEXT, viewModelOf__Blocks, pointedAt__ViewModel, type _Stretch_Line_, type _Module_Language_, type _Group_Underlay_, type _Item_Proposals_ } from "../source/ViewModel_TextEditor.ts"
 
 // every line break a text can hold: each ends a line, "\r\n" as one
 const lineBreaks = ["\r\n", "\n", "\r", "\v", "\f", "\u0085", "\u2028", "\u2029"]
@@ -141,4 +141,30 @@ test("a language module is asked for each line's syntax once, in order, from the
 test("plain text's module marks nothing: each line is one segment, its text, carrying nothing, and an empty line none", () => {
   const lines = parseLines_ViewModel({ multilineText: "one\n\ntwo", module_Language: MODULE_PLAINTEXT })
   expect(lines.map((line) => line.segments.map((segment) => [String(segment.text), segment.attributes]))).toEqual([[["one", {}]], [], [["two", {}]]])
+})
+
+// a group behind a run, and an item in a list, of a proposal, by its source
+const groupOf = (source: string): _Group_Underlay_ => ({ attributes: { "data-source": source }, underlays: [] })
+const itemOf = (source: string): _Item_Proposals_ => ({ source, title: source, places: "", rationale: "", actions: [], attributes: {} })
+
+test("pointing at a proposal marks its groups and its items, in every run and list, and nothing else; pointing at none leaves the view model as it was", () => {
+  const lines = parseLines_ViewModel({ multilineText: "one", module_Language: MODULE_PLAINTEXT })
+  const viewModel = viewModelOf__Blocks([
+    { kind: "LINES", run: { id: "document", lines, groups: [groupOf("most"), groupOf("all")] } },
+    {
+      kind: "FRAME",
+      range: { first: 2, last: 2 },
+      parts: [
+        { kind: "CURRENT_LINES", run: { id: "current", lines, groups: [groupOf("most")] } },
+        { kind: "PROPOSAL_LIST", items: [itemOf("all"), itemOf("most")] },
+      ],
+    },
+  ])
+  const marked = (viewModel_TextEditor: typeof viewModel) => [
+    ...viewModel_TextEditor.runs.flatMap((run) => run.groups.map((group) => `${run.id} ${group.attributes["data-source"]}${"data-pointed" in group.attributes ? " pointed" : ""}`)),
+    ...viewModel_TextEditor.blocks.flatMap((block) => block.kind === "FRAME" ? block.parts.flatMap((part) => part.kind === "PROPOSAL_LIST" ? part.items.map((item) => `item ${item.source}${"data-pointed" in item.attributes ? " pointed" : ""}`) : []) : []),
+  ]
+  expect(marked(pointedAt__ViewModel({ viewModel_TextEditor: viewModel, source: "most" }))).toEqual(["document most pointed", "document all", "current most pointed", "item all", "item most pointed"])
+  expect(marked(viewModel)).toEqual(["document most", "document all", "current most", "item all", "item most"])
+  expect(pointedAt__ViewModel({ viewModel_TextEditor: viewModel, source: null })).toBe(viewModel)
 })

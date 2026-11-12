@@ -1,7 +1,9 @@
 import "../source/perspectives/changes.css"
 import { examples } from "./examples/index.ts"
 import { scenes } from "./scenes/index.ts"
-import { _View_TextEditor_, COMPONENTMAP__VIEW_TEXTEDITOR } from "../source/View_TextEditor.tsx"
+import { COMPONENTMAP__VIEW_TEXTEDITOR } from "../source/View_TextEditor.tsx"
+import { _TextEditor_ } from "../source/TextEditor.ts"
+import { MODULE_MOUSE } from "../source/modules/mouse.ts"
 import type { _Entry_Log_, _Example_ } from "./example.ts"
 import type { _Invariant_Scene_, _Scene_ } from "./scene.ts"
 
@@ -89,14 +91,17 @@ function drawScene(
   const caption = document.createElement("figcaption")
   caption.append(title, make("span", "look", scene.look))
 
-  // the view, in the "changes" perspective, which the playground, as host,
-  // has on for every scene
+  // the editor, in the "changes" perspective, which the playground, as host,
+  // has on for every scene, with the mouse, so pointing at a proposal
+  // shows it
   const containerElement = document.createElement("div")
   containerElement.dataset["perspective"] = "changes"
-  new _View_TextEditor_({
+  new _TextEditor_({
     containerElement,
-    componentMap: COMPONENTMAP__VIEW_TEXTEDITOR
-  }).draw(scene.viewModel_TextEditor)
+    componentMap: COMPONENTMAP__VIEW_TEXTEDITOR,
+    modules: [MODULE_MOUSE],
+    viewModel_TextEditor: scene.viewModel_TextEditor
+  })
   const overlay = make("div", "overlay")
   const drawn = make("div", "drawn")
   drawn.append(containerElement, overlay)
@@ -128,19 +133,6 @@ function drawScene(
     }))
     labels.forEach((label, index) => label.classList.toggle("lit", places.includes(index)))
   }
-  // a proposal's changes outlined, each row of each
-  const lightSource = (source: string) => {
-    const origin = drawn.getBoundingClientRect()
-    const changes = [...containerElement.querySelectorAll(`.text_htmlView [data-source="${CSS.escape(source)}"]`)]
-    overlay.replaceChildren(...changes.flatMap((element) => [...element.getClientRects()].map((row) => {
-      const outline = make("div", "")
-      outline.style.top = `${row.top - origin.top}px`
-      outline.style.left = `${row.left - origin.left}px`
-      outline.style.width = `${row.width}px`
-      outline.style.height = `${row.height}px`
-      return outline
-    })))
-  }
   const unlight = () => {
     light([])
     for (const { item } of checks) item.classList.remove("touches")
@@ -154,15 +146,9 @@ function drawScene(
     item.addEventListener("mouseleave", unlight)
     item.addEventListener("blur", unlight)
   }
-  // pointing at a change outlines all of its proposal's changes; pointing at
-  // a line outlines it, and marks the invariants about it
+  // pointing at a line outlines it, and marks the invariants about it;
+  // pointing at a proposal is the editor's
   containerElement.addEventListener("mouseover", (event) => {
-    const source = event.target instanceof Element ? event.target.closest("[data-source]")?.getAttribute("data-source") : null
-    if (typeof source === "string") {
-      unlight()
-      lightSource(source)
-      return
-    }
     const line = event.target instanceof Element ? event.target.closest(".line_htmlView") : null
     const place = line === null ? -1 : lineElements().indexOf(line)
     light(place === -1 ? [] : [place])

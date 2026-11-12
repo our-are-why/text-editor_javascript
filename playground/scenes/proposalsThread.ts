@@ -32,6 +32,7 @@ const item_Hook: _Item_Proposals_ = {
   places: "",
   rationale: "Nothing passes onRetry any more: the callers log their retries in their own catch blocks.",
   actions: actions_Review,
+  attributes: {},
 }
 
 const item_Round: _Item_Proposals_ = {
@@ -40,6 +41,7 @@ const item_Round: _Item_Proposals_ = {
   places: "",
   rationale: "n says nothing; round says what it counts, in retry and in backoff alike, and in the doc comment that names it.",
   actions: actions_Review,
+  attributes: {},
 }
 
 // the retry module with three frames: its doc comment's options, retry, and
@@ -48,7 +50,7 @@ const item_Round: _Item_Proposals_ = {
 const proposalsThread: _Scene_ = {
   name: "proposals-thread",
   title: "A thread through frames, and a removal around it",
-  look: "The JavaScript module with three frames: its doc comment's options, line 10; retry, lines 13 to 27; and backoff, lines 31 to 34. One proposal, a thread, renames the loop's counter, n, to round, in nine places through all three frames: each frame lists it, saying how many of its places are there, of how many, its actions deciding it everywhere. Another takes out the onRetry hook, in three places through the first two frames. Two of the thread's places are inside what the removal takes out, line 10's n and line 22's: they're the thread's fallback there, ringed dotted, applying only if the removal's rejected, and its items say so; as proposed, with every proposal taken, they're gone with the removal.",
+  look: "The JavaScript module with three frames: its doc comment's options, line 10; retry, lines 13 to 27; and backoff, lines 31 to 34. One proposal, a thread, renames the loop's counter, n, to round, in nine places through all three frames: each frame lists it, saying how many of its places are there, of how many, its actions deciding it everywhere. Another takes out the onRetry hook, in three places through the first two frames. Two of the thread's places are inside what the removal takes out, line 10's n and line 22's: they're the thread's fallback there, ringed faint, at half strength, applying only if the removal's rejected, and its items say so; as proposed, with every proposal taken, they're gone with the removal.",
   size: "wide",
   variables: {},
   labels: [],

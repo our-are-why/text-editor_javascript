@@ -29,6 +29,7 @@ export {
   type _NonEmpty_,
   viewModelOf__Blocks,
   segmentsOf__Stretches,
+  pointedAt__ViewModel,
   parseLines_ViewModel,
   MODULE_PLAINTEXT,
   parseTexts_Line
@@ -133,6 +134,7 @@ interface _Item_Proposals_ {
   places: string
   rationale: string
   actions: Array<_Action_Item_>
+  attributes: _Attributes_Element_
 }
 
 interface _Action_Item_ {
@@ -230,6 +232,127 @@ function attributesOf__Stretches(
     name,
     [...new Set(entries.flatMap((entry) => entry[1].split(" ")).filter((word) => word !== ""))].join(" ")
   ]))
+}
+
+interface _Api___pointedAt__ViewModel_ {
+  viewModel_TextEditor: _ViewModel_TextEditor_
+  source: string | null
+}
+
+function pointedAt__ViewModel({
+  viewModel_TextEditor,
+  source
+}: _Api___pointedAt__ViewModel_): _ViewModel_TextEditor_ {
+  if (source === null) return viewModel_TextEditor
+  return viewModelOf__Blocks(viewModel_TextEditor.blocks.map((block_ViewModel) => pointedIn__Block({
+    block_ViewModel,
+    source
+  })))
+}
+
+interface _Api___pointedIn__Block_ {
+  block_ViewModel: _Block_ViewModel_
+  source: string
+}
+
+function pointedIn__Block({
+  block_ViewModel,
+  source
+}: _Api___pointedIn__Block_): _Block_ViewModel_ {
+  return block_ViewModel.kind === "LINES"
+    ? {
+      ...block_ViewModel,
+      run: pointedIn__Run({
+        run_Lines: block_ViewModel.run,
+        source
+      })
+    }
+    : {
+      ...block_ViewModel,
+      parts: mapped__NonEmpty({
+        items: block_ViewModel.parts,
+        map: (part_Frame) => pointedIn__Part({
+          part_Frame,
+          source
+        })
+      })
+    }
+}
+
+interface _Api___pointedIn__Run_ {
+  run_Lines: _Run_Lines_
+  source: string
+}
+
+function pointedIn__Run({
+  run_Lines,
+  source
+}: _Api___pointedIn__Run_): _Run_Lines_ {
+  return {
+    ...run_Lines,
+    groups: run_Lines.groups.map((group_Underlay) => group_Underlay.attributes["data-source"] === source
+      ? {
+        ...group_Underlay,
+        attributes: {
+          ...group_Underlay.attributes,
+          "data-pointed": ""
+        }
+      }
+      : group_Underlay)
+  }
+}
+
+interface _Api___mapped__NonEmpty_<Item, Mapped> {
+  items: _NonEmpty_<Item>
+  map: (item: Item) => Mapped
+}
+
+function mapped__NonEmpty<Item, Mapped>({
+  items,
+  map
+}: _Api___mapped__NonEmpty_<Item, Mapped>): _NonEmpty_<Mapped> {
+  const [
+    first,
+    ...rest
+  ] = items
+  return [
+    map(first),
+    ...rest.map((item) => map(item))
+  ]
+}
+
+interface _Api___pointedIn__Part_ {
+  part_Frame: _Part_Frame_
+  source: string
+}
+
+function pointedIn__Part({
+  part_Frame,
+  source
+}: _Api___pointedIn__Part_): _Part_Frame_ {
+  return part_Frame.kind === "PROPOSAL_LIST"
+    ? {
+      ...part_Frame,
+      items: mapped__NonEmpty({
+        items: part_Frame.items,
+        map: (item_Proposals) => item_Proposals.source === source
+          ? {
+            ...item_Proposals,
+            attributes: {
+              ...item_Proposals.attributes,
+              "data-pointed": ""
+            }
+          }
+          : item_Proposals
+      })
+    }
+    : {
+      ...part_Frame,
+      run: pointedIn__Run({
+        run_Lines: part_Frame.run,
+        source
+      })
+    }
 }
 
 interface _Api___parseLines_ViewModel_<State> {

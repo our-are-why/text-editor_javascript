@@ -1,9 +1,11 @@
 import type { _Example_ } from "../example.ts"
-import { _View_TextEditor_, COMPONENTMAP__VIEW_TEXTEDITOR } from "../../source/View_TextEditor.tsx"
+import { COMPONENTMAP__VIEW_TEXTEDITOR } from "../../source/View_TextEditor.tsx"
+import { _TextEditor_ } from "../../source/TextEditor.ts"
+import { MODULE_MOUSE } from "../../source/modules/mouse.ts"
 import { viewModelOf__Blocks, parseTexts_Line, type _FRAME_Block__ViewModel_, type _Item_Proposals_ } from "../../source/ViewModel_TextEditor.ts"
 import { actions_Review } from "../items.ts"
 import { blocksWith__Frames, lineOf } from "../lines.ts"
-import { attributesOf__Change, attributesOf__Nested, attributesOf__Span, type _Kind_Change_, type _Side_Change_ } from "../looks.ts"
+import { attributesOf__Change, attributesOf__Nested, type _Kind_Change_, type _Side_Change_ } from "../looks.ts"
 import { module_JavaScript } from "../syntax.ts"
 
 export {
@@ -81,7 +83,6 @@ const errors = (side: _Side_Change_) => attributesOf__Change({ side, kind: "repl
 const aborted = attributesOf__Change({ side: "after", kind: "inserted", source: "aborted" })
 const cap = (side: _Side_Change_, kind: _Kind_Change_) => attributesOf__Change({ side, kind, source: "cap" })
 const timeout = (side: _Side_Change_, kind: _Kind_Change_) => attributesOf__Change({ side, kind, source: "timeout" })
-const timeoutSpan = attributesOf__Span("timeout")
 
 // each proposal's item, listed in every frame it's in
 const item_Header: _Item_Proposals_ = {
@@ -90,6 +91,7 @@ const item_Header: _Item_Proposals_ = {
   places: "",
   rationale: "retry's doc comment says what it does, where it's read; the comment at the top only says it again.",
   actions: actions_Review,
+  attributes: {},
 }
 
 const item_Hook: _Item_Proposals_ = {
@@ -98,6 +100,7 @@ const item_Hook: _Item_Proposals_ = {
   places: "",
   rationale: "Nothing passes onRetry any more: the callers log their retries in their own catch blocks.",
   actions: actions_Review,
+  attributes: {},
 }
 
 const item_Errors: _Item_Proposals_ = {
@@ -106,6 +109,7 @@ const item_Errors: _Item_Proposals_ = {
   places: "",
   rationale: "When every attempt fails, the AggregateError should hold all of them: the first is often the telling one, a timeout before the server's 503s.",
   actions: actions_Review,
+  attributes: {},
 }
 
 const item_Round: _Item_Proposals_ = {
@@ -114,6 +118,7 @@ const item_Round: _Item_Proposals_ = {
   places: "",
   rationale: "n says nothing; round says what it counts, in retry and in backoff alike, and in the doc comment that names it.",
   actions: actions_Review,
+  attributes: {},
 }
 
 const item_Aborted: _Item_Proposals_ = {
@@ -122,6 +127,7 @@ const item_Aborted: _Item_Proposals_ = {
   places: "",
   rationale: "An abort during an attempt has already happened by the time sleep listens for it, so sleep waits out the whole delay before throwIfAborted notices.",
   actions: actions_Review,
+  attributes: {},
 }
 
 const item_Cap: _Item_Proposals_ = {
@@ -130,6 +136,7 @@ const item_Cap: _Item_Proposals_ = {
   places: "",
   rationale: "A caller passing many attempts waits minutes by the tenth; capped, a long outage never goes quiet for longer than half a minute.",
   actions: actions_Review,
+  attributes: {},
 }
 
 const item_Timeout: _Item_Proposals_ = {
@@ -138,6 +145,7 @@ const item_Timeout: _Item_Proposals_ = {
   places: "",
   rationale: "A 408 means the server stopped waiting for the request, not that the request failed: sent again, it usually goes through.",
   actions: actions_Review,
+  attributes: {},
 }
 
 // the module's frames, five, seven proposals through them, every case so
@@ -146,9 +154,10 @@ const item_Timeout: _Item_Proposals_ = {
 // nested in it; retry, replacements far apart, words put into a line, a line
 // taken out whole, the thread's place in it nested too; backoff, the
 // thread's last places, and a line put in, with replacements under it; and
-// isRetryable, sent whole as its next state, a span of five lines, of which
-// only a comment's words and a line's middle differ. The thread, round, runs
-// through three frames, its nine places counted in each
+// isRetryable, a function the agent sent whole, of which only a comment's
+// last words and a line's middle differ, the lines round them as they are.
+// The thread, round, runs through three frames, its nine places counted in
+// each
 const frames_retry: Array<_FRAME_Block__ViewModel_> = [
   {
     kind: "FRAME",
@@ -263,21 +272,21 @@ const frames_retry: Array<_FRAME_Block__ViewModel_> = [
       {
         kind: "CURRENT_LINES",
         run: { id: "retryable-current", lines: [
-          lineOf({ text: textAt(36), attributes: timeoutSpan }),
-          lineOf({ text: "  if (error instanceof TypeError) return true; // the network failed, ", attributes: timeoutSpan }, { text: "not the server", attributes: timeout("before", "replaced") }),
-          lineOf({ text: textAt(38), attributes: timeoutSpan }),
-          lineOf({ text: textAt(39), attributes: timeoutSpan }),
-          lineOf({ text: textAt(40), attributes: timeoutSpan }),
+          lineOf(textAt(36)),
+          lineOf("  if (error instanceof TypeError) return true; // the network failed, ", { text: "not the server", attributes: timeout("before", "replaced") }),
+          lineOf(textAt(38)),
+          lineOf(textAt(39)),
+          lineOf(textAt(40)),
         ], groups: [] },
       },
       {
         kind: "PROPOSAL_LINES",
         run: { id: "retryable-proposed", lines: [
-          lineOf({ text: textAt(36), attributes: timeoutSpan }),
-          lineOf({ text: "  if (error instanceof TypeError) return true; // the network failed, ", attributes: timeoutSpan }, { text: "before any answer", attributes: timeout("after", "replaced") }),
-          lineOf({ text: textAt(38), attributes: timeoutSpan }),
-          lineOf({ text: "  return ", attributes: timeoutSpan }, { text: "status === 408 || ", attributes: timeout("after", "inserted") }, { text: "status === 429 || (status >= 500 && status !== 501);", attributes: timeoutSpan }),
-          lineOf({ text: textAt(40), attributes: timeoutSpan }),
+          lineOf(textAt(36)),
+          lineOf("  if (error instanceof TypeError) return true; // the network failed, ", { text: "before any answer", attributes: timeout("after", "replaced") }),
+          lineOf(textAt(38)),
+          lineOf("  return ", { text: "status === 408 || ", attributes: timeout("after", "inserted") }, "status === 429 || (status >= 500 && status !== 501);"),
+          lineOf(textAt(40)),
         ], groups: [] },
       },
       { kind: "PROPOSAL_LIST", items: [item_Timeout] },
@@ -288,20 +297,23 @@ const frames_retry: Array<_FRAME_Block__ViewModel_> = [
 const javascript: _Example_ = {
   name: "javascript",
   title: "JavaScript",
-  about: "A JavaScript module, drawn whole by the view on a page of its own, as code is: numbered from 1, its indents kept as they're written, its syntax coloured, a language module's, the playground's JavaScript tokenizer, the colours the playground's, as a host's theme. Five frames, seven proposals through them, each case so far once. The opening comment, taken out whole, leaves nothing proposed. The doc comment's options lose onRetry, inside the line. In retry: every error kept, three lines far apart changed; words put into a line, so as it is, it shows nowhere; the onRetry call taken out whole. In backoff: a line put in, with replacements under it. Through three frames, a thread: the counter n renamed round, in nine places, each frame listing it with how many are there; two of them, in the doc comment and the onRetry call, inside the onRetry removal, ringed dotted, applying only if it's rejected. In isRetryable, a proposal sent as the whole function, its span, its target, all five lines, of which only a comment's last words and the middle of its return differ.",
-  // the view, in the "changes" perspective, drawing the module into the
-  // stage, its syntax JavaScript's, its frames as above; nothing to report
+  about: "A JavaScript module, drawn whole by the view on a page of its own, as code is: numbered from 1, its indents kept as they're written, its syntax coloured, a language module's, the playground's JavaScript tokenizer, the colours the playground's, as a host's theme. Five frames, seven proposals through them, each case so far once. The opening comment, taken out whole, leaves nothing proposed. The doc comment's options lose onRetry, inside the line. In retry: every error kept, three lines far apart changed; words put into a line, so as it is, it shows nowhere; the onRetry call taken out whole. In backoff: a line put in, with replacements under it. Through three frames, a thread: the counter n renamed round, in nine places, each frame listing it with how many are there; two of them, in the doc comment and the onRetry call, inside the onRetry removal, ringed faint, applying only if it's rejected. In isRetryable, a function the agent sent whole, of which only a comment's last words and the middle of its return differ. Point at a change, or an item, to see its proposal: its rings heavier, its items lit, in every frame it's in.",
+  // the editor, in the "changes" perspective, drawing the module into the
+  // stage, its syntax JavaScript's, its frames as above, with the mouse, so
+  // pointing at a proposal shows it; nothing to report
   mount: (root) => {
     const containerElement = document.createElement("div")
     containerElement.dataset["perspective"] = "changes"
     root.append(containerElement)
-    new _View_TextEditor_({
+    new _TextEditor_({
       containerElement,
-      componentMap: COMPONENTMAP__VIEW_TEXTEDITOR
-    }).draw(viewModelOf__Blocks(blocksWith__Frames({
-      multilineText: retry,
-      module_Language: module_JavaScript,
-      frames: frames_retry
-    })))
+      componentMap: COMPONENTMAP__VIEW_TEXTEDITOR,
+      modules: [MODULE_MOUSE],
+      viewModel_TextEditor: viewModelOf__Blocks(blocksWith__Frames({
+        multilineText: retry,
+        module_Language: module_JavaScript,
+        frames: frames_retry
+      }))
+    })
   },
 }

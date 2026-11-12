@@ -54,9 +54,8 @@ const cases_Everything: Array<_Case_Everything_> = [
 ]
 
 // the text underlays behind the document: the change's proposal's, its
-// target and its change, as a host's would be; then the boxes no change
-// makes, one across a wrap, one from the middle of a line to the middle of
-// the next
+// change, as a host's would be; then the boxes no change makes, one across
+// a wrap, one from the middle of a line to the middle of the next
 const groups_Everything: Array<_Group_Underlay_> = [
   ...groupsOf__Lines(cases_Everything.map(({ line }) => line)),
   {
@@ -64,7 +63,7 @@ const groups_Everything: Array<_Group_Underlay_> = [
     underlays: [{
       from: { line: placeOf("a text underlay across a wrap"), offset: 9 },
       to: { line: placeOf("a text underlay across a wrap"), offset: 60 },
-      attributes: { "data-underlay": "targets" },
+      attributes: { "data-underlay": "box" },
     }],
   },
   {
@@ -72,7 +71,7 @@ const groups_Everything: Array<_Group_Underlay_> = [
     underlays: [{
       from: { line: placeOf("a text underlay across lines, from here"), offset: 2 },
       to: { line: placeOf("a text underlay across lines, to here"), offset: text_underlayTo.indexOf(", then") },
-      attributes: { "data-underlay": "targets" },
+      attributes: { "data-underlay": "box" },
     }],
   },
 ]
@@ -131,7 +130,7 @@ const invariants_Everything: Array<_Invariant_Scene_> = [
       ["a long line of words", "a run with nowhere to break"].filter((label) => rowsOf(lineElementOf(containerElement, label)) <= 1),
   },
   {
-    name: "a text underlay is drawn behind exactly its stretch of text, as one shape over every row it's on, on one line or across several",
+    name: "a text underlay is drawn behind exactly its stretch of text, as one shape over every row it's on, on one line or across several, reaching past it no further than a perspective lets it",
     concerns: [...new Set(groups_Everything.flatMap((group) => group.underlays.flatMap((underlay_Text) => cases_Everything.slice(underlay_Text.from.line, underlay_Text.to.line + 1).map(({ label }) => label))))],
     failing: (containerElement) => [
       ...new Set(
@@ -242,18 +241,21 @@ function rowsOf__Stretch(
 }
 
 // whether a path is exactly a stretch's shape: one shape, holding each row
-// of the stretch from its first character to its last, and nothing beside
-// it on either side, to within a pixel
+// of the stretch from its first character to its last, short of them by
+// any inset a perspective gives it, and reaching no further past them than
+// it lets it, to within a pixel
 function shapeMatches(
   pathElement: SVGPathElement,
   rows: Array<_Row_Stretch_>
 ): boolean {
-  const origin = (pathElement.ownerSVGElement ?? pathElement).getBoundingClientRect()
+  const svgElement = pathElement.ownerSVGElement ?? pathElement
+  const origin = svgElement.getBoundingClientRect()
+  const inset = Number.parseFloat(getComputedStyle(svgElement).getPropertyValue("--insetInline_underlay_htmlView")) || 0
   const inside = (x: number, y: number) => pathElement.isPointInFill(new DOMPoint(x - origin.left, y - origin.top))
   return (
     rows.length > 0 &&
     (pathElement.getAttribute("d")?.match(/M/g) ?? []).length === 1 &&
-    rows.every((row) => inside(row.left + 1, row.middle) && inside(row.right - 1, row.middle) && !inside(row.left - 1, row.middle) && !inside(row.right + 1, row.middle))
+    rows.every((row) => inside(row.left + Math.max(inset, 0) + 1, row.middle) && inside(row.right - Math.max(inset, 0) - 1, row.middle) && !inside(row.left + Math.min(inset, 0) - 1, row.middle) && !inside(row.right - Math.min(inset, 0) + 1, row.middle))
   )
 }
 

@@ -7,8 +7,7 @@ export {
   type _Side_Change_,
   type _Kind_Change_,
   attributesOf__Change,
-  attributesOf__Nested,
-  attributesOf__Span
+  attributesOf__Nested
 }
 
 // the marks the playground's scenes use, as a host would name them: the
@@ -71,11 +70,3 @@ function attributesOf__Nested({
   return { "data-nested-change": kind, "data-nested-source": source }
 }
 
-// text of a proposal's span that its changes leave as it is: what the agent
-// sent as the span's next state, of which only some differs. The proposal's
-// target runs over all of its span, its changes ringed inside it
-function attributesOf__Span(
-  source: string
-): _Attributes_Element_ {
-  return { "data-span": source }
-}

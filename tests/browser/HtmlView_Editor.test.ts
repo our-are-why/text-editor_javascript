@@ -96,7 +96,7 @@ describe("beside it: what can't live in one document", () => {
           parts: [
             { kind: "CURRENT_LINES", run: { id: "current", lines: [lineOf("two")], groups: [] } },
             { kind: "PROPOSAL_LINES", run: { id: "proposed", lines: [lineOf("two, proposed")], groups: [] } },
-            { kind: "PROPOSAL_LIST", items: [{ source: "most", title: "Most of the orders", places: "", rationale: "", actions: [] }] }
+            { kind: "PROPOSAL_LIST", items: [{ source: "most", title: "Most of the orders", places: "", rationale: "", actions: [], attributes: {} }] }
           ]
         },
         { kind: "LINES", run: { id: "after", lines: [lineOf("three")], groups: [] } }
@@ -118,7 +118,7 @@ describe("beside it: what can't live in one document", () => {
 
   test("when a host's components leave out what a run's text underlays are measured by, it says so, and draws none of them; a run with nothing behind it says nothing", async () => {
     const warned = await opened.page.evaluate(() => {
-      const group = { attributes: {}, underlays: [{ from: { line: 0, offset: 0 }, to: { line: 1, offset: 3 }, attributes: { "data-underlay": "targets" } }] }
+      const group = { attributes: {}, underlays: [{ from: { line: 0, offset: 0 }, to: { line: 1, offset: 3 }, attributes: { "data-underlay": "box" } }] }
       const pElementOf = ({ line_Run }: { line_Run: { segments: Array<{ text: string }> } }) => {
         const pElement_line = document.createElement("p")
         pElement_line.textContent = line_Run.segments.map((segment) => segment.text).join("")
@@ -163,6 +163,78 @@ describe("beside it: what can't live in one document", () => {
     })
   })
 
+  test("pointing with the mouse at a proposal's change, or its item, marks its groups and items, wherever they are, drawn on the next frame; pointing where nothing changes draws nothing again; and pointing away marks none", async () => {
+    await opened.page.evaluate(() => {
+      const containerElement = document.createElement("div")
+      containerElement.id = "pointing"
+      containerElement.style.width = "40rem"
+      document.body.prepend(containerElement)
+      const [line] = window.parseLines_ViewModel({ multilineText: "half the orders", module_Language: window.MODULE_PLAINTEXT })
+      const [segment] = line.segments
+      if (segment === undefined) throw new Error("the line has no segment")
+      const change = { "data-change": "replaced", "data-side": "before", "data-source": "most" }
+      new window._TextEditor_({
+        containerElement,
+        componentMap: window.COMPONENTMAP__VIEW_TEXTEDITOR,
+        modules: [window.MODULE_MOUSE],
+        viewModel_TextEditor: window.viewModelOf__Blocks([{
+          kind: "FRAME",
+          range: { first: 1, last: 1 },
+          parts: [
+            {
+              kind: "CURRENT_LINES",
+              run: {
+                id: "current",
+                lines: [{ ...line, segments: [{ ...segment, attributes: change }] }],
+                groups: [
+                  { attributes: { "data-source": "most" }, underlays: [{ from: { line: 0, offset: 0 }, to: { line: 0, offset: 4 }, attributes: change }] },
+                  { attributes: { "data-source": "all" }, underlays: [] }
+                ]
+              }
+            },
+            {
+              kind: "PROPOSAL_LIST",
+              items: [
+                { source: "most", title: "Most of the orders", places: "", rationale: "", actions: [], attributes: {} },
+                { source: "all", title: "All of them", places: "", rationale: "", actions: [], attributes: {} }
+              ]
+            }
+          ]
+        }])
+      })
+    })
+    const pointed = () => opened.page.evaluate(async () => {
+      await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)))
+      const containerElement = document.getElementById("pointing")
+      const rootElement = containerElement?.querySelector(".htmlView_editor")
+      const drawnAgain = rootElement?.getAttribute("data-seen") === null
+      rootElement?.setAttribute("data-seen", "")
+      return {
+        pointed: [...(containerElement?.querySelectorAll("[data-pointed]") ?? [])].map((element) => `${element.localName} ${element.getAttribute("data-source")}`),
+        drawnAgain
+      }
+    })
+    const middleOf = (selector: string) => opened.page.evaluate((selector) => {
+      const rect = document.querySelector(`#pointing ${selector}`)?.getBoundingClientRect()
+      if (rect === undefined) throw new Error(`nothing at ${selector}`)
+      return { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 }
+    }, selector)
+    const at = async (selector: string) => {
+      const point = await middleOf(selector)
+      await opened.page.mouse.move(point.x, point.y)
+    }
+    expect(await pointed()).toEqual({ pointed: [], drawnAgain: true })
+    await at(`.text_htmlView [data-source="most"]`)
+    expect(await pointed()).toEqual({ pointed: ["g most", "li most"], drawnAgain: true })
+    await at(`.item_htmlView[data-source="most"] .title_htmlView`)
+    expect(await pointed()).toEqual({ pointed: ["g most", "li most"], drawnAgain: false })
+    await at(`.item_htmlView[data-source="all"] .title_htmlView`)
+    expect(await pointed()).toEqual({ pointed: ["g all", "li all"], drawnAgain: true })
+    await opened.page.mouse.move(1270, 715)
+    expect(await pointed()).toEqual({ pointed: [], drawnAgain: true })
+    await opened.page.evaluate(() => document.getElementById("pointing")?.remove())
+  })
+
   test("each proposal's item shows its title, where it is, why it's proposed, and its actions, each a button carrying its command, where it is and why only when they say something", async () => {
     const items = await opened.page.evaluate(() => {
       const containerElement = document.createElement("div")
@@ -178,8 +250,8 @@ describe("beside it: what can't live in one document", () => {
           {
             kind: "PROPOSAL_LIST",
             items: [
-              { source: "most", title: "Most of the orders", places: "2 of 5 places, 1 only if “Cut the lathe” is rejected", rationale: "Most of them need the lathe.", actions: [{ command: "accept", label: "Accept" }, { command: "reject", label: "Reject" }] },
-              { source: "all", title: "All of them", places: "", rationale: "", actions: [{ command: "accept", label: "Take it" }] }
+              { source: "most", title: "Most of the orders", places: "2 of 5 places, 1 only if “Cut the lathe” is rejected", rationale: "Most of them need the lathe.", actions: [{ command: "accept", label: "Accept" }, { command: "reject", label: "Reject" }], attributes: {} },
+              { source: "all", title: "All of them", places: "", rationale: "", actions: [{ command: "accept", label: "Take it" }], attributes: {} }
             ]
           }
         ]
@@ -273,7 +345,7 @@ describe("beside it: what can't live in one document", () => {
           groups: [{
             attributes: { "data-source": "most" },
             underlays: [
-              { from: { line: 0, offset: 4 }, to: { line: 1, offset: 7 }, attributes: { "data-underlay": "targets" } },
+              { from: { line: 0, offset: 4 }, to: { line: 1, offset: 7 }, attributes: { "data-underlay": "box" } },
               { from: { line: 1, offset: 0 }, to: { line: 1, offset: 3 }, attributes: { "data-change": "inserted", "data-source": "most" } }
             ]
           }]
@@ -320,6 +392,230 @@ describe("beside it: what can't live in one document", () => {
     })
   })
 
+  test("with room a perspective gives them, underlays reach past their words' ink into spaces and the row's ends, never into another character, staying clear of its ink, and never meet: rows over one another twice the block inset apart, as are rings beside each other, touching or a space apart; one inside another's stretch further in; one alone its full reach", async () => {
+    const gaps = await opened.page.evaluate(() => {
+      const containerElement = document.createElement("div")
+      containerElement.style.width = "40rem"
+      containerElement.style.setProperty("--view-underlay-inset-block", "1px")
+      containerElement.style.setProperty("--view-underlay-inset-inline", "-6px")
+      document.body.append(containerElement)
+      const stretch = (line: number, from: number, to: number) => ({ from: { line, offset: from }, to: { line, offset: to }, attributes: {} })
+      new window._View_TextEditor_({
+        containerElement,
+        componentMap: window.COMPONENTMAP__VIEW_TEXTEDITOR
+      }).draw(window.viewModelOf__Blocks([{
+        kind: "LINES",
+        run: {
+          id: "document",
+          lines: window.parseLines_ViewModel({ multilineText: "one two\none two\nlone\none two\nf(n)", module_Language: window.MODULE_PLAINTEXT }),
+          groups: [
+            { attributes: {}, underlays: [stretch(0, 0, 3), stretch(0, 3, 7), stretch(1, 0, 3), stretch(2, 0, 4), stretch(3, 0, 3), stretch(3, 4, 7), stretch(4, 2, 3)] },
+            { attributes: {}, underlays: [stretch(1, 1, 2)] }
+          ]
+        }
+      }]))
+      const [above, touching, below, lone, spaced, spacedAfter, closed, inside] = [...containerElement.querySelectorAll(".underlay_htmlView")].map((element) => {
+        const box = element instanceof SVGPathElement ? element.getBBox() : new DOMRect()
+        return { top: box.y, bottom: box.y + box.height, left: box.x, right: box.x + box.width }
+      })
+      // the ink of the characters from to to on a line, where its glyphs
+      // are drawn, which isn't all of their cells, in the svg's coordinates
+      const origin = containerElement.querySelector(".underlays_htmlView")?.getBoundingClientRect() ?? new DOMRect()
+      const inkOf = (line: number, from: number, to: number) => {
+        const text = containerElement.querySelectorAll(".text_htmlView")[line]?.firstChild?.firstChild
+        if (!(text instanceof Text) || text.parentElement === null) throw new Error(`line ${line}'s text wasn't drawn`)
+        const context = new OffscreenCanvas(1, 1).getContext("2d")
+        if (context === null) throw new Error("there's no canvas to measure ink with")
+        context.font = getComputedStyle(text.parentElement).font
+        const cellOf = (at: number) => {
+          const range = document.createRange()
+          range.setStart(text, at)
+          range.setEnd(text, at + 1)
+          return range.getBoundingClientRect()
+        }
+        const first = context.measureText(text.data[from] ?? "")
+        const last = context.measureText(text.data[to - 1] ?? "")
+        return {
+          left: cellOf(from).left - first.actualBoundingBoxLeft - origin.left,
+          right: cellOf(to - 1).right + last.actualBoundingBoxRight - last.width - origin.left
+        }
+      }
+      if (above === undefined || touching === undefined || below === undefined || lone === undefined || spaced === undefined || spacedAfter === undefined || closed === undefined || inside === undefined) throw new Error("the underlays weren't drawn")
+      const round = (length: number) => Math.round(length * 10) / 10
+      return {
+        aboveBelow: round(below.top - above.bottom),
+        touching: round(touching.left - above.right),
+        spaced: round(spacedAfter.left - spaced.right),
+        insideTop: round(inside.top - below.top),
+        insideBottom: round(below.bottom - inside.bottom),
+        loneReach: { left: round(inkOf(2, 0, 1).left - lone.left), right: round(lone.right - inkOf(2, 3, 4).right) },
+        closedClear: { left: round(closed.left - inkOf(4, 1, 2).right), right: round(inkOf(4, 3, 4).left - closed.right) }
+      }
+    })
+    expect(gaps).toEqual({ aboveBelow: 2, touching: 2, spaced: 2, insideTop: 2, insideBottom: 2, loneReach: { left: 6, right: 6 }, closedClear: { left: 1, right: 1 } })
+  })
+
+  test("switching the perspective on, after drawing, measures the underlays again; with it on, a change pressed on by punctuation has room made, its ring reaching past its word's ink the same on both sides", async () => {
+    const widths = await opened.page.evaluate(async () => {
+      const containerElement = document.createElement("div")
+      containerElement.style.width = "40rem"
+      containerElement.style.setProperty("--view-font-size", "14px")
+      document.body.append(containerElement)
+      const [line] = window.parseLines_ViewModel({ multilineText: "f(n)", module_Language: window.MODULE_PLAINTEXT })
+      const [segment] = line.segments
+      if (segment === undefined) throw new Error("the line has no segment")
+      const change = { "data-change": "replaced", "data-side": "before", "data-source": "most" }
+      new window._View_TextEditor_({
+        containerElement,
+        componentMap: window.COMPONENTMAP__VIEW_TEXTEDITOR
+      }).draw(window.viewModelOf__Blocks([{
+        kind: "LINES",
+        run: {
+          id: "document",
+          lines: [{
+            ...line,
+            segments: [
+              { text: window.parseLines_ViewModel({ multilineText: "f(", module_Language: window.MODULE_PLAINTEXT })[0].segments[0]?.text ?? segment.text, attributes: {} },
+              { text: window.parseLines_ViewModel({ multilineText: "n", module_Language: window.MODULE_PLAINTEXT })[0].segments[0]?.text ?? segment.text, attributes: change },
+              { text: window.parseLines_ViewModel({ multilineText: ")", module_Language: window.MODULE_PLAINTEXT })[0].segments[0]?.text ?? segment.text, attributes: {} }
+            ]
+          }],
+          groups: [{ attributes: { "data-source": "most" }, underlays: [{ from: { line: 0, offset: 2 }, to: { line: 0, offset: 3 }, attributes: change }] }]
+        }
+      }]))
+      const word = () => containerElement.querySelector(`.text_htmlView [data-change]`)?.firstChild
+      // how far the ring reaches past the word's ink, its glyph's, which
+      // isn't all of its cell, on each side
+      const reachOf = () => {
+        const path = containerElement.querySelector(".underlay_htmlView")
+        const text = word()
+        const origin = containerElement.querySelector(".underlays_htmlView")?.getBoundingClientRect()
+        const context = new OffscreenCanvas(1, 1).getContext("2d")
+        if (!(path instanceof SVGPathElement) || !(text instanceof Text) || text.parentElement === null || origin === undefined || context === null) throw new Error("the change wasn't drawn")
+        context.font = getComputedStyle(text.parentElement).font
+        const ink = context.measureText(text.data)
+        const range = document.createRange()
+        range.selectNodeContents(text)
+        const cell = range.getBoundingClientRect()
+        const box = path.getBBox()
+        const round = (length: number) => Math.round(length * 10) / 10
+        return {
+          left: round(cell.left - ink.actualBoundingBoxLeft - origin.left - box.x),
+          right: round(box.x + box.width - (cell.right + ink.actualBoundingBoxRight - ink.width - origin.left))
+        }
+      }
+      const frames = () => new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)))
+      await frames()
+      const before = reachOf()
+      containerElement.dataset["perspective"] = "changes"
+      await frames()
+      return { before, after: reachOf() }
+    })
+    expect(widths).toEqual({ before: { left: 0, right: 0 }, after: { left: 3, right: 3 } })
+  })
+
+  test("with the perspective on, a change's end pressed on by another character has just the room it lacks, whatever the glyphs leave between them: its ring as far past its ink, and as clear of the other's, as at any end; two changes touching, of two proposals, their rings as far apart as any two; an end beside a space, none; all of it the font's, twice as much at twice the size", async () => {
+    const endsAt = (fontSize: number) => opened.page.evaluate(async (fontSize) => {
+      const containerElement = document.createElement("div")
+      containerElement.style.width = "40rem"
+      containerElement.style.setProperty("--view-font-size", `${fontSize}px`)
+      containerElement.dataset["perspective"] = "changes"
+      document.body.append(containerElement)
+      const textOf = (text: string) => {
+        const [segment] = window.parseLines_ViewModel({ multilineText: text, module_Language: window.MODULE_PLAINTEXT })[0].segments
+        if (segment === undefined) throw new Error(`${text} has no segment`)
+        return segment.text
+      }
+      const changeOf = (source: string) => ({ "data-change": "replaced", "data-side": "before", "data-source": source })
+      // the changes' letters, n, m, k, x and y, each pressed on by
+      // punctuation with its own ink margins, m after a space, x and y
+      // touching, y another proposal's
+      const pieces: Array<[string, string | null]> = [["f(", null], ["n", "one"], [") ", null], ["m", "one"], [", ", null], ["k", "one"], ["++ ", null], ["x", "one"], ["y", "two"], [";", null]]
+      const [line] = window.parseLines_ViewModel({ multilineText: pieces.map(([text]) => text).join(""), module_Language: window.MODULE_PLAINTEXT })
+      const offsets = pieces.map((_, index) => pieces.slice(0, index).reduce((length, [text]) => length + text.length, 0))
+      const underlayOf = (index: number) => ({ from: { line: 0, offset: offsets[index] ?? 0 }, to: { line: 0, offset: (offsets[index] ?? 0) + 1 }, attributes: changeOf(pieces[index]?.[1] ?? "") })
+      new window._View_TextEditor_({
+        containerElement,
+        componentMap: window.COMPONENTMAP__VIEW_TEXTEDITOR
+      }).draw(window.viewModelOf__Blocks([{
+        kind: "LINES",
+        run: {
+          id: "document",
+          lines: [{ ...line, segments: pieces.map(([text, source]) => ({ text: textOf(text), attributes: source === null ? {} : changeOf(source) })) }],
+          groups: [
+            { attributes: { "data-source": "one" }, underlays: [underlayOf(1), underlayOf(3), underlayOf(5), underlayOf(7)] },
+            { attributes: { "data-source": "two" }, underlays: [underlayOf(8)] }
+          ]
+        }
+      }]))
+      await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)))
+      // every character's ink, where its glyph is drawn, in the svg's
+      // coordinates, and the span it's in
+      const origin = containerElement.querySelector(".underlays_htmlView")?.getBoundingClientRect() ?? new DOMRect()
+      const context = new OffscreenCanvas(1, 1).getContext("2d")
+      if (context === null) throw new Error("there's no canvas to measure ink with")
+      const characters = [...containerElement.querySelectorAll(".text_htmlView span")].flatMap((spanElement) => {
+        const text = spanElement.firstChild
+        if (!(text instanceof Text)) return []
+        context.font = getComputedStyle(spanElement).font
+        return [...text.data].map((character, at) => {
+          const range = document.createRange()
+          range.setStart(text, at)
+          range.setEnd(text, at + 1)
+          const cell = range.getBoundingClientRect()
+          const metrics = context.measureText(character)
+          return { character, spanElement, left: cell.left - metrics.actualBoundingBoxLeft - origin.left, right: cell.right + metrics.actualBoundingBoxRight - metrics.width - origin.left }
+        })
+      })
+      const rings = [...containerElement.querySelectorAll(".underlay_htmlView")].map((pathElement) => pathElement instanceof SVGPathElement ? pathElement.getBBox() : new DOMRect())
+      const round = (length: number) => Math.round(length * 10) / 10
+      // each change: how far its ring is clear of the character before it,
+      // reaches past its own ink, before and after, and is clear of the
+      // character after it, where one presses on it
+      const measured = Object.fromEntries(["n", "m", "k", "x", "y"].map((letter, index) => {
+        const at = characters.findIndex((each) => each.character === letter && each.spanElement.hasAttribute("data-change"))
+        const ring = rings[index] ?? new DOMRect()
+        const [before, own, after] = [characters[at - 1], characters[at], characters[at + 1]]
+        if (own === undefined) throw new Error(`${letter} wasn't drawn`)
+        const isPressing = (each: typeof own | undefined) => each !== undefined && /\S/.test(each.character)
+        return [letter, [
+          isPressing(before) ? round(ring.x - (before?.right ?? 0)) : "-",
+          round(own.left - ring.x),
+          round(ring.x + ring.width - own.right),
+          isPressing(after) ? round((after?.left ?? 0) - ring.x - ring.width) : "-"
+        ]]
+      }))
+      const spanElement_m = characters.find((each) => each.character === "m")?.spanElement
+      return {
+        measured,
+        apart: round((rings[4]?.x ?? 0) - (rings[3]?.x ?? 0) - (rings[3]?.width ?? 0)),
+        beside_Space: spanElement_m === undefined ? "" : getComputedStyle(spanElement_m).paddingInlineStart
+      }
+    }, fontSize)
+    expect(await endsAt(14)).toEqual({
+      measured: {
+        n: [3, 3, 3, 3],
+        m: ["-", 3, 3, 3],
+        k: ["-", 3, 3, 3],
+        x: ["-", 3, 3, 5],
+        y: [5, 3, 3, 3]
+      },
+      apart: 2,
+      beside_Space: "0px"
+    })
+    expect(await endsAt(28)).toEqual({
+      measured: {
+        n: [6, 6, 6, 6],
+        m: ["-", 6, 6, 6],
+        k: ["-", 6, 6, 6],
+        x: ["-", 6, 6, 10],
+        y: [10, 6, 6, 6]
+      },
+      apart: 4,
+      beside_Space: "0px"
+    })
+  })
+
   test("a text underlay is drawn again, as one shape over all its rows, when the view's width changes", async () => {
     const rows = await opened.page.evaluate(async () => {
       const containerElement = document.createElement("div")
@@ -334,7 +630,7 @@ describe("beside it: what can't live in one document", () => {
         run: {
           id: "document",
           lines,
-          groups: [{ attributes: {}, underlays: [{ from: { line: 0, offset: 0 }, to: { line: 0, offset: Infinity }, attributes: { "data-underlay": "targets" } }] }]
+          groups: [{ attributes: {}, underlays: [{ from: { line: 0, offset: 0 }, to: { line: 0, offset: Infinity }, attributes: { "data-underlay": "box" } }] }]
         }
       }]))
       const textElement = containerElement.querySelector(".text_htmlView")

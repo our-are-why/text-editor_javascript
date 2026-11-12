@@ -258,27 +258,22 @@ function stretchesOf(
   })
 }
 
-// a stretch of a run's text a proposal covers: a change, and its data; or
-// text of the proposal's span its changes leave as it is
+// a stretch of a run's text one change covers, and the change's data
 interface _Stretch_Change_ {
   source: string
-  change: boolean
   underlay: _Underlay_Text_
 }
 
 // the data a change's segments carry that's the change's, not their marks'
 const names_Change = ["data-change", "data-side", "data-source"]
 
-// each proposal's group behind a run of lines, in the order they first come:
-// its target, its span, all it covers in the run, from its first change, or
-// the start of its span, data-span, where that's before it, to its last, or
-// its span's end, the words it leaves as they are between and round them
-// too, on one line or across several, without the spaces at its ends; then
-// each of its changes, those inside another proposal's removal too, as a
-// segment's nested change says them, saying whose, data-within; a change's
-// segments that run on into each other, along a line or from one line's end
-// to the next one's start, as one, without the spaces at its ends, so its
-// ring is round its words alone
+// each proposal's group behind a run of lines, in the order they first come,
+// its changes in it and nothing else, no path for the proposal as a whole:
+// those inside another proposal's removal too, as a segment's nested change
+// says them, saying whose, data-within; a change's segments that run on into
+// each other, along a line or from one line's end to the next one's start,
+// as one, without the spaces at its ends, so its ring is round its words
+// alone
 function groupsOf__Lines(
   lines: Array<_Line_Run_>
 ): Array<_Group_Underlay_> {
@@ -289,23 +284,19 @@ function groupsOf__Lines(
     const to = { line: index_Line, offset: offset + segment.text.length }
     const nested_Source = segment.attributes["data-nested-source"]
     const nested_Change = segment.attributes["data-nested-change"]
-    const span = segment.attributes["data-span"]
-    if (source === undefined) return span === undefined ? [] : [{ source: span, change: false, underlay: { from, to, attributes: {} } }]
-    return [
+    return source === undefined ? [] : [
       {
         source,
-        change: true,
         underlay: { from, to, attributes: Object.fromEntries(Object.entries(segment.attributes).filter(([name]) => names_Change.includes(name))) },
       },
       ...(nested_Source === undefined || nested_Change === undefined ? [] : [{
         source: nested_Source,
-        change: true,
         underlay: { from, to, attributes: { "data-change": nested_Change, "data-side": segment.attributes["data-side"] ?? "before", "data-source": nested_Source, "data-within": source } },
       }]),
     ]
   }))
   return [...Map.groupBy(stretches, (stretch) => stretch.source)].map(([source, stretches_Source]) => {
-    const changes = stretches_Source.filter((stretch) => stretch.change).reduce((merged: Array<_Underlay_Text_>, { underlay }) => {
+    const changes = stretches_Source.reduce((merged: Array<_Underlay_Text_>, { underlay }) => {
       const last = merged.at(-1)
       return last !== undefined && runsInto(lines, last, underlay)
         ? [...merged.slice(0, -1), { ...last, to: underlay.to }]
@@ -313,16 +304,11 @@ function groupsOf__Lines(
     }, []).map((change) => trimmed(lines, change))
     return {
       attributes: { "data-source": source },
-      underlays: [
-        trimmed(lines, { from: stretches_Source[0]?.underlay.from ?? start, to: stretches_Source.at(-1)?.underlay.to ?? start, attributes: { "data-underlay": "targets" } }),
-        ...changes,
-      ],
+      underlays: changes,
     }
   })
 }
 
-// a run's start, where an underlay with nothing in it would be
-const start: _Position_Run_ = { line: 0, offset: 0 }
 
 // whether a change's stretch runs straight on from the one before: the same
 // data, starting where it ends, on its line, or at the next line's start

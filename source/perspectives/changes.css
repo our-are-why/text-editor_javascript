@@ -4,15 +4,15 @@
    underline, which are the text's, its marks' and its syntax's: a change
    is a ring round its words, red where they go, yellow where they're
    replaced, green where they're new, dashed where only their look changes,
-   dotted where they're inside another proposal's removal, so apply only
-   if it's rejected; and a line in a frame says what it becomes in its
+   ghosted, at half strength, where they're inside another proposal's
+   removal, so apply only if it's rejected; and a line in a frame says what it becomes in its
    gutter, its label in the same colours, never with a band across its
    text. A ring is a text underlay's path, behind the text, one shape over
    every span, row and line its words are on, each change's data on it:
    `data-change`, its kind, `data-side`, `data-source`, and `data-within`
-   when it's inside another's removal. A proposal's target,
-   `data-underlay="targets"`, is drawn but not shown: what it targets, its
-   lines' labels say. A host can use this, or put its own in its place. */
+   when it's inside another's removal; a proposal has no ring of its own,
+   only its changes', which its group, `data-source`, says are its. A host
+   can use this, or put its own in its place. */
 
 [data-perspective="changes"] .underlay_htmlView[data-change] {
   stroke: var(--edge);
@@ -43,9 +43,11 @@
 }
 
 /* inside another proposal's removal, `data-within` its source: it applies
-   only if that's rejected */
+   only if that's rejected, so it's there, but latent, a solid ring at half
+   strength, whatever its kind's dash would be */
 [data-perspective="changes"] .underlay_htmlView[data-within] {
-  stroke-dasharray: 1 2;
+  stroke-dasharray: none;
+  stroke-opacity: 0.5;
 }
 
 /* which lines change, said in the gutter, each line's label in the colour
@@ -63,4 +65,41 @@
 
 [data-perspective="changes"] .line_htmlView[data-marker="inserted"] .label_htmlView {
   color: var(--view-inserted-label, light-dark(#388a34, #89d185));
+}
+
+/* the proposal pointed at, `data-pointed` on its groups and its items, in
+   every frame it's in, the others still showing: its rings heavier, its
+   items lit */
+[data-perspective="changes"] .group_htmlView[data-pointed] > .underlay_htmlView[data-change] {
+  stroke-width: 2px;
+}
+
+[data-perspective="changes"] .item_htmlView[data-pointed] {
+  background: var(--view-pointed-item, color-mix(in srgb, Canvas 35%, transparent));
+}
+
+/* rings with room round their words, the same at every end: past its
+   ink, where its glyph is drawn, not its cell, into a space beyond it, or
+   past the row's end, or into room made where the end presses on another
+   character, below; clear of the character beyond, so never touching one,
+   and as far as a ring beside them on the row allows; as near the rows
+   above and below as they can be, a little short; so two rings, side by
+   side or on lines one over the other, are always apart; a ring inside
+   another's stretch, as a nested change is, inside it, further from its
+   row's top and bottom. At a 14px font, 3px past, 3px clear and 1px short,
+   so two rings are 2px apart; in ems, so at any other size they keep to
+   the font as they do at 14px. */
+[data-perspective="changes"] {
+  --view-underlay-inset-block: calc(1em / 14);
+  --view-underlay-inset-inline: calc(-3em / 14);
+  --view-underlay-clear-inline: calc(3em / 14);
+}
+
+/* where a change's end presses on another character, as code's tokens do
+   on its punctuation, the room the view works out it lacks made, the text
+   after it moved along, so it's as any other end: the ring as far past its
+   word's ink, and as clear of the character's */
+[data-perspective="changes"] .text_htmlView * {
+  padding-inline-start: var(--view-room-inline-start);
+  padding-inline-end: var(--view-room-inline-end);
 }

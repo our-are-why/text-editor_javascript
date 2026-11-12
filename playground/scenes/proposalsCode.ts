@@ -79,6 +79,7 @@ const proposalsCode: _Scene_ = {
               title: "A faster reader: 250 words a minute",
               rationale: "Adults read prose at about 250 words a minute; 230 makes every estimate a little long.",
               actions: actions_Review,
+              attributes: {},
           places: "",
             },
             {
@@ -86,6 +87,7 @@ const proposalsCode: _Scene_ = {
               title: "Drop the check on wordsPerMinute",
               rationale: "Every caller passes a positive whole number, so the check only ever throws in tests.",
               actions: actions_Review,
+              attributes: {},
           places: "",
             },
             {
@@ -93,6 +95,7 @@ const proposalsCode: _Scene_ = {
               title: "Name the minutes before rounding them",
               rationale: "With a name, the rounding reads as one step on a value you already understand.",
               actions: actions_Review,
+              attributes: {},
           places: "",
             },
           ],
