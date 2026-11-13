@@ -105,6 +105,13 @@
   background: var(--view-pointed-item, color-mix(in srgb, Canvas 35%, transparent));
 }
 
+/* where a note pointed at goes, a move's other end, `data-targeted` on its
+   rings: heavier, as a pointed proposal's are, so it shows, from either
+   end, which change is its counterpart */
+[data-perspective="changes"] :is(.underlay_htmlView, .seam_htmlView)[data-targeted][data-change] {
+  stroke-width: 2px;
+}
+
 /* rings with room round their words, the same at every end: past its
    ink, where its glyph is drawn, not its cell, into a space beyond it, or
    past the row's end, or into room made where the end presses on another

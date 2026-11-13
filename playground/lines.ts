@@ -100,9 +100,9 @@ interface _Move_Proposal_ {
 // as they are, as the document's are; those proposed, as they'd be in the
 // document the proposals would leave, so each starts from the state the line
 // before it would leave. Each end of a move, on its first line with words,
-// has a note that goes to its other end: where it leaves, saying only which
-// way it moves, as a line number there would mean little, and needn't hold
-// once other proposals are decided; where it lands, where it's from, the
+// has a note that goes to its other end: where it leaves, only "moved", as a
+// line number there would mean little, and needn't hold once other
+// proposals are decided; where it lands, only where it's from, the
 // document's lines as they are. Then each proposal's item, in every frame's
 // list, says where it is, from the places of it every frame has, or, a
 // move's, where it goes. A frame whose
@@ -169,7 +169,7 @@ function framedOf<State>(
     return {
       ...withSyntax(line, lines[frame.range.first - 1 + index]),
       gutter: { label: String(frame.range.first + index), marker: markerOf(line) },
-      note: leaving === undefined ? null : { label: `moves ${wayOf(leaving)}`, target: { source: leaving.source, side: "after" } },
+      note: leaving === undefined ? null : { label: "moved", target: { source: leaving.source, side: "after" } },
     }
   }
   const signedIn = (lines_Proposed: Array<_Line_Run_>): Array<_Line_Run_> => {
@@ -180,7 +180,7 @@ function framedOf<State>(
       return {
         ...withSyntax(line, syntax[index]),
         gutter: { label: signs[markerOf(line)], marker: markerOf(line) },
-        note: move === undefined ? null : { label: `moved ${wayOf(move)} from ${linesText(move.range)}`, target: { source: move.source, side: "before" } },
+        note: move === undefined ? null : { label: `from ${linesText(move.range)}`, target: { source: move.source, side: "before" } },
       }
     })
   }

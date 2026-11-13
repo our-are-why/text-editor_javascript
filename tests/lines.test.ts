@@ -49,10 +49,10 @@ function runOf(
   throw new Error(`there's no run ${id}`)
 }
 
-test("a move's two ends: numbered and marked moved where it leaves, its first line's note going to where it lands, saying only which way; signed → and marked moved where it lands, its first line moved in going back, saying where it's from; the line after it as it was", () => {
+test("a move's two ends: numbered and marked moved where it leaves, its first line's note going to where it lands, saying only that it's moved; signed → and marked moved where it lands, its first line moved in going back, saying where it's from; the line after it as it was", () => {
   const gutters = (id: string) => runOf(blocks, id).lines.map((line) => [line.gutter.label, line.gutter.marker, line.note])
-  expect(gutters("leaving-current")).toEqual([["2", "moved", { label: "moves down", target: { source: "move", side: "after" } }], ["3", "moved", null]])
-  expect(gutters("landing-proposed")).toEqual([["→", "moved", { label: "moved down from lines 2–3", target: { source: "move", side: "before" } }], ["→", "moved", null], ["", "none", null]])
+  expect(gutters("leaving-current")).toEqual([["2", "moved", { label: "moved", target: { source: "move", side: "after" } }], ["3", "moved", null]])
+  expect(gutters("landing-proposed")).toEqual([["→", "moved", { label: "from lines 2–3", target: { source: "move", side: "before" } }], ["→", "moved", null], ["", "none", null]])
 })
 
 test("a move is one ring over all it moves, at each end, whatever it changes on the way; what it changes is a ring of its own inside it, the move's own, so not within another's", () => {

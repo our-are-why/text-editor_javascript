@@ -107,6 +107,15 @@ class _View_TextEditor_ {
     })
   }
 
+  targetAt(
+    point_Screen: _Point_Screen_
+  ): _Target_Note_ | null {
+    return targetAt__View_TextEditor({
+      containerElement_View: this.containerElement,
+      point_Screen
+    })
+  }
+
   reveal(
     target_Note: _Target_Note_
   ): void {
@@ -1593,6 +1602,7 @@ interface _Point_Screen_ {
 
 interface _Layout_View_ {
   sourceAt: (point_Screen: _Point_Screen_) => string | null
+  targetAt: (point_Screen: _Point_Screen_) => _Target_Note_ | null
 }
 
 interface _Api___reveal__View_TextEditor_ {
@@ -1661,6 +1671,30 @@ function areaAt__Run({
       pathElement_area,
       pathElement_area_other
     ) => sizeOf(pathElement_area) - sizeOf(pathElement_area_other))[0] ?? null
+}
+
+interface _Api___targetAt__View_TextEditor_ {
+  containerElement_View: HTMLElement
+  point_Screen: _Point_Screen_
+}
+
+function targetAt__View_TextEditor({
+  containerElement_View,
+  point_Screen
+}: _Api___targetAt__View_TextEditor_): _Target_Note_ | null {
+  const element = document.elementFromPoint(
+    point_Screen.x,
+    point_Screen.y
+  )
+  const element_Note = element !== null && containerElement_View.contains(element) ? element.closest(".note_htmlView") : null
+  const source = element_Note?.getAttribute("data-target-source")
+  const side = element_Note?.getAttribute("data-target-side")
+  return typeof source === "string" && typeof side === "string"
+    ? {
+      source,
+      side
+    }
+    : null
 }
 
 interface _ComponentMap__View_TextEditor_ {

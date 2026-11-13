@@ -46,6 +46,7 @@ class _TextEditor_ {
     this.state = {
       viewModel_TextEditor,
       source_Pointed: null,
+      target_Pointed: null,
       target_Revealed: null
     }
     this.request_Draw = null
@@ -135,6 +136,7 @@ interface _JUMP_Command_ extends __BASE_Command_<"JUMP"> {
 interface _State_TextEditor_ {
   viewModel_TextEditor: _ViewModel_TextEditor_
   source_Pointed: string | null
+  target_Pointed: _Target_Note_ | null
   target_Revealed: _Target_Note_ | null
 }
 
@@ -149,7 +151,8 @@ function viewModelOf__State(
 ): _ViewModel_TextEditor_ {
   return pointedAt__ViewModel({
     viewModel_TextEditor: state.viewModel_TextEditor,
-    source: state.source_Pointed
+    source: state.source_Pointed,
+    target_Note: state.target_Pointed
   })
 }
 
@@ -193,11 +196,13 @@ function POINT_stateAfter__Command({
   layout_View
 }: _Api___stateAfter__Command_<"POINT">): _State_TextEditor_ {
   const source_Pointed = command.point_Screen === null ? null : layout_View.sourceAt(command.point_Screen)
-  return source_Pointed === state.source_Pointed
+  const target_Pointed = command.point_Screen === null ? null : layout_View.targetAt(command.point_Screen)
+  return source_Pointed === state.source_Pointed && target_Pointed?.source === state.target_Pointed?.source && target_Pointed?.side === state.target_Pointed?.side
     ? state
     : {
       ...state,
-      source_Pointed
+      source_Pointed,
+      target_Pointed
     }
 }
 

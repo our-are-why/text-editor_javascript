@@ -292,33 +292,35 @@ beside them, read-only. So:
   a document's own mark;
 - what's moved shows at both its ends: within a line, both in it; within
   what's shown together, linked in the margin; out to somewhere else, a mark
-  where it leaves, "moves to line 40", and where it lands, "moved from line
-  12", each going to the other, as doctor's do. Drawn so far, for whole
-  lines, the playground standing in for the projection: a change of its own
-  kind, `moved`, its two ends its two sides, "before" where it leaves,
-  "after" where it lands, ringed brown, as doctor's moves are, neither lost
-  nor new but both, in the dark doctor's own, its red and green mixed,
-  darkened, in the light a lighter tan, as that's too dark there, near the
-  text's ink and the syntax's browns; its lines numbered brown where it
-  leaves, signed → where it lands; each end's first line with words has a
-  note, a line's `note`, its label and its target, a change's side by its
-  proposal, which the view draws after its text as a button holding no text,
-  its label its `aria-label`, drawn by CSS, so nothing that reads or
-  measures the text meets it; pressed, it goes to the other end. Where it
-  leaves, it says only which way, "moves up": the line it goes to means
-  little to a reader, and needn't hold once other proposals are decided;
-  where it lands, where it's from, "moved up from lines 42–50", the
-  document's lines as they are, numbered in the frame it leaves; its item,
-  at both ends, which lines and which way, "moves lines 42–50 up". What it
-  changes on the way, `data-edit` on a segment, is ringed inside it, its own
-  proposal's, at full strength, not another's fallback. A move takes only
-  its lines; the blank lines round them are its own changes, at each end as
-  the context needs: taken out where it leaves, so no gap's left twice, put
-  in where it lands, before it or after, or both; a blank line says so only
-  in its gutter, its number red where it's taken out, + where it's put in,
-  having no words to ring. It lands in a frame that's a point, before a
-  line, with nothing as it is there. Not yet: the link in the margin between
-  two ends shown together, moves within a line, and a move split in pieces.
+  where it leaves, "moved", and where it lands, "from line 12", each going
+  to the other, as doctor's do. Drawn so far, for whole lines, the
+  playground standing in for the projection: a change of its own kind,
+  `moved`, its two ends its two sides, "before" where it leaves, "after"
+  where it lands, ringed brown, as doctor's moves are, neither lost nor new
+  but both, in the dark doctor's own, its red and green mixed, darkened, in
+  the light a lighter tan, as that's too dark there, near the text's ink and
+  the syntax's browns; its lines numbered brown where it leaves, signed →
+  where it lands; each end's first line with words has a note, a line's
+  `note`, its label and its target, a change's side by its proposal, which
+  the view draws after its text as a button holding no text, its label its
+  `aria-label`, drawn by CSS, so nothing that reads or measures the text
+  meets it; pointed at, it marks the other end's rings, heavier, so either
+  end shows its counterpart; pressed, it goes there. Where it leaves, it
+  says only "moved", as VS Code says "Code moved to", without the line: the
+  line it goes to means little to a reader, and needn't hold once other
+  proposals are decided; where it lands, only where it's from, "from lines
+  42–50", the document's lines as they are, numbered in the frame it leaves;
+  its item, at both ends, which lines and which way, "moves lines 42–50 up".
+  What it changes on the way, `data-edit` on a segment, is ringed inside it,
+  its own proposal's, at full strength, not another's fallback. A move takes
+  only its lines; the blank lines round them are its own changes, at each
+  end as the context needs: taken out where it leaves, so no gap's left
+  twice, put in where it lands, before it or after, or both; a blank line
+  says so only in its gutter, its number red where it's taken out, + where
+  it's put in, having no words to ring. It lands in a frame that's a point,
+  before a line, with nothing as it is there. Not yet: the link in the
+  margin between two ends shown together, moves within a line, and a move
+  split in pieces.
 
 **every proposal shown at once:** all of them, each change styled as what it
 is, word by word, none hidden behind or put aside for another. Which
@@ -717,29 +719,32 @@ are `source/ViewModel_TextEditor.ts`.
 
 The editor is a class too, `_TextEditor_`, in `source/TextEditor.ts`, a
 first one, with only what pointing needs. It holds the view, its modules,
-and its state: the view model it's given, and the proposal pointed at,
-`source_Pointed`. On its container, one listener for each kind of event its
-modules ask for, handing each to their adapters, in order, the first command
-taken ending it. `dispatch(command)` works out the state after it by the
-handler for its kind, from `HANDLERMAP__TEXTEDITOR`, a map, as the
-components are, given the state, the command and the view's layout
-interface, `_Layout_View_`, never the DOM; where the state's changed, it's
-drawn on the next frame, all of it again for now, each line keeping its
-element by its id to come. What's drawn is the state's view model:
-`pointedAt__ViewModel` marks the pointed proposal's groups and items
-`data-pointed`, an item's `attributes` drawn on it as a group's are, and the
-perspective says how it looks. Two commands so far: `POINT`, a point on the
-screen or none, its handler asking the view what proposal's there,
+and its state: the view model it's given, the proposal pointed at,
+`source_Pointed`, and the note, by its target, `target_Pointed`. On its
+container, one listener for each kind of event its modules ask for, handing
+each to their adapters, in order, the first command taken ending it.
+`dispatch(command)` works out the state after it by the handler for its
+kind, from `HANDLERMAP__TEXTEDITOR`, a map, as the components are, given the
+state, the command and the view's layout interface, `_Layout_View_`, never
+the DOM; where the state's changed, it's drawn on the next frame, all of it
+again for now, each line keeping its element by its id to come. What's drawn
+is the state's view model: `pointedAt__ViewModel` marks the pointed
+proposal's groups and items `data-pointed`, an item's `attributes` drawn on
+it as a group's are, and the underlays a pointed note goes to, its
+proposal's on its side, a move's other end, `data-targeted`; the perspective
+says how they look, a targeted ring heavier, so a note shows, from either
+end, which change is its counterpart. Two commands so far: `POINT`, a point
+on the screen or none, its handler asking the view what proposal's there,
 `sourceAt`: the innermost ring whose area it's in, or else what it's over,
-as a point's resolved by lowering, not by its source; and `JUMP`, to a
-note's target, its handler keeping it in the state, which the editor, once
-it's drawn, has the view reveal, `reveal`, scrolling it to the middle, then
-forgets, as scrolling is something done, not a state to draw. It doesn't
-point at what it reveals: pointing is the mouse's, and the scroll moves
-what's under it. One module, `MODULE_MOUSE`, in `source/modules/mouse.ts`,
-every move of the pointer a `POINT` where it is, as it can move out of a
-ring still over the same element, leaving the editor a `POINT` at nothing,
-a click on a note a `JUMP`.
+as a point's resolved by lowering, not by its source; and what note,
+`targetAt`; and `JUMP`, to a note's target, its handler keeping it in the
+state, which the editor, once it's drawn, has the view reveal, `reveal`,
+scrolling it to the middle, then forgets, as scrolling is something done,
+not a state to draw. It doesn't point at what it reveals: pointing is the
+mouse's, and the scroll moves what's under it. One module, `MODULE_MOUSE`,
+in `source/modules/mouse.ts`, every move of the pointer a `POINT` where it
+is, as it can move out of a ring still over the same element, leaving the
+editor a `POINT` at nothing, a click on a note a `JUMP`.
 Not yet: the model, lowering's stages, results beyond taken, observers, the
 keyboard and the current proposal.
 

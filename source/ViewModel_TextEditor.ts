@@ -250,34 +250,40 @@ function attributesOf__Stretches(
 interface _Api___pointedAt__ViewModel_ {
   viewModel_TextEditor: _ViewModel_TextEditor_
   source: string | null
+  target_Note: _Target_Note_ | null
 }
 
 function pointedAt__ViewModel({
   viewModel_TextEditor,
-  source
+  source,
+  target_Note
 }: _Api___pointedAt__ViewModel_): _ViewModel_TextEditor_ {
-  if (source === null) return viewModel_TextEditor
+  if (source === null && target_Note === null) return viewModel_TextEditor
   return viewModelOf__Blocks(viewModel_TextEditor.blocks.map((block_ViewModel) => pointedIn__Block({
     block_ViewModel,
-    source
+    source,
+    target_Note
   })))
 }
 
 interface _Api___pointedIn__Block_ {
   block_ViewModel: _Block_ViewModel_
-  source: string
+  source: string | null
+  target_Note: _Target_Note_ | null
 }
 
 function pointedIn__Block({
   block_ViewModel,
-  source
+  source,
+  target_Note
 }: _Api___pointedIn__Block_): _Block_ViewModel_ {
   return block_ViewModel.kind === "LINES"
     ? {
       ...block_ViewModel,
       run: pointedIn__Run({
         run_Lines: block_ViewModel.run,
-        source
+        source,
+        target_Note
       })
     }
     : {
@@ -286,7 +292,8 @@ function pointedIn__Block({
         items: block_ViewModel.parts,
         map: (part_Frame) => pointedIn__Part({
           part_Frame,
-          source
+          source,
+          target_Note
         })
       })
     }
@@ -294,24 +301,35 @@ function pointedIn__Block({
 
 interface _Api___pointedIn__Run_ {
   run_Lines: _Run_Lines_
-  source: string
+  source: string | null
+  target_Note: _Target_Note_ | null
 }
 
 function pointedIn__Run({
   run_Lines,
-  source
+  source,
+  target_Note
 }: _Api___pointedIn__Run_): _Run_Lines_ {
   return {
     ...run_Lines,
-    groups: run_Lines.groups.map((group_Underlay) => group_Underlay.attributes["data-source"] === source
-      ? {
-        ...group_Underlay,
-        attributes: {
+    groups: run_Lines.groups.map((group_Underlay) => ({
+      ...group_Underlay,
+      attributes: group_Underlay.attributes["data-source"] === source
+        ? {
           ...group_Underlay.attributes,
           "data-pointed": ""
         }
-      }
-      : group_Underlay)
+        : group_Underlay.attributes,
+      underlays: group_Underlay.underlays.map((underlay_Text) => target_Note !== null && underlay_Text.attributes["data-source"] === target_Note.source && underlay_Text.attributes["data-side"] === target_Note.side
+        ? {
+          ...underlay_Text,
+          attributes: {
+            ...underlay_Text.attributes,
+            "data-targeted": ""
+          }
+        }
+        : underlay_Text)
+    }))
   }
 }
 
@@ -336,12 +354,14 @@ function mapped__NonEmpty<Item, Mapped>({
 
 interface _Api___pointedIn__Part_ {
   part_Frame: _Part_Frame_
-  source: string
+  source: string | null
+  target_Note: _Target_Note_ | null
 }
 
 function pointedIn__Part({
   part_Frame,
-  source
+  source,
+  target_Note
 }: _Api___pointedIn__Part_): _Part_Frame_ {
   return part_Frame.kind === "PROPOSAL_LIST"
     ? {
@@ -363,7 +383,8 @@ function pointedIn__Part({
       ...part_Frame,
       run: pointedIn__Run({
         run_Lines: part_Frame.run,
-        source
+        source,
+        target_Note
       })
     }
 }

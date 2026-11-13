@@ -792,7 +792,7 @@ describe("beside it: what can't live in one document", () => {
         componentMap: window.COMPONENTMAP__VIEW_TEXTEDITOR
       }).draw(window.viewModelOf__Blocks([{
         kind: "LINES",
-        run: { id: "document", lines: [{ ...moving, note: { label: "moves up", target: { source: "move", side: "after" } } }, staying], groups: [] }
+        run: { id: "document", lines: [{ ...moving, note: { label: "moved", target: { source: "move", side: "after" } } }, staying], groups: [] }
       }]))
       return [...containerElement.querySelectorAll(".text_htmlView")].map((textElement) => {
         const buttonElement = textElement.querySelector(":scope > .note_htmlView")
@@ -809,7 +809,7 @@ describe("beside it: what can't live in one document", () => {
       })
     })
     expect(notes).toEqual([
-      { text: "function sleep(ms) {", note: { tag: "button", last: true, label: "moves up", shown: '"moves up"', target: ["move", "after"] } },
+      { text: "function sleep(ms) {", note: { tag: "button", last: true, label: "moved", shown: '"moved"', target: ["move", "after"] } },
       { text: "}", note: null }
     ])
   })
@@ -922,7 +922,7 @@ describe("beside it: what can't live in one document", () => {
       const moved = (side: string) => ({ "data-change": "moved", "data-side": side, "data-source": "move" })
       const marked = lines.map((line, index) => index === 0 || index === lines.length - 1 ? {
         ...line,
-        note: index === 0 ? { label: "moves down", target: { source: "move", side: "after" } } : { label: "moved down from line 1", target: { source: "move", side: "before" } },
+        note: index === 0 ? { label: "moved", target: { source: "move", side: "after" } } : { label: "from line 1", target: { source: "move", side: "before" } },
         segments: line.segments.map((segment) => ({ ...segment, attributes: moved(index === 0 ? "before" : "after") }))
       } : line)
       new window._TextEditor_({
@@ -957,6 +957,59 @@ describe("beside it: what can't live in one document", () => {
     await opened.page.setViewportSize({ width: 1280, height: 720 })
   })
 
+  test("pointing at a move's note marks its other end, data-targeted on its rings, which the perspective draws heavier, from either end; its own end it leaves as it is; and pointing away marks none", async () => {
+    await opened.page.evaluate(() => {
+      const containerElement = document.createElement("div")
+      containerElement.id = "targeting"
+      containerElement.style.width = "40rem"
+      containerElement.dataset["perspective"] = "changes"
+      document.body.prepend(containerElement)
+      const lines = window.parseLines_ViewModel({ multilineText: "moving\nstaying\nmoving", module_Language: window.MODULE_PLAINTEXT })
+      const moved = (side: string) => ({ "data-change": "moved", "data-side": side, "data-source": "move" })
+      const marked = lines.map((line, index) => index === 1 ? line : {
+        ...line,
+        note: index === 0 ? { label: "moved", target: { source: "move", side: "after" } } : { label: "from line 1", target: { source: "move", side: "before" } },
+        segments: line.segments.map((segment) => ({ ...segment, attributes: moved(index === 0 ? "before" : "after") }))
+      })
+      new window._TextEditor_({
+        containerElement,
+        componentMap: window.COMPONENTMAP__VIEW_TEXTEDITOR,
+        modules: [window.MODULE_MOUSE],
+        viewModel_TextEditor: window.viewModelOf__Blocks([{
+          kind: "LINES",
+          run: { id: "document", lines: marked, groups: [{ attributes: { "data-source": "move" }, underlays: [{ from: { line: 0, offset: 0 }, to: { line: 0, offset: 6 }, attributes: moved("before") }, { from: { line: 2, offset: 0 }, to: { line: 2, offset: 6 }, attributes: moved("after") }] }] }
+        }])
+      })
+    })
+    // each ring, its side, and how it's drawn: whether it's targeted, and
+    // its stroke's width; its area never filled
+    const targeted = () => opened.page.evaluate(async () => {
+      await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)))
+      return ["before", "after"].map((side) => {
+        const ring = document.querySelector(`#targeting .underlay_htmlView[data-side="${side}"]`)
+        const area = document.querySelector(`#targeting .area_htmlView[data-side="${side}"]`)
+        if (ring === null || area === null) throw new Error(`the ${side} ring wasn't drawn`)
+        return `${side}${ring.hasAttribute("data-targeted") ? " targeted" : ""} ${getComputedStyle(ring).strokeWidth}${getComputedStyle(area).fill === "none" ? "" : " filled"}`
+      })
+    })
+    const at = async (side: string) => {
+      const point = await opened.page.evaluate((side) => {
+        const rect = document.querySelector(`#targeting .note_htmlView[data-target-side="${side}"]`)?.getBoundingClientRect()
+        if (rect === undefined) throw new Error(`no note goes to ${side}`)
+        return { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 }
+      }, side)
+      await opened.page.mouse.move(point.x, point.y)
+    }
+    expect(await targeted()).toEqual(["before 1px", "after 1px"])
+    await at("after")
+    expect(await targeted()).toEqual(["before 1px", "after targeted 2px"])
+    await at("before")
+    expect(await targeted()).toEqual(["before targeted 2px", "after 1px"])
+    await opened.page.mouse.move(1270, 715)
+    expect(await targeted()).toEqual(["before 1px", "after 1px"])
+    await opened.page.evaluate(() => document.getElementById("targeting")?.remove())
+  })
+
   test("a ring over several lines hugs them, one outline, nothing in it twice or on the way: its left side straight where its rows start at their lines' starts, its right stepping with their ends, never by less than half an em, so lines ending in one column, but for room made in one, share an end; a short last row stays short; a line's note shows, so the row it follows stops short of it", async () => {
     const shape = await opened.page.evaluate(async () => {
       const containerElement = document.createElement("div")
@@ -981,7 +1034,7 @@ describe("beside it: what can't live in one document", () => {
         componentMap: window.COMPONENTMAP__VIEW_TEXTEDITOR
       }).draw(window.viewModelOf__Blocks([{
         kind: "LINES",
-        run: { id: "document", lines: [{ ...first, note: { label: "moves up", target: { source: "move", side: "after" } } }, long, plain, pressed_Cut, last], groups: [{ attributes: { "data-source": "move" }, underlays: [{ from: { line: 0, offset: 0 }, to: { line: 4, offset: 1 }, attributes: change }, { from: { line: 3, offset: 9 }, to: { line: 3, offset: 10 }, attributes: edit }] }] }
+        run: { id: "document", lines: [{ ...first, note: { label: "moved", target: { source: "move", side: "after" } } }, long, plain, pressed_Cut, last], groups: [{ attributes: { "data-source": "move" }, underlays: [{ from: { line: 0, offset: 0 }, to: { line: 4, offset: 1 }, attributes: change }, { from: { line: 3, offset: 9 }, to: { line: 3, offset: 10 }, attributes: edit }] }] }
       }]))
       await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)))
       const path = containerElement.querySelector(".underlay_htmlView")
