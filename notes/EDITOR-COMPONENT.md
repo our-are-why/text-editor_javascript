@@ -191,18 +191,20 @@ interface _Changes_Source_ {
 
 type _Change_ = _REPLACE_Change_ | _MOVE_Change_
 
-// what every change has: its span, and what it becomes, one line or several;
-// a change that takes text out becomes one empty line, as "" parses to one
+// what every change has: its span
 interface __BASE_Change_<Kind extends string> {
   kind: Kind
   range: _Range_Document_
+}
+
+// a span and what it becomes, one line or several: an empty span puts text
+// in; one that takes text out becomes one empty line, as "" parses to one
+interface _REPLACE_Change_ extends __BASE_Change_<"replace"> {
   next: _NonEmpty_<_Text_Model_>
 }
 
-// a span and what it becomes: an empty span puts text in
-interface _REPLACE_Change_ extends __BASE_Change_<"replace"> {}
-
-// a span taken from where it is, and what it reads as where it goes
+// a span taken from where it is and put somewhere else, as it is: what
+// else changes in it is another source's, never the move's
 interface _MOVE_Change_ extends __BASE_Change_<"move"> {
   to: _Position_Document_
 }
@@ -247,14 +249,24 @@ removal.
   are lines; another host, a sentence. The editor assumes nothing.
 - **one source, many changes:** what's decided together is one source;
   what's decided apart, two. The editor needs no groups of its own.
-- **moves:** explicit, as doctor's `MOVE` is, never only a removal and an
-  insertion, which loses what moved, and shows a move edited on the way as
-  all new. What a move is, within a line, from line to line within what's
-  shown together, or out to somewhere else in the document, follows from
-  where its ends are, and isn't stored; one that splits is several moves of
-  one source. Moves of whole lines come first; within a line, and splits,
-  after spans and frames work, the derived differences showing them till
-  then as what's taken out and put in.
+- **moves:** a change of their own, as doctor's `MOVE` is, never only a
+  removal and an insertion, which loses what moved, and shows what another
+  source changes in it as all new. What a move is, within a line, from line
+  to line within what's shown together, or out to somewhere else in the
+  document, follows from where its ends are, and isn't stored; one that
+  splits is several moves of one source. Text is text: a move is text taken
+  from one place and put in another, as it was, whatever it is, words, a
+  line, lines, a blank line, wherever the two places are; what's between or
+  round it that doesn't move, as an operator between two operands swapped,
+  stays as it was, neither moved nor taken out and put in. A source that
+  moves holds only moves: what else changes in what it moves, a rename on
+  the way, is another source's, decided apart, applying wherever the text
+  ends up, so the two decisions, where text is and what it says, are never
+  tied. An agent sending a line as it becomes, a replacement, says nothing
+  of moves: the comparison that derives what changed within a span derives
+  them there too, text the same at both ends, in another place, and splits
+  what it finds into a source that moves and one that changes, each its own.
+  Moves of whole lines, and within a line, first; splits, after.
 - **nested, never crossing:** a change from one source may lie wholly inside
   another source's removal, as a rename's place does inside lines another
   proposal takes out: it's the inside one's fallback there, applying only if
@@ -309,18 +321,27 @@ beside them, read-only. So:
   says only "moved", as VS Code says "Code moved to", without the line: the
   line it goes to means little to a reader, and needn't hold once other
   proposals are decided; where it lands, only where it's from, "from lines
-  42–50", the document's lines as they are, numbered in the frame it leaves;
-  its item, at both ends, which lines and which way, "moves lines 42–50 up".
-  What it changes on the way, `data-edit` on a segment, is ringed inside it,
-  its own proposal's, at full strength, not another's fallback. A move takes
-  only its lines; the blank lines round them are its own changes, at each
-  end as the context needs: taken out where it leaves, so no gap's left
-  twice, put in where it lands, before it or after, or both; a blank line
-  says so only in its gutter, its number red where it's taken out, + where
-  it's put in, having no words to ring. It lands in a frame that's a point,
-  before a line, with nothing as it is there. Not yet: the link in the
-  margin between two ends shown together, moves within a line, and a move
-  split in pieces.
+  41–50", the document's lines as they are, numbered in the frame it leaves;
+  its item, at both ends, which lines and which way, "moves lines 41–50 up".
+  What another proposal changes in what it carries, a segment's
+  `data-edit-change` and `data-edit-source`, is that proposal's, decided
+  apart, applying wherever the words end up: so it shows at both ends, a
+  ring inside the move's, at full strength, not a fallback, saying whose
+  move carries it, `data-carried`; pointed at, it lights its own proposal,
+  not the move; its item, in both frames, says its places are in what the
+  move moves, "2 places, in what “Move sleep up, beside the delays it waits
+  out” moves", counted once. A blank line is text like any: one that goes
+  with what moves is moved, its number brown where it leaves, → where it
+  lands, saying so only in its gutter, having no words to ring; sleep takes
+  the one before it, so each gap stays one line. It lands in a frame that's
+  a point, before a line, with nothing as it is there. Within a line, both
+  its ends are in the line's frame, where it leaves on the line as it is,
+  where it lands on the line as proposed, so it needs no notes; what doesn't
+  move stays as it was, the `||` between two operands swapped unringed; the
+  line's changed in place, its gutter yellow and `~`, its rings saying which
+  words moved. So far declared, as the stand-in has no comparison to derive
+  them. Not yet: the link in the margin between two ends shown together, and
+  a move split in pieces.
 
 **every proposal shown at once:** all of them, each change styled as what it
 is, word by word, none hidden behind or put aside for another. Which

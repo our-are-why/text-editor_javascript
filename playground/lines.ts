@@ -40,8 +40,8 @@ function lineOf(
   }
 }
 
-// a blank line a proposal takes out or puts in: having no words to carry
-// the change, it says it only in the gutter, by its marker, which the
+// a blank line a proposal takes out, puts in or moves: having no words to
+// carry the change, it says it only in the gutter, by its marker, which the
 // frame keeps, as there are none to work it out from
 function blankOf(
   marker: _Marker_Gutter_
@@ -105,12 +105,12 @@ interface _Move_Proposal_ {
 // proposals are decided; where it lands, only where it's from, the
 // document's lines as they are. Then each proposal's item, in every frame's
 // list, says where it is, from the places of it every frame has, or, a
-// move's, where it goes. A frame whose
-// lines as they are aren't the document's, or that overlaps another, is a
-// mistake in the scene, and throws. A frame whose range is empty, its last
-// line the one before its first, is a point between two lines, before its
-// first, with no lines as they are: where a move lands, as nothing there
-// changes
+// move's, where it goes. A frame whose lines as they are aren't the
+// document's, or that overlaps another, is a mistake in the scene, and
+// throws, as is a proposal that moves text and changes text too: one that
+// moves holds only moves. A frame whose range is empty, its last line the
+// one before its first, is a point between two lines, before its first,
+// with no lines as they are: where a move lands, as nothing there changes
 function blocksWith__Frames<State>({
   multilineText,
   module_Language,
@@ -125,6 +125,7 @@ function blocksWith__Frames<State>({
     if (next !== undefined && next.range.first <= frame.range.last) throw new Error(`frames of lines ${frame.range.first} to ${frame.range.last} and ${next.range.first} to ${next.range.last} overlap`)
   })
   const framed = ordered.map((frame) => framedOf(frame, lines, texts, module_Language, moves))
+  checkMovesOnly(framed)
   const titles = new Map(framed.flatMap((frame) => frame.parts.flatMap((part) => part.kind === "PROPOSAL_LIST" ? part.items.map((item): [string, string] => [item.source, item.title]) : [])))
   const places_All = framed.flatMap(placesOf)
   const blocks: Array<_Block_ViewModel_> = []
@@ -199,6 +200,20 @@ function framedOf<State>(
   return { ...frame, parts: [withGutters(part), ...more.map(withGutters)] }
 }
 
+// a proposal that moves holds only moves: text taken from one place and put
+// in another, as it was; what else changes in what it moves is another
+// proposal's, carried, decided apart. One that moves text and changes text
+// too is a mistake in the scene, and throws
+function checkMovesOnly(
+  frames: Array<_FRAME_Block__ViewModel_>
+): void {
+  const changes = frames.flatMap((frame) => frame.parts.flatMap((part) => part.kind === "PROPOSAL_LIST" ? [] : part.run.groups.flatMap((group) => group.underlays)))
+  for (const [source, underlays] of Map.groupBy(changes, (underlay) => underlay.attributes["data-source"] ?? "")) {
+    const kinds = new Set(underlays.map((underlay) => underlay.attributes["data-change"]))
+    if (kinds.has("moved") && kinds.size > 1) throw new Error(`the proposal ${source} moves text and changes it too, ${[...kinds].join(", ")}: one that moves holds only moves, and what else changes is another's`)
+  }
+}
+
 // a move's first line with words on it, by its number, which says where the
 // move goes: its first line may be a blank one, taken along to keep the
 // lines apart where it lands
@@ -228,26 +243,33 @@ function linesText(
   return range.first === range.last ? `line ${range.first}` : `lines ${range.first}–${range.last}`
 }
 
-// a place of a proposal: one of its changes, by its source, and, when it's
-// inside another proposal's removal, that one's source
+// a place of a proposal: one of its changes, by its source; when it's
+// inside another proposal's removal, that one's source; when it's in what a
+// move carries, that one's; and whether it's where the move lands, the same
+// place again
 interface _Place_Proposal_ {
   source: string
   within: string | null
+  carried: string | null
+  isLanded: boolean
 }
 
 // a frame's places, each counted once: on its lines as they are, every
 // change but a put-in one, which has no words there; on its lines as
-// proposed, every put-in one
+// proposed, every put-in one, and every one a move carries, there where it
+// lands, counted once in all, where it leaves
 function placesOf(
   frame: _FRAME_Block__ViewModel_
 ): Array<_Place_Proposal_> {
   return frame.parts.flatMap((part) => {
     if (part.kind === "PROPOSAL_LIST") return []
-    const counted = (change: string) => part.kind === "CURRENT_LINES" ? change !== "inserted" : change === "inserted"
     return part.run.groups.flatMap((group) => group.underlays.flatMap((underlay) => {
       const change = underlay.attributes["data-change"]
       const source = underlay.attributes["data-source"]
-      return change === undefined || source === undefined || !counted(change) ? [] : [{ source, within: underlay.attributes["data-within"] ?? null }]
+      const carried = underlay.attributes["data-carried"] ?? null
+      const isLanded = part.kind === "PROPOSAL_LINES" && carried !== null
+      const counted = part.kind === "CURRENT_LINES" ? change !== "inserted" : change === "inserted" || isLanded
+      return change === undefined || source === undefined || !counted ? [] : [{ source, within: underlay.attributes["data-within"] ?? null, carried, isLanded }]
     }))
   })
 }
@@ -264,8 +286,10 @@ function placedItems(
 // where a proposal is, as its item says it in a frame: a move, which lines
 // and which way, at both its ends; otherwise, how many of its places are here, of how
 // many in all, when that's not all of them; and of those here, how many only
-// if another proposal, whose removal they're inside, is rejected. Nothing for
-// a proposal wholly here, inside nothing
+// if another proposal, whose removal they're inside, is rejected; and how
+// many are in what a move carries, so here at one of its ends, whichever
+// it's left at, counted once where both its ends are here. Nothing for a
+// proposal wholly here, inside nothing
 function placesText(
   source: string,
   places_Here: Array<_Place_Proposal_>,
@@ -275,12 +299,18 @@ function placesText(
 ): string {
   const move = moves.find((each) => each.source === source)
   if (move !== undefined) return `moves ${linesText(move.range)} ${wayOf(move)}`
-  const here = places_Here.filter((place) => place.source === source)
-  const all = places_All.filter((place) => place.source === source)
+  const here_Both = places_Here.filter((place) => place.source === source)
+  const here = here_Both.filter((place) => !place.isLanded || !here_Both.some((other) => !other.isLanded && other.carried === place.carried))
+  const all = places_All.filter((place) => place.source === source && !place.isLanded)
   const within = Map.groupBy(here.flatMap((place) => place.within === null ? [] : [place.within]), (source_Within) => source_Within)
-  if (here.length === all.length && within.size === 0) return ""
+  const carried = Map.groupBy(here.flatMap((place) => place.carried === null ? [] : [place.carried]), (source_Carried) => source_Carried)
+  if (here.length === all.length && within.size === 0 && carried.size === 0) return ""
   const count = here.length === all.length ? `${here.length} ${here.length === 1 ? "place" : "places"}` : `${here.length} of ${all.length} places`
-  return [count, ...[...within].map(([source_Within, places]) => `${places.length} only if “${titles.get(source_Within) ?? source_Within}” is rejected`)].join(", ")
+  return [
+    count,
+    ...[...within].map(([source_Within, places]) => `${places.length} only if “${titles.get(source_Within) ?? source_Within}” is rejected`),
+    ...[...carried].map(([source_Carried, places]) => `${places.length === here.length ? "" : `${places.length} `}in what “${titles.get(source_Carried) ?? source_Carried}” moves`),
+  ].join(", ")
 }
 
 // what a line becomes, as its changes say: taken out, when it's all taken
@@ -352,8 +382,9 @@ const names_Change = ["data-change", "data-side", "data-source"]
 // each proposal's group behind a run of lines, in the order they first come,
 // its changes in it and nothing else, no path for the proposal as a whole:
 // those inside another proposal's removal too, as a segment's nested change
-// says them, saying whose, data-within; and the edits a move makes on the
-// way, as a segment's edit says them, the move's own; a change's segments
+// says them, saying whose, data-within; and the edits other proposals make
+// to what a move carries, as a segment's edit says them, each its own
+// proposal's, saying whose move carries it, data-carried; a change's segments
 // that run on into each other, along a line or from one line's end to the
 // next one's start, as one, however many edits are inside it, without the
 // spaces at its ends, so its ring is round its words alone; in the order
@@ -368,7 +399,8 @@ function groupsOf__Lines(
     const to = { line: index_Line, offset: offset + segment.text.length }
     const nested_Source = segment.attributes["data-nested-source"]
     const nested_Change = segment.attributes["data-nested-change"]
-    const edit = segment.attributes["data-edit"]
+    const edit_Change = segment.attributes["data-edit-change"]
+    const edit_Source = segment.attributes["data-edit-source"]
     return source === undefined ? [] : [
       {
         source,
@@ -378,9 +410,9 @@ function groupsOf__Lines(
         source: nested_Source,
         underlay: { from, to, attributes: { "data-change": nested_Change, "data-side": segment.attributes["data-side"] ?? "before", "data-source": nested_Source, "data-within": source } },
       }]),
-      ...(edit === undefined ? [] : [{
-        source,
-        underlay: { from, to, attributes: { "data-change": edit, "data-side": segment.attributes["data-side"] ?? "before", "data-source": source } },
+      ...(edit_Change === undefined || edit_Source === undefined ? [] : [{
+        source: edit_Source,
+        underlay: { from, to, attributes: { "data-change": edit_Change, "data-side": segment.attributes["data-side"] ?? "before", "data-source": edit_Source, "data-carried": source } },
       }]),
     ]
   }))

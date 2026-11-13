@@ -72,13 +72,20 @@ function attributesOf__Nested({
   return { "data-nested-change": kind, "data-nested-source": source }
 }
 
-// what a move's words become on the way, where it changes them, a stretch of
-// what it moves: the edit's kind, under a name of its own, so the move's stay
-// as they are on the segment; it's the move's own proposal's, so it's ringed
-// inside the move's ring, at full strength
-function attributesOf__Edit(
+interface _Api___attributesOf__Edit_ {
   kind: _Kind_Change_
-): _Attributes_Element_ {
-  return { "data-edit": kind }
+  source: string
+}
+
+// a change another proposal makes to words a move carries, a stretch of what
+// it moves: its kind and source, under names of their own, so the move's
+// stay as they are on the segment. A proposal of its own, decided apart from
+// the move, applying wherever the words end up, so it shows at both the
+// move's ends, ringed inside its ring, at full strength
+function attributesOf__Edit({
+  kind,
+  source
+}: _Api___attributesOf__Edit_): _Attributes_Element_ {
+  return { "data-edit-change": kind, "data-edit-source": source }
 }
 
