@@ -375,8 +375,11 @@ the document or its changes changing:
     it covers. It never moves the text, and nothing in it depends on how
     the text's cut into segments or drawn in spans: text underlays overlap
     freely, and draw what a span can't, as doctor's change boxes in the
-    document were Monaco's decorations behind the text. They're pointed
-    through, as what's pointed at is the text.
+    document were Monaco's decorations behind the text. Events pass through
+    them, but what's pointed at is the ring: anywhere in its area, closed
+    whatever sides the ring leaves open, a path of its own drawn under it,
+    `area_htmlView`; between its rows too, over no word; the innermost where
+    one's inside another, as far as it reaches.
   - **one `<svg>` for each run of lines:** text is drawn in runs of lines:
     the unframed lines between frames, and a frame's `CURRENT_LINES` and
     `PROPOSAL_LINES`, each drawn by the same component wherever it is, with
@@ -539,19 +542,21 @@ the document or its changes changing:
   perspective needing other elements, not only another look, is drawn again
   from the overlays by another mapping: rarer, and later.
 
-**frames:** a range of the document's lines, taken out of the flow and
-shown in place of themselves, with their possible future; or a point
-between two lines, its range empty, its last line the one before its
-first, with no lines as they are, only what's proposed there, as where a
-move lands: "before line 6". Each line of the
-document is drawn once, in the flow or in a frame, and the lines after a
-frame are numbered as the document numbers them, what's proposed not the
-document's till it's accepted. A frame's text sits where the document's
-would, every line in it, as they are or as proposed, at the same left and
-the same width as every line around it, in the rhythm of the lines, as
-doctor's proposals' lines sit where the document's words are: its rows'
-bands run from edge to edge, over the view's padding. A frame is made of
-parts, in order:
+**frames:** a range of the document's lines, taken out of the flow and shown
+in place of themselves, with their possible future; or a point between two
+lines, its range empty, its last line the one before its first, with no
+lines as they are, only what's proposed there, as where a move lands:
+"before line 6". Each line of the document is drawn once, in the flow or in
+a frame, and the lines after a frame are numbered as the document numbers
+them, what's proposed not the document's till it's accepted. A frame's text
+sits where the document's would, every line in it, as they are or as
+proposed, at the same left and the same width as every line around it, in
+the rhythm of the lines, as doctor's proposals' lines sit where the
+document's words are: its rows' bands run from edge to edge, over the view's
+padding. Every frame is set apart from what follows it by half a line of the
+document's ground, below its last part, so its bar ends with it, and a frame
+right after another, no line between them, plainly starts. A frame is made
+of parts, in order:
 
 - **CURRENT_LINES:** the lines as they are, numbered as the document numbers
   them: what the proposals are read against, their backdrop;
@@ -720,14 +725,16 @@ element by its id to come. What's drawn is the state's view model:
 `data-pointed`, an item's `attributes` drawn on it as a group's are, and the
 perspective says how it looks. Two commands so far: `POINT`, a point on the
 screen or none, its handler asking the view what proposal's there,
-`sourceAt`, as a point's resolved by lowering, not by its source; and
-`JUMP`, to a note's target, its handler keeping it in the state, which the
-editor, once it's drawn, has the view reveal, `reveal`, scrolling it to the
-middle, then forgets, as scrolling is something done, not a state to draw.
-It doesn't point at what it reveals: pointing is the mouse's, and the
-scroll moves what's under it. One module, `MODULE_MOUSE`, in
-`source/modules/mouse.ts`, a pointer over something a `POINT` there,
-leaving the editor a `POINT` at nothing, a click on a note a `JUMP`.
+`sourceAt`: the innermost ring whose area it's in, or else what it's over,
+as a point's resolved by lowering, not by its source; and `JUMP`, to a
+note's target, its handler keeping it in the state, which the editor, once
+it's drawn, has the view reveal, `reveal`, scrolling it to the middle, then
+forgets, as scrolling is something done, not a state to draw. It doesn't
+point at what it reveals: pointing is the mouse's, and the scroll moves
+what's under it. One module, `MODULE_MOUSE`, in `source/modules/mouse.ts`,
+every move of the pointer a `POINT` where it is, as it can move out of a
+ring still over the same element, leaving the editor a `POINT` at nothing,
+a click on a note a `JUMP`.
 Not yet: the model, lowering's stages, results beyond taken, observers, the
 keyboard and the current proposal.
 

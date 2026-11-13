@@ -100,7 +100,10 @@
   initial-value: 0px;
 }
 
-.htmlView_editor :where(.underlay_htmlView, .seam_htmlView) {
+/* a ring's area, closed whatever sides its ring leaves open, where it's
+   pointed at, the gaps between its rows too; drawn under its ring, for a
+   perspective to fill, or not */
+.htmlView_editor :where(.area_htmlView, .underlay_htmlView, .seam_htmlView) {
   fill: none;
 }
 
@@ -196,6 +199,13 @@
 
 .htmlView_editor .frame_htmlView .line_htmlView {
   padding-inline: var(--view-padding-inline, 1rem);
+}
+
+/* every frame set apart from what follows it by the document's ground,
+   below its last part, outside it, so its bar ends with it, and a frame
+   right after another, no line between them, plainly starts */
+.htmlView_editor .frame_htmlView {
+  margin-block-end: var(--view-frame-gap, 0.5lh);
 }
 
 /* the lines as they are, every one, changed or not, on a neutral band, so

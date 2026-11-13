@@ -8,7 +8,7 @@ const MODULE_MOUSE: _Module_TextEditor_ = {
   name: "mouse",
   adapters: [
     {
-      event: "pointerover",
+      event: "pointermove",
       commandOf__Event: (event) => event instanceof PointerEvent
         ? {
           kind: "POINT",

@@ -235,6 +235,86 @@ describe("beside it: what can't live in one document", () => {
     await opened.page.evaluate(() => document.getElementById("pointing")?.remove())
   })
 
+  test("a ring is pointed at wherever it's drawn round, between its rows too, over no word; where one's inside another, the inner one, as far as it reaches; and moving out of it, over what was under the pointer before, points at none", async () => {
+    const at = await opened.page.evaluate(async () => {
+      const containerElement = document.createElement("div")
+      containerElement.id = "pointing-rows"
+      containerElement.style.width = "40rem"
+      containerElement.style.setProperty("--view-font-size", "14px")
+      containerElement.dataset["perspective"] = "changes"
+      document.body.prepend(containerElement)
+      const [first, middle, last] = window.parseLines_ViewModel({ multilineText: "alpha beta gamma\ndelta epsilon\nzeta eta theta", module_Language: window.MODULE_PLAINTEXT })
+      const [segment] = first?.segments ?? []
+      if (first === undefined || middle === undefined || last === undefined || segment === undefined) throw new Error("the lines weren't parsed")
+      const textOf = (text: string) => window.parseLines_ViewModel({ multilineText: text, module_Language: window.MODULE_PLAINTEXT })[0]?.segments[0]?.text ?? segment.text
+      // lines 1 to 3 taken out, delta renamed inside it, by another proposal
+      const removed = { "data-change": "removed", "data-side": "before", "data-source": "drop" }
+      const renamed = { "data-change": "replaced", "data-side": "before", "data-source": "rename", "data-within": "drop" }
+      new window._TextEditor_({
+        containerElement,
+        componentMap: window.COMPONENTMAP__VIEW_TEXTEDITOR,
+        modules: [window.MODULE_MOUSE],
+        viewModel_TextEditor: window.viewModelOf__Blocks([{
+          kind: "LINES",
+          run: {
+            id: "document",
+            lines: [
+              { ...first, segments: [{ text: textOf("alpha "), attributes: {} }, { text: textOf("beta gamma"), attributes: removed }] },
+              { ...middle, segments: [{ text: textOf("delta"), attributes: renamed }, { text: textOf(" epsilon"), attributes: removed }] },
+              { ...last, segments: [{ text: textOf("zeta eta"), attributes: removed }, { text: textOf(" theta"), attributes: {} }] }
+            ],
+            groups: [
+              { attributes: { "data-source": "drop" }, underlays: [{ from: { line: 0, offset: 6 }, to: { line: 2, offset: 8 }, attributes: removed }] },
+              { attributes: { "data-source": "rename" }, underlays: [{ from: { line: 1, offset: 0 }, to: { line: 1, offset: 5 }, attributes: renamed }] }
+            ]
+          }
+        }])
+      })
+      await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)))
+      const [textFirst, textMiddle, textLast] = [...containerElement.querySelectorAll(".text_htmlView")]
+      const ringRenamed = containerElement.querySelector('.area_htmlView[data-source="rename"]')?.getBoundingClientRect()
+      const removedFirst = textFirst?.querySelector('[data-source="drop"]')?.getBoundingClientRect()
+      const removedLast = textLast?.querySelector('[data-source="drop"]')?.getBoundingClientRect()
+      const lineMiddle = textMiddle?.closest(".line_htmlView")?.getBoundingClientRect()
+      if (textFirst === undefined || textLast === undefined || ringRenamed === undefined || removedFirst === undefined || removedLast === undefined || lineMiddle === undefined) throw new Error("the rings weren't drawn")
+      const middleOf = (element: Element) => {
+        const rect = element.getBoundingClientRect()
+        return rect.top + rect.height / 2
+      }
+      return {
+        // a column every row of the removal has, from the first's middle to
+        // the last's
+        column: (removedFirst.left + removedLast.right) / 2,
+        from: Math.ceil(middleOf(textFirst)),
+        to: Math.floor(middleOf(textLast)),
+        // the renamed ring's reach past delta's ink, over the space after it,
+        // the removal's
+        reach: { x: ringRenamed.right - 1, y: ringRenamed.top + ringRenamed.height / 2 },
+        // the middle line's top, between it and the first, over no word
+        between: lineMiddle.top + 1,
+        beyond: lineMiddle.right - 1
+      }
+    })
+    const pointed = () => opened.page.evaluate(async () => {
+      await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)))
+      return [...document.querySelectorAll("#pointing-rows .group_htmlView[data-pointed]")].map((element) => element.getAttribute("data-source")).join(" ")
+    })
+    const walked: Array<string> = []
+    for (let y = at.from; y <= at.to; y++) {
+      await opened.page.mouse.move(at.column, y)
+      walked.push(await pointed())
+    }
+    expect([...new Set(walked)]).toEqual(["drop"])
+    await opened.page.mouse.move(at.reach.x, at.reach.y)
+    expect(await pointed()).toEqual("rename")
+    await opened.page.mouse.move(at.column, at.between)
+    expect(await pointed()).toEqual("drop")
+    await opened.page.mouse.move(at.beyond, at.between)
+    expect(await pointed()).toEqual("")
+    await opened.page.mouse.move(1270, 715)
+    await opened.page.evaluate(() => document.getElementById("pointing-rows")?.remove())
+  })
+
   test("each proposal's item shows its title, where it is, why it's proposed, and its actions, each a button carrying its command, where it is and why only when they say something", async () => {
     const items = await opened.page.evaluate(() => {
       const containerElement = document.createElement("div")
@@ -330,7 +410,7 @@ describe("beside it: what can't live in one document", () => {
     ])
   })
 
-  test("each run of lines draws one svg behind its lines' text, a group for each of its groups, a path in it for each underlay, carrying its data", async () => {
+  test("each run of lines draws one svg behind its lines' text, a group for each of its groups, two paths in it for each underlay, its area and its ring, each carrying its data", async () => {
     const drawn = await opened.page.evaluate(() => {
       const containerElement = document.createElement("div")
       document.body.append(containerElement)
@@ -368,6 +448,7 @@ describe("beside it: what can't live in one document", () => {
           source: groupElement.getAttribute("data-source"),
           paths: [...groupElement.children].map((pathElement) => ({
             tag: pathElement instanceof SVGPathElement ? "path" : pathElement.localName,
+            class: pathElement.getAttribute("class"),
             attributes: [...pathElement.attributes].map((attribute) => attribute.name).filter((name) => name.startsWith("data-")),
             shapes: (pathElement.getAttribute("d")?.match(/M/g) ?? []).length,
             fill: getComputedStyle(pathElement).fill
@@ -385,8 +466,10 @@ describe("beside it: what can't live in one document", () => {
         tag: "g",
         source: "most",
         paths: [
-          { tag: "path", attributes: ["data-underlay"], shapes: 1, fill: "none" },
-          { tag: "path", attributes: ["data-change", "data-source"], shapes: 1, fill: "none" }
+          { tag: "path", class: "area_htmlView", attributes: ["data-underlay"], shapes: 1, fill: "none" },
+          { tag: "path", class: "underlay_htmlView", attributes: ["data-underlay"], shapes: 1, fill: "none" },
+          { tag: "path", class: "area_htmlView", attributes: ["data-change", "data-source"], shapes: 1, fill: "none" },
+          { tag: "path", class: "underlay_htmlView", attributes: ["data-change", "data-source"], shapes: 1, fill: "none" }
         ]
       }]
     })
@@ -750,6 +833,39 @@ describe("beside it: what can't live in one document", () => {
       return drawn_Frame
     })
     expect(drawn).toEqual({ label: "before line 6", current: 0, proposed: 1 })
+  })
+
+  test("every frame is set apart from what follows it, the document's ground below it, so its bar ends with it, and a frame right after another, no line between them, plainly starts; a frame touches the lines before it; and its proposals start where its lines' text does, though in another font", async () => {
+    const drawn = await opened.page.evaluate(() => {
+      const containerElement = document.createElement("div")
+      containerElement.style.width = "40rem"
+      document.body.append(containerElement)
+      const [one, two, three, four] = window.parseLines_ViewModel({ multilineText: "one\ntwo\nthree\nfour", module_Language: window.MODULE_PLAINTEXT })
+      if (one === undefined || two === undefined || three === undefined || four === undefined) throw new Error("the lines weren't parsed")
+      const item = { source: "s", title: "Title", places: "", rationale: "", actions: [], attributes: {} }
+      new window._View_TextEditor_({
+        containerElement,
+        componentMap: window.COMPONENTMAP__VIEW_TEXTEDITOR
+      }).draw(window.viewModelOf__Blocks([
+        { kind: "LINES", run: { id: "before", lines: [one], groups: [] } },
+        { kind: "FRAME", range: { first: 2, last: 2 }, parts: [{ kind: "CURRENT_LINES", run: { id: "two", lines: [two], groups: [] } }, { kind: "PROPOSAL_LIST", items: [item] }] },
+        // a label three characters wide, so the text starts three of the
+        // text's ch in, as the proposals must, though their font's another
+        { kind: "FRAME", range: { first: 3, last: 3 }, parts: [{ kind: "CURRENT_LINES", run: { id: "three", lines: [{ ...three, gutter: { ...three.gutter, label: "100" } }], groups: [] } }] },
+        { kind: "LINES", run: { id: "after", lines: [four], groups: [] } }
+      ]))
+      const [runBefore, frameTwo, frameThree, runAfter] = [...containerElement.querySelector(".htmlView_editor")?.children ?? []].map((element) => element.getBoundingClientRect())
+      const title = containerElement.querySelector(".title_htmlView")?.getBoundingClientRect()
+      const text = containerElement.querySelector(".frame_htmlView .text_htmlView")?.getBoundingClientRect()
+      const lineHeight = containerElement.querySelector(".line_htmlView")?.getBoundingClientRect().height
+      if (runBefore === undefined || frameTwo === undefined || frameThree === undefined || runAfter === undefined || title === undefined || text === undefined || lineHeight === undefined) throw new Error("the blocks weren't drawn")
+      containerElement.remove()
+      return {
+        gaps: [frameTwo.top - runBefore.bottom, frameThree.top - frameTwo.bottom, runAfter.top - frameThree.bottom].map((gap) => Math.round(gap / lineHeight * 100) / 100),
+        proposalsWithText: Math.abs(title.left - text.left) < 0.5
+      }
+    })
+    expect(drawn).toEqual({ gaps: [0, 0.5, 0.5], proposalsWithText: true })
   })
 
   test("pressing a move's note goes to its other end: the editor scrolls it into view; and back", async () => {

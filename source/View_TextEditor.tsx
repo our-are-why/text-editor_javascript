@@ -506,6 +506,11 @@ function drawTextUnderlay$__View_TextEditor({
           {measure_Group.measure$_Underlay.map((measure_Underlay) => [
             <path
               {...measure_Underlay.attributes}
+              class="area_htmlView"
+              d={measure_Underlay.d_Area}
+            />,
+            <path
+              {...measure_Underlay.attributes}
               class="underlay_htmlView"
               d={measure_Underlay.d}
             />,
@@ -893,6 +898,7 @@ interface _Measure_Group_ {
 
 interface _Measure_Underlay_ {
   attributes: _Attributes_Element_
+  d_Area: string
   d: string
   d_Seam$: Array<string>
 }
@@ -1248,12 +1254,14 @@ function pathOf__Measure_Box({
     isSeam_Right: index < chain$.length - 1
   }))
   return {
+    d_Area: path$_Chain.map((path_Chain) => path_Chain.d_Area).join(" "),
     d: path$_Chain.map((path_Chain) => path_Chain.d).join(" "),
     d_Seam$: path$_Chain.flatMap((path_Chain) => path_Chain.d_Seam$)
   }
 }
 
 interface _Path_Underlay_ {
+  d_Area: string
   d: string
   d_Seam$: Array<string>
 }
@@ -1461,6 +1469,10 @@ function pathOf__Chain_Box$({
     return `${corner.x} ${corner.y}`
   }
   return {
+    d_Area: dOf__Corner$({
+      corner$,
+      index$_Open: []
+    }),
     d: dOf__Corner$({
       corner$,
       index$_Open
@@ -1614,8 +1626,41 @@ function sourceAt__View_TextEditor({
     point_Screen.x,
     point_Screen.y
   )
-  const element_Source = element !== null && containerElement_View.contains(element) ? element.closest("[data-source]") : null
+  if (element === null || !containerElement_View.contains(element)) return null
+  const element_Source = areaAt__Run({
+    element_Run: element.closest(".run_htmlView"),
+    point_Screen
+  }) ?? element.closest("[data-source]")
   return element_Source?.getAttribute("data-source")?.split(" ")[0] ?? null
+}
+
+interface _Api___areaAt__Run_ {
+  element_Run: Element | null
+  point_Screen: _Point_Screen_
+}
+
+function areaAt__Run({
+  element_Run,
+  point_Screen
+}: _Api___areaAt__Run_): SVGPathElement | null {
+  const svgElement_underlay$ = element_Run?.querySelector(":scope > .underlays_htmlView")
+  if (!(svgElement_underlay$ instanceof SVGSVGElement)) return null
+  const matrix = svgElement_underlay$.getScreenCTM()
+  if (matrix === null) return null
+  const point_Svg = new DOMPoint(
+    point_Screen.x,
+    point_Screen.y
+  ).matrixTransform(matrix.inverse())
+  const sizeOf = (pathElement_area: SVGPathElement) => {
+    const box = pathElement_area.getBBox()
+    return box.width * box.height
+  }
+  return [...svgElement_underlay$.querySelectorAll(".area_htmlView")]
+    .filter((pathElement_area): pathElement_area is SVGPathElement => pathElement_area instanceof SVGPathElement && pathElement_area.isPointInFill(point_Svg))
+    .toSorted((
+      pathElement_area,
+      pathElement_area_other
+    ) => sizeOf(pathElement_area) - sizeOf(pathElement_area_other))[0] ?? null
 }
 
 interface _ComponentMap__View_TextEditor_ {
