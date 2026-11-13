@@ -868,6 +868,46 @@ describe("beside it: what can't live in one document", () => {
     expect(drawn).toEqual({ gaps: [0, 0.5, 0.5], proposalsWithText: true })
   })
 
+  test("a frame's lines as they are are hatched, stripes at 135deg two to a line, in grey, or in a stripe a host gives; its lines as proposed are on the document's own ground", async () => {
+    const hatched = await opened.page.evaluate(() => {
+      const hatchingOf = (variables: string) => {
+        const hostElement = document.createElement("div")
+        hostElement.setAttribute("style", variables)
+        const containerElement = document.createElement("div")
+        hostElement.append(containerElement)
+        document.body.append(hostElement)
+        const [line] = window.parseLines_ViewModel({ multilineText: "one", module_Language: window.MODULE_PLAINTEXT })
+        if (line === undefined) throw new Error("the line wasn't parsed")
+        new window._View_TextEditor_({
+          containerElement,
+          componentMap: window.COMPONENTMAP__VIEW_TEXTEDITOR
+        }).draw(window.viewModelOf__Blocks([{ kind: "FRAME", range: { first: 1, last: 1 }, parts: [{ kind: "CURRENT_LINES", run: { id: "current", lines: [line], groups: [] } }, { kind: "PROPOSAL_LINES", run: { id: "proposed", lines: [line], groups: [] } }] }]))
+        const currentElement = containerElement.querySelector(".current_htmlView")
+        const proposedElement = containerElement.querySelector(".proposed_htmlView")
+        const lineHeight = containerElement.querySelector(".line_htmlView")?.getBoundingClientRect().height
+        if (currentElement === null || proposedElement === null || lineHeight === undefined) throw new Error("the frame wasn't drawn")
+        const current = getComputedStyle(currentElement)
+        const proposed = getComputedStyle(proposedElement)
+        const hatching = {
+          image: current.backgroundImage.startsWith("linear-gradient(135deg"),
+          stripe: current.backgroundImage.includes("rgb(1, 2, 3)"),
+          twoToALine: current.backgroundSize.split(" ").map((size) => Math.round(parseFloat(size) / lineHeight * 100) / 100),
+          proposed: [proposed.backgroundImage, proposed.backgroundColor]
+        }
+        hostElement.remove()
+        return hatching
+      }
+      return {
+        own: hatchingOf(""),
+        host: hatchingOf("--view-current-stripe: rgb(1, 2, 3)")
+      }
+    })
+    expect(hatched).toEqual({
+      own: { image: true, stripe: false, twoToALine: [0.5, 0.5], proposed: ["none", "rgba(0, 0, 0, 0)"] },
+      host: { image: true, stripe: true, twoToALine: [0.5, 0.5], proposed: ["none", "rgba(0, 0, 0, 0)"] }
+    })
+  })
+
   test("pressing a move's note goes to its other end: the editor scrolls it into view; and back", async () => {
     await opened.page.setViewportSize({ width: 900, height: 400 })
     await opened.page.evaluate(() => {

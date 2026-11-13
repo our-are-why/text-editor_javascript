@@ -181,7 +181,9 @@
    each part's background running from edge to edge. A bar down it, in the
    gutter's lane, at its right, between the numbers and the text, beside
    everything in it and on down beside its list, one bar, over every
-   part's background: green, as the frame's proposals add or change. */
+   part's background. All of it neutral, as a frame holds proposals of
+   every kind, moves and removals too, and says nothing of what they do:
+   colour is the rings', each meaning one thing, and purple, yours. */
 .htmlView_editor .frame_htmlView {
   position: relative;
   margin-inline: calc(-1 * var(--view-padding-inline, 1rem));
@@ -194,7 +196,7 @@
   left: calc(var(--view-padding-inline, 1rem) + var(--labelWidth_htmlView) + var(--gutterGap_htmlView));
   z-index: 1;
   width: var(--laneWidth_htmlView);
-  background: var(--view-frame-bar, light-dark(#587c0c, #81b88b));
+  background: var(--view-frame-bar, color-mix(in srgb, CanvasText 35%, transparent));
 }
 
 .htmlView_editor .frame_htmlView .line_htmlView {
@@ -208,31 +210,35 @@
   margin-block-end: var(--view-frame-gap, 0.5lh);
 }
 
-/* the lines as they are, every one, changed or not, on a neutral band, so
-   they read as one, set apart from the document around the frame, however
-   far a host widens it past what changes; what a line becomes, a
-   perspective says in its gutter */
+/* the lines as they are, every one, changed or not, hatched, as doctor
+   hatches a line it changes, in grey: stripes at 135deg, as wide as the
+   gaps between them, two to a line, from its height, so a line's run on
+   into the next's, through its gutter too. So they read as one, what's
+   being replaced, set apart from the document around the frame, however far
+   a host widens it past what changes, and never taken for a band, as the
+   proposals' is; what a line becomes, a perspective says in its gutter */
 .htmlView_editor .current_htmlView {
-  background: var(--view-current, color-mix(in srgb, CanvasText 5%, transparent));
+  --stripe_current_htmlView: var(--view-current-stripe, color-mix(in srgb, CanvasText 6%, transparent));
+  background: var(--view-current, linear-gradient(135deg, var(--stripe_current_htmlView) 25%, transparent 25% 50%, var(--stripe_current_htmlView) 50% 75%, transparent 75%) 0 0 / 0.5lh 0.5lh);
 }
 
-/* the lines as proposed, beneath those as they are, on a green band, as
-   what a proposal adds is */
+/* the lines as proposed, beneath those as they are, on the document's own
+   ground, as what the document would become */
 .htmlView_editor .proposed_htmlView {
-  background: var(--view-proposed, rgb(155 185 85 / 20%));
+  background: var(--view-proposed, transparent);
 }
 
-/* The proposals in a frame, one item each, closing it, on the proposed
-   lines' band a shade darker, as doctor's actions are: their items start
-   where the lines' text does. */
+/* The proposals in a frame, one item each, closing it, on a band a shade
+   darker than the proposed lines', as doctor's actions are: their items
+   start where the lines' text does. */
 .htmlView_editor .proposals_htmlView {
   margin: 0;
   padding-block: 0.25rem;
   padding-inline: calc(var(--view-padding-inline, 1rem) + var(--labelWidth_htmlView) + var(--gutterGap_htmlView) + var(--laneWidth_htmlView) + var(--gutterEnd_htmlView)) var(--view-padding-inline, 1rem);
   list-style: none;
   background:
-    linear-gradient(var(--view-proposals-shade, rgb(0 0 0 / 25%)), var(--view-proposals-shade, rgb(0 0 0 / 25%))),
-    var(--view-proposed, rgb(155 185 85 / 20%));
+    linear-gradient(var(--view-proposals-shade, color-mix(in srgb, CanvasText 9%, transparent)), var(--view-proposals-shade, color-mix(in srgb, CanvasText 9%, transparent))),
+    var(--view-proposed, transparent);
 }
 
 /* A proposal's item: its title, where it is, and why it's proposed, on the
