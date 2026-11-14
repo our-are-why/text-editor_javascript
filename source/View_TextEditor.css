@@ -211,34 +211,37 @@
 }
 
 /* the lines as they are, every one, changed or not, hatched, as doctor
-   hatches a line it changes, in grey: stripes at 135deg, as wide as the
-   gaps between them, two to a line, from its height, so a line's run on
-   into the next's, through its gutter too. So they read as one, what's
-   being replaced, set apart from the document around the frame, however far
-   a host widens it past what changes, and never taken for a band, as the
-   proposals' is; what a line becomes, a perspective says in its gutter */
+   hatches a line it changes, in the proposed lines' grey, a host's too,
+   unless it gives the stripes their own: stripes backwards, \, what was, as
+   wide as the gaps between them, two to a line, from its height, so a
+   line's run on into the next's, through its gutter too. So they read as
+   one, what's being replaced, set apart from the document around the
+   frame, however far a host widens it past what changes, and never taken
+   for a band; what a line becomes, a perspective says in its gutter */
 .htmlView_editor .current_htmlView {
-  --stripe_current_htmlView: var(--view-current-stripe, color-mix(in srgb, CanvasText 6%, transparent));
-  background: var(--view-current, linear-gradient(135deg, var(--stripe_current_htmlView) 25%, transparent 25% 50%, var(--stripe_current_htmlView) 50% 75%, transparent 75%) 0 0 / 0.5lh 0.5lh);
+  --stripe_current_htmlView: var(--view-current-stripe, var(--view-proposed, color-mix(in srgb, CanvasText 4%, transparent)));
+  background: var(--view-current, linear-gradient(45deg, var(--stripe_current_htmlView) 25%, transparent 25% 50%, var(--stripe_current_htmlView) 50% 75%, transparent 75%) 0 0 / 0.5lh 0.5lh);
 }
 
-/* the lines as proposed, beneath those as they are, on the document's own
-   ground, as what the document would become */
+/* the lines as proposed, beneath those as they are, on a band of grey
+   near the document's own ground, but not it: what the document would
+   become, set apart from it, from the hatched lines it replaces, and from
+   the proposals' darker band after it */
 .htmlView_editor .proposed_htmlView {
-  background: var(--view-proposed, transparent);
+  background: var(--view-proposed, color-mix(in srgb, CanvasText 4%, transparent));
 }
 
-/* The proposals in a frame, one item each, closing it, on a band a shade
-   darker than the proposed lines', as doctor's actions are: their items
-   start where the lines' text does. */
+/* The proposals in a frame, one item each, closing it, on the proposed
+   lines' band a shade darker, as doctor's actions are: their items start
+   where the lines' text does. */
 .htmlView_editor .proposals_htmlView {
   margin: 0;
   padding-block: 0.25rem;
   padding-inline: calc(var(--view-padding-inline, 1rem) + var(--labelWidth_htmlView) + var(--gutterGap_htmlView) + var(--laneWidth_htmlView) + var(--gutterEnd_htmlView)) var(--view-padding-inline, 1rem);
   list-style: none;
   background:
-    linear-gradient(var(--view-proposals-shade, color-mix(in srgb, CanvasText 9%, transparent)), var(--view-proposals-shade, color-mix(in srgb, CanvasText 9%, transparent))),
-    var(--view-proposed, transparent);
+    linear-gradient(var(--view-proposals-shade, color-mix(in srgb, CanvasText 5%, transparent)), var(--view-proposals-shade, color-mix(in srgb, CanvasText 5%, transparent))),
+    var(--view-proposed, color-mix(in srgb, CanvasText 4%, transparent));
 }
 
 /* A proposal's item: its title, where it is, and why it's proposed, on the

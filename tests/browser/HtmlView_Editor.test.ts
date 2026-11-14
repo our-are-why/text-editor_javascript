@@ -868,9 +868,9 @@ describe("beside it: what can't live in one document", () => {
     expect(drawn).toEqual({ gaps: [0, 0.5, 0.5], proposalsWithText: true })
   })
 
-  test("a frame's lines as they are are hatched, stripes at 135deg two to a line, in grey, or in a stripe a host gives; its lines as proposed are on the document's own ground", async () => {
-    const hatched = await opened.page.evaluate(() => {
-      const hatchingOf = (variables: string) => {
+  test("a frame's lines as they are are hatched backwards, at 45deg, two stripes to a line, in the grey of the lines as proposed, or in a stripe a host gives; its lines as proposed, beneath them, on a grey band, unhatched, its proposals on the same a shade darker", async () => {
+    const drawn = await opened.page.evaluate(() => {
+      const drawnOf = (variables: string) => {
         const hostElement = document.createElement("div")
         hostElement.setAttribute("style", variables)
         const containerElement = document.createElement("div")
@@ -881,30 +881,42 @@ describe("beside it: what can't live in one document", () => {
         new window._View_TextEditor_({
           containerElement,
           componentMap: window.COMPONENTMAP__VIEW_TEXTEDITOR
-        }).draw(window.viewModelOf__Blocks([{ kind: "FRAME", range: { first: 1, last: 1 }, parts: [{ kind: "CURRENT_LINES", run: { id: "current", lines: [line], groups: [] } }, { kind: "PROPOSAL_LINES", run: { id: "proposed", lines: [line], groups: [] } }] }]))
+        }).draw(window.viewModelOf__Blocks([{ kind: "FRAME", range: { first: 1, last: 1 }, parts: [{ kind: "CURRENT_LINES", run: { id: "current", lines: [line], groups: [] } }, { kind: "PROPOSAL_LINES", run: { id: "proposed", lines: [line], groups: [] } }, { kind: "PROPOSAL_LIST", items: [{ source: "one", title: "One", places: "", rationale: "", actions: [], attributes: {} }] }] }]))
         const currentElement = containerElement.querySelector(".current_htmlView")
         const proposedElement = containerElement.querySelector(".proposed_htmlView")
+        const proposalsElement = containerElement.querySelector(".proposals_htmlView")
         const lineHeight = containerElement.querySelector(".line_htmlView")?.getBoundingClientRect().height
-        if (currentElement === null || proposedElement === null || lineHeight === undefined) throw new Error("the frame wasn't drawn")
+        if (currentElement === null || proposedElement === null || proposalsElement === null || lineHeight === undefined) throw new Error("the frame wasn't drawn")
         const current = getComputedStyle(currentElement)
         const proposed = getComputedStyle(proposedElement)
-        const hatching = {
-          image: current.backgroundImage.startsWith("linear-gradient(135deg"),
-          stripe: current.backgroundImage.includes("rgb(1, 2, 3)"),
-          twoToALine: current.backgroundSize.split(" ").map((size) => Math.round(parseFloat(size) / lineHeight * 100) / 100),
-          proposed: [proposed.backgroundImage, proposed.backgroundColor]
+        const proposals = getComputedStyle(proposalsElement)
+        const drawn_Frame = {
+          current: {
+            angle: /^linear-gradient\((\d+)deg/.exec(current.backgroundImage)?.[1] ?? "none",
+            host: current.backgroundImage.includes("rgb(1, 2, 3)"),
+            asProposed: current.backgroundImage.includes(proposed.backgroundColor),
+            twoToALine: current.backgroundSize.split(" ").map((size) => Math.round(parseFloat(size) / lineHeight * 100) / 100)
+          },
+          proposed: {
+            hatched: proposed.backgroundImage !== "none",
+            grey: proposed.backgroundColor !== "rgba(0, 0, 0, 0)"
+          },
+          proposals: {
+            onProposed: proposals.backgroundColor === proposed.backgroundColor,
+            shaded: proposals.backgroundImage.startsWith("linear-gradient") && !proposals.backgroundImage.includes("rgba(0, 0, 0, 0)")
+          }
         }
         hostElement.remove()
-        return hatching
+        return drawn_Frame
       }
       return {
-        own: hatchingOf(""),
-        host: hatchingOf("--view-current-stripe: rgb(1, 2, 3)")
+        own: drawnOf(""),
+        host: drawnOf("--view-current-stripe: rgb(1, 2, 3)")
       }
     })
-    expect(hatched).toEqual({
-      own: { image: true, stripe: false, twoToALine: [0.5, 0.5], proposed: ["none", "rgba(0, 0, 0, 0)"] },
-      host: { image: true, stripe: true, twoToALine: [0.5, 0.5], proposed: ["none", "rgba(0, 0, 0, 0)"] }
+    expect(drawn).toEqual({
+      own: { current: { angle: "45", host: false, asProposed: true, twoToALine: [0.5, 0.5] }, proposed: { hatched: false, grey: true }, proposals: { onProposed: true, shaded: true } },
+      host: { current: { angle: "45", host: true, asProposed: false, twoToALine: [0.5, 0.5] }, proposed: { hatched: false, grey: true }, proposals: { onProposed: true, shaded: true } }
     })
   })
 

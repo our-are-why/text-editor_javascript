@@ -651,18 +651,21 @@ left. Then a lane, where folding goes, later. A frame, as doctor draws a
 proposal, but neutral: a bar down it, grey, in the lane, at the gutter's
 right, between the numbers and the text, beside everything in it, its list
 too; its lines as they are hatched, as doctor hatches a line it changes, in
-grey, stripes two to a line running on from line to line, every one, changed
-or not, so they read as one, what's being replaced, set apart from the
-document around them and never taken for a band, each saying what it becomes
-in its gutter, as a perspective says; its lines as proposed on the
-document's own ground, as what the document would become; its list on a band
-a shade darker, each item's title and why on the left, its actions on the
-right, the first the main one; the list's items starting where the lines'
-text does. Neutral, as doctor's are not, coloured by what they do, as a
-frame holds proposals of every kind, moves and removals too: colour is the
-rings', each meaning one thing, and purple stays yours. The view model says
-each line's label, as the text it shows, `"12"`, `"+"`, `"~"`, `""`, already
-decided, and what the line becomes; the view only draws them.
+the grey of its lines as proposed, backwards, \, what was, stripes two to a
+line running on from line to line, every one, changed or not, so they read
+as one, what's being replaced, set apart from the document around them and
+never taken for a band, each saying what it becomes in its gutter, as a
+perspective says; its lines as proposed beneath them on a band of grey near
+the document's own ground, but not it; its list on the same band a shade
+darker, as doctor's actions are, so the three read apart, what was, what
+would be, and what to decide; each item's title and why on the left, its
+actions on the right, the first the main one; the list's items starting
+where the lines' text does. Neutral, as doctor's are not, coloured by what
+they do, as a frame holds proposals of every kind, moves and removals too:
+colour is the rings', each meaning one thing, and purple stays yours. The
+view model says each line's label, as the text it shows, `"12"`, `"+"`,
+`"~"`, `""`, already decided, and what the line becomes; the view only draws
+them.
 
 **proposal items, the editor's:** each proposal's item, in a frame's list,
 is drawn by the editor, not left to the host: its title, why it's proposed,
