@@ -1022,6 +1022,127 @@ describe("beside it: what can't live in one document", () => {
     await opened.page.evaluate(() => document.getElementById("targeting")?.remove())
   })
 
+  test("pointing at a ring points at its proposal and at its place: the place's rings, on both sides, heavier again, a faint light running round each, clockwise round the lines as proposed and counterclockwise round the lines as they are, both sides in step, one lap each in the time the longer takes at one pace, the proposal's breathing together, at a pace kept from ring to ring of one proposal and started anew at another; still where motion's asked to be reduced", async () => {
+    await opened.page.evaluate(() => {
+      const containerElement = document.createElement("div")
+      containerElement.id = "placing"
+      containerElement.style.width = "40rem"
+      containerElement.dataset["perspective"] = "changes"
+      document.body.prepend(containerElement)
+      // alphabet becomes alphabetical, its two sides' rings of different
+      // lengths
+      const [line] = window.parseLines_ViewModel({ multilineText: "alphabet beta gamma", module_Language: window.MODULE_PLAINTEXT })
+      const [segment] = line?.segments ?? []
+      if (line === undefined || segment === undefined) throw new Error("the line wasn't parsed")
+      const textOf = (text: string) => window.parseLines_ViewModel({ multilineText: text, module_Language: window.MODULE_PLAINTEXT })[0]?.segments[0]?.text ?? segment.text
+      const change = (side: string, source: string, place: string) => ({ "data-change": "replaced", "data-side": side, "data-source": source, "data-place": place })
+      const first = (side: string) => side === "before" ? "alphabet" : "alphabetical"
+      const lineOf = (side: string) => ({ ...line, segments: [{ text: textOf(first(side)), attributes: change(side, "rename", "1") }, { text: textOf(" "), attributes: {} }, { text: textOf("beta"), attributes: change(side, "rename", "2") }, { text: textOf(" "), attributes: {} }, { text: textOf("gamma"), attributes: change(side, "other", "1") }] })
+      const groupsOf = (side: string) => {
+        const at = first(side).length
+        return [
+          { attributes: { "data-source": "rename" }, underlays: [{ from: { line: 0, offset: 0 }, to: { line: 0, offset: at }, attributes: change(side, "rename", "1") }, { from: { line: 0, offset: at + 1 }, to: { line: 0, offset: at + 5 }, attributes: change(side, "rename", "2") }] },
+          { attributes: { "data-source": "other" }, underlays: [{ from: { line: 0, offset: at + 6 }, to: { line: 0, offset: at + 11 }, attributes: change(side, "other", "1") }] }
+        ]
+      }
+      new window._TextEditor_({
+        containerElement,
+        componentMap: window.COMPONENTMAP__VIEW_TEXTEDITOR,
+        modules: [window.MODULE_MOUSE],
+        viewModel_TextEditor: window.viewModelOf__Blocks([{
+          kind: "FRAME",
+          range: { first: 1, last: 1 },
+          parts: [
+            { kind: "CURRENT_LINES", run: { id: "current", lines: [lineOf("before")], groups: groupsOf("before") } },
+            { kind: "PROPOSAL_LINES", run: { id: "proposed", lines: [lineOf("after")], groups: groupsOf("after") } }
+          ]
+        }])
+      })
+    })
+    // each ring, by its proposal, side and place: whether its place is
+    // pointed at, its stroke, and what moves it, and the pace kept
+    const drawn = () => opened.page.evaluate(async () => {
+      await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)))
+      const containerElement = document.getElementById("placing")
+      return {
+        rings: [...containerElement?.querySelectorAll(".underlay_htmlView") ?? []].map((ring) => {
+          const area = ring.previousElementSibling
+          const style = getComputedStyle(ring)
+          const lap = area === null ? null : getComputedStyle(area)
+          return `${ring.getAttribute("data-source")} ${ring.getAttribute("data-side")} ${ring.getAttribute("data-place")}: ${ring.hasAttribute("data-pointed") ? "place " : ""}${style.strokeWidth} ${style.animationName}${lap === null ? "" : `, ${lap.animationName}${lap.animationName === "none" ? "" : ` ${lap.animationDirection}`}`}`
+        }),
+        // whether each ring's area is drawn clockwise, so that running
+        // forwards along it is: its signed area, on a screen, where y runs
+        // down, above nothing
+        clockwise: [...containerElement?.querySelectorAll(".area_htmlView") ?? []].every((area) => {
+          const points = (area.getAttribute("d")?.match(/-?[\d.]+ -?[\d.]+/g) ?? []).map((pair) => pair.split(" ").map(Number))
+          const twice = points.reduce((sum, [x = 0, y = 0], index) => {
+            const [x_Next = 0, y_Next = 0] = points[(index + 1) % points.length] ?? []
+            return sum + x * y_Next - x_Next * y
+          }, 0)
+          return twice > 0
+        }),
+        elapsed: parseFloat((containerElement?.querySelector(".htmlView_editor") as HTMLElement | null)?.style.getPropertyValue("--elapsed_pointed_htmlView") ?? ""),
+        // each light's ring's length, and the time its lap takes
+        laps: [...containerElement?.querySelectorAll(".area_htmlView[data-pointed]") ?? []].map((area) => ({
+          length: area instanceof SVGPathElement ? area.getTotalLength() : 0,
+          ms: Math.round(parseFloat(getComputedStyle(area).animationDuration) * 1000)
+        }))
+      }
+    })
+    const at = async (source: string, place: string) => {
+      const point = await opened.page.evaluate(({ source, place }) => {
+        const rect = document.querySelector(`#placing .underlay_htmlView[data-source="${source}"][data-side="before"][data-place="${place}"]`)?.getBoundingClientRect()
+        if (rect === undefined) throw new Error(`no ring of ${source} at ${place}`)
+        return { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 }
+      }, { source, place })
+      await opened.page.mouse.move(point.x, point.y)
+    }
+    await at("rename", "1")
+    const first = await drawn()
+    expect(first.rings).toEqual([
+      "rename before 1: place 3px breathe_htmlView, lap_htmlView reverse",
+      "rename before 2: 2px breathe_htmlView, none",
+      "other before 1: 1px none, none",
+      "rename after 1: place 3px breathe_htmlView, lap_htmlView normal",
+      "rename after 2: 2px breathe_htmlView, none",
+      "other after 1: 1px none, none"
+    ])
+    expect(first.clockwise).toBe(true)
+    await opened.page.waitForTimeout(300)
+    await at("rename", "2")
+    const second = await drawn()
+    expect(second.rings.filter((ring) => ring.includes("place"))).toEqual(["rename before 2: place 3px breathe_htmlView, lap_htmlView reverse", "rename after 2: place 3px breathe_htmlView, lap_htmlView normal"])
+    expect(second.elapsed).toBeGreaterThan(250)
+    // both sides of a place go round in one time, though their rings'
+    // lengths differ: the time the longer takes, at 16ms a pixel, kept
+    // between two seconds and six
+    const lapOf = (laps: Array<{ length: number, ms: number }>) => ({
+      lengths: new Set(laps.map((lap) => Math.round(lap.length))).size,
+      times: [...new Set(laps.map((lap) => lap.ms))],
+      expected: Math.round(Math.min(6000, Math.max(2000, Math.max(...laps.map((lap) => lap.length)) * 16)))
+    })
+    const lap = lapOf(first.laps)
+    expect(lap.lengths).toBe(2)
+    expect(lap.times).toEqual([lap.expected])
+    expect(lap.expected).toBeGreaterThan(2000)
+    expect(lapOf(second.laps).times).toEqual([2000])
+    // the light moving along, a little at a time, not jumping from one end
+    // of its lap to the other
+    const offsets = () => opened.page.evaluate(() => [...document.querySelectorAll("#placing .area_htmlView[data-pointed]")].map((area) => parseFloat(getComputedStyle(area).strokeDashoffset)))
+    const before = await offsets()
+    await opened.page.waitForTimeout(150)
+    const after = await offsets()
+    expect(after.map((offset, index) => offset !== before[index] && Math.abs(offset - (before[index] ?? 0)) < 25)).toEqual([true, true])
+    await at("other", "1")
+    expect((await drawn()).elapsed).toBeLessThan(100)
+    await opened.page.emulateMedia({ reducedMotion: "reduce" })
+    expect((await drawn()).rings.filter((ring) => ring.startsWith("other"))).toEqual(["other before 1: place 3px none, none", "other after 1: place 3px none, none"])
+    await opened.page.emulateMedia({ reducedMotion: "no-preference" })
+    await opened.page.mouse.move(1270, 715)
+    await opened.page.evaluate(() => document.getElementById("placing")?.remove())
+  })
+
   test("a ring over several lines hugs them, one outline, nothing in it twice or on the way: its left side straight where its rows start at their lines' starts, its right stepping with their ends, never by less than half an em, so lines ending in one column, but for room made in one, share an end; a short last row stays short; a line's note shows, so the row it follows stops short of it", async () => {
     const shape = await opened.page.evaluate(async () => {
       const containerElement = document.createElement("div")

@@ -20,16 +20,16 @@
   stroke-linejoin: round;
 }
 
-[data-perspective="changes"] :is(.underlay_htmlView, .seam_htmlView)[data-change="removed"] {
+[data-perspective="changes"] :is(.area_htmlView, .underlay_htmlView, .seam_htmlView)[data-change="removed"] {
   --edge: var(--view-removed-edge, light-dark(#e51400, #f14c4c));
 }
 
-[data-perspective="changes"] :is(.underlay_htmlView, .seam_htmlView)[data-change^="replaced"],
-[data-perspective="changes"] :is(.underlay_htmlView, .seam_htmlView)[data-change="restyled"] {
+[data-perspective="changes"] :is(.area_htmlView, .underlay_htmlView, .seam_htmlView)[data-change^="replaced"],
+[data-perspective="changes"] :is(.area_htmlView, .underlay_htmlView, .seam_htmlView)[data-change="restyled"] {
   --edge: var(--view-changed-edge, light-dark(#bf8803, #cca700));
 }
 
-[data-perspective="changes"] :is(.underlay_htmlView, .seam_htmlView)[data-change="inserted"] {
+[data-perspective="changes"] :is(.area_htmlView, .underlay_htmlView, .seam_htmlView)[data-change="inserted"] {
   --edge: var(--view-inserted-edge, light-dark(#388a34, #89d185));
 }
 
@@ -39,7 +39,7 @@
    that makes; in the light, a lighter tan, as that's too dark there, near
    the text's ink and syntax's browns; at both its ends; what it changes on
    the way, rings of their own inside it */
-[data-perspective="changes"] :is(.underlay_htmlView, .seam_htmlView)[data-change="moved"] {
+[data-perspective="changes"] :is(.area_htmlView, .underlay_htmlView, .seam_htmlView)[data-change="moved"] {
   --edge: var(--view-moved-edge, light-dark(#a2733f, #977254));
 }
 
@@ -96,9 +96,58 @@
 
 /* the proposal pointed at, `data-pointed` on its groups and its items, in
    every frame it's in, the others still showing: its rings heavier, its
-   items lit */
+   items lit; and of its rings, the place under the pointer, `data-pointed`
+   on them, both its sides, as it is and as proposed, heavier again. While
+   it's pointed at, the proposal's rings breathe, faintly, together, and a
+   faint light runs round the place's, both sides at once, so the moment
+   they're all lit together lasts, both sides of a place in step, one lap
+   each in the time its longer ring takes at one pace, --lap_htmlView, the
+   view's measure, kept between two seconds and six, so a short ring's light
+   doesn't crawl or a long one's race; the view keeps the breath's pace,
+   --elapsed_pointed_htmlView, how long the proposal's been pointed at, so
+   it's kept as the rings are drawn again, the place's light starting anew at
+   each place. Still, where motion's asked to be reduced. */
 [data-perspective="changes"] .group_htmlView[data-pointed] > :is(.underlay_htmlView, .seam_htmlView)[data-change] {
   stroke-width: 2px;
+}
+
+[data-perspective="changes"] .group_htmlView[data-pointed] > :is(.underlay_htmlView, .seam_htmlView)[data-pointed][data-change] {
+  stroke-width: 3px;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  [data-perspective="changes"] .group_htmlView[data-pointed] > :is(.underlay_htmlView, .seam_htmlView)[data-change] {
+    animation: breathe_htmlView 2.4s ease-in-out calc(-1 * var(--elapsed_pointed_htmlView, 0ms)) infinite;
+  }
+
+  [data-perspective="changes"] .area_htmlView[data-pointed][data-change] {
+    stroke: var(--edge);
+    stroke-width: 6px;
+    stroke-opacity: 0.38;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    stroke-dasharray: 20 80;
+    animation: lap_htmlView clamp(2s, calc(var(--lap_htmlView, 125) * 16ms), 6s) linear infinite;
+  }
+
+  /* round the lines as proposed clockwise, as their ring's drawn, forwards;
+     round the lines as they are, counterclockwise, backwards, as they're
+     hatched */
+  [data-perspective="changes"] .area_htmlView[data-pointed][data-change][data-side="before"] {
+    animation-direction: reverse;
+  }
+}
+
+@keyframes breathe_htmlView {
+  50% {
+    stroke-opacity: 0.6;
+  }
+}
+
+@keyframes lap_htmlView {
+  to {
+    stroke-dashoffset: -100;
+  }
 }
 
 [data-perspective="changes"] .item_htmlView[data-pointed] {

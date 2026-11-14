@@ -30,6 +30,7 @@ class _TextEditor_ {
   modules: Array<_Module_TextEditor_>
   state: _State_TextEditor_
   request_Draw: number | null
+  time_Pointed: number
 
   constructor({
     containerElement,
@@ -46,10 +47,12 @@ class _TextEditor_ {
     this.state = {
       viewModel_TextEditor,
       source_Pointed: null,
+      place_Pointed: null,
       target_Pointed: null,
       target_Revealed: null
     }
     this.request_Draw = null
+    this.time_Pointed = performance.now()
     for (const event of eventsOf__Modules(this.modules)) {
       this.containerElement.addEventListener(
         event,
@@ -80,6 +83,7 @@ class _TextEditor_ {
       layout_View: this.view
     })
     if (state !== this.state) {
+      if (state.source_Pointed !== this.state.source_Pointed) this.time_Pointed = performance.now()
       this.state = state
       this.drawOnNextFrame()
     }
@@ -91,6 +95,7 @@ class _TextEditor_ {
     this.request_Draw = requestAnimationFrame(() => {
       this.request_Draw = null
       this.view.draw(viewModelOf__State(this.state))
+      this.view.pace(performance.now() - this.time_Pointed)
       if (this.state.target_Revealed !== null) {
         this.view.reveal(this.state.target_Revealed)
         this.state = {
@@ -136,6 +141,7 @@ interface _JUMP_Command_ extends __BASE_Command_<"JUMP"> {
 interface _State_TextEditor_ {
   viewModel_TextEditor: _ViewModel_TextEditor_
   source_Pointed: string | null
+  place_Pointed: string | null
   target_Pointed: _Target_Note_ | null
   target_Revealed: _Target_Note_ | null
 }
@@ -152,6 +158,7 @@ function viewModelOf__State(
   return pointedAt__ViewModel({
     viewModel_TextEditor: state.viewModel_TextEditor,
     source: state.source_Pointed,
+    place: state.place_Pointed,
     target_Note: state.target_Pointed
   })
 }
@@ -196,12 +203,14 @@ function POINT_stateAfter__Command({
   layout_View
 }: _Api___stateAfter__Command_<"POINT">): _State_TextEditor_ {
   const source_Pointed = command.point_Screen === null ? null : layout_View.sourceAt(command.point_Screen)
+  const place_Pointed = command.point_Screen === null ? null : layout_View.placeAt(command.point_Screen)
   const target_Pointed = command.point_Screen === null ? null : layout_View.targetAt(command.point_Screen)
-  return source_Pointed === state.source_Pointed && target_Pointed?.source === state.target_Pointed?.source && target_Pointed?.side === state.target_Pointed?.side
+  return source_Pointed === state.source_Pointed && place_Pointed === state.place_Pointed && target_Pointed?.source === state.target_Pointed?.source && target_Pointed?.side === state.target_Pointed?.side
     ? state
     : {
       ...state,
       source_Pointed,
+      place_Pointed,
       target_Pointed
     }
 }

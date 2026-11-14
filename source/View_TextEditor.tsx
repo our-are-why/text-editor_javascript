@@ -107,6 +107,15 @@ class _View_TextEditor_ {
     })
   }
 
+  placeAt(
+    point_Screen: _Point_Screen_
+  ): string | null {
+    return placeAt__View_TextEditor({
+      containerElement_View: this.containerElement,
+      point_Screen
+    })
+  }
+
   targetAt(
     point_Screen: _Point_Screen_
   ): _Target_Note_ | null {
@@ -122,6 +131,15 @@ class _View_TextEditor_ {
     reveal__View_TextEditor({
       containerElement_View: this.containerElement,
       target_Note
+    })
+  }
+
+  pace(
+    elapsed_Pointed: number
+  ): void {
+    pace__View_TextEditor({
+      containerElement_View: this.containerElement,
+      elapsed_Pointed
     })
   }
 }
@@ -517,6 +535,7 @@ function drawTextUnderlay$__View_TextEditor({
               {...measure_Underlay.attributes}
               class="area_htmlView"
               d={measure_Underlay.d_Area}
+              pathLength="100"
             />,
             <path
               {...measure_Underlay.attributes}
@@ -538,6 +557,9 @@ function drawTextUnderlay$__View_TextEditor({
       svgElement_underlay$
     })
   }
+  fit__Area$({
+    containerElement_View
+  })
 }
 
 interface _Api___drawn$Of__Run_Line$_ {
@@ -1583,6 +1605,36 @@ function fit__Seam$({
   }
 }
 
+interface _Api___fit__Area$_ {
+  containerElement_View: HTMLElement
+}
+
+function fit__Area$({
+  containerElement_View
+}: _Api___fit__Area$_): void {
+  const pathElement$_area = [...containerElement_View.querySelectorAll(".area_htmlView")].filter((element) => element instanceof SVGPathElement)
+  const keyOf = (pathElement_area: SVGPathElement) => pathElement_area.hasAttribute("data-place") ? `${pathElement_area.getAttribute("data-source")} ${pathElement_area.getAttribute("data-place")}` : null
+  const length$_Place = new Map<string, number>()
+  for (const pathElement_area of pathElement$_area) {
+    const key = keyOf(pathElement_area)
+    if (key !== null) length$_Place.set(
+      key,
+      Math.max(
+        length$_Place.get(key) ?? 0,
+        pathElement_area.getTotalLength()
+      )
+    )
+  }
+  for (const pathElement_area of pathElement$_area) {
+    const key = keyOf(pathElement_area)
+    const length = key === null ? pathElement_area.getTotalLength() : length$_Place.get(key) ?? 0
+    pathElement_area.style.setProperty(
+      "--lap_htmlView",
+      String(Math.round(length * 100) / 100)
+    )
+  }
+}
+
 function length$Of__Dasharray(
   value: string
 ): Array<number> {
@@ -1602,7 +1654,23 @@ interface _Point_Screen_ {
 
 interface _Layout_View_ {
   sourceAt: (point_Screen: _Point_Screen_) => string | null
+  placeAt: (point_Screen: _Point_Screen_) => string | null
   targetAt: (point_Screen: _Point_Screen_) => _Target_Note_ | null
+}
+
+interface _Api___pace__View_TextEditor_ {
+  containerElement_View: HTMLElement
+  elapsed_Pointed: number
+}
+
+function pace__View_TextEditor({
+  containerElement_View,
+  elapsed_Pointed
+}: _Api___pace__View_TextEditor_): void {
+  containerElement_View.querySelector<HTMLElement>(":scope > .htmlView_editor")?.style.setProperty(
+    "--elapsed_pointed_htmlView",
+    `${Math.round(elapsed_Pointed)}ms`
+  )
 }
 
 interface _Api___reveal__View_TextEditor_ {
@@ -1632,16 +1700,30 @@ function sourceAt__View_TextEditor({
   containerElement_View,
   point_Screen
 }: _Api___sourceAt__View_TextEditor_): string | null {
+  return changeAt__View_TextEditor({
+    containerElement_View,
+    point_Screen
+  })?.getAttribute("data-source")?.split(" ")[0] ?? null
+}
+
+interface _Api___changeAt__View_TextEditor_ {
+  containerElement_View: HTMLElement
+  point_Screen: _Point_Screen_
+}
+
+function changeAt__View_TextEditor({
+  containerElement_View,
+  point_Screen
+}: _Api___changeAt__View_TextEditor_): Element | null {
   const element = document.elementFromPoint(
     point_Screen.x,
     point_Screen.y
   )
   if (element === null || !containerElement_View.contains(element)) return null
-  const element_Source = areaAt__Run({
+  return areaAt__Run({
     element_Run: element.closest(".run_htmlView"),
     point_Screen
   }) ?? element.closest("[data-source]")
-  return element_Source?.getAttribute("data-source")?.split(" ")[0] ?? null
 }
 
 interface _Api___areaAt__Run_ {
@@ -1671,6 +1753,21 @@ function areaAt__Run({
       pathElement_area,
       pathElement_area_other
     ) => sizeOf(pathElement_area) - sizeOf(pathElement_area_other))[0] ?? null
+}
+
+interface _Api___placeAt__View_TextEditor_ {
+  containerElement_View: HTMLElement
+  point_Screen: _Point_Screen_
+}
+
+function placeAt__View_TextEditor({
+  containerElement_View,
+  point_Screen
+}: _Api___placeAt__View_TextEditor_): string | null {
+  return changeAt__View_TextEditor({
+    containerElement_View,
+    point_Screen
+  })?.getAttribute("data-place") ?? null
 }
 
 interface _Api___targetAt__View_TextEditor_ {

@@ -60,12 +60,12 @@ test("a move's two ends: numbered and marked moved where it leaves, its first li
 test("a move is one ring over all it moves, at each end, whatever's changed on the way; a change another proposal makes to what it carries is that proposal's, its own group, a ring inside the move's, saying whose move carries it, at both ends, never within the move as a fallback", () => {
   const underlays = (id: string) => runOf(blocks, id).groups.map((group) => [group.attributes["data-source"], group.underlays.map((underlay) => [`${underlay.from.line}:${underlay.from.offset}-${underlay.to.line}:${underlay.to.offset}`, underlay.attributes])])
   expect(underlays("leaving-current")).toEqual([
-    ["move", [["0:0-1:9", { "data-change": "moved", "data-side": "before", "data-source": "move" }]]],
-    ["rename", [["1:0-1:5", { "data-change": "replaced", "data-side": "before", "data-source": "rename", "data-carried": "move" }]]],
+    ["move", [["0:0-1:9", { "data-change": "moved", "data-side": "before", "data-source": "move", "data-place": "1" }]]],
+    ["rename", [["1:0-1:5", { "data-change": "replaced", "data-side": "before", "data-source": "rename", "data-carried": "move", "data-place": "1" }]]],
   ])
   expect(underlays("landing-proposed")).toEqual([
-    ["move", [["0:0-1:9", { "data-change": "moved", "data-side": "after", "data-source": "move" }]]],
-    ["rename", [["1:0-1:5", { "data-change": "replaced", "data-side": "after", "data-source": "rename", "data-carried": "move" }]]],
+    ["move", [["0:0-1:9", { "data-change": "moved", "data-side": "after", "data-source": "move", "data-place": "1" }]]],
+    ["rename", [["1:0-1:5", { "data-change": "replaced", "data-side": "after", "data-source": "rename", "data-carried": "move", "data-place": "1" }]]],
   ])
 })
 
@@ -152,3 +152,38 @@ test("a proposal that moves holds only moves: one that moves text and changes te
   expect(scene(attributesOf__Edit({ kind: "replaced", source: "move" }))).toThrow("the proposal move moves text and changes it too, moved, replaced")
   expect(scene(attributesOf__Edit({ kind: "replaced", source: "rename" }))).not.toThrow()
 })
+
+test("each change has a place, the same on both its sides: replaced paired with replaced in order, moved with moved, the same words first, so a swap's sides find each other; what's only put in, taken out, or inside another's removal, a place of its own", () => {
+  const change = (side: _Side_Change_, kind: "moved" | "replaced" | "removed" | "inserted", source: string) => attributesOf__Change({ side, kind, source })
+  const blocks_Places = blocksWith__Frames({
+    multilineText: "let a = b + c\nif (x || !y) go",
+    module_Language: MODULE_PLAINTEXT,
+    frames: [{
+      kind: "FRAME",
+      range: { first: 1, last: 2 },
+      parts: [
+        { kind: "CURRENT_LINES", run: { id: "current", lines: [
+          lineOf("let ", { text: "a", attributes: change("before", "replaced", "rename") }, " = ", { text: "b", attributes: change("before", "replaced", "rename") }, { text: " + c", attributes: change("before", "removed", "rename") }),
+          lineOf("if (", { text: "x", attributes: change("before", "moved", "swap") }, " || ", { text: "!y", attributes: change("before", "moved", "swap") }, ") go"),
+        ], groups: [] } },
+        { kind: "PROPOSAL_LINES", run: { id: "proposed", lines: [
+          lineOf("let ", { text: "A", attributes: change("after", "replaced", "rename") }, " = ", { text: "B", attributes: change("after", "replaced", "rename") }, { text: " * 2", attributes: change("after", "inserted", "rename") }),
+          lineOf("if (", { text: "!y", attributes: change("after", "moved", "swap") }, " || ", { text: "x", attributes: change("after", "moved", "swap") }, ") go"),
+        ], groups: [] } },
+        { kind: "PROPOSAL_LIST", items: [{ ...item, source: "rename" }, { ...item, source: "swap" }] },
+      ],
+    }],
+    moves: [],
+  })
+  const placed = (id: string) => runOf(blocks_Places, id).groups.flatMap((group) => group.underlays.map((underlay) => `${underlay.attributes["data-source"]} ${textOfRing(runOf(blocks_Places, id).lines, underlay)} ${underlay.attributes["data-place"]}`))
+  expect(placed("current")).toEqual(["rename a 1", "rename b 2", "rename + c 3", "swap x 1", "swap !y 2"])
+  expect(placed("proposed")).toEqual(["rename A 1", "rename B 2", "rename * 2 4", "swap !y 2", "swap x 1"])
+})
+
+// the words a ring is round, on its run's lines
+function textOfRing(
+  lines: Array<{ segments: Array<{ text: string }> }>,
+  underlay: { from: { line: number, offset: number }, to: { line: number, offset: number } }
+): string {
+  return (lines[underlay.from.line]?.segments ?? []).map((segment) => segment.text).join("").slice(underlay.from.offset, underlay.to.offset)
+}

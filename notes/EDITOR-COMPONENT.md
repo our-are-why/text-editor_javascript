@@ -302,6 +302,14 @@ beside them, read-only. So:
 - what's changed in place shows its new words, with the old ones beside;
 - what's taken out shows where it was, ringed, never struck, a strike being
   a document's own mark;
+- **places:** a change of a proposal is a place, as an item counts them, and
+  its two sides, what it was and what it becomes, are one place: its rings
+  carry it, `data-place`, the same on both, so pointing at one side points
+  at the other too. The projection says it, knowing what each change was
+  and became; the playground's stand-in works it out: a proposal's sides,
+  replaced with replaced, moved with moved, the same words first, so a
+  swap's two sides find each other, then in order; what's only taken out
+  or put in, or inside another's removal, a place of its own.
 - what's moved shows at both its ends: within a line, both in it; within
   what's shown together, linked in the margin; out to somewhere else, a mark
   where it leaves, "moved", and where it lands, "from line 12", each going
@@ -744,31 +752,46 @@ are `source/ViewModel_TextEditor.ts`.
 The editor is a class too, `_TextEditor_`, in `source/TextEditor.ts`, a
 first one, with only what pointing needs. It holds the view, its modules,
 and its state: the view model it's given, the proposal pointed at,
-`source_Pointed`, and the note, by its target, `target_Pointed`. On its
-container, one listener for each kind of event its modules ask for, handing
-each to their adapters, in order, the first command taken ending it.
-`dispatch(command)` works out the state after it by the handler for its
-kind, from `HANDLERMAP__TEXTEDITOR`, a map, as the components are, given the
-state, the command and the view's layout interface, `_Layout_View_`, never
-the DOM; where the state's changed, it's drawn on the next frame, all of it
-again for now, each line keeping its element by its id to come. What's drawn
-is the state's view model: `pointedAt__ViewModel` marks the pointed
-proposal's groups and items `data-pointed`, an item's `attributes` drawn on
-it as a group's are, and the underlays a pointed note goes to, its
-proposal's on its side, a move's other end, `data-targeted`; the perspective
-says how they look, a targeted ring heavier, so a note shows, from either
-end, which change is its counterpart. Two commands so far: `POINT`, a point
-on the screen or none, its handler asking the view what proposal's there,
-`sourceAt`: the innermost ring whose area it's in, or else what it's over,
-as a point's resolved by lowering, not by its source; and what note,
-`targetAt`; and `JUMP`, to a note's target, its handler keeping it in the
-state, which the editor, once it's drawn, has the view reveal, `reveal`,
-scrolling it to the middle, then forgets, as scrolling is something done,
-not a state to draw. It doesn't point at what it reveals: pointing is the
-mouse's, and the scroll moves what's under it. One module, `MODULE_MOUSE`,
-in `source/modules/mouse.ts`, every move of the pointer a `POINT` where it
-is, as it can move out of a ring still over the same element, leaving the
-editor a `POINT` at nothing, a click on a note a `JUMP`.
+`source_Pointed`, and of it the place, one of its changes, both its sides,
+`place_Pointed`, by the `data-place` its rings carry, and the note, by its
+target, `target_Pointed`. On its container, one listener for each kind of
+event its modules ask for, handing each to their adapters, in order, the
+first command taken ending it. `dispatch(command)` works out the state after
+it by the handler for its kind, from `HANDLERMAP__TEXTEDITOR`, a map, as the
+components are, given the state, the command and the view's layout
+interface, `_Layout_View_`, never the DOM; where the state's changed, it's
+drawn on the next frame, all of it again for now, each line keeping its
+element by its id to come. What's drawn is the state's view model:
+`pointedAt__ViewModel` marks the pointed proposal's groups and items
+`data-pointed`, an item's `attributes` drawn on it as a group's are, and its
+place's rings `data-pointed` too, on both sides, and the underlays a pointed
+note goes to, its proposal's on its side, a move's other end,
+`data-targeted`; the perspective says how they look: the proposal's rings
+heavier, breathing faintly together while it's pointed at, its place's
+heavier again, a faint light running round them, both sides in step,
+clockwise round the lines as proposed, forwards, as their rings are drawn,
+and counterclockwise round the lines as they are, backwards, as they're
+hatched, one lap each in the time the place's longer ring takes at one pace,
+from its area's length, which the view measures once they're all drawn,
+`--lap_htmlView`, kept between two seconds and six, so its two sides go
+round together and no light crawls or races, so the moment they're all lit
+together lasts, and still where motion's asked to be reduced; the view keeps
+the breath's pace as it draws them again, `pace`, how long the proposal's
+been pointed at, which the editor keeps, `--elapsed_pointed_htmlView`; a
+targeted ring heavier, so a note shows, from either end, which change is its
+counterpart. Two commands so far: `POINT`, a point on the screen or none,
+its handler asking the view what proposal's there, `sourceAt`: the innermost
+ring whose area it's in, or else what it's over, as a point's resolved by
+lowering, not by its source; what place of it, `placeAt`, the same ring's;
+and what note, `targetAt`; and `JUMP`, to a note's target, its handler
+keeping it in the state, which the editor, once it's drawn, has the view
+reveal, `reveal`, scrolling it to the middle, then forgets, as scrolling is
+something done, not a state to draw. It doesn't point at what it reveals:
+pointing is the mouse's, and the scroll moves what's under it. One module,
+`MODULE_MOUSE`, in `source/modules/mouse.ts`, every move of the pointer a
+`POINT` where it is, as it can move out of a ring still over the same
+element, leaving the editor a `POINT` at nothing, a click on a note a
+`JUMP`.
 Not yet: the model, lowering's stages, results beyond taken, observers, the
 keyboard and the current proposal.
 

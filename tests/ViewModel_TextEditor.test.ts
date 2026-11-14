@@ -164,9 +164,9 @@ test("pointing at a proposal marks its groups and its items, in every run and li
     ...viewModel_TextEditor.runs.flatMap((run) => run.groups.map((group) => `${run.id} ${group.attributes["data-source"]}${"data-pointed" in group.attributes ? " pointed" : ""}`)),
     ...viewModel_TextEditor.blocks.flatMap((block) => block.kind === "FRAME" ? block.parts.flatMap((part) => part.kind === "PROPOSAL_LIST" ? part.items.map((item) => `item ${item.source}${"data-pointed" in item.attributes ? " pointed" : ""}`) : []) : []),
   ]
-  expect(marked(pointedAt__ViewModel({ viewModel_TextEditor: viewModel, source: "most", target_Note: null }))).toEqual(["document most pointed", "document all", "current most pointed", "item all", "item most pointed"])
+  expect(marked(pointedAt__ViewModel({ viewModel_TextEditor: viewModel, source: "most", place: null, target_Note: null }))).toEqual(["document most pointed", "document all", "current most pointed", "item all", "item most pointed"])
   expect(marked(viewModel)).toEqual(["document most", "document all", "current most", "item all", "item most"])
-  expect(pointedAt__ViewModel({ viewModel_TextEditor: viewModel, source: null, target_Note: null })).toBe(viewModel)
+  expect(pointedAt__ViewModel({ viewModel_TextEditor: viewModel, source: null, place: null, target_Note: null })).toBe(viewModel)
 })
 
 test("pointing at a note marks its target, the underlays of its proposal on its side, wherever they are, and nothing else: not the other side's, nor another proposal's, nor any group or item", () => {
@@ -183,10 +183,28 @@ test("pointing at a note marks its target, the underlays of its proposal on its 
       ],
     },
   ])
-  const pointed = pointedAt__ViewModel({ viewModel_TextEditor: viewModel, source: null, target_Note: { source: "move", side: "after" } })
+  const pointed = pointedAt__ViewModel({ viewModel_TextEditor: viewModel, source: null, place: null, target_Note: { source: "move", side: "after" } })
   expect(pointed.runs.flatMap((run) => run.groups.flatMap((group) => [
     `${run.id} ${group.attributes["data-source"]}${"data-pointed" in group.attributes ? " pointed" : ""}`,
     ...group.underlays.map((underlay) => `${underlay.attributes["data-source"]} ${underlay.attributes["data-side"]}${"data-targeted" in underlay.attributes ? " targeted" : ""}`),
   ]))).toEqual(["document move", "move before", "proposed move", "move after targeted", "proposed other", "other after"])
   expect(pointed.blocks.flatMap((block) => block.kind === "FRAME" ? block.parts.flatMap((part) => part.kind === "PROPOSAL_LIST" ? part.items.map((item) => Object.keys(item.attributes)) : []) : [])).toEqual([[]])
+})
+
+test("pointing at a place of a proposal marks its rings, on both its sides, wherever they are, as well as the proposal's groups: not the proposal's other places, nor another's with the same place", () => {
+  const lines = parseLines_ViewModel({ multilineText: "one", module_Language: MODULE_PLAINTEXT })
+  const underlayOf = (source: string, side: string, place: string) => ({ from: { line: 0, offset: 0 }, to: { line: 0, offset: 3 }, attributes: { "data-change": "replaced", "data-side": side, "data-source": source, "data-place": place } })
+  const viewModel = viewModelOf__Blocks([{
+    kind: "FRAME",
+    range: { first: 1, last: 1 },
+    parts: [
+      { kind: "CURRENT_LINES", run: { id: "current", lines, groups: [{ attributes: { "data-source": "rename" }, underlays: [underlayOf("rename", "before", "1"), underlayOf("rename", "before", "2")] }, { attributes: { "data-source": "other" }, underlays: [underlayOf("other", "before", "1")] }] } },
+      { kind: "PROPOSAL_LINES", run: { id: "proposed", lines, groups: [{ attributes: { "data-source": "rename" }, underlays: [underlayOf("rename", "after", "1"), underlayOf("rename", "after", "2")] }] } },
+    ],
+  }])
+  const pointed = pointedAt__ViewModel({ viewModel_TextEditor: viewModel, source: "rename", place: "1", target_Note: null })
+  expect(pointed.runs.flatMap((run) => run.groups.flatMap((group) => [
+    `${run.id} ${group.attributes["data-source"]}${"data-pointed" in group.attributes ? " pointed" : ""}`,
+    ...group.underlays.map((underlay) => `${underlay.attributes["data-source"]} ${underlay.attributes["data-side"]} ${underlay.attributes["data-place"]}${"data-pointed" in underlay.attributes ? " pointed" : ""}`),
+  ]))).toEqual(["current rename pointed", "rename before 1 pointed", "rename before 2", "current other", "other before 1", "proposed rename pointed", "rename after 1 pointed", "rename after 2"])
 })

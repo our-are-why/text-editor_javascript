@@ -124,7 +124,7 @@ function blocksWith__Frames<State>({
     const next = ordered[index + 1]
     if (next !== undefined && next.range.first <= frame.range.last) throw new Error(`frames of lines ${frame.range.first} to ${frame.range.last} and ${next.range.first} to ${next.range.last} overlap`)
   })
-  const framed = ordered.map((frame) => framedOf(frame, lines, texts, module_Language, moves))
+  const framed = withPlaces(ordered.map((frame) => framedOf(frame, lines, texts, module_Language, moves)))
   checkMovesOnly(framed)
   const titles = new Map(framed.flatMap((frame) => frame.parts.flatMap((part) => part.kind === "PROPOSAL_LIST" ? part.items.map((item): [string, string] => [item.source, item.title]) : [])))
   const places_All = framed.flatMap(placesOf)
@@ -212,6 +212,94 @@ function checkMovesOnly(
     const kinds = new Set(underlays.map((underlay) => underlay.attributes["data-change"]))
     if (kinds.has("moved") && kinds.size > 1) throw new Error(`the proposal ${source} moves text and changes it too, ${[...kinds].join(", ")}: one that moves holds only moves, and what else changes is another's`)
   }
+}
+
+// each change's place, `data-place`, the same on both its sides, as the
+// projection will say it, knowing what each of its changes was and became;
+// here worked out from the scene: a proposal's changes, in order through the
+// frames, its sides paired, replaced with replaced, moved with moved, the
+// same words first, so the two sides of a swap find each other, then in
+// order; what's only taken out or put in, or inside another's removal, so
+// gone where it's proposed, a place of its own
+function withPlaces(
+  frames: Array<_FRAME_Block__ViewModel_>
+): Array<_FRAME_Block__ViewModel_> {
+  const sides = frames.flatMap((frame, index_Frame) => frame.parts.flatMap((part, index_Part) => part.kind === "PROPOSAL_LIST" ? [] : part.run.groups.flatMap((group, index_Group) => group.underlays.map((underlay, index_Underlay): _Side_Place_ => ({
+    key: `${index_Frame}/${index_Part}/${index_Group}/${index_Underlay}`,
+    source: underlay.attributes["data-source"] ?? "",
+    side: underlay.attributes["data-side"] ?? "before",
+    change: underlay.attributes["data-change"] ?? "",
+    text: textIn(part.run.lines, underlay),
+    isWithin: "data-within" in underlay.attributes,
+  })))))
+  const places = new Map<string, string>()
+  for (const sides_Source of Map.groupBy(sides, (side) => side.source).values()) {
+    let count = 0
+    const place = (...sides_Place: Array<_Side_Place_>) => {
+      count += 1
+      for (const side of sides_Place) places.set(side.key, String(count))
+    }
+    const paired = sides_Source.filter((side) => !side.isWithin && side.change !== "removed" && side.change !== "inserted")
+    for (const [change, sides_Change] of Map.groupBy(paired, (side) => side.change)) {
+      const before = sides_Change.filter((side) => side.side === "before")
+      const after = sides_Change.filter((side) => side.side === "after")
+      if (change === "moved") {
+        for (const side of [...before]) {
+          const same = after.find((other) => other.text === side.text)
+          if (same === undefined) continue
+          place(side, same)
+          before.splice(before.indexOf(side), 1)
+          after.splice(after.indexOf(same), 1)
+        }
+      }
+      before.forEach((side, index) => {
+        const other = after[index]
+        if (other === undefined) place(side)
+        else place(side, other)
+      })
+      after.slice(before.length).forEach((side) => place(side))
+    }
+    sides_Source.filter((side) => !places.has(side.key)).forEach((side) => place(side))
+  }
+  return frames.map((frame, index_Frame) => {
+    const placedIn = (part: _Part_Frame_, index_Part: number): _Part_Frame_ => part.kind === "PROPOSAL_LIST" ? part : {
+      ...part,
+      run: {
+        ...part.run,
+        groups: part.run.groups.map((group, index_Group) => ({
+          ...group,
+          underlays: group.underlays.map((underlay, index_Underlay) => {
+            const place = places.get(`${index_Frame}/${index_Part}/${index_Group}/${index_Underlay}`)
+            return place === undefined ? underlay : { ...underlay, attributes: { ...underlay.attributes, "data-place": place } }
+          }),
+        })),
+      },
+    }
+    const [part, ...more] = frame.parts
+    return { ...frame, parts: [placedIn(part, 0), ...more.map((each, index) => placedIn(each, index + 1))] }
+  })
+}
+
+// one side of a change, where it is among a scene's frames, for its place to
+// be worked out: its proposal, its side, what it is, and its words
+interface _Side_Place_ {
+  key: string
+  source: string
+  side: string
+  change: string
+  text: string
+  isWithin: boolean
+}
+
+// the words a change covers, across lines where it runs across them
+function textIn(
+  lines: Array<_Line_Run_>,
+  underlay: _Underlay_Text_
+): string {
+  const textAt = (line: number) => (lines[line]?.segments ?? []).map((segment) => segment.text).join("")
+  if (underlay.from.line === underlay.to.line) return textAt(underlay.from.line).slice(underlay.from.offset, underlay.to.offset)
+  const between = Array.from({ length: underlay.to.line - underlay.from.line - 1 }, (_, index) => textAt(underlay.from.line + 1 + index))
+  return [textAt(underlay.from.line).slice(underlay.from.offset), ...between, textAt(underlay.to.line).slice(0, underlay.to.offset)].join("\n")
 }
 
 // a move's first line with words on it, by its number, which says where the
