@@ -67,6 +67,7 @@
   --insetInline_underlay_htmlView: var(--view-underlay-inset-inline, 0px);
   --clearInline_underlay_htmlView: var(--view-underlay-clear-inline, var(--view-underlay-inset-block, 0px));
   --step_underlay_htmlView: var(--view-underlay-step, 0px);
+  --nest_underlay_htmlView: var(--view-underlay-nest, calc(2 * var(--view-underlay-inset-block, 0px)));
 }
 
 /* the underlays' lengths, as a perspective or a host gives them, in any
@@ -75,7 +76,11 @@
    worked out; the view reads them as pixels. The clearance, given none,
    is the block inset. The step is the least a ring's side steps in or out,
    from one row to the next: rows with nothing past them whose ends are
-   nearer than it share one, the further out. */
+   nearer than it share one, the further out. The nest is how far inside
+   another's ring a ring inside its stretch is, for each ring it's inside:
+   further from its rows' top and bottom, and, where the two start or end
+   together, the container reaching that much further past it; given none,
+   twice the block inset. */
 @property --insetBlock_underlay_htmlView {
   syntax: "<length>";
   inherits: false;
@@ -95,6 +100,12 @@
 }
 
 @property --step_underlay_htmlView {
+  syntax: "<length>";
+  inherits: false;
+  initial-value: 0px;
+}
+
+@property --nest_underlay_htmlView {
   syntax: "<length>";
   inherits: false;
   initial-value: 0px;

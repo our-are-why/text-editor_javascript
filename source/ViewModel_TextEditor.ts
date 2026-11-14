@@ -7,6 +7,7 @@ export {
   type _Line_Run_,
   type _Gutter_Line_,
   type _Marker_Gutter_,
+  type _Pointed_Gutter_,
   type _Note_Line_,
   type _Target_Note_,
   type _Segment_Line_,
@@ -68,9 +69,12 @@ interface _Line_Run_ {
 interface _Gutter_Line_ {
   label: string
   marker: _Marker_Gutter_
+  pointed: _Pointed_Gutter_
 }
 
 type _Marker_Gutter_ = "none" | "removed" | "changed" | "inserted" | "moved"
+
+type _Pointed_Gutter_ = "none" | "proposal" | "place"
 
 interface _Note_Line_ {
   label: string
@@ -319,8 +323,26 @@ function pointedIn__Run({
   place,
   target_Note
 }: _Api___pointedIn__Run_): _Run_Lines_ {
+  const underlay$_Pointed = run_Lines.groups
+    .filter((group_Underlay) => source !== null && group_Underlay.attributes["data-source"] === source)
+    .flatMap((group_Underlay) => group_Underlay.underlays)
+  const isCovered = (
+    underlay$_Text: Array<_Underlay_Text_>,
+    index_Line: number
+  ) => underlay$_Text.some((underlay_Text) => underlay_Text.from.line <= index_Line && index_Line <= underlay_Text.to.line)
   return {
     ...run_Lines,
+    lines: run_Lines.lines.map((line_Run, index_Line) => ({
+      ...line_Run,
+      gutter: {
+        ...line_Run.gutter,
+        pointed: isCovered(underlay$_Pointed.filter((underlay_Text) => place !== null && underlay_Text.attributes["data-place"] === place), index_Line)
+          ? "place"
+          : isCovered(underlay$_Pointed, index_Line)
+            ? "proposal"
+            : "none"
+      }
+    })),
     groups: run_Lines.groups.map((group_Underlay) => ({
       ...group_Underlay,
       attributes: group_Underlay.attributes["data-source"] === source
@@ -481,7 +503,8 @@ function lineOf__Text({
   return {
     gutter: {
       label: String(number),
-      marker: "none"
+      marker: "none",
+      pointed: "none"
     },
     note: null,
     segments: segmentsOf__Stretches({

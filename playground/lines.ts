@@ -29,7 +29,7 @@ function lineOf(
   ...pieces: Array<_Piece_Line_>
 ): _Line_Run_ {
   return {
-    gutter: { label: "", marker: "none" },
+    gutter: { label: "", marker: "none", pointed: "none" },
     note: null,
     segments: pieces.flatMap((piece): Array<_Segment_Line_> => {
       const { text, attributes } = typeof piece === "string" ? { text: piece, attributes: {} } : piece
@@ -46,7 +46,7 @@ function lineOf(
 function blankOf(
   marker: _Marker_Gutter_
 ): _Line_Run_ {
-  return { gutter: { label: "", marker }, note: null, segments: [] }
+  return { gutter: { label: "", marker, pointed: "none" }, note: null, segments: [] }
 }
 
 // a document's text, its lines numbered from 1, as one run, "document", with
@@ -169,7 +169,7 @@ function framedOf<State>(
     const leaving = moves.find((move) => firstWordedOf(move.range, texts) === frame.range.first + index)
     return {
       ...withSyntax(line, lines[frame.range.first - 1 + index]),
-      gutter: { label: String(frame.range.first + index), marker: markerOf(line) },
+      gutter: { label: String(frame.range.first + index), marker: markerOf(line), pointed: "none" },
       note: leaving === undefined ? null : { label: "moved", target: { source: leaving.source, side: "after" } },
     }
   }
@@ -180,7 +180,7 @@ function framedOf<State>(
       const move = landing(index)
       return {
         ...withSyntax(line, syntax[index]),
-        gutter: { label: signs[markerOf(line)], marker: markerOf(line) },
+        gutter: { label: signs[markerOf(line)], marker: markerOf(line), pointed: "none" },
         note: move === undefined ? null : { label: `from ${linesText(move.range)}`, target: { source: move.source, side: "before" } },
       }
     })

@@ -289,6 +289,7 @@ function Gutter_Line__Html({
     <div
       class="gutter_htmlView"
       aria-hidden="true"
+      data-pointed={gutter_Line.pointed === "none" ? undefined : gutter_Line.pointed}
     >
       <span class="label_htmlView">{gutter_Line.label}</span>
       <span class="marker_htmlView" />
@@ -667,6 +668,7 @@ interface _Inset_Underlay_ {
   inline: number
   clear: number
   step: number
+  nest: number
 }
 
 function insetOf__Element(
@@ -677,7 +679,8 @@ function insetOf__Element(
     block: lengthOf__Value(style.getPropertyValue("--insetBlock_underlay_htmlView")),
     inline: lengthOf__Value(style.getPropertyValue("--insetInline_underlay_htmlView")),
     clear: lengthOf__Value(style.getPropertyValue("--clearInline_underlay_htmlView")),
-    step: lengthOf__Value(style.getPropertyValue("--step_underlay_htmlView"))
+    step: lengthOf__Value(style.getPropertyValue("--step_underlay_htmlView")),
+    nest: lengthOf__Value(style.getPropertyValue("--nest_underlay_htmlView"))
   }
 }
 
@@ -707,10 +710,11 @@ function place$Of__Edge$_Boundary({
   const text_Line = placed$_Text.map((placed_Text) => placed_Text.text.data).join("")
   const offset = edge_First.position_Run.offset
   if (!isVisible__Character(text_Line[offset - 1]) || !isVisible__Character(text_Line[offset])) return []
-  const isStart = edge$_Boundary.some((edge) => edge.isStart)
-  const isEnd = edge$_Boundary.some((edge) => !edge.isStart)
+  const count_Start = edge$_Boundary.filter((edge) => edge.isStart).length
+  const count_End = edge$_Boundary.filter((edge) => !edge.isStart).length
   const reach = -inset_Underlay.inline
-  const length_Needed = (isStart ? reach : 0) + (isEnd ? reach : 0) + (isStart && isEnd ? 2 * inset_Underlay.block : inset_Underlay.clear)
+  const reachOf = (count: number) => count === 0 ? 0 : reach + inset_Underlay.nest * (count - 1)
+  const length_Needed = reachOf(count_Start) + reachOf(count_End) + (count_Start > 0 && count_End > 0 ? 2 * inset_Underlay.block : inset_Underlay.clear)
   const placed_Before = placed$_Text.find((placed_Text) => placed_Text.start + placed_Text.text.length === offset)
   const htmlElement_Before = placed_Before?.text.parentElement
   if (placed_Before !== undefined && htmlElement_Before instanceof HTMLElement && htmlElement_Before !== divElement_text && htmlElement_Before.lastChild === placed_Before.text) {
@@ -1263,6 +1267,12 @@ function pathOf__Measure_Box({
       underlay_Text_outer: measure_Box_other.underlay_Text
     }))
     .flatMap((measure_Box_other) => measure_Box_other.box$_Row)
+  const box$_Nested = measure$_Box
+    .filter((measure_Box_other) => measure_Box_other !== measure_Box && isWithin__Underlay$_Text({
+      underlay_Text_inner: measure_Box_other.underlay_Text,
+      underlay_Text_outer: measure_Box.underlay_Text
+    }))
+    .flatMap((measure_Box_other) => measure_Box_other.box$_Row)
   const chain$ = chain$Of__Box$_Row(measure_Box.box$_Row)
   const path$_Chain = chain$.map((
     chain_Box$,
@@ -1273,10 +1283,12 @@ function pathOf__Measure_Box({
         chain_Box$,
         box$_Sibling,
         box$_Container,
+        box$_Nested,
         reach: -inset_Underlay.inline,
-        block: inset_Underlay.block * (1 + 2 * measure_Box.depth),
+        block: inset_Underlay.block + inset_Underlay.nest * measure_Box.depth,
         gap,
-        clear: inset_Underlay.clear
+        clear: inset_Underlay.clear,
+        nest: inset_Underlay.nest
       }),
       step: inset_Underlay.step
     }),
@@ -1329,20 +1341,24 @@ interface _Api___roomed$Of__Chain_Box$_ {
   chain_Box$: Array<_Box_Row_>
   box$_Sibling: Array<_Box_Row_>
   box$_Container: Array<_Box_Row_>
+  box$_Nested: Array<_Box_Row_>
   reach: number
   block: number
   gap: number
   clear: number
+  nest: number
 }
 
 function roomed$Of__Chain_Box$({
   chain_Box$,
   box$_Sibling,
   box$_Container,
+  box$_Nested,
   reach,
   block,
   gap,
-  clear
+  clear,
+  nest
 }: _Api___roomed$Of__Chain_Box$_): Array<_Box_Row_> {
   return chain_Box$.map((
     box_Row,
@@ -1350,23 +1366,46 @@ function roomed$Of__Chain_Box$({
   ) => {
     const box$_Row_Sibling = box$_Sibling.filter((box_Sibling) => Math.abs(box_Sibling.top - box_Row.top) < 1)
     const box$_Row_Container = box$_Container.filter((box_Container) => Math.abs(box_Container.top - box_Row.top) < 1)
-    const room_Left = Math.min(
+    const box$_Row_Nested = box$_Nested.filter((box_Nested) => Math.abs(box_Nested.top - box_Row.top) < 1)
+    const reachOf = (distance: number) => Math.max(
       reach,
+      reach + nest - distance
+    )
+    const room_Left = Math.min(
+      Math.max(
+        reach,
+        ...box$_Row_Nested.map((box_Nested) => reachOf(box_Nested.left - box_Row.left))
+      ),
       Math.max(
         0,
         box_Row.free_Left - clear
       ),
       ...box$_Row_Sibling.filter((box_Sibling) => box_Sibling.right <= box_Row.left + 0.5).map((box_Sibling) => (box_Row.left - box_Sibling.right - gap) / 2),
-      ...box$_Row_Container.map((box_Container) => box_Row.left - box_Container.left - gap / 2)
+      ...box$_Row_Container.map((box_Container) => box_Row.left - box_Container.left - nest + Math.min(
+        reachOf(box_Row.left - box_Container.left),
+        Math.max(
+          0,
+          box_Container.free_Left - clear
+        )
+      ))
     )
     const room_Right = Math.min(
-      reach,
+      Math.max(
+        reach,
+        ...box$_Row_Nested.map((box_Nested) => reachOf(box_Row.right - box_Nested.right))
+      ),
       Math.max(
         0,
         box_Row.free_Right - clear
       ),
       ...box$_Row_Sibling.filter((box_Sibling) => box_Sibling.left >= box_Row.right - 0.5).map((box_Sibling) => (box_Sibling.left - box_Row.right - gap) / 2),
-      ...box$_Row_Container.map((box_Container) => box_Container.right - box_Row.right - gap / 2)
+      ...box$_Row_Container.map((box_Container) => box_Container.right - box_Row.right - nest + Math.min(
+        reachOf(box_Container.right - box_Row.right),
+        Math.max(
+          0,
+          box_Container.free_Right - clear
+        )
+      ))
     )
     const middle = (box_Row.left + box_Row.right) / 2
     return {

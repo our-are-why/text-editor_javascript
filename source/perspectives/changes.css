@@ -150,6 +150,20 @@
   }
 }
 
+/* the lines the proposal pointed at changes, their labels in the gutter
+   heavier, so they're found reading down a frame, however small their
+   rings; and the lines its place is on heavier again. Drawn heavier by a
+   stroke round each glyph, not a bolder weight, which may be wider, as a
+   sign from another font is, so no label moves. Still: the motion is the
+   rings'. */
+[data-perspective="changes"] .gutter_htmlView[data-pointed] .label_htmlView {
+  -webkit-text-stroke: 0.05em currentColor;
+}
+
+[data-perspective="changes"] .gutter_htmlView[data-pointed="place"] .label_htmlView {
+  -webkit-text-stroke: 0.1em currentColor;
+}
+
 [data-perspective="changes"] .item_htmlView[data-pointed] {
   background: var(--view-pointed-item, color-mix(in srgb, Canvas 35%, transparent));
 }
@@ -169,8 +183,12 @@
    above and below as they can be, a little short; so two rings, side by
    side or on lines one over the other, are always apart; a ring inside
    another's stretch, as a nested change is, inside it, further from its
-   row's top and bottom. At a 14px font, 3px past, 3px clear and 1px short,
-   so two rings are 2px apart; in ems, so at any other size they keep to
+   row's top and bottom, and, where it starts or ends with it, its
+   container reaching further past it, room made for both, so it's as far
+   inside on every side they share, and the two never meet, even as one's
+   drawn heavier, pointed at. At a 14px font, 3px
+   past, 3px clear and 1px short, so two rings are 2px apart, and a ring
+   inside another 3px further in; in ems, so at any other size they keep to
    the font as they do at 14px. A ring over several lines hugs them, its
    side stepping in and out with their ends, but never by less than half
    an em: less than a character, so lines ending in one column, but for
@@ -180,6 +198,7 @@
   --view-underlay-inset-inline: calc(-3em / 14);
   --view-underlay-clear-inline: calc(3em / 14);
   --view-underlay-step: 0.5em;
+  --view-underlay-nest: calc(3em / 14);
 }
 
 /* where a change's end presses on another character, as code's tokens do

@@ -168,7 +168,7 @@ const everything: _Scene_ = {
       id: "document",
       lines: cases_Everything.map(({ line }, index): _Line_Run_ => ({
         ...line,
-        gutter: { label: String(index + 1), marker: "none" },
+        gutter: { label: String(index + 1), marker: "none", pointed: "none" },
       })),
       groups: groups_Everything,
     },

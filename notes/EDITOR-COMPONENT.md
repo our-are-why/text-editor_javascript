@@ -434,10 +434,16 @@ the document or its changes changing:
     character, short of them above zero; and never nearer a shape beside it
     on its row than twice the block inset, the two sharing what's between
     them; and one inside another's stretch, worked out from their positions,
-    inside it, further from its rows' top and bottom. So rings, on lines one
-    over another or side by side, never meet, and a nested change's sits
-    inside the removal's. Where a change's end presses on another character,
-    as code's tokens do on its punctuation, `(n)`, `n++`, `error;`, there's
+    inside it, further from its rows' top and bottom by
+    `--view-underlay-nest` for each ring it's inside, twice the block inset
+    given none, the "changes" perspective's 3px at 14px; and where it starts
+    or ends with its container, it keeps its own reach past its words, its
+    container reaching the nest further, the room made at that end for both,
+    so a nested ring is the nest inside its container on every side they
+    share, and the two don't meet even as one's drawn heavier, pointed at. So rings, on lines one over another or side by side, never
+    meet, and a nested change's sits inside the removal's or the move's.
+    Where a change's end presses on another character, as code's tokens do
+    on its punctuation, `(n)`, `n++`, `error;`, there's
     too little free space, so the view works out the room it lacks: what its
     ring's reach and clearance take, or, where another change starts there,
     both rings' reach and the gap between them, less the space their glyphs
@@ -671,7 +677,8 @@ actions on the right, the first the main one; the list's items starting
 where the lines' text does. Neutral, as doctor's are not, coloured by what
 they do, as a frame holds proposals of every kind, moves and removals too:
 colour is the rings', each meaning one thing, and purple stays yours. The
-view model says each line's label, as the text it shows, `"12"`, `"+"`,
+view model says each line's label, as the text it shows, and whether it's
+pointed at, its `pointed`, by its proposal or its place, `"12"`, `"+"`,
 `"~"`, `""`, already decided, and what the line becomes; the view only draws
 them.
 
@@ -764,8 +771,10 @@ drawn on the next frame, all of it again for now, each line keeping its
 element by its id to come. What's drawn is the state's view model:
 `pointedAt__ViewModel` marks the pointed proposal's groups and items
 `data-pointed`, an item's `attributes` drawn on it as a group's are, and its
-place's rings `data-pointed` too, on both sides, and the underlays a pointed
-note goes to, its proposal's on its side, a move's other end,
+place's rings `data-pointed` too, on both sides, and the gutters of the
+lines its changes are on, a gutter's `pointed`, `"proposal"`, or `"place"`
+where its place is, drawn `data-pointed` on the gutter, and the underlays a
+pointed note goes to, its proposal's on its side, a move's other end,
 `data-targeted`; the perspective says how they look: the proposal's rings
 heavier, breathing faintly together while it's pointed at, its place's
 heavier again, a faint light running round them, both sides in step,
@@ -777,21 +786,24 @@ from its area's length, which the view measures once they're all drawn,
 round together and no light crawls or races, so the moment they're all lit
 together lasts, and still where motion's asked to be reduced; the view keeps
 the breath's pace as it draws them again, `pace`, how long the proposal's
-been pointed at, which the editor keeps, `--elapsed_pointed_htmlView`; a
-targeted ring heavier, so a note shows, from either end, which change is its
-counterpart. Two commands so far: `POINT`, a point on the screen or none,
-its handler asking the view what proposal's there, `sourceAt`: the innermost
-ring whose area it's in, or else what it's over, as a point's resolved by
-lowering, not by its source; what place of it, `placeAt`, the same ring's;
-and what note, `targetAt`; and `JUMP`, to a note's target, its handler
-keeping it in the state, which the editor, once it's drawn, has the view
-reveal, `reveal`, scrolling it to the middle, then forgets, as scrolling is
-something done, not a state to draw. It doesn't point at what it reveals:
-pointing is the mouse's, and the scroll moves what's under it. One module,
-`MODULE_MOUSE`, in `source/modules/mouse.ts`, every move of the pointer a
-`POINT` where it is, as it can move out of a ring still over the same
-element, leaving the editor a `POINT` at nothing, a click on a note a
-`JUMP`.
+been pointed at, which the editor keeps, `--elapsed_pointed_htmlView`; the
+labels of the pointed lines heavier, so they're found reading down a frame,
+the place's lines' heavier again, by a stroke round each glyph, not a bolder
+weight, which may be wider, so no label moves, and still, the motion being
+the rings'; a targeted ring heavier, so a note shows, from either end, which
+change is its counterpart. Two commands so far: `POINT`, a point on the
+screen or none, its handler asking the view what proposal's there,
+`sourceAt`: the innermost ring whose area it's in, or else what it's over,
+as a point's resolved by lowering, not by its source; what place of it,
+`placeAt`, the same ring's; and what note, `targetAt`; and `JUMP`, to a
+note's target, its handler keeping it in the state, which the editor, once
+it's drawn, has the view reveal, `reveal`, scrolling it to the middle, then
+forgets, as scrolling is something done, not a state to draw. It doesn't
+point at what it reveals: pointing is the mouse's, and the scroll moves
+what's under it. One module, `MODULE_MOUSE`, in `source/modules/mouse.ts`,
+every move of the pointer a `POINT` where it is, as it can move out of a
+ring still over the same element, leaving the editor a `POINT` at nothing, a
+click on a note a `JUMP`.
 Not yet: the model, lowering's stages, results beyond taken, observers, the
 keyboard and the current proposal.
 

@@ -163,7 +163,7 @@ describe("beside it: what can't live in one document", () => {
     })
   })
 
-  test("pointing with the mouse at a proposal's change, or its item, marks its groups and items, wherever they are, drawn on the next frame; pointing where nothing changes draws nothing again; and pointing away marks none", async () => {
+  test("pointing with the mouse at a proposal's change, or its item, marks its groups and items, and the gutters of the lines it changes, wherever they are, drawn on the next frame; pointing where nothing changes draws nothing again; and pointing away marks none", async () => {
     await opened.page.evaluate(() => {
       const containerElement = document.createElement("div")
       containerElement.id = "pointing"
@@ -210,7 +210,7 @@ describe("beside it: what can't live in one document", () => {
       const drawnAgain = rootElement?.getAttribute("data-seen") === null
       rootElement?.setAttribute("data-seen", "")
       return {
-        pointed: [...(containerElement?.querySelectorAll("[data-pointed]") ?? [])].map((element) => `${element.localName} ${element.getAttribute("data-source")}`),
+        pointed: [...(containerElement?.querySelectorAll("[data-pointed]") ?? [])].map((element) => element.classList.contains("gutter_htmlView") ? `gutter ${element.getAttribute("data-pointed")}` : `${element.localName} ${element.getAttribute("data-source")}`),
         drawnAgain
       }
     })
@@ -225,9 +225,9 @@ describe("beside it: what can't live in one document", () => {
     }
     expect(await pointed()).toEqual({ pointed: [], drawnAgain: true })
     await at(`.text_htmlView [data-source="most"]`)
-    expect(await pointed()).toEqual({ pointed: ["g most", "li most"], drawnAgain: true })
+    expect(await pointed()).toEqual({ pointed: ["g most", "gutter proposal", "li most"], drawnAgain: true })
     await at(`.item_htmlView[data-source="most"] .title_htmlView`)
-    expect(await pointed()).toEqual({ pointed: ["g most", "li most"], drawnAgain: false })
+    expect(await pointed()).toEqual({ pointed: ["g most", "gutter proposal", "li most"], drawnAgain: false })
     await at(`.item_htmlView[data-source="all"] .title_htmlView`)
     expect(await pointed()).toEqual({ pointed: ["g all", "li all"], drawnAgain: true })
     await opened.page.mouse.move(1270, 715)
@@ -536,6 +536,74 @@ describe("beside it: what can't live in one document", () => {
       }
     })
     expect(gaps).toEqual({ aboveBelow: 2, touching: 2, spaced: 2, insideTop: 2, insideBottom: 2, loneReach: { left: 6, right: 6 }, closedClear: { left: 1, right: 1 } })
+  })
+
+  test("a ring inside another's stretch is as much further from its rows' top and bottom as a perspective says, its nest, its path that far from its container's; given none, twice the block inset; and where it starts with its container, pressed on by a character, it keeps its own reach past its words, its container reaching its nest further, room made for both", async () => {
+    const gaps = await opened.page.evaluate(async () => {
+      const gapOf = async (variables: string) => {
+        const containerElement = document.createElement("div")
+        containerElement.style.width = "40rem"
+        containerElement.setAttribute("style", `width: 40rem; --view-font-size: 14px; --view-underlay-inset-block: 1px; ${variables}`)
+        document.body.append(containerElement)
+        const [line] = window.parseLines_ViewModel({ multilineText: "drop the round here", module_Language: window.MODULE_PLAINTEXT })
+        if (line === undefined) throw new Error("the line wasn't parsed")
+        new window._View_TextEditor_({
+          containerElement,
+          componentMap: window.COMPONENTMAP__VIEW_TEXTEDITOR
+        }).draw(window.viewModelOf__Blocks([{
+          kind: "LINES",
+          run: { id: "document", lines: [line], groups: [
+            { attributes: { "data-source": "drop" }, underlays: [{ from: { line: 0, offset: 0 }, to: { line: 0, offset: 19 }, attributes: { "data-change": "removed", "data-source": "drop" } }] },
+            { attributes: { "data-source": "round" }, underlays: [{ from: { line: 0, offset: 9 }, to: { line: 0, offset: 14 }, attributes: { "data-change": "replaced", "data-source": "round", "data-within": "drop" } }] }
+          ] }
+        }]))
+        await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)))
+        const [outer, inner] = [...containerElement.querySelectorAll(".underlay_htmlView")].map((path) => path instanceof SVGPathElement ? path.getBBox() : new DOMRect())
+        containerElement.remove()
+        if (outer === undefined || inner === undefined) throw new Error("the rings weren't drawn")
+        return [inner.y - outer.y, outer.y + outer.height - (inner.y + inner.height)].map((gap) => Math.round(gap * 100) / 100)
+      }
+      // round, inside round === max, both starting after a (, pressed on: the
+      // gaps between their paths at the left, top and bottom, and whether
+      // round's ring is clear of its word's cell
+      const pressedOf = async () => {
+        const containerElement = document.createElement("div")
+        containerElement.setAttribute("style", "width: 40rem; --view-font-size: 14px")
+        containerElement.dataset["perspective"] = "changes"
+        document.body.append(containerElement)
+        const [line] = window.parseLines_ViewModel({ multilineText: "if (round === max) go", module_Language: window.MODULE_PLAINTEXT })
+        const [segment] = line?.segments ?? []
+        if (line === undefined || segment === undefined) throw new Error("the line wasn't parsed")
+        const textOf = (text: string) => window.parseLines_ViewModel({ multilineText: text, module_Language: window.MODULE_PLAINTEXT })[0]?.segments[0]?.text ?? segment.text
+        const moved = { "data-change": "moved", "data-side": "before", "data-source": "order" }
+        const renamed = { "data-change": "replaced", "data-side": "before", "data-source": "round" }
+        new window._View_TextEditor_({
+          containerElement,
+          componentMap: window.COMPONENTMAP__VIEW_TEXTEDITOR
+        }).draw(window.viewModelOf__Blocks([{
+          kind: "LINES",
+          run: { id: "document", lines: [{ ...line, segments: [{ text: textOf("if ("), attributes: {} }, { text: textOf("round"), attributes: { ...moved, "data-edit": "round" } }, { text: textOf(" === max"), attributes: moved }, { text: textOf(") go"), attributes: {} }] }], groups: [
+            { attributes: { "data-source": "order" }, underlays: [{ from: { line: 0, offset: 4 }, to: { line: 0, offset: 17 }, attributes: moved }] },
+            { attributes: { "data-source": "round" }, underlays: [{ from: { line: 0, offset: 4 }, to: { line: 0, offset: 9 }, attributes: renamed }] }
+          ] }
+        }]))
+        await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)))
+        const [outer, inner] = [...containerElement.querySelectorAll(".underlay_htmlView")].map((path) => path.getBoundingClientRect())
+        const word = containerElement.querySelector('.text_htmlView [data-edit="round"]')?.getBoundingClientRect()
+        containerElement.remove()
+        if (outer === undefined || inner === undefined || word === undefined) throw new Error("the rings weren't drawn")
+        return {
+          gaps: [inner.left - outer.left, inner.top - outer.top, outer.bottom - inner.bottom].map((gap) => Math.round(gap * 100) / 100),
+          clearOfWord: inner.right > word.right && inner.left < word.left
+        }
+      }
+      return {
+        given: await gapOf("--view-underlay-nest: 3px"),
+        none: await gapOf(""),
+        pressed: await pressedOf()
+      }
+    })
+    expect(gaps).toEqual({ given: [3, 3], none: [2, 2], pressed: { gaps: [3, 3, 3], clearOfWord: true } })
   })
 
   test("switching the perspective on, after drawing, measures the underlays again; with it on, a change pressed on by punctuation has room made, its ring reaching past its word's ink the same on both sides", async () => {
@@ -1022,7 +1090,7 @@ describe("beside it: what can't live in one document", () => {
     await opened.page.evaluate(() => document.getElementById("targeting")?.remove())
   })
 
-  test("pointing at a ring points at its proposal and at its place: the place's rings, on both sides, heavier again, a faint light running round each, clockwise round the lines as proposed and counterclockwise round the lines as they are, both sides in step, one lap each in the time the longer takes at one pace, the proposal's breathing together, at a pace kept from ring to ring of one proposal and started anew at another; still where motion's asked to be reduced", async () => {
+  test("pointing at a ring points at its proposal and at its place: the place's rings, on both sides, heavier again, a faint light running round each, clockwise round the lines as proposed and counterclockwise round the lines as they are, both sides in step, one lap each in the time the longer takes at one pace, the proposal's breathing together, at a pace kept from ring to ring of one proposal and started anew at another; the place's lines' labels in the gutter heavier again, by a stroke, not a weight, so none moves, and still; still where motion's asked to be reduced", async () => {
     await opened.page.evaluate(() => {
       const containerElement = document.createElement("div")
       containerElement.id = "placing"
@@ -1084,6 +1152,10 @@ describe("beside it: what can't live in one document", () => {
         }),
         elapsed: parseFloat((containerElement?.querySelector(".htmlView_editor") as HTMLElement | null)?.style.getPropertyValue("--elapsed_pointed_htmlView") ?? ""),
         // each light's ring's length, and the time its lap takes
+        labels: [...containerElement?.querySelectorAll(".gutter_htmlView[data-pointed]") ?? []].map((gutter) => {
+          const style = getComputedStyle(gutter.querySelector(".label_htmlView") ?? gutter)
+          return `${gutter.getAttribute("data-pointed")} ${style.fontWeight} ${Math.round(parseFloat(style.webkitTextStrokeWidth) * 10) / 10}px ${style.animationName}`
+        }),
         laps: [...containerElement?.querySelectorAll(".area_htmlView[data-pointed]") ?? []].map((area) => ({
           length: area instanceof SVGPathElement ? area.getTotalLength() : 0,
           ms: Math.round(parseFloat(getComputedStyle(area).animationDuration) * 1000)
@@ -1109,6 +1181,7 @@ describe("beside it: what can't live in one document", () => {
       "other after 1: 1px none, none"
     ])
     expect(first.clockwise).toBe(true)
+    expect(first.labels).toEqual(["place 400 1.3px none", "place 400 1.3px none"])
     await opened.page.waitForTimeout(300)
     await at("rename", "2")
     const second = await drawn()
@@ -1137,7 +1210,9 @@ describe("beside it: what can't live in one document", () => {
     await at("other", "1")
     expect((await drawn()).elapsed).toBeLessThan(100)
     await opened.page.emulateMedia({ reducedMotion: "reduce" })
-    expect((await drawn()).rings.filter((ring) => ring.startsWith("other"))).toEqual(["other before 1: place 3px none, none", "other after 1: place 3px none, none"])
+    const still = await drawn()
+    expect(still.rings.filter((ring) => ring.startsWith("other"))).toEqual(["other before 1: place 3px none, none", "other after 1: place 3px none, none"])
+    expect(still.labels).toEqual(["place 400 1.3px none", "place 400 1.3px none"])
     await opened.page.emulateMedia({ reducedMotion: "no-preference" })
     await opened.page.mouse.move(1270, 715)
     await opened.page.evaluate(() => document.getElementById("placing")?.remove())
@@ -1324,7 +1399,7 @@ async function drawnOf(
     new window._View_TextEditor_({
       containerElement,
       componentMap: window.COMPONENTMAP__VIEW_TEXTEDITOR
-    }).draw(window.viewModelOf__Blocks([{ kind: "LINES", run: { id: "line", lines: [{ gutter: { label: "", marker: "none" }, note: null, segments: segments_Line }], groups: [] } }]))
+    }).draw(window.viewModelOf__Blocks([{ kind: "LINES", run: { id: "line", lines: [{ gutter: { label: "", marker: "none", pointed: "none" }, note: null, segments: segments_Line }], groups: [] } }]))
     const textElement = containerElement.querySelector(".text_htmlView")
     if (textElement === null) throw new Error("the line's text wasn't drawn")
     return [...textElement.childNodes].map((node) => ({
