@@ -893,10 +893,16 @@ heavier again, a faint light running round them, both sides in step,
 clockwise round the lines as proposed, forwards, as their rings are drawn,
 and counterclockwise round the lines as they are, backwards, as they're
 hatched, one lap each in the time the place's longer ring takes at one pace,
-from its area's length, which the view measures once they're all drawn,
+from its length, which the view works out as it draws them,
 `--lap_htmlView`, kept between two seconds and six, so its two sides go
 round together and no light crawls or races, so the moment they're all lit
-together lasts, and still where motion's asked to be reduced; the view keeps
+together lasts; one light round a ring a wrap cuts in two, as if it
+weren't cut, along its top edges part after part, down its last side, back
+along its bottom edges and up its first, never its cut sides, the view
+drawing it in pieces, `lap_htmlView`, each its share of the lap and where
+on the lap it starts, `--phase_htmlView`, as a browser starts a dash
+afresh on each shape in a path, so a light run round the parts as one path
+showed in both at once, or in neither; and still where motion's asked to be reduced; the view keeps
 the breath's pace as it draws them again, `pace`, how long the proposal's
 been pointed at, which the editor keeps, `--elapsed_pointed_htmlView`; the
 labels of the pointed lines heavier, so they're found reading down a frame,

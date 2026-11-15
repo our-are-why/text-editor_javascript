@@ -635,6 +635,15 @@ function drawTextUnderlay$__View_TextEditor({
                 class="seam_htmlView"
                 d={d_Seam}
               />
+            )),
+            measure_Underlay.lap$.map((lap_Underlay) => (
+              <path
+                {...measure_Underlay.attributes}
+                class="lap_htmlView"
+                d={lap_Underlay.d}
+                pathLength={String(lap_Underlay.pathLength)}
+                style={`--phase_htmlView: ${lap_Underlay.phase}; --length_htmlView: ${lap_Underlay.length_Lap}`}
+              />
             ))
           ])}
         </g>
@@ -644,7 +653,7 @@ function drawTextUnderlay$__View_TextEditor({
       svgElement_underlay$
     })
   }
-  fit__Area$({
+  fit__Lap$({
     containerElement_View
   })
 }
@@ -1022,6 +1031,14 @@ interface _Measure_Underlay_ {
   d_Area: string
   d: string
   d_Seam$: Array<string>
+  lap$: Array<_Lap_Underlay_>
+}
+
+interface _Lap_Underlay_ {
+  d: string
+  pathLength: number
+  phase: number
+  length_Lap: number
 }
 
 interface _Api___measureOf__Drawn_Run_ {
@@ -1376,7 +1393,8 @@ function measureOf__Stretch({
       attributes: underlay_Text.attributes,
       d_Area: "",
       d: "",
-      d_Seam$: []
+      d_Seam$: [],
+      lap$: []
     }
     : {
       attributes: underlay_Text.attributes,
@@ -1408,7 +1426,8 @@ function measureOf__Point({
       },
       d_Area: "",
       d: "",
-      d_Seam$: []
+      d_Seam$: [],
+      lap$: []
     }
   }
   const x = caret.x - context_Measure.origin.left
@@ -1422,7 +1441,8 @@ function measureOf__Point({
     },
     d_Area: `M ${x - half - size_Notch.reach} ${base - size_Notch.reach} H ${x + half + size_Notch.reach} V ${tip + size_Notch.reach} H ${x - half - size_Notch.reach} Z`,
     d: `M ${x - half} ${base} L ${x + half} ${base} L ${x} ${tip} Z`,
-    d_Seam$: []
+    d_Seam$: [],
+    lap$: []
   }
 }
 
@@ -1451,7 +1471,8 @@ function measureOf__Boundary({
     },
     d_Area: `M ${x - 2 * size_Notch.reach} ${y - half - size_Notch.reach} H ${x + size_Notch.length + size_Notch.reach} V ${y + half + size_Notch.reach} H ${x - 2 * size_Notch.reach} Z`,
     d: `M ${x} ${y - half} L ${x} ${y + half} L ${x + size_Notch.length} ${y} Z`,
-    d_Seam$: []
+    d_Seam$: [],
+    lap$: []
   }
 }
 
@@ -1570,25 +1591,25 @@ function pathOf__Measure_Box({
       underlay_Text_outer: measure_Box.underlay_Text
     }))
     .flatMap((measure_Box_other) => measure_Box_other.box$_Row)
-  const chain$ = chain$Of__Box$_Row(measure_Box.box$_Row)
+  const chain$ = chain$Of__Box$_Row(measure_Box.box$_Row).map((chain_Box$) => levelled$Of__Chain_Box$({
+    chain_Box$: roomed$Of__Chain_Box$({
+      chain_Box$,
+      box$_Sibling,
+      box$_Container,
+      box$_Nested,
+      reach: -inset_Underlay.inline,
+      block: inset_Underlay.block + inset_Underlay.nest * measure_Box.depth,
+      gap,
+      clear: inset_Underlay.clear,
+      nest: inset_Underlay.nest
+    }),
+    step: inset_Underlay.step
+  }))
   const path$_Chain = chain$.map((
     chain_Box$,
     index
   ) => pathOf__Chain_Box$({
-    chain_Box$: levelled$Of__Chain_Box$({
-      chain_Box$: roomed$Of__Chain_Box$({
-        chain_Box$,
-        box$_Sibling,
-        box$_Container,
-        box$_Nested,
-        reach: -inset_Underlay.inline,
-        block: inset_Underlay.block + inset_Underlay.nest * measure_Box.depth,
-        gap,
-        clear: inset_Underlay.clear,
-        nest: inset_Underlay.nest
-      }),
-      step: inset_Underlay.step
-    }),
+    chain_Box$,
     clear: inset_Underlay.clear,
     isSeam_Left: index > 0,
     isSeam_Right: index < chain$.length - 1
@@ -1596,7 +1617,8 @@ function pathOf__Measure_Box({
   return {
     d_Area: path$_Chain.map((path_Chain) => path_Chain.d_Area).join(" "),
     d: path$_Chain.map((path_Chain) => path_Chain.d).join(" "),
-    d_Seam$: path$_Chain.flatMap((path_Chain) => path_Chain.d_Seam$)
+    d_Seam$: path$_Chain.flatMap((path_Chain) => path_Chain.d_Seam$),
+    lap$: lap$Of__Chain$(chain$)
   }
 }
 
@@ -1604,6 +1626,7 @@ interface _Path_Underlay_ {
   d_Area: string
   d: string
   d_Seam$: Array<string>
+  lap$: Array<_Lap_Underlay_>
 }
 
 function chain$Of__Box$_Row(
@@ -1794,29 +1817,8 @@ function pathOf__Chain_Box$({
   clear,
   isSeam_Left,
   isSeam_Right
-}: _Api___pathOf__Chain_Box$_): _Path_Underlay_ {
-  const corner$ = [
-    ...chain_Box$.flatMap((box_Row) => [
-      {
-        x: box_Row.right,
-        y: box_Row.top
-      },
-      {
-        x: box_Row.right,
-        y: box_Row.bottom
-      }
-    ]),
-    ...chain_Box$.toReversed().flatMap((box_Row) => [
-      {
-        x: box_Row.left,
-        y: box_Row.bottom
-      },
-      {
-        x: box_Row.left,
-        y: box_Row.top
-      }
-    ])
-  ]
+}: _Api___pathOf__Chain_Box$_): _Chain_Path_ {
+  const corner$ = corner$Of__Chain_Box$(chain_Box$)
   const index_Right = 2 * chain_Box$.length - 2
   const index_Left = 4 * chain_Box$.length - 2
   const index$_Seam = [
@@ -1896,6 +1898,155 @@ interface _Corner_Path_ {
   y: number
 }
 
+interface _Chain_Path_ {
+  d_Area: string
+  d: string
+  d_Seam$: Array<string>
+}
+
+function corner$Of__Chain_Box$(
+  chain_Box$: Array<_Box_Row_>
+): Array<_Corner_Path_> {
+  return [
+    ...chain_Box$.flatMap((box_Row) => [
+      {
+        x: box_Row.right,
+        y: box_Row.top
+      },
+      {
+        x: box_Row.right,
+        y: box_Row.bottom
+      }
+    ]),
+    ...chain_Box$.toReversed().flatMap((box_Row) => [
+      {
+        x: box_Row.left,
+        y: box_Row.bottom
+      },
+      {
+        x: box_Row.left,
+        y: box_Row.top
+      }
+    ])
+  ]
+}
+
+function lap$Of__Chain$(
+  chain$: Array<Array<_Box_Row_>>
+): Array<_Lap_Underlay_> {
+  const corner$_Chain$ = chain$.map(corner$Of__Chain_Box$)
+  const piece$ = piece$Of__Corner$_Chain$(corner$_Chain$)
+  const length$ = piece$.map(lengthOf__Corner$)
+  const length_Lap = length$.reduce(
+    (
+      total,
+      length
+    ) => total + length,
+    0
+  )
+  if (length_Lap === 0) return []
+  return piece$.flatMap((
+    corner$,
+    index
+  ) => {
+    const length = length$[index] ?? 0
+    const start = length$
+      .slice(
+        0,
+        index
+      )
+      .reduce(
+        (
+          total,
+          length_before
+        ) => total + length_before,
+        0
+      )
+    return length === 0 ? [] : [{
+      d: corner$.map((
+        corner,
+        index_Corner
+      ) => `${index_Corner === 0 ? "M" : "L"} ${corner.x} ${corner.y}`).join(" "),
+      pathLength: Math.round(length / length_Lap * 100000) / 1000,
+      phase: Math.round(start / length_Lap * 100000) / 100000,
+      length_Lap: Math.round(length_Lap * 100) / 100
+    }]
+  })
+}
+
+function piece$Of__Corner$_Chain$(
+  corner$_Chain$: Array<Array<_Corner_Path_>>
+): Array<Array<_Corner_Path_>> {
+  const count = corner$_Chain$.length
+  const upperOf = (corner$: Array<_Corner_Path_>) => [
+    ...corner$.slice(-1),
+    ...corner$.slice(
+      0,
+      corner$.length / 2 - 1
+    )
+  ]
+  const lowerOf = (
+    corner$: Array<_Corner_Path_>,
+    isFirst: boolean
+  ) => corner$.slice(
+    corner$.length / 2 - 1,
+    isFirst ? corner$.length : corner$.length - 1
+  )
+  const corner$_Last = corner$_Chain$.at(-1) ?? []
+  return count === 1
+    ? [[
+      ...corner$_Last.slice(-1),
+      ...corner$_Last
+    ]]
+    : [
+      ...corner$_Chain$
+        .slice(
+          0,
+          -1
+        )
+        .map(upperOf),
+      [
+        ...corner$_Last.slice(-1),
+        ...corner$_Last.slice(
+          0,
+          -1
+        )
+      ],
+      ...corner$_Chain$
+        .slice(
+          0,
+          -1
+        )
+        .map((
+          corner$,
+          index
+        ) => lowerOf(
+          corner$,
+          index === 0
+        ))
+        .toReversed()
+    ]
+}
+
+function lengthOf__Corner$(
+  corner$: Array<_Corner_Path_>
+): number {
+  return corner$.slice(1).reduce(
+    (
+      total,
+      corner,
+      index
+    ) => {
+      const corner_before = corner$[index] ?? corner
+      return total + Math.hypot(
+        corner.x - corner_before.x,
+        corner.y - corner_before.y
+      )
+    },
+    0
+  )
+}
+
 interface _Api___fit__Seam$_ {
   svgElement_underlay$: Element
 }
@@ -1941,30 +2092,31 @@ function fit__Seam$({
   }
 }
 
-interface _Api___fit__Area$_ {
+interface _Api___fit__Lap$_ {
   containerElement_View: HTMLElement
 }
 
-function fit__Area$({
+function fit__Lap$({
   containerElement_View
-}: _Api___fit__Area$_): void {
-  const pathElement$_area = [...containerElement_View.querySelectorAll(".area_htmlView")].filter((element) => element instanceof SVGPathElement)
-  const keyOf = (pathElement_area: SVGPathElement) => pathElement_area.hasAttribute("data-place") ? `${pathElement_area.getAttribute("data-source")} ${pathElement_area.getAttribute("data-place")}` : null
+}: _Api___fit__Lap$_): void {
+  const pathElement$_lap = [...containerElement_View.querySelectorAll(".lap_htmlView")].filter((element) => element instanceof SVGPathElement)
+  const keyOf = (pathElement_lap: SVGPathElement) => pathElement_lap.hasAttribute("data-place") ? `${pathElement_lap.getAttribute("data-source")} ${pathElement_lap.getAttribute("data-place")}` : null
+  const lengthOf = (pathElement_lap: SVGPathElement) => parseFloat(pathElement_lap.style.getPropertyValue("--length_htmlView")) || 0
   const length$_Place = new Map<string, number>()
-  for (const pathElement_area of pathElement$_area) {
-    const key = keyOf(pathElement_area)
+  for (const pathElement_lap of pathElement$_lap) {
+    const key = keyOf(pathElement_lap)
     if (key !== null) length$_Place.set(
       key,
       Math.max(
         length$_Place.get(key) ?? 0,
-        pathElement_area.getTotalLength()
+        lengthOf(pathElement_lap)
       )
     )
   }
-  for (const pathElement_area of pathElement$_area) {
-    const key = keyOf(pathElement_area)
-    const length = key === null ? pathElement_area.getTotalLength() : length$_Place.get(key) ?? 0
-    pathElement_area.style.setProperty(
+  for (const pathElement_lap of pathElement$_lap) {
+    const key = keyOf(pathElement_lap)
+    const length = key === null ? lengthOf(pathElement_lap) : length$_Place.get(key) ?? 0
+    pathElement_lap.style.setProperty(
       "--lap_htmlView",
       String(Math.round(length * 100) / 100)
     )

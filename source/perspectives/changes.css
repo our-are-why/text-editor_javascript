@@ -29,16 +29,16 @@
   fill: var(--edge);
 }
 
-[data-perspective="changes"] :is(.area_htmlView, .underlay_htmlView, .seam_htmlView)[data-change="removed"] {
+[data-perspective="changes"] :is(.area_htmlView, .underlay_htmlView, .seam_htmlView, .lap_htmlView)[data-change="removed"] {
   --edge: var(--view-removed-edge, light-dark(#e51400, #f14c4c));
 }
 
-[data-perspective="changes"] :is(.area_htmlView, .underlay_htmlView, .seam_htmlView)[data-change^="replaced"],
-[data-perspective="changes"] :is(.area_htmlView, .underlay_htmlView, .seam_htmlView)[data-change="restyled"] {
+[data-perspective="changes"] :is(.area_htmlView, .underlay_htmlView, .seam_htmlView, .lap_htmlView)[data-change^="replaced"],
+[data-perspective="changes"] :is(.area_htmlView, .underlay_htmlView, .seam_htmlView, .lap_htmlView)[data-change="restyled"] {
   --edge: var(--view-changed-edge, light-dark(#bf8803, #cca700));
 }
 
-[data-perspective="changes"] :is(.area_htmlView, .underlay_htmlView, .seam_htmlView)[data-change="inserted"] {
+[data-perspective="changes"] :is(.area_htmlView, .underlay_htmlView, .seam_htmlView, .lap_htmlView)[data-change="inserted"] {
   --edge: var(--view-inserted-edge, light-dark(#388a34, #89d185));
 }
 
@@ -48,7 +48,7 @@
    that makes; in the light, a lighter tan, as that's too dark there, near
    the text's ink and syntax's browns; at both its ends; what it changes on
    the way, rings of their own inside it */
-[data-perspective="changes"] :is(.area_htmlView, .underlay_htmlView, .seam_htmlView)[data-change="moved"] {
+[data-perspective="changes"] :is(.area_htmlView, .underlay_htmlView, .seam_htmlView, .lap_htmlView)[data-change="moved"] {
   --edge: var(--view-moved-edge, light-dark(#a2733f, #977254));
 }
 
@@ -115,7 +115,11 @@
    doesn't crawl or a long one's race; the view keeps the breath's pace,
    --elapsed_pointed_htmlView, how long the proposal's been pointed at, so
    it's kept as the rings are drawn again, the place's light starting anew at
-   each place. Still, where motion's asked to be reduced. */
+   each place. One light round a ring, as if a wrap didn't cut it: along its
+   top edges, part after part, down its last side, back along its bottom
+   edges and up its first side, never its cut sides, drawn on the view's
+   pieces of it, each its share of the lap and where on the lap it starts,
+   --phase_htmlView. Still, where motion's asked to be reduced. */
 [data-perspective="changes"] .group_htmlView[data-pointed] > :is(.underlay_htmlView, .seam_htmlView)[data-change] {
   stroke-width: 2px;
 }
@@ -129,21 +133,23 @@
     animation: breathe_htmlView 2.4s ease-in-out calc(-1 * var(--elapsed_pointed_htmlView, 0ms)) infinite;
   }
 
-  [data-perspective="changes"] .area_htmlView[data-pointed][data-change]:not([data-notch]) {
+  [data-perspective="changes"] .lap_htmlView[data-pointed][data-change] {
+    --time_lap_htmlView: clamp(2s, calc(var(--lap_htmlView, 125) * 16ms), 6s);
     stroke: var(--edge);
     stroke-width: 6px;
     stroke-opacity: 0.38;
     stroke-linecap: round;
     stroke-linejoin: round;
     stroke-dasharray: 20 80;
-    animation: lap_htmlView clamp(2s, calc(var(--lap_htmlView, 125) * 16ms), 6s) linear infinite;
+    animation: lap_htmlView var(--time_lap_htmlView) linear calc((var(--phase_htmlView, 0) - 1) * var(--time_lap_htmlView)) infinite;
   }
 
   /* round the lines as proposed clockwise, as their ring's drawn, forwards;
      round the lines as they are, counterclockwise, backwards, as they're
      hatched */
-  [data-perspective="changes"] .area_htmlView[data-pointed][data-change][data-side="before"] {
+  [data-perspective="changes"] .lap_htmlView[data-pointed][data-change][data-side="before"] {
     animation-direction: reverse;
+    animation-delay: calc(-1 * var(--phase_htmlView, 0) * var(--time_lap_htmlView));
   }
 }
 

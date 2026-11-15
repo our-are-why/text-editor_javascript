@@ -118,7 +118,7 @@
 /* a ring's area, closed whatever sides its ring leaves open, where it's
    pointed at, the gaps between its rows too; drawn under its ring, for a
    perspective to fill, or not */
-.htmlView_editor :where(.area_htmlView, .underlay_htmlView, .seam_htmlView) {
+.htmlView_editor :where(.area_htmlView, .underlay_htmlView, .seam_htmlView, .lap_htmlView) {
   fill: none;
 }
 

@@ -468,8 +468,10 @@ describe("beside it: what can't live in one document", () => {
         paths: [
           { tag: "path", class: "area_htmlView", attributes: ["data-underlay"], shapes: 1, fill: "none" },
           { tag: "path", class: "underlay_htmlView", attributes: ["data-underlay"], shapes: 1, fill: "none" },
+          { tag: "path", class: "lap_htmlView", attributes: ["data-underlay"], shapes: 1, fill: "none" },
           { tag: "path", class: "area_htmlView", attributes: ["data-change", "data-source"], shapes: 1, fill: "none" },
-          { tag: "path", class: "underlay_htmlView", attributes: ["data-change", "data-source"], shapes: 1, fill: "none" }
+          { tag: "path", class: "underlay_htmlView", attributes: ["data-change", "data-source"], shapes: 1, fill: "none" },
+          { tag: "path", class: "lap_htmlView", attributes: ["data-change", "data-source"], shapes: 1, fill: "none" }
         ]
       }]
     })
@@ -1428,10 +1430,10 @@ describe("beside it: what can't live in one document", () => {
       const containerElement = document.getElementById("placing")
       return {
         rings: [...containerElement?.querySelectorAll(".underlay_htmlView") ?? []].map((ring) => {
-          const area = ring.previousElementSibling
+          const light = ring.parentElement?.querySelector(`.lap_htmlView[data-side="${ring.getAttribute("data-side")}"][data-place="${ring.getAttribute("data-place")}"]`) ?? null
           const style = getComputedStyle(ring)
-          const lap = area === null ? null : getComputedStyle(area)
-          return `${ring.getAttribute("data-source")} ${ring.getAttribute("data-side")} ${ring.getAttribute("data-place")}: ${ring.hasAttribute("data-pointed") ? "place " : ""}${style.strokeWidth} ${style.animationName}${lap === null ? "" : `, ${lap.animationName}${lap.animationName === "none" ? "" : ` ${lap.animationDirection}`}`}`
+          const lap = light === null ? null : getComputedStyle(light)
+          return `${ring.getAttribute("data-source")} ${ring.getAttribute("data-side")} ${ring.getAttribute("data-place")}: ${ring.hasAttribute("data-pointed") ? "place " : ""}${style.strokeWidth} ${style.animationName}${lap === null ? "" : `, ${lap.animationName}${lap.animationName === "none" ? "" : ` ${lap.animationDirection}${lap.stroke === style.stroke ? "" : ` in ${lap.stroke}, not ${style.stroke}`}`}`}`
         }),
         // whether each ring's area is drawn clockwise, so that running
         // forwards along it is: its signed area, on a screen, where y runs
@@ -1450,9 +1452,9 @@ describe("beside it: what can't live in one document", () => {
           const style = getComputedStyle(gutter.querySelector(".label_htmlView") ?? gutter)
           return `${gutter.getAttribute("data-pointed")} ${style.fontWeight} ${Math.round(parseFloat(style.webkitTextStrokeWidth) * 10) / 10}px ${style.animationName}`
         }),
-        laps: [...containerElement?.querySelectorAll(".area_htmlView[data-pointed]") ?? []].map((area) => ({
-          length: area instanceof SVGPathElement ? area.getTotalLength() : 0,
-          ms: Math.round(parseFloat(getComputedStyle(area).animationDuration) * 1000)
+        laps: [...containerElement?.querySelectorAll(".lap_htmlView[data-pointed]") ?? []].map((light) => ({
+          length: light instanceof SVGPathElement ? light.getTotalLength() : 0,
+          ms: Math.round(parseFloat(getComputedStyle(light).animationDuration) * 1000)
         }))
       }
     })
@@ -1496,7 +1498,7 @@ describe("beside it: what can't live in one document", () => {
     expect(lapOf(second.laps).times).toEqual([2000])
     // the light moving along, a little at a time, not jumping from one end
     // of its lap to the other
-    const offsets = () => opened.page.evaluate(() => [...document.querySelectorAll("#placing .area_htmlView[data-pointed]")].map((area) => parseFloat(getComputedStyle(area).strokeDashoffset)))
+    const offsets = () => opened.page.evaluate(() => [...document.querySelectorAll("#placing .lap_htmlView[data-pointed]")].map((light) => parseFloat(getComputedStyle(light).strokeDashoffset)))
     const before = await offsets()
     await opened.page.waitForTimeout(150)
     const after = await offsets()
@@ -1510,6 +1512,95 @@ describe("beside it: what can't live in one document", () => {
     await opened.page.emulateMedia({ reducedMotion: "no-preference" })
     await opened.page.mouse.move(1270, 715)
     await opened.page.evaluate(() => document.getElementById("placing")?.remove())
+  })
+
+  test("a ring cut by a wrap has one light, in its change's colour, going round it as if it weren't cut: along its top edges, part after part, down its last side, back along its bottom edges, up its first side, never its cut sides; as much of it showing all the way round, never two at once, never none", async () => {
+    await opened.page.evaluate(() => {
+      const containerElement = document.createElement("div")
+      containerElement.id = "lapping"
+      containerElement.style.width = "16rem"
+      containerElement.dataset["perspective"] = "changes"
+      document.body.prepend(containerElement)
+      const [line] = window.parseLines_ViewModel({ multilineText: "go: a stretch of words long enough to wrap the row it starts on", module_Language: window.MODULE_PLAINTEXT })
+      if (line === undefined) throw new Error("the line wasn't parsed")
+      // where the line wraps, drawn once at this width to see, so the ring
+      // can end its first row and start its second, short, apart: cut
+      new window._View_TextEditor_({
+        containerElement,
+        componentMap: window.COMPONENTMAP__VIEW_TEXTEDITOR
+      }).draw(window.viewModelOf__Blocks([{ kind: "LINES", run: { id: "measure", lines: [line], groups: [] } }]))
+      const texts = [...containerElement.querySelectorAll(".text_htmlView *")].flatMap((element) => [...element.childNodes]).filter((node): node is Text => node instanceof Text)
+      const range = document.createRange()
+      let index_Wrap = 0
+      let top_First: number | null = null
+      for (const textNode of texts) {
+        for (let index = 0; index < textNode.data.length && index_Wrap === 0; index++) {
+          range.setStart(textNode, index)
+          range.setEnd(textNode, index + 1)
+          const top = range.getBoundingClientRect().top
+          top_First ??= top
+          if (top > top_First + 4) index_Wrap = texts.slice(0, texts.indexOf(textNode)).reduce((length, each) => length + each.data.length, 0) + index
+        }
+      }
+      if (index_Wrap === 0) throw new Error("the line didn't wrap")
+      containerElement.replaceChildren()
+      const change = { "data-change": "replaced", "data-side": "before", "data-source": "long", "data-place": "1" }
+      new window._TextEditor_({
+        containerElement,
+        componentMap: window.COMPONENTMAP__VIEW_TEXTEDITOR,
+        modules: [window.MODULE_MOUSE],
+        viewModel_TextEditor: window.viewModelOf__Blocks([{
+          kind: "LINES",
+          run: { id: "document", lines: [line], groups: [{ attributes: { "data-source": "long" }, underlays: [{ kind: "STRETCH" as const, from: { line: 0, offset: index_Wrap - 6 }, to: { line: 0, offset: index_Wrap + 3 }, attributes: change }] }] }
+        }])
+      })
+    })
+    // the light's pieces, and how much of the light each shows now: where
+    // its dash, a fifth of the lap, falls on it, from its share of the lap
+    // and its dash's offset; and whether a piece runs along a cut side
+    const lit = () => opened.page.evaluate(() => {
+      const pieces = [...document.querySelectorAll("#lapping .lap_htmlView")].filter((element) => element instanceof SVGPathElement)
+      const seams = [...document.querySelectorAll("#lapping .seam_htmlView")].map((seam) => seam.getAttribute("d")?.match(/-?[\d.]+/g)?.map(Number) ?? [])
+      const xs = seams.map(([x = 0]) => x)
+      return {
+        pieces: pieces.length,
+        // drawn in the change's colour, so it shows at all
+        stroked: pieces.every((piece) => getComputedStyle(piece).stroke !== "none" && parseFloat(getComputedStyle(piece).strokeOpacity) > 0),
+        shown: Math.round(pieces.reduce((total, piece) => {
+          const share = Number(piece.getAttribute("pathLength"))
+          const offset = parseFloat(getComputedStyle(piece).strokeDashoffset)
+          let shown = 0
+          for (let at = 0; at < share; at += 0.05) if ((((at + offset) % 100) + 100) % 100 < 20) shown += 0.05
+          return total + shown
+        }, 0)),
+        // a cut side is vertical at a seam's x: no piece goes along one
+        alongCut: pieces.some((piece) => {
+          const points = (piece.getAttribute("d")?.match(/-?[\d.]+ -?[\d.]+/g) ?? []).map((pair) => pair.split(" ").map(Number))
+          return points.some(([x = 0, y = 0], index) => {
+            const [x_Next = 0, y_Next = 0] = points[index + 1] ?? [x, y]
+            return Math.abs(x - x_Next) < 0.01 && Math.abs(y - y_Next) > 1 && xs.some((x_Seam) => Math.abs(x_Seam - x) < 0.01)
+          })
+        })
+      }
+    })
+    // inside the ring's first part, beside its cut side
+    const point = await opened.page.evaluate(() => {
+      const seam = document.querySelector("#lapping .seam_htmlView")
+      const svg = seam?.closest("svg")?.getBoundingClientRect()
+      const [x = 0, y_Top = 0, , y_Bottom = 0] = seam?.getAttribute("d")?.match(/-?[\d.]+/g)?.map(Number) ?? []
+      if (svg === undefined) throw new Error("the ring wasn't cut")
+      return { x: svg.left + x - 12, y: svg.top + (y_Top + y_Bottom) / 2 }
+    })
+    await opened.page.mouse.move(point.x, point.y)
+    const samples = []
+    for (let sample = 0; sample < 8; sample++) {
+      await opened.page.waitForTimeout(260)
+      samples.push(await lit())
+    }
+    expect(samples.every((each) => each.pieces === 3 && each.stroked && !each.alongCut)).toBe(true)
+    expect(samples.map((each) => each.shown)).toEqual(samples.map(() => 20))
+    await opened.page.mouse.move(1270, 715)
+    await opened.page.evaluate(() => document.getElementById("lapping")?.remove())
   })
 
   test("a ring over several lines hugs them, one outline, nothing in it twice or on the way: its left side straight where its rows start at their lines' starts, its right stepping with their ends, never by less than half an em, so lines ending in one column, but for room made in one, share an end; a short last row stays short; a line's note shows, so the row it follows stops short of it", async () => {
