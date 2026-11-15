@@ -20,6 +20,15 @@
   stroke-linejoin: round;
 }
 
+/* where a removal took words out of a line, or whole lines, its ring on the
+   lines as proposed has nothing to go round, and collapses to a notch, a
+   small wedge at the point its text left, filled in its colour: over the
+   row, its tip down on the point, or on the frame's bar, its tip toward the
+   text. Pointed at, its edge drawn heavier, as a ring's, so it grows */
+[data-perspective="changes"] .underlay_htmlView[data-notch][data-change] {
+  fill: var(--edge);
+}
+
 [data-perspective="changes"] :is(.area_htmlView, .underlay_htmlView, .seam_htmlView)[data-change="removed"] {
   --edge: var(--view-removed-edge, light-dark(#e51400, #f14c4c));
 }
@@ -120,7 +129,7 @@
     animation: breathe_htmlView 2.4s ease-in-out calc(-1 * var(--elapsed_pointed_htmlView, 0ms)) infinite;
   }
 
-  [data-perspective="changes"] .area_htmlView[data-pointed][data-change] {
+  [data-perspective="changes"] .area_htmlView[data-pointed][data-change]:not([data-notch]) {
     stroke: var(--edge);
     stroke-width: 6px;
     stroke-opacity: 0.38;

@@ -18,8 +18,13 @@ export {
   type _Syntax_Line_,
   type _Group_Underlay_,
   type _Underlay_Text_,
+  type __BASE_Underlay_Text_,
+  type _STRETCH_Underlay_Text_,
+  type _POINT_Underlay_Text_,
+  type _BOUNDARY_Underlay_Text_,
   type _Position_Run_,
   type _FRAME_Block__ViewModel_,
+  type _FOLDED_Block__ViewModel_,
   type _Range_Lines_,
   type _Part_Frame_,
   type __BASE_Part__Frame_,
@@ -33,6 +38,7 @@ export {
   viewModelOf__Blocks,
   segmentsOf__Stretches,
   pointedAt__ViewModel,
+  foldedAt__ViewModel,
   parseLines_ViewModel,
   MODULE_PLAINTEXT,
   parseTexts_Line
@@ -44,7 +50,7 @@ interface _ViewModel_TextEditor_ {
   runs: Array<_Run_Lines_>
 }
 
-type _Block_ViewModel_ = _LINES_Block__ViewModel_ | _FRAME_Block__ViewModel_
+type _Block_ViewModel_ = _LINES_Block__ViewModel_ | _FRAME_Block__ViewModel_ | _FOLDED_Block__ViewModel_
 
 interface __BASE_Block__ViewModel_<Kind extends string> {
   kind: Kind
@@ -106,10 +112,24 @@ interface _Group_Underlay_ {
   underlays: Array<_Underlay_Text_>
 }
 
-interface _Underlay_Text_ {
+type _Underlay_Text_ = _STRETCH_Underlay_Text_ | _POINT_Underlay_Text_ | _BOUNDARY_Underlay_Text_
+
+interface __BASE_Underlay_Text_<Kind extends string> {
+  kind: Kind
+  attributes: _Attributes_Element_
+}
+
+interface _STRETCH_Underlay_Text_ extends __BASE_Underlay_Text_<"STRETCH"> {
   from: _Position_Run_
   to: _Position_Run_
-  attributes: _Attributes_Element_
+}
+
+interface _POINT_Underlay_Text_ extends __BASE_Underlay_Text_<"POINT"> {
+  at: _Position_Run_
+}
+
+interface _BOUNDARY_Underlay_Text_ extends __BASE_Underlay_Text_<"BOUNDARY"> {
+  line: number
 }
 
 interface _Position_Run_ {
@@ -125,6 +145,11 @@ interface _FRAME_Block__ViewModel_ extends __BASE_Block__ViewModel_<"FRAME"> {
 interface _Range_Lines_ {
   first: number
   last: number
+}
+
+interface _FOLDED_Block__ViewModel_ extends __BASE_Block__ViewModel_<"FOLDED"> {
+  range: _Range_Lines_
+  run: _Run_Lines_
 }
 
 type _Part_Frame_ = _CURRENT_Part__Frame_ | _PROPOSED_Part__Frame_ | _PROPOSALS_Part__Frame_
@@ -181,9 +206,9 @@ function runsOf__Blocks(
   blocks_ViewModel: Array<_Block_ViewModel_>
 ): Array<_Run_Lines_> {
   return blocks_ViewModel.flatMap((block_ViewModel) =>
-    block_ViewModel.kind === "LINES"
-      ? [block_ViewModel.run]
-      : block_ViewModel.parts.flatMap((part_Frame) => part_Frame.kind === "PROPOSAL_LIST" ? [] : [part_Frame.run])
+    block_ViewModel.kind === "FRAME"
+      ? block_ViewModel.parts.flatMap((part_Frame) => part_Frame.kind === "PROPOSAL_LIST" ? [] : [part_Frame.run])
+      : [block_ViewModel.run]
   )
 }
 
@@ -286,7 +311,7 @@ function pointedIn__Block({
   place,
   target_Note
 }: _Api___pointedIn__Block_): _Block_ViewModel_ {
-  return block_ViewModel.kind === "LINES"
+  return block_ViewModel.kind !== "FRAME"
     ? {
       ...block_ViewModel,
       run: pointedIn__Run({
@@ -329,7 +354,10 @@ function pointedIn__Run({
   const isCovered = (
     underlay$_Text: Array<_Underlay_Text_>,
     index_Line: number
-  ) => underlay$_Text.some((underlay_Text) => underlay_Text.from.line <= index_Line && index_Line <= underlay_Text.to.line)
+  ) => underlay$_Text.some((underlay_Text) => isCovering__Underlay_Text({
+    underlay_Text,
+    index_Line
+  }))
   return {
     ...run_Lines,
     lines: run_Lines.lines.map((line_Run, index_Line) => ({
@@ -368,6 +396,82 @@ function pointedIn__Run({
         }
       }))
     }))
+  }
+}
+
+interface _Api___isCovering__Underlay_Text_<Kind extends _Underlay_Text_["kind"]> {
+  underlay_Text: Extract<
+    _Underlay_Text_,
+    __BASE_Underlay_Text_<Kind>
+  >
+  index_Line: number
+}
+
+function isCovering__Underlay_Text<Kind extends _Underlay_Text_["kind"]>({
+  underlay_Text,
+  index_Line
+}: _Api___isCovering__Underlay_Text_<Kind>): boolean {
+  const isCovering = ISCOVERINGMAP__UNDERLAY_TEXT[underlay_Text.kind]
+  return isCovering({
+    underlay_Text,
+    index_Line
+  })
+}
+
+type _IsCoveringMap__Underlay_Text_ = {
+  [Kind in _Underlay_Text_["kind"]]: (api_IsCovering: _Api___isCovering__Underlay_Text_<Kind>) => boolean
+}
+
+const ISCOVERINGMAP__UNDERLAY_TEXT: _IsCoveringMap__Underlay_Text_ = {
+  STRETCH: ({
+    underlay_Text,
+    index_Line
+  }) => underlay_Text.from.line <= index_Line && index_Line <= underlay_Text.to.line,
+  POINT: ({
+    underlay_Text,
+    index_Line
+  }) => underlay_Text.at.line === index_Line,
+  BOUNDARY: () => false
+}
+
+interface _Api___foldedAt__ViewModel_ {
+  viewModel_TextEditor: _ViewModel_TextEditor_
+  ranges_Folded: Array<_Range_Lines_>
+  range_Peeked: _Range_Lines_ | null
+}
+
+function foldedAt__ViewModel({
+  viewModel_TextEditor,
+  ranges_Folded,
+  range_Peeked
+}: _Api___foldedAt__ViewModel_): _ViewModel_TextEditor_ {
+  if (ranges_Folded.length === 0) return viewModel_TextEditor
+  return viewModelOf__Blocks(viewModel_TextEditor.blocks.map((block_ViewModel) => block_ViewModel.kind === "FRAME" && ranges_Folded.some((range_Lines) => range_Lines.first === block_ViewModel.range.first && range_Lines.last === block_ViewModel.range.last)
+    ? foldedOf__Frame({
+      block_Frame: block_ViewModel,
+      isPeeked: range_Peeked?.first === block_ViewModel.range.first && range_Peeked.last === block_ViewModel.range.last
+    })
+    : block_ViewModel))
+}
+
+interface _Api___foldedOf__Frame_ {
+  block_Frame: _FRAME_Block__ViewModel_
+  isPeeked: boolean
+}
+
+function foldedOf__Frame({
+  block_Frame,
+  isPeeked
+}: _Api___foldedOf__Frame_): _FOLDED_Block__ViewModel_ {
+  const part_Proposed = block_Frame.parts.find((part_Frame) => part_Frame.kind === "PROPOSAL_LINES")
+  return {
+    kind: "FOLDED",
+    range: block_Frame.range,
+    run: {
+      id: part_Proposed?.run.id ?? `folded ${block_Frame.range.first} ${block_Frame.range.last}`,
+      lines: part_Proposed?.run.lines ?? [],
+      groups: isPeeked ? part_Proposed?.run.groups ?? [] : []
+    }
   }
 }
 

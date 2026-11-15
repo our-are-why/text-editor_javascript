@@ -262,6 +262,203 @@ main.gallery {
   color: var(--fails);
 }
 
+/* the nav's lists, examples and documents, each under its heading */
+nav h2 {
+  margin: 1.25rem 0 0;
+  color: var(--muted);
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+nav h2 + ul {
+  margin-top: 0.4rem;
+}
+
+/* a document: what's in it, its open questions, its filter, then every
+   case, a section at a time, each drawn as a scene is, then what it shows
+   and what's open about it */
+main.document {
+  max-width: 60rem;
+}
+
+.document > h2,
+.cases > h2 {
+  margin: 2rem 0 0.25rem;
+  font-size: 1.1rem;
+}
+
+.contents {
+  display: grid;
+  gap: 0.2rem;
+  margin: 0 0 1rem;
+  padding-left: 1.4rem;
+}
+
+.contents a,
+.questions a {
+  color: var(--ink);
+}
+
+.contents .count {
+  margin-left: 0.5rem;
+  color: var(--muted);
+  font-size: 0.85rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.questions {
+  display: grid;
+  gap: 0.4rem;
+  max-width: 44rem;
+  margin: 0;
+  padding-left: 1.2rem;
+}
+
+.questions .question {
+  color: var(--muted);
+}
+
+.filter {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin: 1.75rem 0 0;
+}
+
+.filter button {
+  padding: 0.3rem 0.8rem;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: none;
+  color: var(--ink);
+  font: inherit;
+  font-size: 0.88rem;
+  font-variant-numeric: tabular-nums;
+  cursor: pointer;
+}
+
+.filter button[aria-pressed="true"] {
+  border-color: var(--ink);
+  background: var(--ink);
+  color: var(--ground);
+}
+
+.cases > .about {
+  margin-bottom: 0.5rem;
+}
+
+.case {
+  display: grid;
+  gap: 0.6rem;
+  padding: 1.25rem 0;
+  border-top: 1px solid var(--line);
+  /* the view in the playground's colours, as a host sets its own */
+  --view-ground: var(--surface);
+  --view-ink: var(--ink);
+}
+
+.case header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.25rem 0.6rem;
+}
+
+.case .number {
+  min-width: 1.75rem;
+  color: var(--muted);
+  font-size: 0.85rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.case .title {
+  color: var(--ink);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.case .title:hover {
+  text-decoration: underline;
+}
+
+/* a case's status, by its form as well as its word: the usual plain, an
+   edge outlined, the planned dashed */
+.case .status {
+  padding: 0.05rem 0.5rem;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  color: var(--muted);
+  font-size: 0.75rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.case .status.edge {
+  border-color: var(--muted);
+  color: var(--ink);
+}
+
+.case .status.planned {
+  border-color: var(--accent);
+  border-style: dashed;
+  color: var(--accent);
+}
+
+.case .htmlView_editor {
+  border: 1px solid var(--line);
+}
+
+/* narrow enough for a long line to wrap, wide enough for a list's row */
+.case.narrow .htmlView_editor {
+  max-width: 28rem;
+}
+
+.case:target .htmlView_editor {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.case .undrawn {
+  margin: 0;
+  padding: 0.75rem 1rem;
+  border: 1px dashed var(--line);
+  border-radius: 6px;
+  color: var(--muted);
+}
+
+.notes {
+  display: grid;
+  grid-template-columns: 6rem minmax(0, 1fr);
+  gap: 0.3rem 1rem;
+  max-width: 46rem;
+  margin: 0;
+}
+
+.notes dt {
+  color: var(--muted);
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  line-height: 1.9;
+  text-transform: uppercase;
+}
+
+.notes dd {
+  margin: 0;
+}
+
+@media (max-width: 40rem) {
+  .notes {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .notes dd + dt {
+    margin-top: 0.4rem;
+  }
+}
+
 .log header {
   display: flex;
   align-items: baseline;

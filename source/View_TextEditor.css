@@ -61,6 +61,10 @@
   z-index: 0;
   width: 100%;
   height: 100%;
+  /* never no height, as an svg with none draws nothing, though what it
+     holds is drawn past its edges: an empty run's notch, where every line was
+     taken out */
+  min-height: 1px;
   overflow: visible;
   pointer-events: none;
   --insetBlock_underlay_htmlView: var(--view-underlay-inset-block, 0px);
@@ -194,20 +198,77 @@
    everything in it and on down beside its list, one bar, over every
    part's background. All of it neutral, as a frame holds proposals of
    every kind, moves and removals too, and says nothing of what they do:
-   colour is the rings', each meaning one thing, and purple, yours. */
+   colour is the rings', each meaning one thing, and purple, yours. Folded,
+   a frame's its lines as proposed alone, as they'd read, its bar beside
+   them. */
 .htmlView_editor .frame_htmlView {
   position: relative;
   margin-inline: calc(-1 * var(--view-padding-inline, 1rem));
 }
 
-.htmlView_editor .frame_htmlView::before {
-  content: "";
+/* the bar, an element of its own, as pressing it folds or unfolds its
+   frame: wider than it's drawn, so there's more of it to press */
+.htmlView_editor .bar_htmlView {
   position: absolute;
   inset-block: 0;
-  left: calc(var(--view-padding-inline, 1rem) + var(--labelWidth_htmlView) + var(--gutterGap_htmlView));
+  left: calc(var(--view-padding-inline, 1rem) + var(--labelWidth_htmlView) + var(--gutterGap_htmlView) - 4px);
   z-index: 1;
   width: var(--laneWidth_htmlView);
-  background: var(--view-frame-bar, color-mix(in srgb, CanvasText 35%, transparent));
+  padding-inline: 4px;
+  background: var(--view-frame-bar, color-mix(in srgb, CanvasText 35%, transparent)) content-box;
+  cursor: pointer;
+}
+
+/* a frame's fold control: a chevron in the gutter, left of its first line,
+   a button, drawn, as a glyph for it isn't in every font; pointing right
+   where the frame's folded, always there; pointing down where it isn't,
+   there while the frame's hovered or it's focused, as a code editor's fold
+   controls are */
+.htmlView_editor .fold_htmlView {
+  position: absolute;
+  top: 0;
+  left: calc(var(--view-padding-inline, 1rem) - 1.1em);
+  z-index: 2;
+  display: grid;
+  place-items: center;
+  width: 1em;
+  height: 1lh;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--view-gutter-ink, color-mix(in srgb, CanvasText 40%, transparent));
+  font: inherit;
+  line-height: inherit;
+  cursor: pointer;
+}
+
+.htmlView_editor .fold_htmlView::before {
+  content: "";
+  width: 0.36em;
+  height: 0.36em;
+  border: solid currentColor;
+  border-width: 0 0.12em 0.12em 0;
+  transform: translateY(-0.12em) rotate(45deg);
+}
+
+.htmlView_editor .fold_htmlView[aria-expanded="false"]::before {
+  transform: translateX(-0.06em) rotate(-45deg);
+}
+
+.htmlView_editor .fold_htmlView[aria-expanded="true"] {
+  opacity: 0;
+}
+
+.htmlView_editor .frame_htmlView:hover > .fold_htmlView,
+.htmlView_editor .fold_htmlView:focus-visible {
+  opacity: 1;
+}
+
+/* a folded frame with nothing left to show, as one that only takes lines
+   out: a slim strip where its lines were, its bar and its control in it */
+.htmlView_editor .frame_htmlView[data-folded] .proposed_htmlView:not(:has(.line_htmlView)) {
+  min-height: 1lh;
 }
 
 .htmlView_editor .frame_htmlView .line_htmlView {

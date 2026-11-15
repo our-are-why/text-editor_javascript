@@ -1,4 +1,4 @@
-import { type _Attributes_Element_, type _Line_Run_, type _Segment_Line_, parseTexts_Line, type _Block_ViewModel_, parseLines_ViewModel, type _Module_Language_, segmentsOf__Stretches, type _Stretch_Line_, type _FRAME_Block__ViewModel_, type _Part_Frame_, type _Run_Lines_, type _Marker_Gutter_, type _Group_Underlay_, type _Underlay_Text_, type _Position_Run_, type _Item_Proposals_, type _NonEmpty_, type _Range_Lines_ } from "../source/ViewModel_TextEditor.ts"
+import { type _Attributes_Element_, type _Line_Run_, type _Segment_Line_, parseTexts_Line, type _Block_ViewModel_, parseLines_ViewModel, type _Module_Language_, segmentsOf__Stretches, type _Stretch_Line_, type _FRAME_Block__ViewModel_, type _Part_Frame_, type _Run_Lines_, type _Marker_Gutter_, type _Group_Underlay_, type _Underlay_Text_, type _STRETCH_Underlay_Text_, type _Position_Run_, type _Item_Proposals_, type _NonEmpty_, type _Range_Lines_ } from "../source/ViewModel_TextEditor.ts"
 
 export {
   type _Piece_Line_,
@@ -124,7 +124,7 @@ function blocksWith__Frames<State>({
     const next = ordered[index + 1]
     if (next !== undefined && next.range.first <= frame.range.last) throw new Error(`frames of lines ${frame.range.first} to ${frame.range.last} and ${next.range.first} to ${next.range.last} overlap`)
   })
-  const framed = withPlaces(ordered.map((frame) => framedOf(frame, lines, texts, module_Language, moves)))
+  const framed = withPlaces(ordered.map((frame) => withNotches(framedOf(frame, lines, texts, module_Language, moves))))
   checkMovesOnly(framed)
   const titles = new Map(framed.flatMap((frame) => frame.parts.flatMap((part) => part.kind === "PROPOSAL_LIST" ? part.items.map((item): [string, string] => [item.source, item.title]) : [])))
   const places_All = framed.flatMap(placesOf)
@@ -200,6 +200,128 @@ function framedOf<State>(
   return { ...frame, parts: [withGutters(part), ...more.map(withGutters)] }
 }
 
+// each removal's other side, where what it takes out was among a frame's
+// lines as proposed, its notch, as the projection will know it from what
+// was taken out: a boundary between lines, where whole lines were; a point
+// in a line, where words were. Worked out here from the text both sides keep
+// unchanged: a removal's notch comes right after as much of it as comes
+// before the removal as it is. None where a frame proposes no lines at all:
+// the whole frame is a removal, and its empty band says it. A removal inside
+// another's has none, gone with it; nor, for now, one inside what a move
+// carries, its notch to be at the move's other end
+function withNotches(
+  frame: _FRAME_Block__ViewModel_
+): _FRAME_Block__ViewModel_ {
+  const lines_Current = frame.parts.flatMap((part) => part.kind === "CURRENT_LINES" ? [part.run] : [])[0]
+  if (lines_Current === undefined) return frame
+  const removals = lines_Current.groups
+    .flatMap((group) => group.underlays)
+    .flatMap((underlay) => underlay.kind === "STRETCH" && underlay.attributes["data-change"] === "removed" && !("data-within" in underlay.attributes) && !("data-carried" in underlay.attributes) ? [underlay] : [])
+  const notched = (part: _Part_Frame_): _Part_Frame_ => {
+    if (part.kind !== "PROPOSAL_LINES" || part.run.lines.length === 0) return part
+    const notches = removals.map((removal): _Underlay_Text_ => {
+      const kept = keptBefore(lines_Current.lines, removal.from)
+      const attributes = { "data-change": "removed", "data-side": "after", "data-source": removal.attributes["data-source"] ?? "" }
+      return isWholeLines(lines_Current.lines, removal)
+        ? { kind: "BOUNDARY", line: lineAfter(part.run.lines, kept), attributes }
+        : { kind: "POINT", at: positionAfter(part.run.lines, kept), attributes }
+    })
+    const groups = notches.reduce((groups_Run: Array<_Group_Underlay_>, notch) => {
+      const source = notch.attributes["data-source"] ?? ""
+      return groups_Run.some((group) => group.attributes["data-source"] === source)
+        ? groups_Run.map((group) => group.attributes["data-source"] === source ? { ...group, underlays: [...group.underlays, notch] } : group)
+        : [...groups_Run, { attributes: { "data-source": source }, underlays: [notch] }]
+    }, part.run.groups)
+    return { kind: "PROPOSAL_LINES", run: { ...part.run, groups } }
+  }
+  const [part, ...more] = frame.parts
+  return { ...frame, parts: [notched(part), ...more.map(notched)] }
+}
+
+// whether a removal takes whole lines: nothing but spaces before it on its
+// first line, or after it on its last
+function isWholeLines(
+  lines: Array<_Line_Run_>,
+  removal: _STRETCH_Underlay_Text_
+): boolean {
+  const textAt = (line: number) => (lines[line]?.segments ?? []).map((segment) => segment.text).join("")
+  return textAt(removal.from.line).slice(0, removal.from.offset).trim() === "" && textAt(removal.to.line).slice(removal.to.offset).trim() === ""
+}
+
+// how much text a run keeps unchanged before a position: its characters no
+// change covers, and the line break after each line that has any, or that's
+// a blank line nothing changes
+function keptBefore(
+  lines: Array<_Line_Run_>,
+  position: _Position_Run_
+): number {
+  return lines.slice(0, position.line).reduce((count, line) => count + keptIn(line, Infinity) + (keepsBreak(line) ? 1 : 0), 0) + keptIn(lines[position.line], position.offset)
+}
+
+// a line's characters no change covers, before an offset in it
+function keptIn(
+  line: _Line_Run_ | undefined,
+  offset: number
+): number {
+  let start = 0
+  let count = 0
+  for (const segment of line?.segments ?? []) {
+    if (!("data-change" in segment.attributes)) count += Math.max(0, Math.min(segment.text.length, offset - start))
+    start += segment.text.length
+  }
+  return count
+}
+
+// whether a line's break is kept: it keeps some of its text, or it's a blank
+// line nothing changes
+function keepsBreak(
+  line: _Line_Run_
+): boolean {
+  return line.segments.some((segment) => !("data-change" in segment.attributes)) || (line.segments.length === 0 && line.gutter.marker === "none")
+}
+
+// the position right after so much kept text, before whatever changed comes
+// next; the run's start for none, its end for more than it keeps
+function positionAfter(
+  lines: Array<_Line_Run_>,
+  kept: number
+): _Position_Run_ {
+  if (kept === 0) return { line: 0, offset: 0 }
+  let count = 0
+  for (const [index, line] of lines.entries()) {
+    let start = 0
+    for (const segment of line.segments) {
+      if (!("data-change" in segment.attributes)) {
+        if (count + segment.text.length >= kept) return { line: index, offset: start + kept - count }
+        count += segment.text.length
+      }
+      start += segment.text.length
+    }
+    if (keepsBreak(line)) {
+      count += 1
+      if (count === kept && index + 1 < lines.length) return { line: index + 1, offset: 0 }
+    }
+  }
+  const last = lines.length - 1
+  return { line: Math.max(last, 0), offset: (lines[last]?.segments ?? []).reduce((length, segment) => length + segment.text.length, 0) }
+}
+
+// the boundary right after the line so much kept text ends on: before the
+// run's first line for none, after its last for more than it keeps
+function lineAfter(
+  lines: Array<_Line_Run_>,
+  kept: number
+): number {
+  if (kept === 0) return 0
+  let count = 0
+  for (const [index, line] of lines.entries()) {
+    count += keptIn(line, Infinity)
+    if (keepsBreak(line)) count += 1
+    if (count >= kept) return index + 1
+  }
+  return lines.length
+}
+
 // a proposal that moves holds only moves: text taken from one place and put
 // in another, as it was; what else changes in what it moves is another
 // proposal's, carried, decided apart. One that moves text and changes text
@@ -219,18 +341,21 @@ function checkMovesOnly(
 // here worked out from the scene: a proposal's changes, in order through the
 // frames, its sides paired, replaced with replaced, moved with moved, the
 // same words first, so the two sides of a swap find each other, then in
-// order; what's only taken out or put in, or inside another's removal, so
-// gone where it's proposed, a place of its own
+// order, a removal with its notch, in its frame, as some have none; what's
+// only put in, or inside another's removal, so gone where it's proposed, or
+// taken out of what a move carries, a place of its own
 function withPlaces(
   frames: Array<_FRAME_Block__ViewModel_>
 ): Array<_FRAME_Block__ViewModel_> {
   const sides = frames.flatMap((frame, index_Frame) => frame.parts.flatMap((part, index_Part) => part.kind === "PROPOSAL_LIST" ? [] : part.run.groups.flatMap((group, index_Group) => group.underlays.map((underlay, index_Underlay): _Side_Place_ => ({
     key: `${index_Frame}/${index_Part}/${index_Group}/${index_Underlay}`,
+    frame: index_Frame,
     source: underlay.attributes["data-source"] ?? "",
     side: underlay.attributes["data-side"] ?? "before",
     change: underlay.attributes["data-change"] ?? "",
     text: textIn(part.run.lines, underlay),
     isWithin: "data-within" in underlay.attributes,
+    isCarried: "data-carried" in underlay.attributes,
   })))))
   const places = new Map<string, string>()
   for (const sides_Source of Map.groupBy(sides, (side) => side.source).values()) {
@@ -239,8 +364,21 @@ function withPlaces(
       count += 1
       for (const side of sides_Place) places.set(side.key, String(count))
     }
-    const paired = sides_Source.filter((side) => !side.isWithin && side.change !== "removed" && side.change !== "inserted")
+    const paired = sides_Source.filter((side) => !side.isWithin && side.change !== "inserted" && !(side.change === "removed" && side.isCarried))
     for (const [change, sides_Change] of Map.groupBy(paired, (side) => side.change)) {
+      if (change === "removed") {
+        for (const sides_Frame of Map.groupBy(sides_Change, (side) => side.frame).values()) {
+          const before_Frame = sides_Frame.filter((side) => side.side === "before")
+          const after_Frame = sides_Frame.filter((side) => side.side === "after")
+          before_Frame.forEach((side, index) => {
+            const other = after_Frame[index]
+            if (other === undefined) place(side)
+            else place(side, other)
+          })
+          after_Frame.slice(before_Frame.length).forEach((side) => place(side))
+        }
+        continue
+      }
       const before = sides_Change.filter((side) => side.side === "before")
       const after = sides_Change.filter((side) => side.side === "after")
       if (change === "moved") {
@@ -284,19 +422,23 @@ function withPlaces(
 // be worked out: its proposal, its side, what it is, and its words
 interface _Side_Place_ {
   key: string
+  frame: number
   source: string
   side: string
   change: string
   text: string
   isWithin: boolean
+  isCarried: boolean
 }
 
-// the words a change covers, across lines where it runs across them
+// the words a change covers, across lines where it runs across them; a
+// removal's notch, none
 function textIn(
   lines: Array<_Line_Run_>,
   underlay: _Underlay_Text_
 ): string {
   const textAt = (line: number) => (lines[line]?.segments ?? []).map((segment) => segment.text).join("")
+  if (underlay.kind !== "STRETCH") return ""
   if (underlay.from.line === underlay.to.line) return textAt(underlay.from.line).slice(underlay.from.offset, underlay.to.offset)
   const between = Array.from({ length: underlay.to.line - underlay.from.line - 1 }, (_, index) => textAt(underlay.from.line + 1 + index))
   return [textAt(underlay.from.line).slice(underlay.from.offset), ...between, textAt(underlay.to.line).slice(0, underlay.to.offset)].join("\n")
@@ -461,7 +603,7 @@ function stretchesOf(
 // a stretch of a run's text one change covers, and the change's data
 interface _Stretch_Change_ {
   source: string
-  underlay: _Underlay_Text_
+  underlay: _STRETCH_Underlay_Text_
 }
 
 // the data a change's segments carry that's the change's, not their marks'
@@ -489,25 +631,17 @@ function groupsOf__Lines(
     const nested_Change = segment.attributes["data-nested-change"]
     const edit_Change = segment.attributes["data-edit-change"]
     const edit_Source = segment.attributes["data-edit-source"]
+    const stretchOf = (source_Stretch: string, attributes: _Attributes_Element_): _Stretch_Change_ => ({ source: source_Stretch, underlay: { kind: "STRETCH", from, to, attributes } })
     return source === undefined ? [] : [
-      {
-        source,
-        underlay: { from, to, attributes: Object.fromEntries(Object.entries(segment.attributes).filter(([name]) => names_Change.includes(name))) },
-      },
-      ...(nested_Source === undefined || nested_Change === undefined ? [] : [{
-        source: nested_Source,
-        underlay: { from, to, attributes: { "data-change": nested_Change, "data-side": segment.attributes["data-side"] ?? "before", "data-source": nested_Source, "data-within": source } },
-      }]),
-      ...(edit_Change === undefined || edit_Source === undefined ? [] : [{
-        source: edit_Source,
-        underlay: { from, to, attributes: { "data-change": edit_Change, "data-side": segment.attributes["data-side"] ?? "before", "data-source": edit_Source, "data-carried": source } },
-      }]),
+      stretchOf(source, Object.fromEntries(Object.entries(segment.attributes).filter(([name]) => names_Change.includes(name)))),
+      ...(nested_Source === undefined || nested_Change === undefined ? [] : [stretchOf(nested_Source, { "data-change": nested_Change, "data-side": segment.attributes["data-side"] ?? "before", "data-source": nested_Source, "data-within": source })]),
+      ...(edit_Change === undefined || edit_Source === undefined ? [] : [stretchOf(edit_Source, { "data-change": edit_Change, "data-side": segment.attributes["data-side"] ?? "before", "data-source": edit_Source, "data-carried": source })]),
     ]
   }))
   const alike = ({ underlay }: _Stretch_Change_) => JSON.stringify(Object.entries(underlay.attributes).toSorted())
   return [...Map.groupBy(stretches, (stretch) => stretch.source)].map(([source, stretches_Source]) => {
     const changes = [...Map.groupBy(stretches_Source, alike).values()]
-      .flatMap((stretches_Alike) => stretches_Alike.reduce((merged: Array<_Underlay_Text_>, { underlay }) => {
+      .flatMap((stretches_Alike) => stretches_Alike.reduce((merged: Array<_STRETCH_Underlay_Text_>, { underlay }) => {
         const last = merged.at(-1)
         return last !== undefined && runsInto(lines, last, underlay)
           ? [...merged.slice(0, -1), { ...last, to: underlay.to }]
@@ -528,8 +662,8 @@ function groupsOf__Lines(
 // when it ends its line
 function runsInto(
   lines: Array<_Line_Run_>,
-  before: _Underlay_Text_,
-  after: _Underlay_Text_
+  before: _STRETCH_Underlay_Text_,
+  after: _STRETCH_Underlay_Text_
 ): boolean {
   const length = (lines[before.to.line]?.segments ?? []).reduce((total, segment) => total + segment.text.length, 0)
   const contiguous =
@@ -544,8 +678,8 @@ function runsInto(
 // spaces is kept as it is, so it still shows
 function trimmed(
   lines: Array<_Line_Run_>,
-  underlay: _Underlay_Text_
-): _Underlay_Text_ {
+  underlay: _STRETCH_Underlay_Text_
+): _STRETCH_Underlay_Text_ {
   const textAt = (line: number) => (lines[line]?.segments ?? []).map((segment) => segment.text).join("")
   const isBefore = (one: _Position_Run_, other: _Position_Run_) => one.line < other.line || (one.line === other.line && one.offset < other.offset)
   let from = underlay.from

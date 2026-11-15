@@ -6,6 +6,8 @@ import { servePlayground } from "../../scripts/servePlayground.ts"
 export {
   type _Opened_Example_,
   openExample,
+  type _Opened_Document_,
+  openDocument,
   type _Opened_Fixture_,
   openFixture
 }
@@ -33,6 +35,34 @@ async function openExample(name: string): Promise<_Opened_Example_> {
   return {
     page,
     logged: () => page.evaluate(() => window.logged),
+    close: async () => {
+      await browser.close()
+      await server.stop(true)
+    },
+  }
+}
+
+interface _Opened_Document_ {
+  page: Page
+  // what the page threw, in order, from the moment it was opened
+  errors: Array<string>
+  close: () => Promise<void>
+}
+
+// opens one of the playground's documents in Chromium, as you'd open it to
+// read, keeping whatever the page throws
+async function openDocument(
+  name: string
+): Promise<_Opened_Document_> {
+  const server = servePlayground(0, "testing")
+  const browser = await chromium.launch({ executablePath })
+  const page = await browser.newPage()
+  const errors: Array<string> = []
+  page.on("pageerror", (error) => errors.push(error.message))
+  await page.goto(`http://localhost:${server.port}/?document=${encodeURIComponent(name)}`)
+  return {
+    page,
+    errors,
     close: async () => {
       await browser.close()
       await server.stop(true)

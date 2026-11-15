@@ -292,6 +292,57 @@ asked for whole files, they're slow, and leave parts out, or change what
 they weren't asked to. The parser for it is the host's, or one the editor
 offers it.
 
+## proposals' states
+
+A proposal is in one of six **states**, where it stands in its decision, and
+nothing else; each its own, never one state standing for two:
+
+- **open:** waiting for your decision, on its latest round;
+- **requested:** a revision asked for, your notes sent, the agent not yet at
+  it;
+- **revising:** the agent at it, its next round coming;
+- **accepted:** applied to the document;
+- **rejected:** never confirmed, and without a reason, though one may be
+  given, later, if you choose;
+- **withdrawn:** taken back by the agent, as when a newer proposal
+  supersedes it.
+
+The agent proposes, opening one; picks a requested one up, revising it;
+answers with its next round, opening it again; and withdraws one open,
+requested or revising. You accept an open one, reject it, ask for its
+revision, or edit it, a round by you, still open; and **reopen** one
+requested, accepted or rejected, the one way back to open. A requested one
+is never accepted, rejected or edited as it is: its request is walked back
+first, reopened, so what you sent and what you do don't cross; and an
+accepted one is reopened only while it still fits.
+
+What else there is to know of one is worked out, never a state: whether it
+still fits the document, after what's been accepted, or can't be accepted
+till it's revised; whether it's moot, its places gone with an accepted
+removal, or how many are; whether its latest round is yours; whether you've
+notes on it not yet sent, a draft, yours till they're sent; and what its
+latest round changed since the one before.
+
+Decisions are a proposal's, never part of one: what can be decided apart
+already is apart, as a move and the rename it carries are; decisions meet
+only through what they touch, a removal accepted mooting what's nested in
+it, rejected letting it apply. The states are the host's, as doctor's are,
+`proposed`, `revising`, `accepted`, `rejected` and `withdrawn`, doctor's
+`revising` the two waiting ones here; the editor shows each and asks for its
+transitions, an item's actions as the host gives them for its state.
+
+How each shows, settled from mockups, to be built with the states: an item's
+title where it always is, its state after it, a muted word, "· Revision
+requested", "· Revising…", "· Accepted", "· Rejected", "· Withdrawn";
+requested, what you asked under its words, Reopen its one action; revising,
+its rings and the lines it proposes faded, breathing, as doctor's revised
+lines pulsed, without actions; accepted, its words the document's, so
+nothing left to ring, a check by the numbers of the lines it changed, as
+doctor's was; rejected and withdrawn, its change gone from the lines
+proposed; decided items below the open ones; and a frame whose proposals are
+all decided folded, as below, the document's lines then, numbered again, a
+faint bar beside them, its handle to unfold it and reopen what's in it.
+
 ## how it shows them
 
 As a document editor's suggesting mode does, a change's own words are **in
@@ -617,8 +668,38 @@ so it can be loose, and change, and nothing be anchored again. By default
 it's the lines proposals touch, run together where they'd meet; a host can
 widen one, a function's lines for what's in the function. Frames never
 overlap, and never hold frames. With one proposal one reads as doctor's does
-now: its lines, its version under them, its bar. Later: a frame folded, to
-its lines alone, what it would do put away, as doctor folds a proposal.
+now: its lines, its version under them, its bar.
+
+**folding:** a frame unfolded is for reviewing: its lines as they are, as
+proposed, and its list. Folded, it's a preview: its lines as proposed alone,
+as they'd read with its proposals taken, in place, on their band, its bar
+beside them and the gutter's signs saying which lines change; no lines as
+they are, and no list; and no rings, but for a peek, below. A frame that
+only takes lines out has nothing left to show folded: a slim strip where its
+lines were, its bar beside it. Folding is the editor's, not the host's, and
+not a proposal's state: which frames are folded is the editor's state,
+`ranges_Folded`, each by its range, and `foldedAt__ViewModel` makes each
+folded frame a block of its own kind, `FOLDED`, its range and its lines as
+proposed, drawn by its own component, which a host can put its own in place
+of. Its control is a chevron in the gutter, left of its first line, a
+button: pointing right where the frame's folded, always there; pointing down
+where it isn't, shown while the frame's hovered or the button's focused, as
+a code editor's fold controls are; and its bar folds and unfolds it too,
+either a `FOLD` command, which toggles it. Hovered, where its frame's
+folded, its control peeks at it: it rings its changes, all of them, every
+proposal's, each whole as far as it's in the frame, plainly, as they'd be
+unfolded with nothing pointed at, room made for them, so its text may move a
+little while it's peeked at; off its control, the peek's over, and folding
+or unfolding it ends it till the pointer moves. A peek says what a frame
+changes, and where, not whose: there's no telling several proposals apart at
+once, so which is whose is for unfolding it and pointing, and a folded
+frame's text, and its signs, point at nothing, so reading it sets nothing
+flickering. Which frame's peeked at is the editor's state, `range_Peeked`,
+and the fold pass gives that folded frame its rings, and no other. A frame's
+unfolded till it's folded; once proposals' states are drawn, one whose
+proposals are all decided folds itself, and unfolds when one's open again,
+and in between stays as you leave it. Later: a move's note unfolding the
+frame it goes to; keys to fold and unfold, and to fold every decided frame.
 
 **a proposal is a decision, a change a place, a frame a view of places:**
 three things, kept apart. A proposal, a source, is what's decided, at once,
@@ -648,11 +729,42 @@ run through many:
   onRetry hook” is rejected". A place is counted once: on the lines as they
   are, every change but a put-in one; on those as proposed, every put-in
   one.
+- **where words were taken out:** on the lines as proposed, a removal has
+  nothing left to ring, so its ring collapses to a notch, a small wedge,
+  filled in the removal's red, at the point its text left: where words left
+  a line, over the row, its tip down on the point; where whole lines left,
+  in the gutter, cut into the frame's bar at the boundary between the lines
+  either side, its tip toward the text, found reading down the gutter as
+  every other change is; but none where a frame proposes no lines at all,
+  the whole frame a removal, its empty band saying it. Either is the
+  removal's other side, as a move has two ends: it shares the removal's
+  place, so pointing at either lights both; it takes no room, and nothing's
+  drawn near the text for it, so it moves nothing and is never taken for an
+  underline. One notch, not a bar in the text, which read off-centre, moved
+  the text and looked like a caret; not a hairline between lines, which read
+  as the line above's underline. The view model says where: an underlay is
+  of a kind, `STRETCH`, from a position to another, what a ring goes round;
+  `POINT`, a position in a line; `BOUNDARY`, before a line, a boundary
+  between lines, as a line's start and the gap before it are the same
+  position in the text; and the view draws each kind by looking it up, never
+  by a switch. The playground's stand-in works out each removal's notch from
+  the text both sides keep unchanged, the notch right after as much of it as
+  comes before the removal as it is; the projection will know it from what
+  it took out. Still to build: one notch where several removals fall on one
+  point; words moved along where a ring would meet a notch; a notch inside
+  what a move carries; a notch's hover saying what was taken out there.
+  Every case is in the playground's Changes document.
 
 Where a place is, which frame it's in, and so what an item says, is the view
 model's; for now the playground's `blocksWith__Frames`, as the projection
 will. The gallery's "proposals-thread" scene shows it alone; the JavaScript
-example, `?example=javascript`, among every other case so far.
+example, `?example=javascript`, among every other case so far. Every case of
+how a change is drawn, enumerated, each alone, is the playground's Changes
+document, `?document=changes`: a case drawn by the editor from a view model
+of its own, what it shows, whether it's the usual, an edge, or planned, and
+what's still open about it; the removal marks, settled but not built, drawn
+as the view draws them now. A browser test opens it and checks every case
+draws a ring for every underlay its view model gives.
 
 **the gutter:** a line is a row of two cells, its gutter, then its text, so
 its gutter keeps to its row however its text wraps, in a frame or not, and

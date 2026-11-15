@@ -16,6 +16,7 @@ import type {
   _Segment_Line_,
   _Note_Line_,
   _FRAME_Block__ViewModel_,
+  _FOLDED_Block__ViewModel_,
   _Range_Lines_,
   _Part_Frame_,
   __BASE_Part__Frame_,
@@ -26,6 +27,8 @@ import type {
   _Action_Item_,
   _Attributes_Element_,
   _Underlay_Text_,
+  __BASE_Underlay_Text_,
+  _STRETCH_Underlay_Text_,
   _Position_Run_
 } from "./ViewModel_TextEditor.ts"
 
@@ -120,6 +123,15 @@ class _View_TextEditor_ {
     point_Screen: _Point_Screen_
   ): _Target_Note_ | null {
     return targetAt__View_TextEditor({
+      containerElement_View: this.containerElement,
+      point_Screen
+    })
+  }
+
+  foldAt(
+    point_Screen: _Point_Screen_
+  ): _Range_Lines_ | null {
+    return foldAt__View_TextEditor({
       containerElement_View: this.containerElement,
       point_Screen
     })
@@ -356,12 +368,86 @@ function FRAME_Block_TextEditor__Html({
       class="frame_htmlView"
       aria-label={labelOf__Range_Line$(block_ViewModel.range)}
     >
+      <Fold_Frame__Html
+        range_Line$={block_ViewModel.range}
+        isFolded={false}
+      />
+      <Bar_Frame__Html range_Line$={block_ViewModel.range} />
       {block_ViewModel.parts.map((part_Frame) => (
         <Section_Frame__Html
           componentMap_View={componentMap_View}
           part_Frame={part_Frame}
         />
       ))}
+    </section>
+  )
+}
+
+interface _Api___Fold_Frame__Html_ {
+  range_Line$: _Range_Lines_
+  isFolded: boolean
+}
+
+function Fold_Frame__Html({
+  range_Line$,
+  isFolded
+}: _Api___Fold_Frame__Html_): JSX.Element {
+  return (
+    <button
+      type="button"
+      class="fold_htmlView"
+      aria-expanded={isFolded ? "false" : "true"}
+      aria-label={`${isFolded ? "Unfold" : "Fold"} ${labelOf__Range_Line$(range_Line$)}`}
+      data-fold-first={String(range_Line$.first)}
+      data-fold-last={String(range_Line$.last)}
+    />
+  )
+}
+
+interface _Api___Bar_Frame__Html_ {
+  range_Line$: _Range_Lines_
+}
+
+function Bar_Frame__Html({
+  range_Line$
+}: _Api___Bar_Frame__Html_): JSX.Element {
+  return (
+    <span
+      class="bar_htmlView"
+      aria-hidden="true"
+      data-fold-first={String(range_Line$.first)}
+      data-fold-last={String(range_Line$.last)}
+    />
+  )
+}
+
+interface _Api___FOLDED_Block_TextEditor__Html_ {
+  componentMap_View: _ComponentMap__View_TextEditor_
+  block_ViewModel: _FOLDED_Block__ViewModel_
+}
+
+function FOLDED_Block_TextEditor__Html({
+  componentMap_View,
+  block_ViewModel
+}: _Api___FOLDED_Block_TextEditor__Html_): JSX.Element {
+  return (
+    <section
+      class="frame_htmlView"
+      aria-label={labelOf__Range_Line$(block_ViewModel.range)}
+      data-folded=""
+    >
+      <Fold_Frame__Html
+        range_Line$={block_ViewModel.range}
+        isFolded={true}
+      />
+      <Bar_Frame__Html range_Line$={block_ViewModel.range} />
+      <Section_Frame__Html
+        componentMap_View={componentMap_View}
+        part_Frame={{
+          kind: "PROPOSAL_LINES",
+          run: block_ViewModel.run
+        }}
+      />
     </section>
   )
 }
@@ -642,7 +728,7 @@ function place$Of__Drawn_Run({
   const inset_Underlay = insetOf__Element(drawn_Run.svgElement_underlay$)
   const edge$ = drawn_Run.run_Line$.groups
     .flatMap((group_Underlay) => group_Underlay.underlays)
-    .flatMap((underlay_Text) => [
+    .flatMap((underlay_Text) => underlay_Text.kind !== "STRETCH" ? [] : [
       {
         position_Run: underlay_Text.from,
         isStart: true
@@ -949,12 +1035,14 @@ function measureOf__Drawn_Run({
 }: _Api___measureOf__Drawn_Run_): _Measure_Run_ {
   const origin = drawn_Run.svgElement_underlay$.getBoundingClientRect()
   const inset_Underlay = insetOf__Element(drawn_Run.svgElement_underlay$)
-  const underlay$_Run = drawn_Run.run_Line$.groups.flatMap((group_Underlay) => group_Underlay.underlays)
-  const measure$_Box = underlay$_Run.map((underlay_Text) => ({
+  const stretch$_Run = drawn_Run.run_Line$.groups
+    .flatMap((group_Underlay) => group_Underlay.underlays)
+    .flatMap((underlay_Text) => underlay_Text.kind === "STRETCH" ? [underlay_Text] : [])
+  const measure$_Box = stretch$_Run.map((underlay_Text) => ({
     underlay_Text,
     depth: depthOf__Underlay_Text({
       underlay_Text,
-      underlay$_Run
+      stretch$_Run
     }),
     box$_Row: box$Of__Underlay_Text({
       underlay_Text,
@@ -963,42 +1051,43 @@ function measureOf__Drawn_Run({
       ink$_Glyph_View
     })
   }))
+  const context_Measure: _Context_Measure_ = {
+    measure$_Box,
+    inset_Underlay,
+    divElement$_text: drawn_Run.divElement$_text,
+    svgElement_underlay$: drawn_Run.svgElement_underlay$,
+    origin
+  }
   return {
     svgElement_underlay$: drawn_Run.svgElement_underlay$,
     measure$_Group: drawn_Run.run_Line$.groups.map((group_Underlay) => ({
       attributes: group_Underlay.attributes,
-      measure$_Underlay: measure$_Box
-        .filter((measure_Box) => group_Underlay.underlays.includes(measure_Box.underlay_Text))
-        .map((measure_Box) => ({
-          attributes: measure_Box.underlay_Text.attributes,
-          ...pathOf__Measure_Box({
-            measure_Box,
-            measure$_Box,
-            inset_Underlay
-          })
-        }))
+      measure$_Underlay: group_Underlay.underlays.map((underlay_Text) => measureOf__Underlay_Text({
+        underlay_Text,
+        context_Measure
+      }))
     }))
   }
 }
 
 interface _Api___depthOf__Underlay_Text_ {
-  underlay_Text: _Underlay_Text_
-  underlay$_Run: Array<_Underlay_Text_>
+  underlay_Text: _STRETCH_Underlay_Text_
+  stretch$_Run: Array<_STRETCH_Underlay_Text_>
 }
 
 function depthOf__Underlay_Text({
   underlay_Text,
-  underlay$_Run
+  stretch$_Run
 }: _Api___depthOf__Underlay_Text_): number {
-  return underlay$_Run.filter((underlay_Run) => underlay_Run !== underlay_Text && isWithin__Underlay$_Text({
+  return stretch$_Run.filter((underlay_Run) => underlay_Run !== underlay_Text && isWithin__Underlay$_Text({
     underlay_Text_inner: underlay_Text,
     underlay_Text_outer: underlay_Run
   })).length
 }
 
 interface _Api___isWithin__Underlay$_Text_ {
-  underlay_Text_inner: _Underlay_Text_
-  underlay_Text_outer: _Underlay_Text_
+  underlay_Text_inner: _STRETCH_Underlay_Text_
+  underlay_Text_outer: _STRETCH_Underlay_Text_
 }
 
 function isWithin__Underlay$_Text({
@@ -1029,7 +1118,7 @@ function compared__Position$_Run({
 }
 
 interface _Api___box$Of__Underlay_Text_ {
-  underlay_Text: _Underlay_Text_
+  underlay_Text: _STRETCH_Underlay_Text_
   divElement$_text: Array<Element>
   origin: DOMRect
   ink$_Glyph_View: Map<string, _Ink_Glyph_>
@@ -1235,9 +1324,217 @@ interface _Box_Row_ {
 }
 
 interface _Measure_Box_ {
-  underlay_Text: _Underlay_Text_
+  underlay_Text: _STRETCH_Underlay_Text_
   depth: number
   box$_Row: Array<_Box_Row_>
+}
+
+interface _Context_Measure_ {
+  measure$_Box: Array<_Measure_Box_>
+  inset_Underlay: _Inset_Underlay_
+  divElement$_text: Array<Element>
+  svgElement_underlay$: Element
+  origin: DOMRect
+}
+
+interface _Api___measureOf__Underlay_Text_<Kind extends _Underlay_Text_["kind"]> {
+  underlay_Text: Extract<
+    _Underlay_Text_,
+    __BASE_Underlay_Text_<Kind>
+  >
+  context_Measure: _Context_Measure_
+}
+
+function measureOf__Underlay_Text<Kind extends _Underlay_Text_["kind"]>({
+  underlay_Text,
+  context_Measure
+}: _Api___measureOf__Underlay_Text_<Kind>): _Measure_Underlay_ {
+  const measure = MEASUREMAP__UNDERLAY_TEXT[underlay_Text.kind]
+  return measure({
+    underlay_Text,
+    context_Measure
+  })
+}
+
+type _MeasureMap__Underlay_Text_ = {
+  [Kind in _Underlay_Text_["kind"]]: (api_Measure: _Api___measureOf__Underlay_Text_<Kind>) => _Measure_Underlay_
+}
+
+const MEASUREMAP__UNDERLAY_TEXT: _MeasureMap__Underlay_Text_ = {
+  STRETCH: measureOf__Stretch,
+  POINT: measureOf__Point,
+  BOUNDARY: measureOf__Boundary
+}
+
+function measureOf__Stretch({
+  underlay_Text,
+  context_Measure
+}: _Api___measureOf__Underlay_Text_<"STRETCH">): _Measure_Underlay_ {
+  const measure_Box = context_Measure.measure$_Box.find((measure_Box_each) => measure_Box_each.underlay_Text === underlay_Text)
+  return measure_Box === undefined
+    ? {
+      attributes: underlay_Text.attributes,
+      d_Area: "",
+      d: "",
+      d_Seam$: []
+    }
+    : {
+      attributes: underlay_Text.attributes,
+      ...pathOf__Measure_Box({
+        measure_Box,
+        measure$_Box: context_Measure.measure$_Box,
+        inset_Underlay: context_Measure.inset_Underlay
+      })
+    }
+}
+
+function measureOf__Point({
+  underlay_Text,
+  context_Measure
+}: _Api___measureOf__Underlay_Text_<"POINT">): _Measure_Underlay_ {
+  const size_Notch = sizeOf__Notch(context_Measure.svgElement_underlay$)
+  const divElement_text = context_Measure.divElement$_text[underlay_Text.at.line]
+  const caret = divElement_text === undefined
+    ? null
+    : caretOf__Offset({
+      divElement_text,
+      offset: underlay_Text.at.offset
+    })
+  if (caret === null) {
+    return {
+      attributes: {
+        ...underlay_Text.attributes,
+        "data-notch": "point"
+      },
+      d_Area: "",
+      d: "",
+      d_Seam$: []
+    }
+  }
+  const x = caret.x - context_Measure.origin.left
+  const tip = caret.top - context_Measure.origin.top + size_Notch.gap
+  const base = tip - size_Notch.length
+  const half = size_Notch.width / 2
+  return {
+    attributes: {
+      ...underlay_Text.attributes,
+      "data-notch": "point"
+    },
+    d_Area: `M ${x - half - size_Notch.reach} ${base - size_Notch.reach} H ${x + half + size_Notch.reach} V ${tip + size_Notch.reach} H ${x - half - size_Notch.reach} Z`,
+    d: `M ${x - half} ${base} L ${x + half} ${base} L ${x} ${tip} Z`,
+    d_Seam$: []
+  }
+}
+
+function measureOf__Boundary({
+  underlay_Text,
+  context_Measure
+}: _Api___measureOf__Underlay_Text_<"BOUNDARY">): _Measure_Underlay_ {
+  const size_Notch = sizeOf__Notch(context_Measure.svgElement_underlay$)
+  const rect_After = context_Measure.divElement$_text[underlay_Text.line]?.getBoundingClientRect()
+  const rect_Before = context_Measure.divElement$_text[underlay_Text.line - 1]?.getBoundingClientRect()
+  const y = rect_After !== undefined
+    ? rect_After.top - context_Measure.origin.top
+    : rect_Before !== undefined
+      ? rect_Before.bottom - context_Measure.origin.top
+      : 0
+  const x = xOf__Bar({
+    svgElement_underlay$: context_Measure.svgElement_underlay$,
+    rect_Text: rect_After ?? rect_Before ?? null,
+    size_Notch
+  }) - context_Measure.origin.left
+  const half = size_Notch.width / 2
+  return {
+    attributes: {
+      ...underlay_Text.attributes,
+      "data-notch": "boundary"
+    },
+    d_Area: `M ${x - 2 * size_Notch.reach} ${y - half - size_Notch.reach} H ${x + size_Notch.length + size_Notch.reach} V ${y + half + size_Notch.reach} H ${x - 2 * size_Notch.reach} Z`,
+    d: `M ${x} ${y - half} L ${x} ${y + half} L ${x + size_Notch.length} ${y} Z`,
+    d_Seam$: []
+  }
+}
+
+interface _Size_Notch_ {
+  width: number
+  length: number
+  gap: number
+  reach: number
+}
+
+function sizeOf__Notch(
+  svgElement_underlay$: Element
+): _Size_Notch_ {
+  const em = parseFloat(getComputedStyle(svgElement_underlay$).fontSize)
+  return {
+    width: em * 6 / 14,
+    length: em * 4 / 14,
+    gap: em * 1 / 14,
+    reach: em * 3 / 14
+  }
+}
+
+interface _Api___caretOf__Offset_ {
+  divElement_text: Element
+  offset: number
+}
+
+interface _Caret_Text_ {
+  x: number
+  top: number
+}
+
+function caretOf__Offset({
+  divElement_text,
+  offset
+}: _Api___caretOf__Offset_): _Caret_Text_ {
+  const placed$_Text = placedOf__Text$(text$Of__Element(divElement_text).filter((text) => text.parentElement?.closest(".note_htmlView") === null))
+  const index = offset > 0 && placed$_Text.every(({
+    text,
+    start
+  }) => offset >= start + text.length || offset < start) ? offset - 1 : offset
+  const placed_Text = placed$_Text.find(({
+    text,
+    start
+  }) => start <= index && index < start + text.length)
+  if (placed_Text === undefined) {
+    const rect = divElement_text.getBoundingClientRect()
+    const style = getComputedStyle(divElement_text)
+    return {
+      x: rect.left + parseFloat(style.paddingLeft),
+      top: rect.top + (parseFloat(style.lineHeight) - parseFloat(style.fontSize)) / 2
+    }
+  }
+  const range = document.createRange()
+  range.setStart(
+    placed_Text.text,
+    index - placed_Text.start
+  )
+  range.setEnd(
+    placed_Text.text,
+    index - placed_Text.start + 1
+  )
+  const rect = range.getClientRects()[0] ?? range.getBoundingClientRect()
+  return {
+    x: index === offset ? rect.left : rect.right,
+    top: rect.top
+  }
+}
+
+interface _Api___xOf__Bar_ {
+  svgElement_underlay$: Element
+  rect_Text: DOMRect | null
+  size_Notch: _Size_Notch_
+}
+
+function xOf__Bar({
+  svgElement_underlay$,
+  rect_Text,
+  size_Notch
+}: _Api___xOf__Bar_): number {
+  const element_Bar = svgElement_underlay$.closest(".frame_htmlView")?.querySelector(":scope > .bar_htmlView")
+  if (element_Bar === null || element_Bar === undefined) return (rect_Text?.left ?? svgElement_underlay$.getBoundingClientRect().left) - size_Notch.length - size_Notch.reach
+  return element_Bar.getBoundingClientRect().right - parseFloat(getComputedStyle(element_Bar).paddingRight)
 }
 
 interface _Api___pathOf__Measure_Box_ {
@@ -1695,6 +1992,7 @@ interface _Layout_View_ {
   sourceAt: (point_Screen: _Point_Screen_) => string | null
   placeAt: (point_Screen: _Point_Screen_) => string | null
   targetAt: (point_Screen: _Point_Screen_) => _Target_Note_ | null
+  foldAt: (point_Screen: _Point_Screen_) => _Range_Lines_ | null
 }
 
 interface _Api___pace__View_TextEditor_ {
@@ -1758,11 +2056,33 @@ function changeAt__View_TextEditor({
     point_Screen.x,
     point_Screen.y
   )
-  if (element === null || !containerElement_View.contains(element)) return null
+  if (element === null || !containerElement_View.contains(element) || element.closest("[data-folded]") !== null) return null
   return areaAt__Run({
     element_Run: element.closest(".run_htmlView"),
     point_Screen
+  }) ?? areaAt__Frame({
+    element_Frame: element.closest(".frame_htmlView"),
+    point_Screen
   }) ?? element.closest("[data-source]")
+}
+
+interface _Api___areaAt__Frame_ {
+  element_Frame: Element | null
+  point_Screen: _Point_Screen_
+}
+
+function areaAt__Frame({
+  element_Frame,
+  point_Screen
+}: _Api___areaAt__Frame_): SVGPathElement | null {
+  for (const element_Run of element_Frame?.querySelectorAll(".run_htmlView") ?? []) {
+    const pathElement_area = areaAt__Run({
+      element_Run,
+      point_Screen
+    })
+    if (pathElement_area !== null) return pathElement_area
+  }
+  return null
 }
 
 interface _Api___areaAt__Run_ {
@@ -1833,6 +2153,30 @@ function targetAt__View_TextEditor({
     : null
 }
 
+interface _Api___foldAt__View_TextEditor_ {
+  containerElement_View: HTMLElement
+  point_Screen: _Point_Screen_
+}
+
+function foldAt__View_TextEditor({
+  containerElement_View,
+  point_Screen
+}: _Api___foldAt__View_TextEditor_): _Range_Lines_ | null {
+  const element = document.elementFromPoint(
+    point_Screen.x,
+    point_Screen.y
+  )
+  const element_Fold = element !== null && containerElement_View.contains(element) ? element.closest(".fold_htmlView") : null
+  const first = Number(element_Fold?.getAttribute("data-fold-first") ?? Number.NaN)
+  const last = Number(element_Fold?.getAttribute("data-fold-last") ?? Number.NaN)
+  return Number.isInteger(first) && Number.isInteger(last)
+    ? {
+      first,
+      last
+    }
+    : null
+}
+
 interface _ComponentMap__View_TextEditor_ {
   block: _ComponentMap_Block_
   part: _ComponentMap_Part_
@@ -1850,7 +2194,8 @@ type _ComponentMap_Part_ = {
 const COMPONENTMAP__VIEW_TEXTEDITOR: _ComponentMap__View_TextEditor_ = {
   block: {
     LINES: LINES_Block_TextEditor__Html,
-    FRAME: FRAME_Block_TextEditor__Html
+    FRAME: FRAME_Block_TextEditor__Html,
+    FOLDED: FOLDED_Block_TextEditor__Html
   },
   part: {
     CURRENT_LINES: CURRENT_LINES__Section_Frame__Html,

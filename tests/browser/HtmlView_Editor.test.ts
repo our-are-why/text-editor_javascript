@@ -118,7 +118,7 @@ describe("beside it: what can't live in one document", () => {
 
   test("when a host's components leave out what a run's text underlays are measured by, it says so, and draws none of them; a run with nothing behind it says nothing", async () => {
     const warned = await opened.page.evaluate(() => {
-      const group = { attributes: {}, underlays: [{ from: { line: 0, offset: 0 }, to: { line: 1, offset: 3 }, attributes: { "data-underlay": "box" } }] }
+      const group = { attributes: {}, underlays: [{ kind: "STRETCH" as const, from: { line: 0, offset: 0 }, to: { line: 1, offset: 3 }, attributes: { "data-underlay": "box" } }] }
       const pElementOf = ({ line_Run }: { line_Run: { segments: Array<{ text: string }> } }) => {
         const pElement_line = document.createElement("p")
         pElement_line.textContent = line_Run.segments.map((segment) => segment.text).join("")
@@ -187,7 +187,7 @@ describe("beside it: what can't live in one document", () => {
                 id: "current",
                 lines: [{ ...line, segments: [{ ...segment, attributes: change }] }],
                 groups: [
-                  { attributes: { "data-source": "most" }, underlays: [{ from: { line: 0, offset: 0 }, to: { line: 0, offset: 4 }, attributes: change }] },
+                  { attributes: { "data-source": "most" }, underlays: [{ kind: "STRETCH" as const, from: { line: 0, offset: 0 }, to: { line: 0, offset: 4 }, attributes: change }] },
                   { attributes: { "data-source": "all" }, underlays: [] }
                 ]
               }
@@ -264,8 +264,8 @@ describe("beside it: what can't live in one document", () => {
               { ...last, segments: [{ text: textOf("zeta eta"), attributes: removed }, { text: textOf(" theta"), attributes: {} }] }
             ],
             groups: [
-              { attributes: { "data-source": "drop" }, underlays: [{ from: { line: 0, offset: 6 }, to: { line: 2, offset: 8 }, attributes: removed }] },
-              { attributes: { "data-source": "rename" }, underlays: [{ from: { line: 1, offset: 0 }, to: { line: 1, offset: 5 }, attributes: renamed }] }
+              { attributes: { "data-source": "drop" }, underlays: [{ kind: "STRETCH" as const, from: { line: 0, offset: 6 }, to: { line: 2, offset: 8 }, attributes: removed }] },
+              { attributes: { "data-source": "rename" }, underlays: [{ kind: "STRETCH" as const, from: { line: 1, offset: 0 }, to: { line: 1, offset: 5 }, attributes: renamed }] }
             ]
           }
         }])
@@ -425,8 +425,8 @@ describe("beside it: what can't live in one document", () => {
           groups: [{
             attributes: { "data-source": "most" },
             underlays: [
-              { from: { line: 0, offset: 4 }, to: { line: 1, offset: 7 }, attributes: { "data-underlay": "box" } },
-              { from: { line: 1, offset: 0 }, to: { line: 1, offset: 3 }, attributes: { "data-change": "inserted", "data-source": "most" } }
+              { kind: "STRETCH" as const, from: { line: 0, offset: 4 }, to: { line: 1, offset: 7 }, attributes: { "data-underlay": "box" } },
+              { kind: "STRETCH" as const, from: { line: 1, offset: 0 }, to: { line: 1, offset: 3 }, attributes: { "data-change": "inserted", "data-source": "most" } }
             ]
           }]
         }
@@ -482,7 +482,7 @@ describe("beside it: what can't live in one document", () => {
       containerElement.style.setProperty("--view-underlay-inset-block", "1px")
       containerElement.style.setProperty("--view-underlay-inset-inline", "-6px")
       document.body.append(containerElement)
-      const stretch = (line: number, from: number, to: number) => ({ from: { line, offset: from }, to: { line, offset: to }, attributes: {} })
+      const stretch = (line: number, from: number, to: number) => ({ kind: "STRETCH" as const, from: { line, offset: from }, to: { line, offset: to }, attributes: {} })
       new window._View_TextEditor_({
         containerElement,
         componentMap: window.COMPONENTMAP__VIEW_TEXTEDITOR
@@ -553,8 +553,8 @@ describe("beside it: what can't live in one document", () => {
         }).draw(window.viewModelOf__Blocks([{
           kind: "LINES",
           run: { id: "document", lines: [line], groups: [
-            { attributes: { "data-source": "drop" }, underlays: [{ from: { line: 0, offset: 0 }, to: { line: 0, offset: 19 }, attributes: { "data-change": "removed", "data-source": "drop" } }] },
-            { attributes: { "data-source": "round" }, underlays: [{ from: { line: 0, offset: 9 }, to: { line: 0, offset: 14 }, attributes: { "data-change": "replaced", "data-source": "round", "data-within": "drop" } }] }
+            { attributes: { "data-source": "drop" }, underlays: [{ kind: "STRETCH" as const, from: { line: 0, offset: 0 }, to: { line: 0, offset: 19 }, attributes: { "data-change": "removed", "data-source": "drop" } }] },
+            { attributes: { "data-source": "round" }, underlays: [{ kind: "STRETCH" as const, from: { line: 0, offset: 9 }, to: { line: 0, offset: 14 }, attributes: { "data-change": "replaced", "data-source": "round", "data-within": "drop" } }] }
           ] }
         }]))
         await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)))
@@ -583,8 +583,8 @@ describe("beside it: what can't live in one document", () => {
         }).draw(window.viewModelOf__Blocks([{
           kind: "LINES",
           run: { id: "document", lines: [{ ...line, segments: [{ text: textOf("if ("), attributes: {} }, { text: textOf("round"), attributes: { ...moved, "data-edit": "round" } }, { text: textOf(" === max"), attributes: moved }, { text: textOf(") go"), attributes: {} }] }], groups: [
-            { attributes: { "data-source": "order" }, underlays: [{ from: { line: 0, offset: 4 }, to: { line: 0, offset: 17 }, attributes: moved }] },
-            { attributes: { "data-source": "round" }, underlays: [{ from: { line: 0, offset: 4 }, to: { line: 0, offset: 9 }, attributes: renamed }] }
+            { attributes: { "data-source": "order" }, underlays: [{ kind: "STRETCH" as const, from: { line: 0, offset: 4 }, to: { line: 0, offset: 17 }, attributes: moved }] },
+            { attributes: { "data-source": "round" }, underlays: [{ kind: "STRETCH" as const, from: { line: 0, offset: 4 }, to: { line: 0, offset: 9 }, attributes: renamed }] }
           ] }
         }]))
         await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)))
@@ -631,7 +631,7 @@ describe("beside it: what can't live in one document", () => {
               { text: window.parseLines_ViewModel({ multilineText: ")", module_Language: window.MODULE_PLAINTEXT })[0].segments[0]?.text ?? segment.text, attributes: {} }
             ]
           }],
-          groups: [{ attributes: { "data-source": "most" }, underlays: [{ from: { line: 0, offset: 2 }, to: { line: 0, offset: 3 }, attributes: change }] }]
+          groups: [{ attributes: { "data-source": "most" }, underlays: [{ kind: "STRETCH" as const, from: { line: 0, offset: 2 }, to: { line: 0, offset: 3 }, attributes: change }] }]
         }
       }]))
       const word = () => containerElement.querySelector(`.text_htmlView [data-change]`)?.firstChild
@@ -684,7 +684,7 @@ describe("beside it: what can't live in one document", () => {
       const pieces: Array<[string, string | null]> = [["f(", null], ["n", "one"], [") ", null], ["m", "one"], [", ", null], ["k", "one"], ["++ ", null], ["x", "one"], ["y", "two"], [";", null]]
       const [line] = window.parseLines_ViewModel({ multilineText: pieces.map(([text]) => text).join(""), module_Language: window.MODULE_PLAINTEXT })
       const offsets = pieces.map((_, index) => pieces.slice(0, index).reduce((length, [text]) => length + text.length, 0))
-      const underlayOf = (index: number) => ({ from: { line: 0, offset: offsets[index] ?? 0 }, to: { line: 0, offset: (offsets[index] ?? 0) + 1 }, attributes: changeOf(pieces[index]?.[1] ?? "") })
+      const underlayOf = (index: number) => ({ kind: "STRETCH" as const, from: { line: 0, offset: offsets[index] ?? 0 }, to: { line: 0, offset: (offsets[index] ?? 0) + 1 }, attributes: changeOf(pieces[index]?.[1] ?? "") })
       new window._View_TextEditor_({
         containerElement,
         componentMap: window.COMPONENTMAP__VIEW_TEXTEDITOR
@@ -781,7 +781,7 @@ describe("beside it: what can't live in one document", () => {
       const words = "aaaa bbbb cccc dddd eeee ffff gggg hhhh iiii jjjj kkkk llll mmmm nnnn oooo pppp"
       const lines = window.parseLines_ViewModel({ multilineText: `the first line ends with this\nand the next starts here\n${words}`, module_Language: window.MODULE_PLAINTEXT })
       const change = { "data-change": "removed", "data-side": "before", "data-source": "most" }
-      const stretch = (line: number, from: number, lineTo: number, to: number) => ({ from: { line, offset: from }, to: { line: lineTo, offset: to }, attributes: change })
+      const stretch = (line: number, from: number, lineTo: number, to: number) => ({ kind: "STRETCH" as const, from: { line, offset: from }, to: { line: lineTo, offset: to }, attributes: change })
       const draw = (underlays: Array<ReturnType<typeof stretch>>) => view.draw(window.viewModelOf__Blocks([{
         kind: "LINES",
         run: { id: "document", lines, groups: [{ attributes: { "data-source": "most" }, underlays }] }
@@ -1011,7 +1011,7 @@ describe("beside it: what can't live in one document", () => {
         modules: [window.MODULE_MOUSE],
         viewModel_TextEditor: window.viewModelOf__Blocks([{
           kind: "LINES",
-          run: { id: "document", lines: marked, groups: [{ attributes: { "data-source": "move" }, underlays: [{ from: { line: 0, offset: 0 }, to: { line: 0, offset: 6 }, attributes: moved("before") }, { from: { line: lines.length - 1, offset: 0 }, to: { line: lines.length - 1, offset: 6 }, attributes: moved("after") }] }] }
+          run: { id: "document", lines: marked, groups: [{ attributes: { "data-source": "move" }, underlays: [{ kind: "STRETCH" as const, from: { line: 0, offset: 0 }, to: { line: 0, offset: 6 }, attributes: moved("before") }, { kind: "STRETCH" as const, from: { line: lines.length - 1, offset: 0 }, to: { line: lines.length - 1, offset: 6 }, attributes: moved("after") }] }] }
         }])
       })
       scrollTo(0, 0)
@@ -1038,6 +1038,10 @@ describe("beside it: what can't live in one document", () => {
   })
 
   test("pointing at a move's note marks its other end, data-targeted on its rings, which the perspective draws heavier, from either end; its own end it leaves as it is; and pointing away marks none", async () => {
+    // the pointer away from where the test before left it, over its first
+    // note, where this one's is drawn: the browser may send a move of its own
+    // as what's under a resting pointer changes
+    await opened.page.mouse.move(1270, 715)
     await opened.page.evaluate(() => {
       const containerElement = document.createElement("div")
       containerElement.id = "targeting"
@@ -1057,7 +1061,7 @@ describe("beside it: what can't live in one document", () => {
         modules: [window.MODULE_MOUSE],
         viewModel_TextEditor: window.viewModelOf__Blocks([{
           kind: "LINES",
-          run: { id: "document", lines: marked, groups: [{ attributes: { "data-source": "move" }, underlays: [{ from: { line: 0, offset: 0 }, to: { line: 0, offset: 6 }, attributes: moved("before") }, { from: { line: 2, offset: 0 }, to: { line: 2, offset: 6 }, attributes: moved("after") }] }] }
+          run: { id: "document", lines: marked, groups: [{ attributes: { "data-source": "move" }, underlays: [{ kind: "STRETCH" as const, from: { line: 0, offset: 0 }, to: { line: 0, offset: 6 }, attributes: moved("before") }, { kind: "STRETCH" as const, from: { line: 2, offset: 0 }, to: { line: 2, offset: 6 }, attributes: moved("after") }] }] }
         }])
       })
     })
@@ -1090,6 +1094,296 @@ describe("beside it: what can't live in one document", () => {
     await opened.page.evaluate(() => document.getElementById("targeting")?.remove())
   })
 
+  test("a frame folds and unfolds by its control, a chevron in the gutter at its first line, and by its bar: folded, its lines as proposed alone, nothing ringed, no room made, no list, its control always there; unfolded, its control there only while it's hovered; one that only takes lines out folds to a strip a line tall", async () => {
+    await opened.page.evaluate(() => {
+      const containerElement = document.createElement("div")
+      containerElement.id = "folding"
+      containerElement.style.width = "40rem"
+      containerElement.dataset["perspective"] = "changes"
+      document.body.prepend(containerElement)
+      // two proposals on its first line, one on its second too, their
+      // changes pressed on by brackets and a comma, so the view makes room
+      // for their rings where they're drawn
+      const [one, three, two] = window.parseLines_ViewModel({ multilineText: "f(one, two)\ng(three)\ntwo", module_Language: window.MODULE_PLAINTEXT })
+      const [segment] = one?.segments ?? []
+      if (one === undefined || three === undefined || two === undefined || segment === undefined) throw new Error("the lines weren't parsed")
+      const textOf = (text: string) => window.parseLines_ViewModel({ multilineText: text, module_Language: window.MODULE_PLAINTEXT })[0]?.segments[0]?.text ?? segment.text
+      const change = (side: string, source: string, place: string) => ({ "data-change": "replaced", "data-side": side, "data-source": source, "data-place": place })
+      const pieced = (line: typeof one, pieces: Array<[string, Record<string, string>]>) => ({ ...line, segments: pieces.map(([text, attributes]) => ({ text: textOf(text), attributes })) })
+      const runOf = (side: string, id: string, ones: Array<string>) => ({
+        id,
+        lines: [
+          pieced(one, [["f(", {}], [ones[0]!, change(side, "most", "one")], [", ", {}], [ones[1]!, change(side, "more", "two")], [")", {}]]),
+          pieced(three, [["g(", {}], [ones[2]!, change(side, "most", "three")], [")", {}]])
+        ],
+        groups: [
+          { attributes: { "data-source": "most" }, underlays: [{ kind: "STRETCH" as const, from: { line: 0, offset: 2 }, to: { line: 0, offset: 5 }, attributes: change(side, "most", "one") }, { kind: "STRETCH" as const, from: { line: 1, offset: 2 }, to: { line: 1, offset: 7 }, attributes: change(side, "most", "three") }] },
+          { attributes: { "data-source": "more" }, underlays: [{ kind: "STRETCH" as const, from: { line: 0, offset: 7 }, to: { line: 0, offset: 10 }, attributes: change(side, "more", "two") }] }
+        ]
+      })
+      new window._TextEditor_({
+        containerElement,
+        componentMap: window.COMPONENTMAP__VIEW_TEXTEDITOR,
+        modules: [window.MODULE_MOUSE],
+        viewModel_TextEditor: window.viewModelOf__Blocks([
+          { kind: "FRAME", range: { first: 1, last: 2 }, parts: [
+            { kind: "CURRENT_LINES", run: runOf("before", "current", ["one", "two", "three"]) },
+            { kind: "PROPOSAL_LINES", run: runOf("after", "proposed", ["ONE", "TWO", "THREE"]) },
+            { kind: "PROPOSAL_LIST", items: [{ source: "most", title: "Shout", places: "", rationale: "", actions: [], attributes: {} }, { source: "more", title: "Shout more", places: "", rationale: "", actions: [], attributes: {} }] }
+          ] },
+          { kind: "FRAME", range: { first: 3, last: 3 }, parts: [
+            { kind: "CURRENT_LINES", run: { id: "gone-current", lines: [two], groups: [] } },
+            { kind: "PROPOSAL_LINES", run: { id: "gone-proposed", lines: [], groups: [] } }
+          ] }
+        ])
+      })
+    })
+    // each frame, by its label: whether it's folded, what it shows, its
+    // rings, each its proposal and its stroke's width, whether room's made
+    // for them, and its control
+    const frames = () => opened.page.evaluate(async () => {
+      await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)))
+      return [...document.querySelectorAll("#folding .frame_htmlView")].map((frame) => {
+        const control = frame.querySelector(":scope > .fold_htmlView")
+        const lineHeight = parseFloat(getComputedStyle(frame).lineHeight)
+        return {
+          label: frame.getAttribute("aria-label"),
+          folded: frame.hasAttribute("data-folded"),
+          shows: [...frame.querySelectorAll(".current_htmlView, .proposed_htmlView, .proposals_htmlView")].map((part) => `${part.className} ${part.querySelectorAll(".line_htmlView, .item_htmlView").length}`),
+          rings: [...frame.querySelectorAll(".underlay_htmlView")].map((ring) => `${ring.getAttribute("data-place")} ${getComputedStyle(ring).strokeWidth}`),
+          room: [...frame.querySelectorAll(".text_htmlView *")].some((span) => span instanceof HTMLElement && span.style.length > 0),
+          control: `${control?.localName} ${control?.getAttribute("aria-expanded")} "${control?.getAttribute("aria-label")}" ${getComputedStyle(control ?? frame).opacity}`,
+          tall: Math.round(frame.getBoundingClientRect().height / lineHeight * 10) / 10
+        }
+      })
+    })
+    const at = async (label: string, selector: string) => {
+      const point = await opened.page.evaluate(({ label, selector }) => {
+        const frame = [...document.querySelectorAll("#folding .frame_htmlView")].find((each) => each.getAttribute("aria-label") === label)
+        const rect = frame?.querySelector(selector)?.getBoundingClientRect()
+        if (rect === undefined) throw new Error(`no ${selector} in ${label}`)
+        return { x: rect.left + rect.width / 2, y: rect.top + Math.min(rect.height / 2, 8) }
+      }, { label, selector })
+      await opened.page.mouse.move(point.x, point.y)
+      return point
+    }
+    await opened.page.mouse.move(1270, 715)
+    const unfolded = await frames()
+    expect(unfolded.map((frame) => [frame.folded, frame.shows, frame.rings.length, frame.room, frame.control])).toEqual([
+      [false, ["current_htmlView 2", "proposed_htmlView 2", "proposals_htmlView 2"], 6, true, `button true "Fold lines 1 to 2" 0`],
+      [false, ["current_htmlView 1", "proposed_htmlView 0"], 0, false, `button true "Fold line 3" 0`]
+    ])
+    await at("lines 1 to 2", ".line_htmlView")
+    expect((await frames())[0]?.control).toBe(`button true "Fold lines 1 to 2" 1`)
+    await opened.page.mouse.click(...Object.values(await at("lines 1 to 2", ".fold_htmlView")) as [number, number])
+    await frames()
+    await opened.page.mouse.click(...Object.values(await at("line 3", ".bar_htmlView")) as [number, number])
+    await opened.page.mouse.move(1270, 715)
+    const folded = await frames()
+    expect(folded.map((frame) => [frame.folded, frame.shows, frame.rings, frame.room, frame.control])).toEqual([
+      [true, ["proposed_htmlView 2"], [], false, `button false "Unfold lines 1 to 2" 1`],
+      [true, ["proposed_htmlView 0"], [], false, `button false "Unfold line 3" 1`]
+    ])
+    expect(folded[1]?.tall).toBe(1)
+    await opened.page.mouse.click(...Object.values(await at("lines 1 to 2", ".bar_htmlView")) as [number, number])
+    await opened.page.mouse.move(1270, 715)
+    expect((await frames()).map((frame) => frame.folded)).toEqual([false, true])
+    await opened.page.evaluate(() => document.getElementById("folding")?.remove())
+  })
+
+  test("a folded frame's control, hovered, peeks at it: its changes ringed, all of them, every proposal's, plain, room made for them; off its control, the peek ends; folding a frame ends its peek; a folded frame's text, and its lines' signs, point at nothing", async () => {
+    await opened.page.evaluate(() => {
+      const containerElement = document.createElement("div")
+      containerElement.id = "peeking"
+      containerElement.style.width = "40rem"
+      containerElement.dataset["perspective"] = "changes"
+      document.body.prepend(containerElement)
+      const [one, three, again] = window.parseLines_ViewModel({ multilineText: "f(one, two)\ng(three)\nh(two)", module_Language: window.MODULE_PLAINTEXT })
+      const [segment] = one?.segments ?? []
+      if (one === undefined || three === undefined || again === undefined || segment === undefined) throw new Error("the lines weren't parsed")
+      const textOf = (text: string) => window.parseLines_ViewModel({ multilineText: text, module_Language: window.MODULE_PLAINTEXT })[0]?.segments[0]?.text ?? segment.text
+      const change = (side: string, source: string, place: string) => ({ "data-change": "replaced", "data-side": side, "data-source": source, "data-place": place })
+      const pieced = (line: typeof one, pieces: Array<[string, Record<string, string>]>) => ({ ...line, segments: pieces.map(([text, attributes]) => ({ text: textOf(text), attributes })) })
+      const runOf = (side: string, id: string, ones: Array<string>) => ({
+        id,
+        lines: [
+          pieced(one, [["f(", {}], [ones[0]!, change(side, "most", "one")], [", ", {}], [ones[1]!, change(side, "more", "two")], [")", {}]]),
+          pieced(three, [["g(", {}], [ones[2]!, change(side, "most", "three")], [")", {}]])
+        ],
+        groups: [
+          { attributes: { "data-source": "most" }, underlays: [{ kind: "STRETCH" as const, from: { line: 0, offset: 2 }, to: { line: 0, offset: 5 }, attributes: change(side, "most", "one") }, { kind: "STRETCH" as const, from: { line: 1, offset: 2 }, to: { line: 1, offset: 7 }, attributes: change(side, "most", "three") }] },
+          { attributes: { "data-source": "more" }, underlays: [{ kind: "STRETCH" as const, from: { line: 0, offset: 7 }, to: { line: 0, offset: 10 }, attributes: change(side, "more", "two") }] }
+        ]
+      })
+      new window._TextEditor_({
+        containerElement,
+        componentMap: window.COMPONENTMAP__VIEW_TEXTEDITOR,
+        modules: [window.MODULE_MOUSE],
+        viewModel_TextEditor: window.viewModelOf__Blocks([
+          { kind: "FRAME", range: { first: 1, last: 2 }, parts: [
+            { kind: "CURRENT_LINES", run: runOf("before", "current", ["one", "two", "three"]) },
+            { kind: "PROPOSAL_LINES", run: runOf("after", "proposed", ["ONE", "TWO", "THREE"]) },
+            { kind: "PROPOSAL_LIST", items: [{ source: "most", title: "Shout", places: "", rationale: "", actions: [], attributes: {} }, { source: "more", title: "Shout more", places: "", rationale: "", actions: [], attributes: {} }] }
+          ] },
+          // another frame, unfolded, the second proposal in it too
+          { kind: "FRAME", range: { first: 3, last: 3 }, parts: [
+            { kind: "CURRENT_LINES", run: { id: "again-current", lines: [pieced(again, [["h(", {}], ["two", change("before", "more", "again")], [")", {}]])], groups: [{ attributes: { "data-source": "more" }, underlays: [{ kind: "STRETCH" as const, from: { line: 0, offset: 2 }, to: { line: 0, offset: 5 }, attributes: change("before", "more", "again") }] }] } },
+            { kind: "PROPOSAL_LINES", run: { id: "again-proposed", lines: [pieced(again, [["h(", {}], ["TWO", change("after", "more", "again")], [")", {}]])], groups: [{ attributes: { "data-source": "more" }, underlays: [{ kind: "STRETCH" as const, from: { line: 0, offset: 2 }, to: { line: 0, offset: 5 }, attributes: change("after", "more", "again") }] }] } }
+          ] }
+        ])
+      })
+    })
+    // the folded frame's rings, each its place and its stroke's width, and
+    // whether room's made for them; and the other frame's rings
+    const peeked = () => opened.page.evaluate(async () => {
+      await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)))
+      const [frame, frame_Other] = document.querySelectorAll("#peeking .frame_htmlView")
+      if (frame === undefined || frame_Other === undefined) throw new Error("the frames weren't drawn")
+      const ringsOf = (element: Element) => [...element.querySelectorAll(".underlay_htmlView")].map((ring) => `${ring.getAttribute("data-place")} ${getComputedStyle(ring).strokeWidth}`)
+      return {
+        rings: ringsOf(frame),
+        room: [...frame.querySelectorAll(".text_htmlView *")].some((span) => span instanceof HTMLElement && span.style.length > 0),
+        other: ringsOf(frame_Other)
+      }
+    })
+    const at = async (selector: string) => {
+      const point = await opened.page.evaluate((selector) => {
+        const rect = document.querySelector(`#peeking ${selector}`)?.getBoundingClientRect()
+        if (rect === undefined) throw new Error(`no ${selector}`)
+        return { x: rect.left + rect.width / 2, y: rect.top + Math.min(rect.height / 2, 8) }
+      }, selector)
+      await opened.page.mouse.move(point.x, point.y)
+      return point
+    }
+    const plain = ["again 1px", "again 1px"]
+    const all = ["one 1px", "three 1px", "two 1px"]
+    await opened.page.mouse.click(...Object.values(await at(".fold_htmlView")) as [number, number])
+    await opened.page.mouse.move(1270, 715)
+    expect(await peeked()).toEqual({ rings: [], room: false, other: plain })
+    await at(".fold_htmlView")
+    expect(await peeked()).toEqual({ rings: all, room: true, other: plain })
+    await at(".text_htmlView [data-source='more']")
+    expect(await peeked()).toEqual({ rings: [], room: false, other: plain })
+    await at(".line_htmlView .label_htmlView")
+    expect(await peeked()).toEqual({ rings: [], room: false, other: plain })
+    // unfolded and folded again, under the pointer: its peek over till the
+    // pointer moves
+    await opened.page.mouse.click(...Object.values(await at(".fold_htmlView")) as [number, number])
+    await opened.page.mouse.click(...Object.values(await at(".fold_htmlView")) as [number, number])
+    expect(await peeked()).toEqual({ rings: [], room: false, other: plain })
+    const point = await at(".fold_htmlView")
+    await opened.page.mouse.move(point.x + 1, point.y)
+    expect(await peeked()).toEqual({ rings: all, room: true, other: plain })
+    await opened.page.evaluate(() => document.getElementById("peeking")?.remove())
+  })
+
+  test("a removal's other side, where its words were, is a notch: a point in a line, a wedge over the row, its tip on the point; a boundary between lines, a wedge on the frame's bar, its tip toward the text; filled in the removal's colour, taking no room; pointed at with its removal, and pointing at it points at its removal; pressing the bar's notch presses the notch, so the frame isn't folded, and pressing the bar elsewhere folds it", async () => {
+    await opened.page.mouse.move(1270, 715)
+    await opened.page.evaluate(() => {
+      const containerElement = document.createElement("div")
+      containerElement.id = "notches"
+      containerElement.style.width = "40rem"
+      containerElement.dataset["perspective"] = "changes"
+      document.body.prepend(containerElement)
+      const [sleep, retry, done] = window.parseLines_ViewModel({ multilineText: "await sleep(n, signal);\nonRetry(n);\ndone();", module_Language: window.MODULE_PLAINTEXT })
+      const [slept] = window.parseLines_ViewModel({ multilineText: "await sleep(n);", module_Language: window.MODULE_PLAINTEXT })
+      if (sleep === undefined || retry === undefined || done === undefined || slept === undefined) throw new Error("the lines weren't parsed")
+      const out = (side: string, place: string) => ({ "data-change": "removed", "data-side": side, "data-source": "out", "data-place": place })
+      new window._TextEditor_({
+        containerElement,
+        componentMap: window.COMPONENTMAP__VIEW_TEXTEDITOR,
+        modules: [window.MODULE_MOUSE],
+        viewModel_TextEditor: window.viewModelOf__Blocks([{
+          kind: "FRAME",
+          range: { first: 1, last: 3 },
+          parts: [
+            { kind: "CURRENT_LINES", run: { id: "current", lines: [sleep, retry, done], groups: [{ attributes: { "data-source": "out" }, underlays: [
+              { kind: "STRETCH" as const, from: { line: 0, offset: 13 }, to: { line: 0, offset: 21 }, attributes: out("before", "1") },
+              { kind: "STRETCH" as const, from: { line: 1, offset: 0 }, to: { line: 1, offset: 11 }, attributes: out("before", "2") }
+            ] }] } },
+            { kind: "PROPOSAL_LINES", run: { id: "proposed", lines: [slept, done], groups: [{ attributes: { "data-source": "out" }, underlays: [
+              { kind: "POINT" as const, at: { line: 0, offset: 13 }, attributes: out("after", "1") },
+              { kind: "BOUNDARY" as const, line: 1, attributes: out("after", "2") }
+            ] }] } },
+            { kind: "PROPOSAL_LIST", items: [{ source: "out", title: "Take it out", places: "", rationale: "", actions: [], attributes: {} }] }
+          ]
+        }])
+      })
+    })
+    // each notch: where its tip is, against where it should be, its fill,
+    // and how it's drawn, pointed at or not; and whether the lines as
+    // proposed moved for it
+    const notches = () => opened.page.evaluate(async () => {
+      await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)))
+      const container = document.getElementById("notches")
+      const [point, boundary] = container?.querySelectorAll(".underlay_htmlView[data-notch]") ?? []
+      const [line_Slept, line_Done] = container?.querySelectorAll(".proposed_htmlView .line_htmlView > .text_htmlView") ?? []
+      const bar = container?.querySelector(".bar_htmlView")
+      if (point === undefined || boundary === undefined || line_Slept === undefined || line_Done === undefined || bar === undefined || bar === null) throw new Error("the notches weren't drawn")
+      const range = document.createRange()
+      const text = [...line_Slept.querySelectorAll("*")].flatMap((element) => [...element.childNodes]).find((node): node is Text => node instanceof Text && node.data.includes(");"))
+      if (text === undefined) throw new Error("no text for the point")
+      range.setStart(text, text.data.indexOf(");"))
+      range.setEnd(text, text.data.indexOf(");") + 1)
+      const character = range.getBoundingClientRect()
+      const box_Point = point.getBoundingClientRect()
+      const box_Boundary = boundary.getBoundingClientRect()
+      const barRight = bar.getBoundingClientRect().right - parseFloat(getComputedStyle(bar).paddingRight)
+      const near = (one: number, other: number) => Math.abs(one - other) <= 1.5
+      const drawn = (notch: Element) => `${notch.getAttribute("data-notch")} ${getComputedStyle(notch).fill === "none" ? "unfilled" : "filled"} ${notch.hasAttribute("data-pointed") ? "place" : notch.closest(".group_htmlView")?.hasAttribute("data-pointed") ? "proposal" : "-"} ${getComputedStyle(notch).strokeWidth}`
+      return {
+        point: `${near(box_Point.left + box_Point.width / 2, character.left) ? "on the point" : `off by ${box_Point.left + box_Point.width / 2 - character.left}`}, ${box_Point.bottom <= character.top + 2 && box_Point.bottom >= character.top - 2 ? "over the row" : `tip at ${box_Point.bottom - character.top}`}`,
+        boundary: `${near(box_Boundary.left, barRight) ? "at the bar" : `off the bar by ${box_Boundary.left - barRight}`}, ${near(box_Boundary.top + box_Boundary.height / 2, line_Done.getBoundingClientRect().top) ? "on the boundary" : "off the boundary"}`,
+        drawn: [drawn(point), drawn(boundary)],
+        room: [...line_Slept.querySelectorAll("*")].some((span) => span instanceof HTMLElement && span.style.length > 0),
+        rings: [...(container?.querySelectorAll(".current_htmlView .underlay_htmlView") ?? [])].map((ring) => ring.hasAttribute("data-pointed") ? "place" : "-")
+      }
+    })
+    const atCenter = async (selector: string) => {
+      const point = await opened.page.evaluate((selector) => {
+        const rect = document.querySelector(`#notches ${selector}`)?.getBoundingClientRect()
+        if (rect === undefined) throw new Error(`no ${selector}`)
+        return { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 }
+      }, selector)
+      await opened.page.mouse.move(point.x, point.y)
+    }
+    expect(await notches()).toEqual({
+      point: "on the point, over the row",
+      boundary: "at the bar, on the boundary",
+      drawn: ["point filled - 1px", "boundary filled - 1px"],
+      room: false,
+      rings: ["-", "-"]
+    })
+    await atCenter(".current_htmlView .area_htmlView[data-place='1']")
+    expect((await notches()).drawn).toEqual(["point filled place 3px", "boundary filled proposal 2px"])
+    await atCenter(".underlay_htmlView[data-notch='point']")
+    expect((await notches()).rings).toEqual(["place", "-"])
+    await atCenter(".underlay_htmlView[data-notch='boundary']")
+    expect((await notches()).rings).toEqual(["-", "place"])
+    await opened.page.mouse.move(1270, 715)
+    expect((await notches()).drawn).toEqual(["point filled - 1px", "boundary filled - 1px"])
+    const isFolded = () => opened.page.evaluate(async () => {
+      await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)))
+      return document.querySelector("#notches .frame_htmlView")?.hasAttribute("data-folded")
+    })
+    const notch_Bar = await opened.page.evaluate(() => {
+      const rect = document.querySelector("#notches .underlay_htmlView[data-notch='boundary']")?.getBoundingClientRect()
+      if (rect === undefined) throw new Error("no notch on the bar")
+      return { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 }
+    })
+    await opened.page.mouse.click(notch_Bar.x, notch_Bar.y)
+    expect(await isFolded()).toBe(false)
+    const bar_Top = await opened.page.evaluate(() => {
+      const rect = document.querySelector("#notches .bar_htmlView")?.getBoundingClientRect()
+      if (rect === undefined) throw new Error("no bar")
+      return { x: rect.left + rect.width / 2, y: rect.top + 6 }
+    })
+    await opened.page.mouse.click(bar_Top.x, bar_Top.y)
+    expect(await isFolded()).toBe(true)
+    await opened.page.mouse.move(1270, 715)
+    await opened.page.evaluate(() => document.getElementById("notches")?.remove())
+  })
+
   test("pointing at a ring points at its proposal and at its place: the place's rings, on both sides, heavier again, a faint light running round each, clockwise round the lines as proposed and counterclockwise round the lines as they are, both sides in step, one lap each in the time the longer takes at one pace, the proposal's breathing together, at a pace kept from ring to ring of one proposal and started anew at another; the place's lines' labels in the gutter heavier again, by a stroke, not a weight, so none moves, and still; still where motion's asked to be reduced", async () => {
     await opened.page.evaluate(() => {
       const containerElement = document.createElement("div")
@@ -1109,8 +1403,8 @@ describe("beside it: what can't live in one document", () => {
       const groupsOf = (side: string) => {
         const at = first(side).length
         return [
-          { attributes: { "data-source": "rename" }, underlays: [{ from: { line: 0, offset: 0 }, to: { line: 0, offset: at }, attributes: change(side, "rename", "1") }, { from: { line: 0, offset: at + 1 }, to: { line: 0, offset: at + 5 }, attributes: change(side, "rename", "2") }] },
-          { attributes: { "data-source": "other" }, underlays: [{ from: { line: 0, offset: at + 6 }, to: { line: 0, offset: at + 11 }, attributes: change(side, "other", "1") }] }
+          { attributes: { "data-source": "rename" }, underlays: [{ kind: "STRETCH" as const, from: { line: 0, offset: 0 }, to: { line: 0, offset: at }, attributes: change(side, "rename", "1") }, { kind: "STRETCH" as const, from: { line: 0, offset: at + 1 }, to: { line: 0, offset: at + 5 }, attributes: change(side, "rename", "2") }] },
+          { attributes: { "data-source": "other" }, underlays: [{ kind: "STRETCH" as const, from: { line: 0, offset: at + 6 }, to: { line: 0, offset: at + 11 }, attributes: change(side, "other", "1") }] }
         ]
       }
       new window._TextEditor_({
@@ -1242,7 +1536,7 @@ describe("beside it: what can't live in one document", () => {
         componentMap: window.COMPONENTMAP__VIEW_TEXTEDITOR
       }).draw(window.viewModelOf__Blocks([{
         kind: "LINES",
-        run: { id: "document", lines: [{ ...first, note: { label: "moved", target: { source: "move", side: "after" } } }, long, plain, pressed_Cut, last], groups: [{ attributes: { "data-source": "move" }, underlays: [{ from: { line: 0, offset: 0 }, to: { line: 4, offset: 1 }, attributes: change }, { from: { line: 3, offset: 9 }, to: { line: 3, offset: 10 }, attributes: edit }] }] }
+        run: { id: "document", lines: [{ ...first, note: { label: "moved", target: { source: "move", side: "after" } } }, long, plain, pressed_Cut, last], groups: [{ attributes: { "data-source": "move" }, underlays: [{ kind: "STRETCH" as const, from: { line: 0, offset: 0 }, to: { line: 4, offset: 1 }, attributes: change }, { kind: "STRETCH" as const, from: { line: 3, offset: 9 }, to: { line: 3, offset: 10 }, attributes: edit }] }] }
       }]))
       await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)))
       const path = containerElement.querySelector(".underlay_htmlView")
@@ -1298,7 +1592,7 @@ describe("beside it: what can't live in one document", () => {
         run: {
           id: "document",
           lines,
-          groups: [{ attributes: {}, underlays: [{ from: { line: 0, offset: 0 }, to: { line: 0, offset: Infinity }, attributes: { "data-underlay": "box" } }] }]
+          groups: [{ attributes: {}, underlays: [{ kind: "STRETCH" as const, from: { line: 0, offset: 0 }, to: { line: 0, offset: Infinity }, attributes: { "data-underlay": "box" } }] }]
         }
       }]))
       const textElement = containerElement.querySelector(".text_htmlView")

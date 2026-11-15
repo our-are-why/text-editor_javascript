@@ -7,7 +7,9 @@ import {
 import {
   type _ViewModel_TextEditor_,
   type _Target_Note_,
-  pointedAt__ViewModel
+  type _Range_Lines_,
+  pointedAt__ViewModel,
+  foldedAt__ViewModel
 } from "./ViewModel_TextEditor.ts"
 
 export {
@@ -20,6 +22,7 @@ export {
   type __BASE_Command_,
   type _POINT_Command_,
   type _JUMP_Command_,
+  type _FOLD_Command_,
   type _HandlerMap__TextEditor_,
   HANDLERMAP__TEXTEDITOR
 }
@@ -49,7 +52,9 @@ class _TextEditor_ {
       source_Pointed: null,
       place_Pointed: null,
       target_Pointed: null,
-      target_Revealed: null
+      target_Revealed: null,
+      ranges_Folded: [],
+      range_Peeked: null
     }
     this.request_Draw = null
     this.time_Pointed = performance.now()
@@ -124,7 +129,7 @@ interface _Adapter_Module_ {
   commandOf__Event: (event: Event) => _Command_TextEditor_ | null
 }
 
-type _Command_TextEditor_ = _POINT_Command_ | _JUMP_Command_
+type _Command_TextEditor_ = _POINT_Command_ | _JUMP_Command_ | _FOLD_Command_
 
 interface __BASE_Command_<Kind extends string> {
   kind: Kind
@@ -138,12 +143,19 @@ interface _JUMP_Command_ extends __BASE_Command_<"JUMP"> {
   target_Note: _Target_Note_
 }
 
+interface _FOLD_Command_ extends __BASE_Command_<"FOLD"> {
+  range_Frame: _Range_Lines_
+  point_Screen: _Point_Screen_
+}
+
 interface _State_TextEditor_ {
   viewModel_TextEditor: _ViewModel_TextEditor_
   source_Pointed: string | null
   place_Pointed: string | null
   target_Pointed: _Target_Note_ | null
   target_Revealed: _Target_Note_ | null
+  ranges_Folded: Array<_Range_Lines_>
+  range_Peeked: _Range_Lines_ | null
 }
 
 function eventsOf__Modules(
@@ -156,7 +168,11 @@ function viewModelOf__State(
   state: _State_TextEditor_
 ): _ViewModel_TextEditor_ {
   return pointedAt__ViewModel({
-    viewModel_TextEditor: state.viewModel_TextEditor,
+    viewModel_TextEditor: foldedAt__ViewModel({
+      viewModel_TextEditor: state.viewModel_TextEditor,
+      ranges_Folded: state.ranges_Folded,
+      range_Peeked: state.range_Peeked
+    }),
     source: state.source_Pointed,
     place: state.place_Pointed,
     target_Note: state.target_Pointed
@@ -205,13 +221,15 @@ function POINT_stateAfter__Command({
   const source_Pointed = command.point_Screen === null ? null : layout_View.sourceAt(command.point_Screen)
   const place_Pointed = command.point_Screen === null ? null : layout_View.placeAt(command.point_Screen)
   const target_Pointed = command.point_Screen === null ? null : layout_View.targetAt(command.point_Screen)
-  return source_Pointed === state.source_Pointed && place_Pointed === state.place_Pointed && target_Pointed?.source === state.target_Pointed?.source && target_Pointed?.side === state.target_Pointed?.side
+  const range_Peeked = command.point_Screen === null ? null : layout_View.foldAt(command.point_Screen)
+  return source_Pointed === state.source_Pointed && place_Pointed === state.place_Pointed && target_Pointed?.source === state.target_Pointed?.source && target_Pointed?.side === state.target_Pointed?.side && range_Peeked?.first === state.range_Peeked?.first && range_Peeked?.last === state.range_Peeked?.last
     ? state
     : {
       ...state,
       source_Pointed,
       place_Pointed,
-      target_Pointed
+      target_Pointed,
+      range_Peeked
     }
 }
 
@@ -225,11 +243,31 @@ function JUMP_stateAfter__Command({
   }
 }
 
+function FOLD_stateAfter__Command({
+  state,
+  command,
+  layout_View
+}: _Api___stateAfter__Command_<"FOLD">): _State_TextEditor_ {
+  if (layout_View.sourceAt(command.point_Screen) !== null) return state
+  const isSame = (range_Lines: _Range_Lines_) => range_Lines.first === command.range_Frame.first && range_Lines.last === command.range_Frame.last
+  return {
+    ...state,
+    ranges_Folded: state.ranges_Folded.some(isSame)
+      ? state.ranges_Folded.filter((range_Lines) => !isSame(range_Lines))
+      : [
+        ...state.ranges_Folded,
+        command.range_Frame
+      ],
+    range_Peeked: null
+  }
+}
+
 type _HandlerMap__TextEditor_ = {
   [Kind in _Command_TextEditor_["kind"]]: (api_Handler: _Api___stateAfter__Command_<Kind>) => _State_TextEditor_
 }
 
 const HANDLERMAP__TEXTEDITOR: _HandlerMap__TextEditor_ = {
   POINT: POINT_stateAfter__Command,
-  JUMP: JUMP_stateAfter__Command
+  JUMP: JUMP_stateAfter__Command,
+  FOLD: FOLD_stateAfter__Command
 }

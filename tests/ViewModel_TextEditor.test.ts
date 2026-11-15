@@ -1,6 +1,6 @@
 import { expect, test } from "bun:test"
 import fc from "fast-check"
-import { parseTexts_Line, segmentsOf__Stretches, parseLines_ViewModel, MODULE_PLAINTEXT, viewModelOf__Blocks, pointedAt__ViewModel, type _Stretch_Line_, type _Module_Language_, type _Group_Underlay_, type _Item_Proposals_ } from "../source/ViewModel_TextEditor.ts"
+import { parseTexts_Line, segmentsOf__Stretches, parseLines_ViewModel, MODULE_PLAINTEXT, viewModelOf__Blocks, pointedAt__ViewModel, foldedAt__ViewModel, type _Stretch_Line_, type _Module_Language_, type _Group_Underlay_, type _Item_Proposals_ } from "../source/ViewModel_TextEditor.ts"
 
 // every line break a text can hold: each ends a line, "\r\n" as one
 const lineBreaks = ["\r\n", "\n", "\r", "\v", "\f", "\u0085", "\u2028", "\u2029"]
@@ -171,7 +171,7 @@ test("pointing at a proposal marks its groups and its items, in every run and li
 
 test("pointing at a note marks its target, the underlays of its proposal on its side, wherever they are, and nothing else: not the other side's, nor another proposal's, nor any group or item", () => {
   const lines = parseLines_ViewModel({ multilineText: "one", module_Language: MODULE_PLAINTEXT })
-  const underlayOf = (source: string, side: string) => ({ from: { line: 0, offset: 0 }, to: { line: 0, offset: 3 }, attributes: { "data-change": "moved", "data-side": side, "data-source": source } })
+  const underlayOf = (source: string, side: string) => ({ kind: "STRETCH" as const, from: { line: 0, offset: 0 }, to: { line: 0, offset: 3 }, attributes: { "data-change": "moved", "data-side": side, "data-source": source } })
   const viewModel = viewModelOf__Blocks([
     { kind: "LINES", run: { id: "document", lines, groups: [{ attributes: { "data-source": "move" }, underlays: [underlayOf("move", "before")] }] } },
     {
@@ -193,7 +193,7 @@ test("pointing at a note marks its target, the underlays of its proposal on its 
 
 test("pointing at a place of a proposal marks its rings, on both its sides, wherever they are, as well as the proposal's groups: not the proposal's other places, nor another's with the same place", () => {
   const lines = parseLines_ViewModel({ multilineText: "one", module_Language: MODULE_PLAINTEXT })
-  const underlayOf = (source: string, side: string, place: string) => ({ from: { line: 0, offset: 0 }, to: { line: 0, offset: 3 }, attributes: { "data-change": "replaced", "data-side": side, "data-source": source, "data-place": place } })
+  const underlayOf = (source: string, side: string, place: string) => ({ kind: "STRETCH" as const, from: { line: 0, offset: 0 }, to: { line: 0, offset: 3 }, attributes: { "data-change": "replaced", "data-side": side, "data-source": source, "data-place": place } })
   const viewModel = viewModelOf__Blocks([{
     kind: "FRAME",
     range: { first: 1, last: 1 },
@@ -211,10 +211,45 @@ test("pointing at a place of a proposal marks its rings, on both its sides, wher
 
 test("pointing at a proposal marks the gutters of the lines its changes are on, and of those its place is on more, as the place; the lines it doesn't change, none", () => {
   const lines = parseLines_ViewModel({ multilineText: "one\ntwo\nthree", module_Language: MODULE_PLAINTEXT })
-  const underlayOf = (line: number, place: string) => ({ from: { line, offset: 0 }, to: { line, offset: 3 }, attributes: { "data-change": "replaced", "data-side": "before", "data-source": "rename", "data-place": place } })
+  const underlayOf = (line: number, place: string) => ({ kind: "STRETCH" as const, from: { line, offset: 0 }, to: { line, offset: 3 }, attributes: { "data-change": "replaced", "data-side": "before", "data-source": "rename", "data-place": place } })
   const viewModel = viewModelOf__Blocks([{ kind: "LINES", run: { id: "document", lines, groups: [{ attributes: { "data-source": "rename" }, underlays: [underlayOf(0, "1"), underlayOf(1, "2")] }] } }])
   const gutters = (place: string | null) => pointedAt__ViewModel({ viewModel_TextEditor: viewModel, source: "rename", place, target_Note: null }).runs.flatMap((run) => run.lines.map((line) => line.gutter.pointed))
   expect(gutters("1")).toEqual(["place", "proposal", "none"])
   expect(gutters(null)).toEqual(["proposal", "proposal", "none"])
   expect(viewModel.runs.flatMap((run) => run.lines.map((line) => line.gutter.pointed))).toEqual(["none", "none", "none"])
+})
+
+test("folding a frame makes it a block of its own, its range and its lines as proposed alone, no rings; one with none proposed folds to none; other frames, and other blocks, as they were; folding none leaves the view model as it was", () => {
+  const lines = parseLines_ViewModel({ multilineText: "one\ntwo", module_Language: MODULE_PLAINTEXT })
+  const group: _Group_Underlay_ = { attributes: { "data-source": "most" }, underlays: [{ kind: "STRETCH" as const, from: { line: 0, offset: 0 }, to: { line: 0, offset: 3 }, attributes: { "data-change": "replaced", "data-source": "most" } }] }
+  const viewModel = viewModelOf__Blocks([
+    { kind: "FRAME", range: { first: 1, last: 1 }, parts: [{ kind: "CURRENT_LINES", run: { id: "one-current", lines, groups: [group] } }, { kind: "PROPOSAL_LINES", run: { id: "one-proposed", lines, groups: [group] } }, { kind: "PROPOSAL_LIST", items: [itemOf("most")] }] },
+    { kind: "LINES", run: { id: "between", lines, groups: [] } },
+    { kind: "FRAME", range: { first: 3, last: 4 }, parts: [{ kind: "CURRENT_LINES", run: { id: "gone-current", lines, groups: [] } }, { kind: "PROPOSAL_LINES", run: { id: "gone-proposed", lines: [], groups: [] } }] },
+    { kind: "FRAME", range: { first: 5, last: 5 }, parts: [{ kind: "CURRENT_LINES", run: { id: "open-current", lines, groups: [] } }] },
+  ])
+  const folded = foldedAt__ViewModel({ viewModel_TextEditor: viewModel, ranges_Folded: [{ first: 1, last: 1 }, { first: 3, last: 4 }], range_Peeked: null })
+  expect(folded.blocks.map((block) => block.kind === "FRAME" ? `FRAME ${block.range.first}-${block.range.last}` : block.kind === "FOLDED" ? `FOLDED ${block.range.first}-${block.range.last}: ${block.run.id}, ${block.run.lines.length} lines, ${block.run.groups.length} groups` : `LINES ${block.run.id}`)).toEqual([
+    "FOLDED 1-1: one-proposed, 2 lines, 0 groups",
+    "LINES between",
+    "FOLDED 3-4: gone-proposed, 0 lines, 0 groups",
+    "FRAME 5-5",
+  ])
+  expect(folded.runs.map((run) => run.id)).toEqual(["one-proposed", "between", "gone-proposed", "open-current"])
+  expect(foldedAt__ViewModel({ viewModel_TextEditor: viewModel, ranges_Folded: [], range_Peeked: null })).toBe(viewModel)
+})
+
+test("a folded frame peeked has its rings, all of them, every proposal's; another folded frame, none", () => {
+  const lines = parseLines_ViewModel({ multilineText: "one\ntwo", module_Language: MODULE_PLAINTEXT })
+  const ring = (from: [number, number], to: [number, number]) => ({ kind: "STRETCH" as const, from: { line: from[0], offset: from[1] }, to: { line: to[0], offset: to[1] }, attributes: {} })
+  const groups: Array<_Group_Underlay_> = [
+    { attributes: { "data-source": "first" }, underlays: [ring([0, 0], [0, 3]), ring([1, 0], [1, 3])] },
+    { attributes: { "data-source": "over" }, underlays: [ring([0, 1], [1, 2])] },
+  ]
+  const viewModel = viewModelOf__Blocks([
+    { kind: "FRAME", range: { first: 1, last: 2 }, parts: [{ kind: "CURRENT_LINES", run: { id: "current", lines, groups } }, { kind: "PROPOSAL_LINES", run: { id: "proposed", lines, groups } }] },
+    { kind: "FRAME", range: { first: 4, last: 5 }, parts: [{ kind: "CURRENT_LINES", run: { id: "other-current", lines, groups } }, { kind: "PROPOSAL_LINES", run: { id: "other-proposed", lines, groups } }] },
+  ])
+  const folded = foldedAt__ViewModel({ viewModel_TextEditor: viewModel, ranges_Folded: [{ first: 1, last: 2 }, { first: 4, last: 5 }], range_Peeked: { first: 1, last: 2 } })
+  expect(folded.runs.map((run) => `${run.id}: ${run.groups.map((group) => `${group.attributes["data-source"]} ${group.underlays.length}`).join(", ")}`)).toEqual(["proposed: first 2, over 1", "other-proposed: "])
 })

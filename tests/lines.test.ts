@@ -1,7 +1,7 @@
 import { expect, test } from "bun:test"
-import { MODULE_PLAINTEXT, type _Block_ViewModel_, type _Item_Proposals_ } from "../source/ViewModel_TextEditor.ts"
+import { MODULE_PLAINTEXT, type _Block_ViewModel_, type _Item_Proposals_, type _Underlay_Text_, type _Line_Run_ } from "../source/ViewModel_TextEditor.ts"
 import { blocksWith__Frames, lineOf, blankOf } from "../playground/lines.ts"
-import { attributesOf__Change, attributesOf__Edit, type _Side_Change_ } from "../playground/looks.ts"
+import { attributesOf__Change, attributesOf__Edit, attributesOf__Nested, type _Side_Change_ } from "../playground/looks.ts"
 
 // a text, its lines 2 and 3 moved down to before line 6, gamma renamed
 // GAMMA by another proposal, decided apart, wherever the move leaves it,
@@ -58,7 +58,7 @@ test("a move's two ends: numbered and marked moved where it leaves, its first li
 })
 
 test("a move is one ring over all it moves, at each end, whatever's changed on the way; a change another proposal makes to what it carries is that proposal's, its own group, a ring inside the move's, saying whose move carries it, at both ends, never within the move as a fallback", () => {
-  const underlays = (id: string) => runOf(blocks, id).groups.map((group) => [group.attributes["data-source"], group.underlays.map((underlay) => [`${underlay.from.line}:${underlay.from.offset}-${underlay.to.line}:${underlay.to.offset}`, underlay.attributes])])
+  const underlays = (id: string) => runOf(blocks, id).groups.map((group) => [group.attributes["data-source"], group.underlays.map((underlay) => [positionsOf(underlay), underlay.attributes])])
   expect(underlays("leaving-current")).toEqual([
     ["move", [["0:0-1:9", { "data-change": "moved", "data-side": "before", "data-source": "move", "data-place": "1" }]]],
     ["rename", [["1:0-1:5", { "data-change": "replaced", "data-side": "before", "data-source": "rename", "data-carried": "move", "data-place": "1" }]]],
@@ -127,7 +127,7 @@ test("text moved within a line is moved as anywhere, both its ends in its frame,
   })
   const drawn = (id: string) => ({
     gutters: runOf(blocks_Order, id).lines.map((line) => [line.gutter.label, line.gutter.marker, line.note]),
-    rings: runOf(blocks_Order, id).groups.flatMap((group) => group.underlays.map((underlay) => `${underlay.attributes["data-change"]} ${underlay.from.offset}-${underlay.to.offset}`)),
+    rings: runOf(blocks_Order, id).groups.flatMap((group) => group.underlays.map((underlay) => `${underlay.attributes["data-change"]} ${underlay.kind === "STRETCH" ? `${underlay.from.offset}-${underlay.to.offset}` : positionsOf(underlay)}`)),
   })
   expect(drawn("order-current")).toEqual({ gutters: [["1", "changed", null]], rings: ["moved 4-13", "moved 17-20"] })
   expect(drawn("order-proposed")).toEqual({ gutters: [["~", "changed", null]], rings: ["moved 4-7", "moved 11-20"] })
@@ -153,7 +153,7 @@ test("a proposal that moves holds only moves: one that moves text and changes te
   expect(scene(attributesOf__Edit({ kind: "replaced", source: "rename" }))).not.toThrow()
 })
 
-test("each change has a place, the same on both its sides: replaced paired with replaced in order, moved with moved, the same words first, so a swap's sides find each other; what's only put in, taken out, or inside another's removal, a place of its own", () => {
+test("each change has a place, the same on both its sides: replaced paired with replaced in order, moved with moved, the same words first, so a swap's sides find each other, a removal with its notch; what's only put in, or inside another's removal, a place of its own", () => {
   const change = (side: _Side_Change_, kind: "moved" | "replaced" | "removed" | "inserted", source: string) => attributesOf__Change({ side, kind, source })
   const blocks_Places = blocksWith__Frames({
     multilineText: "let a = b + c\nif (x || !y) go",
@@ -177,13 +177,93 @@ test("each change has a place, the same on both its sides: replaced paired with 
   })
   const placed = (id: string) => runOf(blocks_Places, id).groups.flatMap((group) => group.underlays.map((underlay) => `${underlay.attributes["data-source"]} ${textOfRing(runOf(blocks_Places, id).lines, underlay)} ${underlay.attributes["data-place"]}`))
   expect(placed("current")).toEqual(["rename a 1", "rename b 2", "rename + c 3", "swap x 1", "swap !y 2"])
-  expect(placed("proposed")).toEqual(["rename A 1", "rename B 2", "rename * 2 4", "swap !y 2", "swap x 1"])
+  expect(placed("proposed")).toEqual(["rename A 1", "rename B 2", "rename * 2 4", "rename  3", "swap !y 2", "swap x 1"])
+})
+
+test("a removal's other side is its notch, where what it takes out was among the lines as proposed: a point in a line, right after as much unchanged text as comes before it as it is; a boundary between lines where it takes whole lines; sharing the removal's place, in its frame; none where a frame proposes no lines, its empty band saying it all, so the next frame's notches keep their removals' places; none for what's inside another's removal", () => {
+  const change = (side: _Side_Change_, kind: "removed" | "replaced", source: string) => attributesOf__Change({ side, kind, source })
+  const notchesOf = (multilineText: string, range: { first: number, last: number }, current: Array<_Line_Run_>, proposed: Array<_Line_Run_>) => {
+    const blocks = blocksWith__Frames({
+      multilineText,
+      module_Language: MODULE_PLAINTEXT,
+      frames: [{
+        kind: "FRAME",
+        range,
+        parts: [
+          { kind: "CURRENT_LINES", run: { id: "current", lines: current, groups: [] } },
+          { kind: "PROPOSAL_LINES", run: { id: "proposed", lines: proposed, groups: [] } },
+          { kind: "PROPOSAL_LIST", items: [{ ...item, source: "signal" }, { ...item, source: "hook" }, { ...item, source: "round" }] },
+        ],
+      }],
+      moves: [],
+    })
+    const placed = (id: string) => runOf(blocks, id).groups.flatMap((group) => group.underlays.map((underlay) => `${underlay.attributes["data-source"]} ${underlay.attributes["data-side"]} ${positionsOf(underlay)} ${underlay.attributes["data-place"]}`))
+    return { current: placed("current"), proposed: placed("proposed") }
+  }
+  expect(notchesOf(
+    "for (;;) {\n  await sleep(n, signal);\n  onRetry(n);\n}",
+    { first: 1, last: 4 },
+    [
+      lineOf("for (;;) {"),
+      lineOf("  await sleep(n", { text: ", signal", attributes: change("before", "removed", "signal") }, ");"),
+      lineOf({ text: "  onRetry(", attributes: change("before", "removed", "hook") }, { text: "n", attributes: { ...change("before", "removed", "hook"), ...attributesOf__Nested({ kind: "replaced", source: "round" }) } }, { text: ");", attributes: change("before", "removed", "hook") }),
+      lineOf("}"),
+    ],
+    [lineOf("for (;;) {"), lineOf("  await sleep(n);"), lineOf("}")],
+  )).toEqual({
+    current: ["signal before 1:15-1:23 1", "hook before 2:2-2:13 1", "round before 2:10-2:11 1"],
+    proposed: ["signal after at 1:15 1", "hook after before 2 1"],
+  })
+  expect(notchesOf(
+    "// a comment\nconst a = 1;",
+    { first: 1, last: 1 },
+    [lineOf({ text: "// a comment", attributes: change("before", "removed", "hook") })],
+    [],
+  )).toEqual({
+    current: ["hook before 0:0-0:12 1"],
+    proposed: [],
+  })
+  const blocks_Two = blocksWith__Frames({
+    multilineText: "// a comment\nconst a = 1, b = 2;",
+    module_Language: MODULE_PLAINTEXT,
+    frames: [
+      { kind: "FRAME", range: { first: 1, last: 1 }, parts: [
+        { kind: "CURRENT_LINES", run: { id: "comment-current", lines: [lineOf({ text: "// a comment", attributes: change("before", "removed", "hook") })], groups: [] } },
+        { kind: "PROPOSAL_LINES", run: { id: "comment-proposed", lines: [], groups: [] } },
+        { kind: "PROPOSAL_LIST", items: [{ ...item, source: "hook" }] },
+      ] },
+      { kind: "FRAME", range: { first: 2, last: 2 }, parts: [
+        { kind: "CURRENT_LINES", run: { id: "b-current", lines: [lineOf("const a = 1", { text: ", b = 2", attributes: change("before", "removed", "hook") }, ";")], groups: [] } },
+        { kind: "PROPOSAL_LINES", run: { id: "b-proposed", lines: [lineOf("const a = 1;")], groups: [] } },
+        { kind: "PROPOSAL_LIST", items: [{ ...item, source: "hook" }] },
+      ] },
+    ],
+    moves: [],
+  })
+  const placed_Two = (id: string) => runOf(blocks_Two, id).groups.flatMap((group) => group.underlays.map((underlay) => `${positionsOf(underlay)} ${underlay.attributes["data-place"]}`))
+  expect([placed_Two("comment-current"), placed_Two("comment-proposed"), placed_Two("b-current"), placed_Two("b-proposed")]).toEqual([
+    ["0:0-0:12 1"],
+    [],
+    ["0:11-0:18 2"],
+    ["at 0:11 2"],
+  ])
 })
 
 // the words a ring is round, on its run's lines
 function textOfRing(
   lines: Array<{ segments: Array<{ text: string }> }>,
-  underlay: { from: { line: number, offset: number }, to: { line: number, offset: number } }
+  underlay: _Underlay_Text_
 ): string {
+  if (underlay.kind !== "STRETCH") return ""
   return (lines[underlay.from.line]?.segments ?? []).map((segment) => segment.text).join("").slice(underlay.from.offset, underlay.to.offset)
+}
+
+// where an underlay is, as a test says it: a stretch, from line:offset to
+// line:offset; a point, at line:offset; a boundary, before a line
+function positionsOf(
+  underlay: _Underlay_Text_
+): string {
+  if (underlay.kind === "POINT") return `at ${underlay.at.line}:${underlay.at.offset}`
+  if (underlay.kind === "BOUNDARY") return `before ${underlay.line}`
+  return `${underlay.from.line}:${underlay.from.offset}-${underlay.to.line}:${underlay.to.offset}`
 }

@@ -1,18 +1,23 @@
 import "../source/perspectives/changes.css"
 import { examples } from "./examples/index.ts"
+import { documents } from "./documents/index.ts"
 import { scenes } from "./scenes/index.ts"
 import { COMPONENTMAP__VIEW_TEXTEDITOR } from "../source/View_TextEditor.tsx"
 import { _TextEditor_ } from "../source/TextEditor.ts"
 import { MODULE_MOUSE } from "../source/modules/mouse.ts"
 import type { _Entry_Log_, _Example_ } from "./example.ts"
+import type { _Case_Document_, _Document_, _Status_Case_ } from "./document.ts"
 import type { _Invariant_Scene_, _Scene_ } from "./scene.ts"
 
-// the playground's page: the examples listed beside the one asked for
-// (?example=<name>), shown with what it reports logged under it; or, with
-// none asked for, the gallery of every scene
+// the playground's page: the examples and documents listed beside the one
+// asked for, an example (?example=<name>) shown with what it reports logged
+// under it, a document (?document=<name>) with every case it enumerates
+// drawn; or, with neither asked for, the gallery of every scene
 
 const asked = new URLSearchParams(location.search).get("example")
 const shown = examples.find((each) => each.name === asked)
+const asked_Document = new URLSearchParams(location.search).get("document")
+const shown_Document = documents.find((each) => each.name === asked_Document)
 
 window.logged = []
 
@@ -28,13 +33,24 @@ for (const example of examples) {
   item.append(link)
   list.append(item)
 }
-nav.append(home, list)
+const list_Documents = document.createElement("ul")
+for (const each of documents) {
+  const link = make("a", "", each.title)
+  link.href = `/?document=${encodeURIComponent(each.name)}`
+  if (each === shown_Document) link.setAttribute("aria-current", "page")
+  const item = document.createElement("li")
+  item.append(link)
+  list_Documents.append(item)
+}
+nav.append(home, make("h2", "", "Examples"), list, make("h2", "", "Documents"), list_Documents)
 
 const main = document.createElement("main")
 document.body.append(nav, main)
 
 if (shown !== undefined) show(shown)
+else if (shown_Document !== undefined) showDocument(shown_Document)
 else if (asked !== null) main.append(make("h1", "", "No such example"), make("p", "about", `There's no example called "${asked}".`))
+else if (asked_Document !== null) main.append(make("h1", "", "No such document"), make("p", "about", `There's no document called "${asked_Document}".`))
 else gallery()
 
 // the example, its title and what to try over it, and what it reports under
@@ -59,6 +75,121 @@ function show(example: _Example_): void {
     entries.append(describe(entry))
     entries.scrollTop = entries.scrollHeight
   })
+}
+
+// a document: its title and what it enumerates, what's in it, section by
+// section, with how many cases of each status, and what's still open; then
+// every case, drawn, numbered through the document, to be found by its
+// name in the address. The buttons show only the cases of one status, or
+// those with a question open
+function showDocument(shown_Document: _Document_): void {
+  document.title = `${shown_Document.title} · playground`
+  main.className = "document"
+  const cases = shown_Document.sections.flatMap((section) => section.cases)
+  const countOf = (status: _Status_Case_) => cases.filter((each) => each.status === status).length
+  const opened = cases.filter((each) => each.open !== null)
+
+  const contents = make("ol", "contents")
+  for (const section of shown_Document.sections) {
+    const link = make("a", "", section.title)
+    link.href = `#${section.name}`
+    const item = make("li", "")
+    item.append(link, make("span", "count", `${section.cases.length}`))
+    contents.append(item)
+  }
+
+  const questions = make("ul", "questions")
+  for (const each of opened) {
+    const link = make("a", "", each.title)
+    link.href = `#${each.name}`
+    const item = make("li", "")
+    item.append(link, make("span", "question", ` ${each.open?.question ?? ""}`))
+    questions.append(item)
+  }
+
+  const filters: Array<[string, string, (each: _Case_Document_) => boolean]> = [
+    ["all", `All ${cases.length}`, () => true],
+    ["normal", `Normal ${countOf("normal")}`, (each) => each.status === "normal"],
+    ["edge", `Edge ${countOf("edge")}`, (each) => each.status === "edge"],
+    ["planned", `Planned ${countOf("planned")}`, (each) => each.status === "planned"],
+    ["open", `Open ${opened.length}`, (each) => each.open !== null],
+  ]
+  const filter = make("div", "filter")
+  filter.setAttribute("role", "group")
+  filter.setAttribute("aria-label", "Show cases")
+  const drawn_Cases: Array<[_Case_Document_, HTMLElement]> = []
+  const sections_Drawn: Array<HTMLElement> = []
+  for (const [name, label, keeps] of filters) {
+    const button = make("button", "", label)
+    button.type = "button"
+    button.dataset["filter"] = name
+    button.setAttribute("aria-pressed", name === "all" ? "true" : "false")
+    button.addEventListener("click", () => {
+      for (const other of filter.querySelectorAll("button")) other.setAttribute("aria-pressed", other === button ? "true" : "false")
+      for (const [each, article] of drawn_Cases) article.hidden = !keeps(each)
+      for (const section of sections_Drawn) section.hidden = section.querySelector(".case:not([hidden])") === null
+    })
+    filter.append(button)
+  }
+
+  main.append(make("h1", "", shown_Document.title), make("p", "about", shown_Document.about), contents)
+  if (opened.length > 0) main.append(make("h2", "", "Open questions"), questions)
+  main.append(filter)
+
+  let number = 0
+  for (const section of shown_Document.sections) {
+    const element = make("section", "cases")
+    element.id = section.name
+    element.append(make("h2", "", section.title), make("p", "about", section.about))
+    for (const each of section.cases) {
+      number++
+      const article = drawCase(each, number)
+      drawn_Cases.push([each, article])
+      element.append(article)
+    }
+    sections_Drawn.push(element)
+    main.append(element)
+  }
+}
+
+// a case: its number and title, linking to itself, and its status; the
+// editor drawing what it's given, in the "changes" perspective, with the
+// mouse, as the gallery's scenes are, or, for a case with nothing yet to
+// draw, a note saying so; then what it shows, and what's open about it
+function drawCase(
+  each: _Case_Document_,
+  number: number
+): HTMLElement {
+  const article = make("article", `case ${each.size}`)
+  article.id = each.name
+  article.dataset["status"] = each.status
+  const head = make("header", "")
+  const title = make("a", "title", each.title)
+  title.href = `#${each.name}`
+  head.append(make("span", "number", `${number}`), title, make("span", `status ${each.status}`, each.status))
+  article.append(head)
+
+  if (each.viewModel_TextEditor === null) {
+    article.append(make("p", "undrawn", "Nothing to draw of it yet."))
+  } else {
+    const containerElement = document.createElement("div")
+    containerElement.dataset["perspective"] = "changes"
+    new _TextEditor_({
+      containerElement,
+      componentMap: COMPONENTMAP__VIEW_TEXTEDITOR,
+      modules: [MODULE_MOUSE],
+      viewModel_TextEditor: each.viewModel_TextEditor
+    })
+    const drawn = make("div", "drawn")
+    drawn.append(containerElement)
+    article.append(drawn)
+  }
+
+  const notes = make("dl", "notes")
+  notes.append(make("dt", "", "Shows"), make("dd", "", each.drawn))
+  if (each.open !== null) notes.append(make("dt", "", "Open"), make("dd", "", each.open.question), make("dt", "", "Recommend"), make("dd", "", each.open.recommend))
+  article.append(notes)
+  return article
 }
 
 // with no example asked for, every scene, drawn side by side, to be checked

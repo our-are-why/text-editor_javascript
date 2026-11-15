@@ -1,6 +1,6 @@
 import type { _Invariant_Scene_, _Scene_ } from "../scene.ts"
 import { viewModelOf__Blocks } from "../../source/ViewModel_TextEditor.ts"
-import type { _Line_Run_, _Group_Underlay_, _Underlay_Text_ } from "../../source/ViewModel_TextEditor.ts"
+import type { _Line_Run_, _Group_Underlay_, _STRETCH_Underlay_Text_ } from "../../source/ViewModel_TextEditor.ts"
 import { groupsOf__Lines, lineOf, textElementsIn } from "../lines.ts"
 import { attributesOf__Link, attributesOf__Change, attributesOf__Marks } from "../looks.ts"
 
@@ -61,6 +61,7 @@ const groups_Everything: Array<_Group_Underlay_> = [
   {
     attributes: {},
     underlays: [{
+      kind: "STRETCH",
       from: { line: placeOf("a text underlay across a wrap"), offset: 9 },
       to: { line: placeOf("a text underlay across a wrap"), offset: 60 },
       attributes: { "data-underlay": "box" },
@@ -69,6 +70,7 @@ const groups_Everything: Array<_Group_Underlay_> = [
   {
     attributes: {},
     underlays: [{
+      kind: "STRETCH",
       from: { line: placeOf("a text underlay across lines, from here"), offset: 2 },
       to: { line: placeOf("a text underlay across lines, to here"), offset: text_underlayTo.indexOf(", then") },
       attributes: { "data-underlay": "box" },
@@ -131,11 +133,12 @@ const invariants_Everything: Array<_Invariant_Scene_> = [
   },
   {
     name: "a text underlay is drawn behind exactly its stretch of text, as one shape over every row it's on, on one line or across several, reaching past it no further than a perspective lets it",
-    concerns: [...new Set(groups_Everything.flatMap((group) => group.underlays.flatMap((underlay_Text) => cases_Everything.slice(underlay_Text.from.line, underlay_Text.to.line + 1).map(({ label }) => label))))],
+    concerns: [...new Set(groups_Everything.flatMap((group) => group.underlays.flatMap((underlay_Text) => underlay_Text.kind !== "STRETCH" ? [] : cases_Everything.slice(underlay_Text.from.line, underlay_Text.to.line + 1).map(({ label }) => label))))],
     failing: (containerElement) => [
       ...new Set(
         groups_Everything.flatMap((group, index_Group) =>
           group.underlays.flatMap((underlay_Text, index_Underlay) => {
+            if (underlay_Text.kind !== "STRETCH") return []
             const pathElement = containerElement.querySelectorAll(".run_htmlView > .underlays_htmlView > .group_htmlView")[index_Group]?.children[index_Underlay]
             return pathElement instanceof SVGPathElement && shapeMatches(pathElement, rowsOf__Stretch(containerElement, underlay_Text)) ? [] : [labelAt(underlay_Text.from.line)]
           })
@@ -225,7 +228,7 @@ interface _Row_Stretch_ {
 // one between, all of it
 function rowsOf__Stretch(
   containerElement: HTMLElement,
-  underlay_Text: _Underlay_Text_
+  underlay_Text: _STRETCH_Underlay_Text_
 ): Array<_Row_Stretch_> {
   return textElementsIn(containerElement).slice(underlay_Text.from.line, underlay_Text.to.line + 1).flatMap((textElement, index) => {
     const line = underlay_Text.from.line + index
