@@ -13,6 +13,18 @@
   --gutterGap_htmlView: 0.5rem;
   --laneWidth_htmlView: 3px;
   --gutterEnd_htmlView: 0.75rem;
+  /* the proposals' own colour, an indigo, for where each stands and what's
+     to do with it: a hue the rings never use, nor the syntax, between its
+     blue and its violet, saying nothing good or bad, each state told by its
+     icon's shape; enough colour in it to read as live, never as greyed
+     out, light enough in the dark, and dark enough in the light, to be read
+     on the list's band */
+  --accent_proposals_htmlView: var(--view-proposals-accent, light-dark(#4b48c8, #aaa8ff));
+  /* and a plum for a revision, asked for or under way, a proposal still
+     going back and forth with the agent, apart from one decided: redder
+     than the indigo, plainly another colour beside it, and bluer than the
+     rings' red for removed, so it says nothing bad */
+  --accent_revision_htmlView: var(--view-revision-accent, light-dark(#8e3591, #e39be6));
 }
 
 /* A run of lines, one after another, and behind them one svg, as big as
@@ -304,12 +316,24 @@
 }
 
 /* The proposals in a frame, one item each, closing it, on the proposed
-   lines' band a shade darker, as doctor's actions are: their items start
-   where the lines' text does. */
+   lines' band a shade darker, as doctor's actions are: their items across
+   it, edge to edge, their words where the lines' text is; a strip of the
+   band above the first and below the last, so a lit first one doesn't run
+   on into the lines as proposed, nor a lit last one into the document
+   after the frame. Where the lines' text starts, worked out here, in the
+   lines' font, as the gutter's label is measured in it, and handed down a
+   length, so an item, in the interface's font, starts its words there
+   too. */
+@property --textInset_htmlView {
+  syntax: "<length>";
+  inherits: true;
+  initial-value: 0px;
+}
+
 .htmlView_editor .proposals_htmlView {
+  --textInset_htmlView: calc(var(--view-padding-inline, 1rem) + var(--labelWidth_htmlView) + var(--gutterGap_htmlView) + var(--laneWidth_htmlView) + var(--gutterEnd_htmlView));
   margin: 0;
-  padding-block: 0.25rem;
-  padding-inline: calc(var(--view-padding-inline, 1rem) + var(--labelWidth_htmlView) + var(--gutterGap_htmlView) + var(--laneWidth_htmlView) + var(--gutterEnd_htmlView)) var(--view-padding-inline, 1rem);
+  padding: 0.25rem 0;
   list-style: none;
   background:
     linear-gradient(var(--view-proposals-shade, color-mix(in srgb, CanvasText 5%, transparent)), var(--view-proposals-shade, color-mix(in srgb, CanvasText 5%, transparent))),
@@ -323,26 +347,39 @@
    many only if another proposal is rejected; for a proposal wholly here,
    it's empty, and, as an empty rationale does, takes no room. What an
    action does is the host's: its button carries only its command. It
-   reaches a little past the text on either side, so a perspective that
-   lights it, as the proposal pointed at, has room to. */
+   spans the list, edge to edge, through the gutter, beneath the frame's
+   bar, its words where the lines' text is, its actions where they'd end,
+   so a perspective that lights it, as the proposal pointed at, lights the
+   whole row, its icon in the gutter with it. */
 .htmlView_editor .item_htmlView {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
   align-items: center;
   column-gap: 1rem;
   row-gap: 0.1rem;
-  padding-block: 0.4rem;
-  margin-inline: -0.5rem;
-  padding-inline: 0.5rem;
-  border-radius: 3px;
+  padding: 0.4rem var(--view-padding-inline, 1rem) 0.4rem var(--textInset_htmlView);
   font-family: var(--view-ui-font, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif);
   font-size: var(--view-ui-font-size, 13px);
   line-height: 1.45;
 }
 
-.htmlView_editor .title_htmlView {
+/* its title, then its state, where it stands in its decision, a muted
+   word after it, the host's, none for an open one */
+.htmlView_editor .heading_htmlView {
   grid-column: 1;
+  margin: 0;
+}
+
+.htmlView_editor .title_htmlView {
   font-weight: 600;
+}
+
+/* the dot between its title and its state, the title's, so it stays still
+   whatever its state's label does, in the state's ink */
+.htmlView_editor .heading_htmlView:has(> .status_htmlView:not(:empty)) > .title_htmlView::after {
+  content: " · ";
+  font-weight: 400;
+  color: var(--ink_state_htmlView);
 }
 
 .htmlView_editor .places_htmlView {
@@ -359,28 +396,222 @@
   color: var(--view-rationale-ink, color-mix(in srgb, CanvasText 65%, transparent));
 }
 
-.htmlView_editor :is(.places_htmlView, .rationale_htmlView):empty {
+/* what was asked of it, a requested or revising one's, under its words */
+.htmlView_editor .request_htmlView {
+  grid-column: 1;
+  margin: 0;
+  color: var(--view-rationale-ink, color-mix(in srgb, CanvasText 65%, transparent));
+  font-style: italic;
+}
+
+.htmlView_editor :is(.places_htmlView, .rationale_htmlView, .request_htmlView, .status_htmlView):empty {
   display: none;
 }
 
 .htmlView_editor .actions_htmlView {
   grid-column: 2;
-  grid-row: 1 / span 3;
+  grid-row: 1 / span 4;
   display: flex;
   gap: 0.4rem;
 }
 
+/* where it stands, beside it, in the gutter's column of numbers, as a
+   line's number is beside the line: a check, accepted; a cross, rejected;
+   an arc going round, being revised, still where motion's asked to be
+   reduced; an arrow turning back, a revision requested, sent back to the
+   agent; a circle struck through, withdrawn; nothing for an open one,
+   whose actions are what's to do. Drawn, as glyphs for them aren't in every
+   font, so what's been acted on, and how it came out, is seen by its shape;
+   in the proposals' indigo, decided, or their plum, being revised, or a
+   grey, withdrawn, its status word in it too, so where it stands is found
+   at a glance, read before the item's words, and nothing says good or
+   bad, each colour the rings use keeping its one meaning; a host's
+   own colour for a state, if it gives one: --view-state-accepted,
+   --view-state-requested, --view-state-revising, --view-state-rejected,
+   --view-state-withdrawn. Being revised, its word and the dots after it,
+   the view's, shimmer together, a lighter streak going across the two, as
+   its arc goes round, the dots one, two, three, never none, one more at
+   each third of the streak's pass, so the two move in step; still, the
+   dots all there, where motion's asked to be reduced */
+.htmlView_editor .item_htmlView {
+  position: relative;
+  --ink_state_htmlView: var(--view-status-ink, var(--accent_proposals_htmlView));
+}
+
+.htmlView_editor .item_htmlView:not([data-state="OPEN"])::before {
+  content: "";
+  position: absolute;
+  top: calc(0.4rem + 0.725em - 0.5em);
+  left: calc(var(--textInset_htmlView) - var(--gutterGap_htmlView) - var(--laneWidth_htmlView) - var(--gutterEnd_htmlView) - 1.15em);
+  width: 1em;
+  height: 1em;
+  background: var(--ink_state_htmlView);
+  mask: var(--icon_state_htmlView) center / contain no-repeat;
+}
+
+.htmlView_editor .item_htmlView .status_htmlView {
+  color: var(--ink_state_htmlView);
+}
+
+/* each state's ink, an item's in it, and an action's that leads to it, so
+   a button's words are the colour of where it takes the proposal: decided,
+   accepted or rejected, in the proposals' indigo; revised in its plum, a
+   revision requested or being revised; and withdrawn, the agent's doing,
+   not yours, neutral, a grey darker than the item's words, as a state's
+   word is */
+.htmlView_editor :is(.item_htmlView[data-state="ACCEPTED"], .action_htmlView[data-state-after="ACCEPTED"]) {
+  --ink_state_htmlView: var(--view-state-accepted, var(--view-status-ink, var(--accent_proposals_htmlView)));
+}
+
+.htmlView_editor :is(.item_htmlView[data-state="REJECTED"], .action_htmlView[data-state-after="REJECTED"]) {
+  --ink_state_htmlView: var(--view-state-rejected, var(--view-status-ink, var(--accent_proposals_htmlView)));
+}
+
+.htmlView_editor :is(.item_htmlView[data-state="REVISING"], .action_htmlView[data-state-after="REVISING"]) {
+  --ink_state_htmlView: var(--view-state-revising, var(--view-status-ink, var(--accent_revision_htmlView)));
+}
+
+.htmlView_editor :is(.item_htmlView[data-state="REQUESTED"], .action_htmlView[data-state-after="REQUESTED"]) {
+  --ink_state_htmlView: var(--view-state-requested, var(--view-status-ink, var(--accent_revision_htmlView)));
+}
+
+.htmlView_editor :is(.item_htmlView[data-state="WITHDRAWN"], .action_htmlView[data-state-after="WITHDRAWN"]) {
+  --ink_state_htmlView: var(--view-state-withdrawn, var(--view-status-ink, color-mix(in srgb, CanvasText 82%, transparent)));
+}
+
+.htmlView_editor .item_htmlView[data-state="ACCEPTED"] {
+  --icon_state_htmlView: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none' stroke='black' stroke-width='1.9' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M3 8.6l3.2 3.1L13 4.6'/%3E%3C/svg%3E");
+}
+
+.htmlView_editor .item_htmlView[data-state="REJECTED"] {
+  --icon_state_htmlView: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none' stroke='black' stroke-width='1.9' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M4.2 4.2l7.6 7.6M11.8 4.2l-7.6 7.6'/%3E%3C/svg%3E");
+}
+
+.htmlView_editor .item_htmlView[data-state="REVISING"] {
+  --icon_state_htmlView: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none' stroke='black' stroke-width='1.9' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M8 2.2a5.8 5.8 0 1 1-5.8 5.8'/%3E%3C/svg%3E");
+}
+
+.htmlView_editor .item_htmlView[data-state="REQUESTED"] {
+  --icon_state_htmlView: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none' stroke='black' stroke-width='1.9' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 3.4L2.6 6.8 6 10.2M2.9 6.8h6.6a3.6 3.6 0 0 1 0 7.2H8'/%3E%3C/svg%3E");
+}
+
+/* withdrawn's icon fainter than its word, about half as strong, as a grey
+   shape weighs more than a grey word, and nothing's left to do with it */
+.htmlView_editor .item_htmlView[data-state="WITHDRAWN"]::before {
+  background: color-mix(in srgb, var(--ink_state_htmlView) 55%, transparent);
+}
+
+.htmlView_editor .item_htmlView[data-state="WITHDRAWN"] {
+  --icon_state_htmlView: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none' stroke='black' stroke-width='1.9' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='8' cy='8' r='5.6'/%3E%3Cpath d='M4.1 11.9l7.8-7.8'/%3E%3C/svg%3E");
+}
+
+.htmlView_editor .item_htmlView[data-state="REVISING"] .status_htmlView::after {
+  content: "...";
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .htmlView_editor .item_htmlView[data-state="REVISING"] {
+    --time_revising_htmlView: 1.8s;
+  }
+
+  .htmlView_editor .item_htmlView[data-state="REVISING"]::before {
+    animation: revising_htmlView 1.1s linear infinite;
+  }
+
+  /* the word and its dots one shape to the streak: a mask going across
+     them both, the label's width never changing, its dots in a box of a
+     fixed width, one, two and three drawn in turn, the dots themselves, as
+     where one ellipsis's dots sit in its box is its font's, so a third of
+     it may hold two */
+  .htmlView_editor .item_htmlView[data-state="REVISING"] .status_htmlView {
+    mask-image: linear-gradient(90deg, #000 40%, rgb(0 0 0 / 0.35) 50%, #000 60%);
+    mask-size: 300% 100%;
+    animation: shimmer_htmlView var(--time_revising_htmlView) linear infinite;
+  }
+
+  .htmlView_editor .item_htmlView[data-state="REVISING"] .status_htmlView::after {
+    display: inline-block;
+    width: 1em;
+    text-align: left;
+    animation: ellipsis_htmlView var(--time_revising_htmlView) step-end infinite;
+  }
+}
+
+@keyframes ellipsis_htmlView {
+  0% {
+    content: ".";
+  }
+
+  33.3% {
+    content: "..";
+  }
+
+  66.6% {
+    content: "...";
+  }
+}
+
+@keyframes shimmer_htmlView {
+  from {
+    mask-position: 100% 0;
+  }
+
+  to {
+    mask-position: 0 0;
+  }
+}
+
+@keyframes revising_htmlView {
+  to {
+    transform: rotate(1turn);
+  }
+}
+
+/* its title and words the same whatever its state, so a decided one,
+   accepted, rejected or withdrawn, reads as plainly as an open one, told
+   apart by its icon, its status word and its place below the open ones;
+   and no action of one that isn't open the main one, as what's done with
+   it now, reopening it, isn't what it's waiting for */
+
+/* its actions in colour too while it's open, waiting on you: the main
+   one filled in the proposals' indigo, its words white, a deeper indigo in
+   the dark, so they still read; the others on their grey, their words the
+   colour of the state each leads to, rejecting indigo, revising plum, so
+   they're still plainly buttons; once it's not, waiting on the agent, or
+   on no one, its actions neutral, there but not asked for, the colour on
+   its row its state's alone. Hovered, each a step deeper, its ground
+   darker on its grey, the main one's indigo deeper, as a click does
+   nothing else to show yet; and ringed in the page's ink when the
+   keyboard's on it, no colour, as each colour here says where a proposal
+   stands */
 .htmlView_editor .action_htmlView {
   padding: 0.15rem 0.6rem;
   border: none;
   border-radius: 2px;
   background: var(--view-action-ground, light-dark(#e5e5e5, #313131));
-  color: var(--view-action-ink, light-dark(#3b3b3b, #cccccc));
+  color: var(--view-action-ink, var(--ink_state_htmlView));
   font: inherit;
   cursor: pointer;
 }
 
-.htmlView_editor .action_htmlView:first-child {
-  background: var(--view-action-main-ground, light-dark(#005fb8, #0078d4));
+.htmlView_editor .item_htmlView:not([data-state="OPEN"]) .action_htmlView {
+  color: var(--view-action-ink, light-dark(#3b3b3b, #cccccc));
+}
+
+.htmlView_editor .action_htmlView:hover {
+  background: var(--view-action-hover-ground, light-dark(#d6d6d6, #3d3d3d));
+}
+
+.htmlView_editor .action_htmlView:focus-visible {
+  outline: 2px solid var(--view-focus-ring, CanvasText);
+  outline-offset: 2px;
+}
+
+.htmlView_editor .item_htmlView[data-state="OPEN"] .action_htmlView:first-child {
+  background: var(--view-action-main-ground, light-dark(#4b48c8, #5654d6));
   color: var(--view-action-main-ink, #ffffff);
+}
+
+.htmlView_editor .item_htmlView[data-state="OPEN"] .action_htmlView:first-child:hover {
+  background: var(--view-action-main-hover-ground, light-dark(#3c39ad, #6866e2));
 }

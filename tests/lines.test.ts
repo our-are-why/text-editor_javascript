@@ -9,8 +9,8 @@ import { attributesOf__Change, attributesOf__Edit, attributesOf__Nested, type _S
 // projection works it out: its two ends in two frames
 const moved = (side: _Side_Change_) => attributesOf__Change({ side, kind: "moved", source: "move" })
 const renamed = (side: _Side_Change_) => ({ ...moved(side), ...attributesOf__Edit({ kind: "replaced", source: "rename" }) })
-const item: _Item_Proposals_ = { source: "move", title: "Move beta and gamma down", places: "", rationale: "", actions: [], attributes: {} }
-const item_Rename: _Item_Proposals_ = { source: "rename", title: "Shout gamma", places: "", rationale: "", actions: [], attributes: {} }
+const item: _Item_Proposals_ = { source: "move", title: "Move beta and gamma down", state: "OPEN", status: "", places: "", rationale: "", request: "", actions: [], attributes: {} }
+const item_Rename: _Item_Proposals_ = { source: "rename", title: "Shout gamma", state: "OPEN", status: "", places: "", rationale: "", request: "", actions: [], attributes: {} }
 const blocks = blocksWith__Frames({
   multilineText: "alpha\nbeta\ngamma ray\n\ndelta\nepsilon",
   module_Language: MODULE_PLAINTEXT,

@@ -33,7 +33,7 @@ class _TextEditor_ {
   modules: Array<_Module_TextEditor_>
   state: _State_TextEditor_
   request_Draw: number | null
-  time_Pointed: number
+  point_Screen: _Point_Screen_ | null
 
   constructor({
     containerElement,
@@ -57,7 +57,7 @@ class _TextEditor_ {
       range_Peeked: null
     }
     this.request_Draw = null
-    this.time_Pointed = performance.now()
+    this.point_Screen = null
     for (const event of eventsOf__Modules(this.modules)) {
       this.containerElement.addEventListener(
         event,
@@ -82,13 +82,13 @@ class _TextEditor_ {
   dispatch(
     command: _Command_TextEditor_
   ): boolean {
+    if (command.kind === "POINT") this.point_Screen = command.point_Screen
     const state = stateAfter__Command({
       state: this.state,
       command,
       layout_View: this.view
     })
     if (state !== this.state) {
-      if (state.source_Pointed !== this.state.source_Pointed) this.time_Pointed = performance.now()
       this.state = state
       this.drawOnNextFrame()
     }
@@ -100,7 +100,10 @@ class _TextEditor_ {
     this.request_Draw = requestAnimationFrame(() => {
       this.request_Draw = null
       this.view.draw(viewModelOf__State(this.state))
-      this.view.pace(performance.now() - this.time_Pointed)
+      this.dispatch({
+        kind: "POINT",
+        point_Screen: this.point_Screen
+      })
       if (this.state.target_Revealed !== null) {
         this.view.reveal(this.state.target_Revealed)
         this.state = {
@@ -257,8 +260,7 @@ function FOLD_stateAfter__Command({
       : [
         ...state.ranges_Folded,
         command.range_Frame
-      ],
-    range_Peeked: null
+      ]
   }
 }
 

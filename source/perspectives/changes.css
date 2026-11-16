@@ -103,6 +103,36 @@
   color: var(--view-moved-label, light-dark(#a2733f, #977254));
 }
 
+/* a proposal being revised, the agent at it, its rings faded and the words
+   it proposes faded, breathing, as doctor's revised lines pulsed, so it's
+   seen to be on its way, not yet to decide; still where motion's asked to
+   be reduced. Its state is its item's, `data-state` on its groups and its
+   words */
+[data-perspective="changes"] .group_htmlView[data-state="REVISING"] > :is(.underlay_htmlView, .seam_htmlView)[data-change] {
+  stroke-opacity: 0.45;
+}
+
+[data-perspective="changes"] .text_htmlView [data-state="REVISING"][data-side="after"] {
+  opacity: 0.55;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  [data-perspective="changes"] .group_htmlView[data-state="REVISING"]:not([data-pointed]) > :is(.underlay_htmlView, .seam_htmlView)[data-change] {
+    animation: breathe_htmlView 2.4s ease-in-out infinite;
+  }
+
+  [data-perspective="changes"] .text_htmlView [data-state="REVISING"][data-side="after"] {
+    animation: revise_htmlView 2.4s ease-in-out infinite;
+  }
+}
+
+@keyframes revise_htmlView {
+  50% {
+    opacity: 0.8;
+  }
+}
+
+
 /* the proposal pointed at, `data-pointed` on its groups and its items, in
    every frame it's in, the others still showing: its rings heavier, its
    items lit; and of its rings, the place under the pointer, `data-pointed`
@@ -112,10 +142,9 @@
    they're all lit together lasts, both sides of a place in step, one lap
    each in the time its longer ring takes at one pace, --lap_htmlView, the
    view's measure, kept between two seconds and six, so a short ring's light
-   doesn't crawl or a long one's race; the view keeps the breath's pace,
-   --elapsed_pointed_htmlView, how long the proposal's been pointed at, so
-   it's kept as the rings are drawn again, the place's light starting anew at
-   each place. One light round a ring, as if a wrap didn't cut it: along its
+   doesn't crawl or a long one's race; the rings kept as they're drawn
+   again, so the breath goes on from place to place of one proposal, the
+   place's light starting anew at each place. One light round a ring, as if a wrap didn't cut it: along its
    top edges, part after part, down its last side, back along its bottom
    edges and up its first side, never its cut sides, drawn on the view's
    pieces of it, each its share of the lap and where on the lap it starts,
@@ -130,7 +159,7 @@
 
 @media (prefers-reduced-motion: no-preference) {
   [data-perspective="changes"] .group_htmlView[data-pointed] > :is(.underlay_htmlView, .seam_htmlView)[data-change] {
-    animation: breathe_htmlView 2.4s ease-in-out calc(-1 * var(--elapsed_pointed_htmlView, 0ms)) infinite;
+    animation: breathe_htmlView 2.4s ease-in-out infinite;
   }
 
   [data-perspective="changes"] .lap_htmlView[data-pointed][data-change] {
@@ -179,8 +208,14 @@
   -webkit-text-stroke: 0.1em currentColor;
 }
 
-[data-perspective="changes"] .item_htmlView[data-pointed] {
-  background: var(--view-pointed-item, color-mix(in srgb, Canvas 35%, transparent));
+/* an item lit, its proposal pointed at, from the code or from the item,
+   or the keyboard on one of its actions, so it's seen whose they are: on
+   the proposed lines' own ground, their tint on the view's, as the lines
+   it proposes are, the whole row, its gutter too */
+[data-perspective="changes"] .item_htmlView:is([data-pointed], :has(:focus-visible)) {
+  background:
+    linear-gradient(var(--view-proposed, color-mix(in srgb, CanvasText 4%, transparent)), var(--view-proposed, color-mix(in srgb, CanvasText 4%, transparent))),
+    var(--view-ground, Canvas);
 }
 
 /* where a note pointed at goes, a move's other end, `data-targeted` on its

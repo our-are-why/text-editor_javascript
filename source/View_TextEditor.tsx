@@ -145,15 +145,6 @@ class _View_TextEditor_ {
       target_Note
     })
   }
-
-  pace(
-    elapsed_Pointed: number
-  ): void {
-    pace__View_TextEditor({
-      containerElement_View: this.containerElement,
-      elapsed_Pointed
-    })
-  }
 }
 
 interface _Api__View_TextEditor_ {
@@ -554,10 +545,15 @@ function Item_ProposalList__Html({
       {...item_ProposalList.attributes}
       class="item_htmlView"
       data-source={item_ProposalList.source}
+      data-state={item_ProposalList.state}
     >
-      <span class="title_htmlView">{item_ProposalList.title}</span>
+      <p class="heading_htmlView">
+        <span class="title_htmlView">{item_ProposalList.title}</span>
+        <span class="status_htmlView">{item_ProposalList.status}</span>
+      </p>
       <p class="places_htmlView">{item_ProposalList.places}</p>
       <p class="rationale_htmlView">{item_ProposalList.rationale}</p>
+      <p class="request_htmlView">{item_ProposalList.request}</p>
       <div class="actions_htmlView">
         {item_ProposalList.actions.map((action_Item) => <Action_Item__Html action_Item={action_Item} />)}
       </div>
@@ -577,6 +573,7 @@ function Action_Item__Html({
       type="button"
       class="action_htmlView"
       data-command={action_Item.command}
+      data-state-after={action_Item.stateAfter === null ? undefined : action_Item.stateAfter}
     >
       {action_Item.label}
     </button>
@@ -667,15 +664,14 @@ function drawn$Of__Run_Line$({
   run_Line$,
   containerElement_View
 }: _Api___drawn$Of__Run_Line$_): Array<_Drawn_Run_> {
-  if (run_Line$.groups.length === 0) return []
   const selector_run = `.run_htmlView[data-run="${CSS.escape(run_Line$.id)}"]`
   const svgElement_underlay$ = containerElement_View.querySelector(`${selector_run} > .underlays_htmlView`)
   if (svgElement_underlay$ === null) {
-    console.warn(`the text underlays of the run "${run_Line$.id}" aren't drawn: there's no ${selector_run} with its <svg class="underlays_htmlView">, which a host's component drawing the run has to keep`)
+    if (run_Line$.groups.length > 0) console.warn(`the text underlays of the run "${run_Line$.id}" aren't drawn: there's no ${selector_run} with its <svg class="underlays_htmlView">, which a host's component drawing the run has to keep`)
     return []
   }
   const divElement$_text = [...containerElement_View.querySelectorAll(`${selector_run} > .line_htmlView > .text_htmlView`)]
-  if (divElement$_text.length !== run_Line$.lines.length) {
+  if (run_Line$.groups.length > 0 && divElement$_text.length !== run_Line$.lines.length) {
     console.warn(`the text underlays of the run "${run_Line$.id}" aren't drawn: ${divElement$_text.length} of its ${run_Line$.lines.length} lines are a .line_htmlView right inside it with a .text_htmlView right inside that, which a host's component drawing a line has to keep`)
     return []
   }
@@ -2145,21 +2141,6 @@ interface _Layout_View_ {
   placeAt: (point_Screen: _Point_Screen_) => string | null
   targetAt: (point_Screen: _Point_Screen_) => _Target_Note_ | null
   foldAt: (point_Screen: _Point_Screen_) => _Range_Lines_ | null
-}
-
-interface _Api___pace__View_TextEditor_ {
-  containerElement_View: HTMLElement
-  elapsed_Pointed: number
-}
-
-function pace__View_TextEditor({
-  containerElement_View,
-  elapsed_Pointed
-}: _Api___pace__View_TextEditor_): void {
-  containerElement_View.querySelector<HTMLElement>(":scope > .htmlView_editor")?.style.setProperty(
-    "--elapsed_pointed_htmlView",
-    `${Math.round(elapsed_Pointed)}ms`
-  )
 }
 
 interface _Api___reveal__View_TextEditor_ {

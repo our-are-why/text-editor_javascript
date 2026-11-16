@@ -145,7 +145,7 @@ test("plain text's module marks nothing: each line is one segment, its text, car
 
 // a group behind a run, and an item in a list, of a proposal, by its source
 const groupOf = (source: string): _Group_Underlay_ => ({ attributes: { "data-source": source }, underlays: [] })
-const itemOf = (source: string): _Item_Proposals_ => ({ source, title: source, places: "", rationale: "", actions: [], attributes: {} })
+const itemOf = (source: string): _Item_Proposals_ => ({ source, title: source, state: "OPEN", status: "", places: "", rationale: "", request: "", actions: [], attributes: {} })
 
 test("pointing at a proposal marks its groups and its items, in every run and list, and nothing else; pointing at none leaves the view model as it was", () => {
   const lines = parseLines_ViewModel({ multilineText: "one", module_Language: MODULE_PLAINTEXT })
@@ -252,4 +252,25 @@ test("a folded frame peeked has its rings, all of them, every proposal's; anothe
   ])
   const folded = foldedAt__ViewModel({ viewModel_TextEditor: viewModel, ranges_Folded: [{ first: 1, last: 2 }, { first: 4, last: 5 }], range_Peeked: { first: 1, last: 2 } })
   expect(folded.runs.map((run) => `${run.id}: ${run.groups.map((group) => `${group.attributes["data-source"]} ${group.underlays.length}`).join(", ")}`)).toEqual(["proposed: first 2, over 1", "other-proposed: "])
+})
+
+test("a proposal's state, its item's, is on its groups and on its words, each run's, for a perspective to show; its item listed after the rest once it's decided, accepted, rejected or withdrawn, the others in their order", () => {
+  const [line] = parseLines_ViewModel({ multilineText: "one two", module_Language: MODULE_PLAINTEXT })
+  const [segment] = line?.segments ?? []
+  if (line === undefined || segment === undefined) throw new Error("the line wasn't parsed")
+  const segments = segmentsOf__Stretches({ text: segment.text, stretches: [{ from: 0, to: 3, attributes: { "data-source": "revised" } }, { from: 4, to: 7, attributes: { "data-source": "open" } }] })
+  const itemIn = (source: string, state: _Item_Proposals_["state"]): _Item_Proposals_ => ({ ...itemOf(source), state })
+  const viewModel = viewModelOf__Blocks([{
+    kind: "FRAME",
+    range: { first: 1, last: 1 },
+    parts: [
+      { kind: "CURRENT_LINES", run: { id: "current", lines: [{ ...line, segments }], groups: [groupOf("revised"), groupOf("open")] } },
+      { kind: "PROPOSAL_LIST", items: [itemIn("accepted", "ACCEPTED"), itemIn("revised", "REVISING"), itemIn("rejected", "REJECTED"), itemIn("open", "OPEN"), itemIn("withdrawn", "WITHDRAWN"), itemIn("requested", "REQUESTED")] },
+    ],
+  }])
+  const run = viewModel.runs[0]
+  expect(run?.groups.map((group) => group.attributes)).toEqual([{ "data-source": "revised", "data-state": "REVISING" }, { "data-source": "open", "data-state": "OPEN" }])
+  expect(run?.lines[0]?.segments.map((segment) => segment.attributes)).toEqual([{ "data-source": "revised", "data-state": "REVISING" }, {}, { "data-source": "open", "data-state": "OPEN" }])
+  const list = viewModel.blocks[0]?.kind === "FRAME" ? viewModel.blocks[0].parts.find((part) => part.kind === "PROPOSAL_LIST") : undefined
+  expect(list?.kind === "PROPOSAL_LIST" ? list.items.map((item) => item.source) : []).toEqual(["revised", "open", "requested", "accepted", "rejected", "withdrawn"])
 })

@@ -29,8 +29,11 @@ const hookAndRound = { ...hook, ...attributesOf__Nested({ kind: "replaced", sour
 const item_Hook: _Item_Proposals_ = {
   source: "hook",
   title: "Drop the onRetry hook",
+  state: "OPEN",
+  status: "",
   places: "",
   rationale: "Nothing passes onRetry any more: the callers log their retries in their own catch blocks.",
+  request: "",
   actions: actions_Review,
   attributes: {},
 }
@@ -38,8 +41,11 @@ const item_Hook: _Item_Proposals_ = {
 const item_Round: _Item_Proposals_ = {
   source: "round",
   title: "Call the attempt counter round",
+  state: "OPEN",
+  status: "",
   places: "",
   rationale: "n says nothing; round says what it counts, in retry and in backoff alike, and in the doc comment that names it.",
+  request: "",
   actions: actions_Review,
   attributes: {},
 }

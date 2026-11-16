@@ -331,17 +331,68 @@ it, rejected letting it apply. The states are the host's, as doctor's are,
 `revising` the two waiting ones here; the editor shows each and asks for its
 transitions, an item's actions as the host gives them for its state.
 
-How each shows, settled from mockups, to be built with the states: an item's
-title where it always is, its state after it, a muted word, "· Revision
-requested", "· Revising…", "· Accepted", "· Rejected", "· Withdrawn";
-requested, what you asked under its words, Reopen its one action; revising,
-its rings and the lines it proposes faded, breathing, as doctor's revised
-lines pulsed, without actions; accepted, its words the document's, so
-nothing left to ring, a check by the numbers of the lines it changed, as
-doctor's was; rejected and withdrawn, its change gone from the lines
-proposed; decided items below the open ones; and a frame whose proposals are
-all decided folded, as below, the document's lines then, numbered again, a
-faint bar beside them, its handle to unfold it and reopen what's in it.
+How each shows: an item says its state, `state`, one of the six as a kind,
+`OPEN`, `REQUESTED`, `REVISING`, `ACCEPTED`, `REJECTED`, `WITHDRAWN`, and
+what to call it, `status`, the host's words, as its actions are, drawn as a
+word after its title, "· Revision requested", "· Revising", "· Accepted",
+none for an open one; what was asked of a requested or revising one,
+`request`, under its words; and its actions, the host's for its state, as
+the playground's are Reopen alone for one requested, accepted or rejected,
+none while it's revised, and Dismiss alone once it's withdrawn, the agent's
+to take back, not yours, so nothing left of it to reopen, only to clear from
+the list, an open one's first the main one, no other's, filled in the
+proposals' indigo, its words white, the others on their grey, their words
+the colour of the state each leads to, outlined once, too heavy a column of
+them down a long list, an action saying which, `stateAfter`, rejecting
+indigo, revising plum, so a button says where it takes the proposal, and
+they're still plainly buttons, ringed in it when the keyboard's on one; once
+it's not open, waiting on the agent, or on no one, its actions neutral,
+there but not asked for, the colour on its row its state's alone. Beside
+each, in the gutter's column of numbers, as a line's number is beside its
+line, an icon for where it stands: a check, accepted; a cross, rejected; an
+arc going round, being revised, still where motion's reduced; an arrow
+turning back, a revision requested; a circle struck through, withdrawn; none
+for an open one, whose actions are what's to do. So what's been acted on,
+and how it came out, is seen by its shape, its icon and its status word in
+the proposals' own colour, an indigo, `--view-proposals-accent`, where
+you've decided it, accepted or rejected, or their plum,
+`--view-revision-accent`, where it's still going back and forth with the
+agent, a revision requested or under way, redder than the indigo, plainly
+another colour beside it, bluer than the rings' red for removed, tried after
+a teal, which bothered, or a grey, darker than the item's words, where the
+agent's withdrawn it, nothing of yours to colour, its icon fainter than its
+word, about half as strong, as a grey shape weighs more than a grey word, so
+where it stands is found at a glance, read before the item's words, and
+nothing says good or bad: a hue the rings never use, green, red, yellow and
+brown each keeping its one meaning there, nor the syntax, between its blue
+and its violet, saturated enough to read as live, as a slate blue, greyed,
+read as disabled; yours, once it's built, to be told some other way than a
+purple, the indigo and the plum either side of one, each state told by its
+icon's shape; a host's own colour for a state if it gives one,
+`--view-state-accepted` and the rest. A revising one's status word and the
+dots after it, the view's, the host's word without them, shimmer as one, a
+lighter streak going across the two as its arc goes round, the dots one,
+two, three, never none, one more at each third of the streak's pass, drawn
+as dots, not an ellipsis revealed a third at a time, whose dots sit where
+its font puts them, so in one a third held two, in step with it, the label's
+width never changing, the dot between its title and its state the title's,
+so it's still; still where motion's reduced, the dots all there.
+`viewModelOf__Blocks` puts each proposal's state, its item's, on its groups
+and its words, `data-state`, for a perspective to show, and lists decided
+items, accepted, rejected or withdrawn, after the rest, their titles and
+words the same as any other's, whatever their state, told apart by their
+icons, their status words and their place. The "changes" perspective fades a
+revising one's rings and the words it proposes, breathing, as doctor's
+revised lines pulsed, still where motion's asked to be reduced. An accepted
+one's words are the document's, so there's nothing left to ring, and nothing
+marks the lines they're on: a check by their numbers was tried, and dropped,
+the gutter left to its numbers and its signs. A rejected or withdrawn one's
+change is gone from the lines proposed, the projection leaving it out. Still
+to come: a frame whose proposals are all decided folding itself, the
+document's lines then, numbered again, a faint bar beside them, its handle
+to unfold it and reopen what's in it; pointing at an accepted one lighting
+the lines it changed; and the commands the actions send, the host's to carry
+out. The JavaScript example has a proposal in every state.
 
 ## how it shows them
 
@@ -681,16 +732,17 @@ not a proposal's state: which frames are folded is the editor's state,
 `ranges_Folded`, each by its range, and `foldedAt__ViewModel` makes each
 folded frame a block of its own kind, `FOLDED`, its range and its lines as
 proposed, drawn by its own component, which a host can put its own in place
-of. Its control is a chevron in the gutter, left of its first line, a
-button: pointing right where the frame's folded, always there; pointing down
-where it isn't, shown while the frame's hovered or the button's focused, as
-a code editor's fold controls are; and its bar folds and unfolds it too,
-either a `FOLD` command, which toggles it. Hovered, where its frame's
-folded, its control peeks at it: it rings its changes, all of them, every
-proposal's, each whole as far as it's in the frame, plainly, as they'd be
-unfolded with nothing pointed at, room made for them, so its text may move a
-little while it's peeked at; off its control, the peek's over, and folding
-or unfolding it ends it till the pointer moves. A peek says what a frame
+of. Its control is a chevron in the gutter, left of its first line, in the
+gutter's grey, a button: pointing right where the frame's folded, always
+there; pointing down where it isn't, shown while the frame's hovered or the
+button's focused, as a code editor's fold controls are; and its bar folds
+and unfolds it too, either a `FOLD` command, which toggles it. Hovered,
+where its frame's folded, its control peeks at it: it rings its changes, all
+of them, every proposal's, each whole as far as it's in the frame, plainly,
+as they'd be unfolded with nothing pointed at, room made for them, so its
+text may move a little while it's peeked at; off its control, the peek's
+over; folded with the pointer still on its control, it's peeked at at once,
+the pointer pointing again once the fold's drawn. A peek says what a frame
 changes, and where, not whose: there's no telling several proposals apart at
 once, so which is whose is for unfolding it and pointing, and a folded
 frame's text, and its signs, point at nothing, so reading it sets nothing
@@ -797,16 +849,32 @@ them.
 **proposal items, the editor's:** each proposal's item, in a frame's list,
 is drawn by the editor, not left to the host: its title, why it's proposed,
 and its actions, a button each, from what the host says in the view model,
-`{ source, title, rationale, actions }`, an action a label and a command,
-`{ command: "accept", label: "Accept" }`. Which actions there are, and what
-they're called, is the host's; reviewing, the buttons, the keyboard, focus
-moving between the text and the list, a screen reader's list, is the
-editor's, the same in every host. A button carries only its command, as
-`data-command`: choosing it is a command, through the pipeline, which the
-host hears as an observer and acts on, what accepting means beyond the text
-its own; till the pipeline's built, the buttons are drawn and do nothing.
-There were slots once, room left in each item for the host to draw in;
-they're gone. If a host needs something no item has, one's added for it.
+`{ source, title, rationale, actions }`, an action a label, a command and
+the state it leads to, `{ command: "accept", label: "Accept", stateAfter:
+"ACCEPTED" }`, `null` for one that ends it, as dismissing does, so its
+button's drawn in that state's colour without the editor knowing the host's
+commands. Which actions there are, and what they're called, is the host's;
+reviewing, the buttons, the keyboard, focus moving between the text and the
+list, a screen reader's list, is the editor's, the same in every host. A
+button carries only its command, as `data-command`: choosing it is a
+command, through the pipeline, which the host hears as an observer and acts
+on, what accepting means beyond the text its own; till the pipeline's built,
+the buttons are drawn and do nothing. There were slots once, room left in
+each item for the host to draw in; they're gone. If a host needs something
+no item has, one's added for it. Hovered, an item points at its proposal, as
+its rings do, and it's lit, on the proposed lines' own ground, as the lines
+it proposes are, the whole row, across the list edge to edge, through the
+gutter, its icon with it, beneath the frame's bar; a strip of the list's
+band kept above its first item and below its last, so a lit first one
+doesn't run on into the lines as proposed, nor a lit last one into the
+document after the frame; the keyboard on one of its actions lights it too,
+so it's seen whose they are, though it doesn't point at its proposal yet,
+pointing being the mouse's till the current proposal's built. An action
+hovered goes a step deeper, its grey darker, the main one's indigo deeper,
+`--view-action-hover-ground` and `--view-action-main-hover-ground`, as a
+click shows nothing else yet; and the keyboard's on one ringed in the page's
+ink, `--view-focus-ring`, no colour, as each colour there says where a
+proposal stands.
 
 Deciding is a command, on the current proposal or one named: accept, reject,
 revise, amend; an item's actions are the editor's buttons for them, or,
@@ -896,37 +964,55 @@ hatched, one lap each in the time the place's longer ring takes at one pace,
 from its length, which the view works out as it draws them,
 `--lap_htmlView`, kept between two seconds and six, so its two sides go
 round together and no light crawls or races, so the moment they're all lit
-together lasts; one light round a ring a wrap cuts in two, as if it
-weren't cut, along its top edges part after part, down its last side, back
-along its bottom edges and up its first, never its cut sides, the view
-drawing it in pieces, `lap_htmlView`, each its share of the lap and where
-on the lap it starts, `--phase_htmlView`, as a browser starts a dash
-afresh on each shape in a path, so a light run round the parts as one path
-showed in both at once, or in neither; and still where motion's asked to be reduced; the view keeps
-the breath's pace as it draws them again, `pace`, how long the proposal's
-been pointed at, which the editor keeps, `--elapsed_pointed_htmlView`; the
-labels of the pointed lines heavier, so they're found reading down a frame,
-the place's lines' heavier again, by a stroke round each glyph, not a bolder
-weight, which may be wider, so no label moves, and still, the motion being
-the rings'; a targeted ring heavier, so a note shows, from either end, which
-change is its counterpart. Two commands so far: `POINT`, a point on the
-screen or none, its handler asking the view what proposal's there,
-`sourceAt`: the innermost ring whose area it's in, or else what it's over,
-as a point's resolved by lowering, not by its source; what place of it,
-`placeAt`, the same ring's; and what note, `targetAt`; and `JUMP`, to a
+together lasts; one light round a ring a wrap cuts in two, as if it weren't
+cut, along its top edges part after part, down its last side, back along its
+bottom edges and up its first, never its cut sides, the view drawing it in
+pieces, `lap_htmlView`, each its share of the lap and where on the lap it
+starts, `--phase_htmlView`, as a browser starts a dash afresh on each shape
+in a path, so a light run round the parts as one path showed in both at
+once, or in neither; and still where motion's asked to be reduced; the
+breath going on as they're drawn again, the drawing keeping the elements it
+drew; the labels of the pointed lines heavier, so they're found reading down
+a frame, the place's lines' heavier again, by a stroke round each glyph, not
+a bolder weight, which may be wider, so no label moves, and still, the
+motion being the rings'; a targeted ring heavier, so a note shows, from
+either end, which change is its counterpart. Two commands so far: `POINT`, a
+point on the screen or none, its handler asking the view what proposal's
+there, `sourceAt`: the innermost ring whose area it's in, or else what it's
+over, as a point's resolved by lowering, not by its source; what place of
+it, `placeAt`, the same ring's; and what note, `targetAt`; and `JUMP`, to a
 note's target, its handler keeping it in the state, which the editor, once
 it's drawn, has the view reveal, `reveal`, scrolling it to the middle, then
 forgets, as scrolling is something done, not a state to draw. It doesn't
 point at what it reveals: pointing is the mouse's, and the scroll moves
-what's under it. One module, `MODULE_MOUSE`, in `source/modules/mouse.ts`,
-every move of the pointer a `POINT` where it is, as it can move out of a
-ring still over the same element, leaving the editor a `POINT` at nothing, a
-click on a note a `JUMP`.
-Not yet: the model, lowering's stages, results beyond taken, observers, the
-keyboard and the current proposal.
+what's under it. Once it's drawn, though, before revealing, it points again
+where the pointer last was, a `POINT` of its own, as what's drawn can move
+under a pointer that doesn't, a frame folded above it, or the one it's on,
+and a pointer that doesn't move sends nothing; where nothing under it
+changed, the state's the same, and nothing's drawn again. One module,
+`MODULE_MOUSE`, in `source/modules/mouse.ts`, every move of the pointer a
+`POINT` where it is, as it can move out of a ring still over the same
+element, leaving the editor a `POINT` at nothing, a click on a note a
+`JUMP`. Not yet: the model, lowering's stages, results beyond taken,
+observers, the keyboard and the current proposal.
 
 How it's drawn:
 
+- **what's drawn is kept:** drawing the view model again keeps the elements
+  already drawn, each matched by its tag, its class, and the data attributes
+  it and the description both have: one come or gone doesn't tell them
+  apart, as a ring pointed at is the ring it was, one changed does, as a
+  place's light at another place is another light; wherever it is among its
+  siblings, moved into place by `moveBefore`, which keeps its state; its
+  attributes brought to the description's, any it doesn't give gone, as from
+  a fresh one, the view then setting again what it measures. An element
+  written with no children, as a run's underlays' svg is, keeps what's drawn
+  into it after, the view drawing into each one every time, rings or none.
+  So what the browser holds on an element holds across draws, its hover, the
+  keyboard's place, a running animation: a frame's fold control doesn't
+  blink as what's pointed at in it changes, the keyboard stays on an action
+  as the pointer moves, a proposal's breath goes on from place to place, no
+  pace kept for it.
 - **state is changed at once, drawn once a frame:** each input is applied as
   it arrives, so the next one sees the state it left, and the DOM is written
   once, on the next animation frame.

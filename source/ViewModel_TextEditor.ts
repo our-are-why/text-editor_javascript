@@ -32,6 +32,7 @@ export {
   type _PROPOSED_Part__Frame_,
   type _PROPOSALS_Part__Frame_,
   type _Item_Proposals_,
+  type _State_Proposal_,
   type _Action_Item_,
   type _Text_Line_NonTerminated_,
   type _NonEmpty_,
@@ -173,15 +174,21 @@ interface _PROPOSALS_Part__Frame_ extends __BASE_Part__Frame_<"PROPOSAL_LIST"> {
 interface _Item_Proposals_ {
   source: string
   title: string
+  state: _State_Proposal_
+  status: string
   places: string
   rationale: string
+  request: string
   actions: Array<_Action_Item_>
   attributes: _Attributes_Element_
 }
 
+type _State_Proposal_ = "OPEN" | "REQUESTED" | "REVISING" | "ACCEPTED" | "REJECTED" | "WITHDRAWN"
+
 interface _Action_Item_ {
   command: string
   label: string
+  stateAfter: _State_Proposal_ | null
 }
 
 type _Text_Line_NonTerminated_ = string & { [proof__Text_Line_NonTerminated]: true }
@@ -191,15 +198,121 @@ declare const proof__Text_Line_NonTerminated: unique symbol
 function viewModelOf__Blocks(
   blocks_ViewModel: Array<_Block_ViewModel_>
 ): _ViewModel_TextEditor_ {
-  const runs_ViewModel = runsOf__Blocks(blocks_ViewModel)
+  const block$_Stated = statedOf__Blocks(blocks_ViewModel)
+  const runs_ViewModel = runsOf__Blocks(block$_Stated)
   return {
     charCount_Max__Label_Gutter: Math.max(
       1,
       ...runs_ViewModel.flatMap((run_Lines) => run_Lines.lines).map((line_Run) => line_Run.gutter.label.length)
     ),
-    blocks: blocks_ViewModel,
+    blocks: block$_Stated,
     runs: runs_ViewModel
   }
+}
+
+function statedOf__Blocks(
+  blocks_ViewModel: Array<_Block_ViewModel_>
+): Array<_Block_ViewModel_> {
+  const state$_Source = new Map(blocks_ViewModel.flatMap((block_ViewModel) => block_ViewModel.kind === "FRAME"
+    ? block_ViewModel.parts.flatMap((part_Frame) => part_Frame.kind === "PROPOSAL_LIST"
+      ? part_Frame.items.map((item_Proposals): [string, _State_Proposal_] => [
+        item_Proposals.source,
+        item_Proposals.state
+      ])
+      : [])
+    : []))
+  if (state$_Source.size === 0) return blocks_ViewModel
+  return blocks_ViewModel.map((block_ViewModel) => block_ViewModel.kind !== "FRAME"
+    ? {
+      ...block_ViewModel,
+      run: statedIn__Run({
+        run_Lines: block_ViewModel.run,
+        state$_Source
+      })
+    }
+    : {
+      ...block_ViewModel,
+      parts: mapped__NonEmpty({
+        items: block_ViewModel.parts,
+        map: (part_Frame): _Part_Frame_ => part_Frame.kind === "PROPOSAL_LIST"
+          ? {
+            ...part_Frame,
+            items: decidedLast__Items(part_Frame.items)
+          }
+          : {
+            ...part_Frame,
+            run: statedIn__Run({
+              run_Lines: part_Frame.run,
+              state$_Source
+            })
+          }
+      })
+    })
+}
+
+interface _Api___statedIn__Run_ {
+  run_Lines: _Run_Lines_
+  state$_Source: Map<string, _State_Proposal_>
+}
+
+function statedIn__Run({
+  run_Lines,
+  state$_Source
+}: _Api___statedIn__Run_): _Run_Lines_ {
+  const stated = (attributes: _Attributes_Element_): _Attributes_Element_ => {
+    const state = state$_Source.get(attributes["data-source"] ?? "")
+    return state === undefined
+      ? attributes
+      : {
+        ...attributes,
+        "data-state": state
+      }
+  }
+  return {
+    ...run_Lines,
+    lines: run_Lines.lines.map((line_Run) => ({
+      ...line_Run,
+      segments: line_Run.segments.map((segment_Line) => ({
+        ...segment_Line,
+        attributes: stated(segment_Line.attributes)
+      }))
+    })),
+    groups: run_Lines.groups.map((group_Underlay) => ({
+      ...group_Underlay,
+      attributes: stated(group_Underlay.attributes)
+    }))
+  }
+}
+
+function decidedLast__Items(
+  items_Proposals: _NonEmpty_<_Item_Proposals_>
+): _NonEmpty_<_Item_Proposals_> {
+  const [
+    first,
+    ...rest
+  ] = items_Proposals.toSorted((
+    item_Proposals,
+    item_Proposals_other
+  ) => Number(ISDECIDEDMAP__STATE_PROPOSAL[item_Proposals.state]) - Number(ISDECIDEDMAP__STATE_PROPOSAL[item_Proposals_other.state]))
+  return first === undefined
+    ? items_Proposals
+    : [
+      first,
+      ...rest
+    ]
+}
+
+type _IsDecidedMap__State_Proposal_ = {
+  [State in _State_Proposal_]: boolean
+}
+
+const ISDECIDEDMAP__STATE_PROPOSAL: _IsDecidedMap__State_Proposal_ = {
+  OPEN: false,
+  REQUESTED: false,
+  REVISING: false,
+  ACCEPTED: true,
+  REJECTED: true,
+  WITHDRAWN: true
 }
 
 function runsOf__Blocks(

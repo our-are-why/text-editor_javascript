@@ -68,7 +68,10 @@ const proposalsProse: _Scene_ = {
             {
               source: "bold",
               title: "Make “can't slip” bold",
+              state: "OPEN",
+              status: "",
               rationale: "It's the one thing in the note that can't move, so it should be the first thing anyone skimming it sees.",
+              request: "",
               actions: actions_Review,
               attributes: {},
           places: "",
@@ -76,7 +79,10 @@ const proposalsProse: _Scene_ = {
             {
               source: "reason",
               title: "Take out why it can't slip",
+              state: "OPEN",
+              status: "",
               rationale: "The lathe and its supply are already in the list of what goes first; saying it again here only lengthens the sentence.",
+              request: "",
               actions: actions_Review,
               attributes: {},
           places: "",
@@ -84,7 +90,10 @@ const proposalsProse: _Scene_ = {
             {
               source: "most",
               title: "Most of the orders sent out, not half finished",
+              state: "OPEN",
+              status: "",
               rationale: "The lathe holds up most of the orders, not half, and what's held up is getting them to customers, not finishing them.",
+              request: "",
               actions: actions_Review,
               attributes: {},
           places: "",
@@ -92,7 +101,10 @@ const proposalsProse: _Scene_ = {
             {
               source: "weeks",
               title: "Two weeks, in bold",
+              state: "OPEN",
+              status: "",
               rationale: "There's two weeks of slack, not one, and it's the number people will plan around.",
+              request: "",
               actions: actions_Review,
               attributes: {},
           places: "",

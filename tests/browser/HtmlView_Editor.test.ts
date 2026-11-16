@@ -96,7 +96,7 @@ describe("beside it: what can't live in one document", () => {
           parts: [
             { kind: "CURRENT_LINES", run: { id: "current", lines: [lineOf("two")], groups: [] } },
             { kind: "PROPOSAL_LINES", run: { id: "proposed", lines: [lineOf("two, proposed")], groups: [] } },
-            { kind: "PROPOSAL_LIST", items: [{ source: "most", title: "Most of the orders", places: "", rationale: "", actions: [], attributes: {} }] }
+            { kind: "PROPOSAL_LIST", items: [{ source: "most", title: "Most of the orders", state: "OPEN", status: "", places: "", rationale: "", request: "", actions: [], attributes: {} }] }
           ]
         },
         { kind: "LINES", run: { id: "after", lines: [lineOf("three")], groups: [] } }
@@ -195,8 +195,8 @@ describe("beside it: what can't live in one document", () => {
             {
               kind: "PROPOSAL_LIST",
               items: [
-                { source: "most", title: "Most of the orders", places: "", rationale: "", actions: [], attributes: {} },
-                { source: "all", title: "All of them", places: "", rationale: "", actions: [], attributes: {} }
+                { source: "most", title: "Most of the orders", state: "OPEN", status: "", places: "", rationale: "", request: "", actions: [], attributes: {} },
+                { source: "all", title: "All of them", state: "OPEN", status: "", places: "", rationale: "", request: "", actions: [], attributes: {} }
               ]
             }
           ]
@@ -315,7 +315,317 @@ describe("beside it: what can't live in one document", () => {
     await opened.page.evaluate(() => document.getElementById("pointing-rows")?.remove())
   })
 
-  test("each proposal's item shows its title, where it is, why it's proposed, and its actions, each a button carrying its command, where it is and why only when they say something", async () => {
+  test("each state's item has its icon beside it, its status word after its title, the two in the proposals' indigo, decided by you, or their plum, a revision requested or under way, or a grey, withdrawn by the agent, never the item's words', an open one's other actions on their grey, their words the colour of the state each leads to, neutral once it's not, so colour keeps its meaning in the rings, or in a host's colour for its state, if it gives one; an open one no icon; a revising one's word and its dots, the view's, shimmering together, as its icon goes round, the dots one, two, three, never none, in step with the shimmer, all there and still where motion's asked to be reduced; its title the same whatever its state", async () => {
+    const inksOf = () => opened.page.evaluate(async () => {
+      const containerElement = document.createElement("div")
+      containerElement.dataset["perspective"] = "changes"
+      containerElement.style.setProperty("--view-state-rejected", "rgb(1, 2, 3)")
+      document.body.append(containerElement)
+      const itemOf = (state: "OPEN" | "REQUESTED" | "REVISING" | "ACCEPTED" | "REJECTED" | "WITHDRAWN") => ({ source: state, title: state, state, status: state === "OPEN" ? "" : state, places: "", rationale: "", request: "", actions: [], attributes: {} })
+      new window._View_TextEditor_({
+        containerElement,
+        componentMap: window.COMPONENTMAP__VIEW_TEXTEDITOR
+      }).draw(window.viewModelOf__Blocks([{
+        kind: "FRAME",
+        range: { first: 1, last: 1 },
+        parts: [
+          { kind: "CURRENT_LINES", run: { id: "current", lines: window.parseLines_ViewModel({ multilineText: "one", module_Language: window.MODULE_PLAINTEXT }), groups: [] } },
+          { kind: "PROPOSAL_LIST", items: [itemOf("OPEN"), itemOf("REQUESTED"), itemOf("REVISING"), itemOf("ACCEPTED"), itemOf("REJECTED"), itemOf("WITHDRAWN")] }
+        ]
+      }]))
+      await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)))
+      const inks = Object.fromEntries([...containerElement.querySelectorAll(".item_htmlView")].map((itemElement) => {
+        const icon = getComputedStyle(itemElement, "::before")
+        const word = itemElement.querySelector(".status_htmlView")
+        const style = word === null ? null : getComputedStyle(word)
+        const dots = word === null ? null : getComputedStyle(word, "::after")
+        const title = getComputedStyle(itemElement.querySelector(".title_htmlView") ?? itemElement)
+        return [itemElement.getAttribute("data-state"), {
+          title: `${title.color} ${title.fontWeight}`,
+          // its dots, or, coming one by one, what brings them
+          dots: dots === null || dots.content === "none" ? null : dots.animationName === "none" ? dots.content : dots.animationName,
+          icon: icon.content === "none" ? null : `${icon.backgroundColor}${icon.animationName === "none" ? "" : ` ${icon.animationName}`}`,
+          // its ink, or, shimmering, what moves it
+          word: style === null || word?.textContent === "" ? null : style.animationName === "none" ? style.color : style.animationName
+        }]
+      }))
+      const muted = getComputedStyle(containerElement.querySelector(".item_htmlView[data-state='ACCEPTED'] .status_htmlView") ?? containerElement).color
+      const revision = getComputedStyle(containerElement.querySelector(".item_htmlView[data-state='REQUESTED'] .status_htmlView") ?? containerElement).color
+      const withdrawn = getComputedStyle(containerElement.querySelector(".item_htmlView[data-state='WITHDRAWN'] .status_htmlView") ?? containerElement).color
+      const words = getComputedStyle(containerElement.querySelector(".item_htmlView[data-state='OPEN'] .rationale_htmlView") ?? containerElement).color
+      // a button, as the main one and as another, in the proposals' colour
+      const list = containerElement.querySelector(".proposals_htmlView")
+      const buttonOf = (state: string, isMain: boolean, stateAfter: string | null) => {
+        const item = document.createElement("li")
+        item.className = "item_htmlView"
+        item.dataset["state"] = state
+        const actions = document.createElement("div")
+        actions.className = "actions_htmlView"
+        const main = document.createElement("button")
+        main.className = "action_htmlView"
+        const other = document.createElement("button")
+        other.className = "action_htmlView"
+        for (const button of [main, other]) {
+          if (stateAfter !== null) button.dataset["stateAfter"] = stateAfter
+        }
+        actions.append(main, other)
+        item.append(actions)
+        list?.append(item)
+        const style = getComputedStyle(isMain ? main : other)
+        const button = {
+          ground: style.backgroundColor,
+          ink: style.color,
+          edge: style.boxShadow
+        }
+        item.remove()
+        return button
+      }
+      const buttons = {
+        main: buttonOf("OPEN", true, "ACCEPTED"),
+        toAccept: buttonOf("OPEN", false, "ACCEPTED"),
+        toReject: buttonOf("OPEN", false, "REJECTED"),
+        toRevise: buttonOf("OPEN", false, "REQUESTED"),
+        toWithdraw: buttonOf("OPEN", false, "WITHDRAWN"),
+        notOpen: [...new Set(["REQUESTED", "REVISING", "ACCEPTED", "REJECTED", "WITHDRAWN"].flatMap((state) => [buttonOf(state, true, "OPEN"), buttonOf(state, false, "REQUESTED"), buttonOf(state, false, null)]).map((button) => JSON.stringify(button)))]
+      }
+      containerElement.remove()
+      return { inks, muted, revision, withdrawn, words, buttons }
+    })
+    const moving = await inksOf()
+    const muted = moving.muted
+    const revision = moving.revision
+    const withdrawn = moving.withdrawn
+    const title = moving.inks["OPEN"]?.title
+    expect(moving.inks).toEqual({
+      OPEN: { title, dots: null, icon: null, word: null },
+      REQUESTED: { title, dots: null, icon: revision, word: revision },
+      REVISING: { title, dots: "ellipsis_htmlView", icon: `${revision} revising_htmlView`, word: "shimmer_htmlView" },
+      ACCEPTED: { title, dots: null, icon: muted, word: muted },
+      REJECTED: { title, dots: null, icon: "rgb(1, 2, 3)", word: "rgb(1, 2, 3)" },
+      WITHDRAWN: { title, dots: null, icon: moving.inks["WITHDRAWN"]?.icon, word: withdrawn }
+    })
+    expect(muted).not.toBe("rgb(1, 2, 3)")
+    expect(muted).not.toBe(moving.words)
+    expect(revision).not.toBe(muted)
+    expect(revision).not.toBe(moving.words)
+    // withdrawn a grey, neither colour, nor the item's words'; its icon the
+    // same grey, fainter, about half as strong
+    const [red, green, blue, alpha = "1"] = withdrawn.match(/[\d.]+/g) ?? []
+    expect(red === green && green === blue).toBe(true)
+    expect([muted, revision, moving.words]).not.toContain(withdrawn)
+    const [red_Icon, green_Icon, blue_Icon, alpha_Icon = "1"] = moving.inks["WITHDRAWN"]?.icon?.match(/[\d.]+/g) ?? []
+    expect([red_Icon, green_Icon, blue_Icon]).toEqual([red, green, blue])
+    expect(Number(alpha_Icon) / Number(alpha)).toBeCloseTo(0.55, 2)
+    // an open one's main action filled, white on it; another on its grey,
+    // its words in the proposals' colour, the state's, unless a host gives
+    // another; once it's not open, every action on that grey, its words
+    // neutral, neither
+    expect(moving.buttons.main.ink).toBe("rgb(255, 255, 255)")
+    expect(moving.buttons.main.ground).not.toBe("rgb(255, 255, 255)")
+    expect(moving.buttons.main.edge).toBe("none")
+    // once it's not open, every action neutral on its grey, no edge
+    expect(moving.buttons.notOpen).toHaveLength(1)
+    const notOpen = JSON.parse(moving.buttons.notOpen[0] ?? "{}")
+    expect(notOpen.edge).toBe("none")
+    expect(notOpen.ground).not.toBe("rgba(0, 0, 0, 0)")
+    expect([muted, revision, "rgb(1, 2, 3)", "rgb(255, 255, 255)"]).not.toContain(notOpen.ink)
+    // an open one's others on that grey too, no edge, its words the colour
+    // of the state it leads to, a host's own for it too
+    const onGrey = (ink: string) => ({ ground: notOpen.ground, ink, edge: "none" })
+    expect(moving.buttons.toAccept).toEqual(onGrey(muted))
+    expect(moving.buttons.toReject).toEqual(onGrey("rgb(1, 2, 3)"))
+    expect(moving.buttons.toRevise).toEqual(onGrey(revision))
+    expect(moving.buttons.toWithdraw).toEqual(onGrey(withdrawn))
+    await opened.page.emulateMedia({ reducedMotion: "reduce" })
+    const still = await inksOf()
+    expect(still.inks["REVISING"]).toEqual({ title, dots: '"..."', icon: revision, word: revision })
+    await opened.page.emulateMedia({ reducedMotion: "no-preference" })
+  })
+
+  test("a revising item's word and its dots shimmer as one, in step: the dots one, two, three, never none, one more at each third of the shimmer's pass; the dot between its title and its state still", async () => {
+    await opened.page.evaluate(() => {
+      const containerElement = document.createElement("div")
+      containerElement.id = "revising"
+      containerElement.dataset["perspective"] = "changes"
+      document.body.prepend(containerElement)
+      new window._View_TextEditor_({
+        containerElement,
+        componentMap: window.COMPONENTMAP__VIEW_TEXTEDITOR
+      }).draw(window.viewModelOf__Blocks([{
+        kind: "FRAME",
+        range: { first: 1, last: 1 },
+        parts: [
+          { kind: "CURRENT_LINES", run: { id: "current", lines: window.parseLines_ViewModel({ multilineText: "one", module_Language: window.MODULE_PLAINTEXT }), groups: [] } },
+          { kind: "PROPOSAL_LIST", items: [{ source: "timeout", title: "Retry a timeout", state: "REVISING" as const, status: "Revising", places: "", rationale: "", request: "", actions: [], attributes: {} }] }
+        ]
+      }]))
+    })
+    // how many dots are drawn, the dots themselves, not a clip of a glyph
+    // whose dots sit where its font puts them; and where the shimmer and
+    // the dots each are in their pass
+    const sample = () => opened.page.evaluate(() => {
+      const word = document.querySelector("#revising .status_htmlView")
+      if (word === null) throw new Error("no status word")
+      const animations = word.getAnimations({ subtree: true }).filter((animation): animation is CSSAnimation => animation instanceof CSSAnimation)
+      // where each is in its pass: how long it's run, over how long a pass is
+      const phaseOf = (name: string) => {
+        const animation = animations.find((each) => each.animationName === name)
+        const timing = animation?.effect?.getComputedTiming()
+        return `${timing?.duration} ${Math.round(Number(animation?.currentTime ?? Number.NaN))}`
+      }
+      const dots = getComputedStyle(word, "::after")
+      return {
+        dots: /^"\.+"$/.test(dots.content) && dots.clipPath === "none" ? dots.content.length - 2 : 0,
+        inStep: phaseOf("shimmer_htmlView") === phaseOf("ellipsis_htmlView"),
+        width: word.getBoundingClientRect().width
+      }
+    })
+    const samples = []
+    for (let index = 0; index < 12; index++) {
+      samples.push(await sample())
+      await opened.page.waitForTimeout(160)
+    }
+    expect(samples.every((each) => each.dots >= 1 && each.dots <= 3)).toBe(true)
+    expect([...new Set(samples.map((each) => each.dots))].toSorted()).toEqual([1, 2, 3])
+    expect(samples.every((each) => each.inStep)).toBe(true)
+    expect(new Set(samples.map((each) => Math.round(each.width))).size).toBe(1)
+    // the dot between title and state the title's, still, the shimmer the
+    // label's alone
+    expect(await opened.page.evaluate(() => {
+      const title = document.querySelector("#revising .title_htmlView")
+      const word = document.querySelector("#revising .status_htmlView")
+      return {
+        dot: title === null ? "" : getComputedStyle(title, "::after").content,
+        dotStill: title === null ? false : getComputedStyle(title).maskImage === "none" && getComputedStyle(title, "::after").animationName === "none",
+        wordBefore: word === null ? "" : getComputedStyle(word, "::before").content
+      }
+    })).toEqual({ dot: '" · "', dotStill: true, wordBefore: "none" })
+    await opened.page.evaluate(() => document.getElementById("revising")?.remove())
+  })
+
+  test("an item's lit, on the proposed lines' own ground, across the list edge to edge, its gutter too, a strip of the list's band kept above the first and below the last, while its proposal's pointed at, or while the keyboard's on one of its actions, which is ringed in the page's ink, no colour, the keyboard pointing at nothing; an action hovered a step deeper, the main one too", async () => {
+    await opened.page.mouse.move(1270, 715)
+    await opened.page.evaluate(() => {
+      const containerElement = document.createElement("div")
+      containerElement.id = "lit"
+      containerElement.style.width = "48rem"
+      containerElement.dataset["perspective"] = "changes"
+      document.body.prepend(containerElement)
+      const review = [
+        { command: "accept", label: "Accept", stateAfter: "ACCEPTED" as const },
+        { command: "reject", label: "Reject", stateAfter: "REJECTED" as const }
+      ]
+      new window._TextEditor_({
+        containerElement,
+        componentMap: window.COMPONENTMAP__VIEW_TEXTEDITOR,
+        modules: [window.MODULE_MOUSE],
+        viewModel_TextEditor: window.viewModelOf__Blocks([{
+          kind: "FRAME",
+          range: { first: 1, last: 1 },
+          parts: [
+            { kind: "CURRENT_LINES", run: { id: "current", lines: window.parseLines_ViewModel({ multilineText: "one", module_Language: window.MODULE_PLAINTEXT }), groups: [] } },
+            { kind: "PROPOSAL_LINES", run: { id: "proposed", lines: window.parseLines_ViewModel({ multilineText: "ONE", module_Language: window.MODULE_PLAINTEXT }), groups: [] } },
+            { kind: "PROPOSAL_LIST", items: [
+              { source: "open", title: "Open", state: "OPEN" as const, status: "", places: "", rationale: "Why.", request: "", actions: review, attributes: {} },
+              { source: "taken", title: "Taken", state: "ACCEPTED" as const, status: "Accepted", places: "", rationale: "Why.", request: "", actions: [{ command: "reopen", label: "Reopen", stateAfter: "OPEN" as const }], attributes: {} }
+            ] }
+          ]
+        }])
+      })
+    })
+    // each item's ground and which are pointed at; Accept's, Reject's and
+    // Reopen's grounds; and Reject's ring
+    const looks = () => opened.page.evaluate(async () => {
+      await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)))
+      const [open, taken] = document.querySelectorAll("#lit .item_htmlView")
+      const [accept, reject] = open?.querySelectorAll(".action_htmlView") ?? []
+      const groundOf = (element: Element | null | undefined) => element === null || element === undefined ? "" : getComputedStyle(element).backgroundColor
+      return {
+        items: [groundOf(open), groundOf(taken)],
+        pointed: [...document.querySelectorAll("#lit .item_htmlView[data-pointed]")].map((item) => item.getAttribute("data-source")),
+        buttons: [groundOf(accept), groundOf(reject), groundOf(taken?.querySelector(".action_htmlView"))],
+        ring: reject === undefined ? "" : `${getComputedStyle(reject).outlineStyle} ${getComputedStyle(reject).outlineColor}`
+      }
+    })
+    const centerOf = (selector: string) => opened.page.evaluate((selector) => {
+      const rect = document.querySelector(selector)?.getBoundingClientRect()
+      if (rect === undefined) throw new Error(`no ${selector}`)
+      return { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 }
+    }, selector)
+    const rest = await looks()
+    expect(rest.items).toEqual(["rgba(0, 0, 0, 0)", "rgba(0, 0, 0, 0)"])
+    expect(rest.pointed).toEqual([])
+    // the pointer on Reject: its item lit, its proposal pointed at, Reject a
+    // step deeper, the others as they were
+    const point_Reject = await centerOf("#lit .action_htmlView + .action_htmlView")
+    await opened.page.mouse.move(point_Reject.x, point_Reject.y)
+    const onReject = await looks()
+    const lit = onReject.items[0] ?? ""
+    expect(lit).not.toBe("rgba(0, 0, 0, 0)")
+    // lit on the proposed lines' own ground: a pixel of the item, clear of
+    // its words, as one of the proposed lines', clear of theirs
+    const pixelAt = async (selector: string, where: "LEFT" | "RIGHT" | "TOP") => {
+      const rect = await opened.page.evaluate(({ selector, where }) => {
+        const found = document.querySelector(selector)?.getBoundingClientRect()
+        if (found === undefined) throw new Error(`no ${selector}`)
+        return where === "TOP"
+          ? { x: Math.floor(found.right) - 4, y: Math.floor(found.top) + 1 }
+          : { x: where === "LEFT" ? Math.floor(found.left) + 2 : Math.floor(found.right) - 4, y: Math.floor(found.top + found.height / 2) }
+      }, { selector, where })
+      const png = await opened.page.screenshot({ clip: { x: rect.x, y: rect.y, width: 1, height: 1 } })
+      return opened.page.evaluate(async (base64) => {
+        const image = new Image()
+        image.src = `data:image/png;base64,${base64}`
+        await image.decode()
+        const canvas = document.createElement("canvas")
+        canvas.width = 1
+        canvas.height = 1
+        const context = canvas.getContext("2d")
+        context?.drawImage(image, 0, 0)
+        return [...context?.getImageData(0, 0, 1, 1).data ?? []].slice(0, 3).join(" ")
+      }, png.toString("base64"))
+    }
+    const ground_Lit = await pixelAt("#lit .item_htmlView", "RIGHT")
+    expect(ground_Lit).toBe(await pixelAt("#lit .proposed_htmlView", "RIGHT"))
+    expect(await pixelAt("#lit .item_htmlView", "LEFT")).toBe(ground_Lit)
+    const ground_Band = await pixelAt("#lit .item_htmlView + .item_htmlView", "RIGHT")
+    expect(ground_Lit).not.toBe(ground_Band)
+    expect(await pixelAt("#lit .proposals_htmlView", "TOP")).toBe(ground_Band)
+    // and edge to edge across the list, its gutter too; the list's band
+    // above the first, and below the last, a strip as deep
+    expect(await opened.page.evaluate(() => {
+      const list = document.querySelector("#lit .proposals_htmlView")
+      const box = list?.getBoundingClientRect()
+      const strip = list === null ? Number.NaN : parseFloat(getComputedStyle(list).paddingTop)
+      const [first, last] = [...document.querySelectorAll("#lit .item_htmlView")].map((item) => item.getBoundingClientRect())
+      // its words where the lines' text starts, though in another font
+      const title = document.querySelector("#lit .title_htmlView")?.getBoundingClientRect()
+      const text = document.querySelector("#lit .proposed_htmlView .text_htmlView")?.getBoundingClientRect()
+      return [first?.left === box?.left, first?.right === box?.right, strip > 0, first?.top === (box?.top ?? 0) + strip, last?.bottom === (box?.bottom ?? 0) - strip, title?.left === text?.left]
+    })).toEqual([true, true, true, true, true, true])
+    expect(onReject.items[1]).toBe("rgba(0, 0, 0, 0)")
+    expect(onReject.pointed).toEqual(["open"])
+    expect(onReject.buttons[1]).not.toBe(rest.buttons[1])
+    expect([onReject.buttons[0], onReject.buttons[2]]).toEqual([rest.buttons[0], rest.buttons[2]])
+    // on Accept, the main one a step deeper
+    const point_Accept = await centerOf("#lit .action_htmlView")
+    await opened.page.mouse.move(point_Accept.x, point_Accept.y)
+    const onAccept = await looks()
+    expect(onAccept.buttons[0]).not.toBe(rest.buttons[0])
+    expect(onAccept.buttons[1]).toBe(rest.buttons[1])
+    // the keyboard on Reject, the pointer away: its item lit as a pointed
+    // one is, Reject ringed in the page's ink; nothing pointed at
+    await opened.page.mouse.move(1270, 715)
+    await opened.page.evaluate(() => (document.querySelector("#lit .action_htmlView") as HTMLElement | null)?.focus())
+    await opened.page.keyboard.press("Tab")
+    const keyed = await looks()
+    expect(keyed.items).toEqual([lit, "rgba(0, 0, 0, 0)"])
+    expect(keyed.pointed).toEqual([])
+    expect(keyed.ring).toBe("solid rgb(0, 0, 0)")
+    await opened.page.evaluate(() => document.getElementById("lit")?.remove())
+  })
+
+  test("each proposal's item shows its title, its state after it, a muted word, where it is, why it's proposed, what was asked of it, and its actions, each a button carrying its command, each of those only when it says something; its state as data; decided ones listed after the rest; only an open one's first action the main one", async () => {
     const items = await opened.page.evaluate(() => {
       const containerElement = document.createElement("div")
       document.body.append(containerElement)
@@ -330,24 +640,35 @@ describe("beside it: what can't live in one document", () => {
           {
             kind: "PROPOSAL_LIST",
             items: [
-              { source: "most", title: "Most of the orders", places: "2 of 5 places, 1 only if “Cut the lathe” is rejected", rationale: "Most of them need the lathe.", actions: [{ command: "accept", label: "Accept" }, { command: "reject", label: "Reject" }], attributes: {} },
-              { source: "all", title: "All of them", places: "", rationale: "", actions: [{ command: "accept", label: "Take it" }], attributes: {} }
+              { source: "taken", title: "Taken already", state: "ACCEPTED" as const, status: "Accepted", places: "", rationale: "It was right.", request: "", actions: [{ command: "reopen", label: "Reopen", stateAfter: "OPEN" as const }], attributes: {} },
+              { source: "most", title: "Most of the orders", state: "OPEN" as const, status: "", places: "2 of 5 places, 1 only if “Cut the lathe” is rejected", rationale: "Most of them need the lathe.", request: "", actions: [{ command: "accept", label: "Accept", stateAfter: "ACCEPTED" as const }, { command: "reject", label: "Reject", stateAfter: "REJECTED" as const }], attributes: {} },
+              { source: "all", title: "All of them", state: "OPEN" as const, status: "", places: "", rationale: "", request: "", actions: [{ command: "accept", label: "Take it", stateAfter: "ACCEPTED" as const }], attributes: {} },
+              { source: "capped", title: "Cap it", state: "REQUESTED" as const, status: "Revision requested", places: "", rationale: "", request: "You asked: make it an option.", actions: [{ command: "reopen", label: "Reopen", stateAfter: "OPEN" as const }], attributes: {} }
             ]
           }
         ]
       }]))
-      return [...containerElement.querySelectorAll(".item_htmlView")].map((itemElement) => ({
-        source: itemElement.getAttribute("data-source"),
-        shown: [...itemElement.children].filter((element) => getComputedStyle(element).display !== "none").map((element) => element.className),
-        title: itemElement.querySelector(".title_htmlView")?.textContent,
-        places: itemElement.querySelector(".places_htmlView")?.textContent,
-        rationale: itemElement.querySelector(".rationale_htmlView")?.textContent,
-        actions: [...itemElement.querySelectorAll(".actions_htmlView > button")].map((buttonElement) => `${buttonElement.getAttribute("type")} ${buttonElement.getAttribute("data-command")}: ${buttonElement.textContent}`)
-      }))
+      const isShown = (element: Element | null) => element !== null && getComputedStyle(element).display !== "none"
+      return [...containerElement.querySelectorAll(".item_htmlView")].map((itemElement) => {
+        const action_First = itemElement.querySelector(".actions_htmlView > button")
+        return {
+          source: itemElement.getAttribute("data-source"),
+          state: itemElement.getAttribute("data-state"),
+          shown: [...itemElement.children].filter(isShown).map((element) => element.className),
+          heading: [...itemElement.querySelectorAll(".heading_htmlView > *")].filter(isShown).map((element) => [getComputedStyle(element, "::before").content, element.textContent, getComputedStyle(element, "::after").content].map((part) => part === "none" ? "" : part?.startsWith('"') ? part.replaceAll('"', "") : part).join("")).join(""),
+          places: itemElement.querySelector(".places_htmlView")?.textContent,
+          rationale: itemElement.querySelector(".rationale_htmlView")?.textContent,
+          request: itemElement.querySelector(".request_htmlView")?.textContent,
+          actions: [...itemElement.querySelectorAll(".actions_htmlView > button")].map((buttonElement) => `${buttonElement.getAttribute("type")} ${buttonElement.getAttribute("data-command")}: ${buttonElement.textContent}`),
+          main: action_First !== null && getComputedStyle(action_First).color === "rgb(255, 255, 255)"
+        }
+      })
     })
     expect(items).toEqual([
-      { source: "most", shown: ["title_htmlView", "places_htmlView", "rationale_htmlView", "actions_htmlView"], title: "Most of the orders", places: "2 of 5 places, 1 only if “Cut the lathe” is rejected", rationale: "Most of them need the lathe.", actions: ["button accept: Accept", "button reject: Reject"] },
-      { source: "all", shown: ["title_htmlView", "actions_htmlView"], title: "All of them", places: "", rationale: "", actions: ["button accept: Take it"] }
+      { source: "most", state: "OPEN", shown: ["heading_htmlView", "places_htmlView", "rationale_htmlView", "actions_htmlView"], heading: "Most of the orders", places: "2 of 5 places, 1 only if “Cut the lathe” is rejected", rationale: "Most of them need the lathe.", request: "", actions: ["button accept: Accept", "button reject: Reject"], main: true },
+      { source: "all", state: "OPEN", shown: ["heading_htmlView", "actions_htmlView"], heading: "All of them", places: "", rationale: "", request: "", actions: ["button accept: Take it"], main: true },
+      { source: "capped", state: "REQUESTED", shown: ["heading_htmlView", "request_htmlView", "actions_htmlView"], heading: "Cap it · Revision requested", places: "", rationale: "", request: "You asked: make it an option.", actions: ["button reopen: Reopen"], main: false },
+      { source: "taken", state: "ACCEPTED", shown: ["heading_htmlView", "rationale_htmlView", "actions_htmlView"], heading: "Taken already · Accepted", places: "", rationale: "It was right.", request: "", actions: ["button reopen: Reopen"], main: false }
     ])
   })
 
@@ -408,6 +729,141 @@ describe("beside it: what can't live in one document", () => {
       "g http://www.w3.org/2000/svg",
       "circle http://www.w3.org/2000/svg"
     ])
+  })
+
+  test("what JSX draws again keeps what's drawn where it can: an element of the same tag and class, whose data attributes, those both have, are the same, kept, wherever it is among its siblings, its attributes the description's, any it doesn't give gone; one whose data attribute differs drawn anew; text kept and changed; more drawn, fewer gone; one written with no children keeping what's drawn into it after, as a run's underlays are; so what the browser holds on an element, the keyboard's place, holds", async () => {
+    const drawn = await opened.page.evaluate(() => {
+      const containerElement = document.createElement("div")
+      document.body.append(containerElement)
+      const draw = (node_Jsx: Parameters<typeof window.draw__Node_Jsx>[0]["node_Jsx"]) => window.draw__Node_Jsx({
+        node_Jsx,
+        containerElement
+      })
+      draw(window.jsx("p", { class: "drawn", title: "one", "data-gone": "", children: ["text", window.jsx("button", { "data-command": "press", children: "press" }), window.jsx("em", { "data-place": "1", children: "em" })] }))
+      const [paragraph, button, em, text] = [containerElement.querySelector("p"), containerElement.querySelector("button"), containerElement.querySelector("em"), containerElement.querySelector("p")?.firstChild]
+      button?.focus({ preventScroll: true })
+      // as the view sets what it measures, once it's drawn
+      button?.setAttribute("data-measured", "")
+      draw(window.jsx("p", { class: "drawn", title: "two", "data-pointed": "", children: ["changed", window.jsx("button", { "data-command": "press", children: "press" }), window.jsx("em", { "data-place": "2", children: "em" }), window.jsx("i", {})] }))
+      const again = {
+        html: containerElement.innerHTML,
+        kept: [containerElement.querySelector("p") === paragraph, containerElement.querySelector("p")?.firstChild === text, containerElement.querySelector("button") === button, containerElement.querySelector("em") === em],
+        focused: document.activeElement === button
+      }
+      draw(window.jsx("p", { class: "drawn", children: "only" }))
+      const fewer = {
+        html: containerElement.innerHTML,
+        kept: containerElement.querySelector("p") === paragraph
+      }
+      // siblings the other way round, each kept
+      draw([window.jsx("i", { "data-x": "1" }), window.jsx("i", { "data-x": "2" })])
+      const [one, two] = containerElement.children
+      draw([window.jsx("i", { "data-x": "2" }), window.jsx("i", { "data-x": "1" })])
+      const turned = {
+        html: containerElement.innerHTML,
+        kept: [containerElement.children[0] === two, containerElement.children[1] === one]
+      }
+      // written with no children, what's drawn into it after kept; given
+      // children, even none, they're the description's
+      draw(window.jsx("svg", { class: "under" }))
+      const svgElement = containerElement.querySelector("svg")
+      svgElement?.append(document.createElementNS("http://www.w3.org/2000/svg", "g"))
+      draw(window.jsx("svg", { class: "under" }))
+      const left = svgElement?.childElementCount
+      draw(window.jsx("svg", { class: "under", children: [] }))
+      const emptied = svgElement?.childElementCount
+      containerElement.remove()
+      return { again, fewer, turned, left, emptied }
+    })
+    expect(drawn).toEqual({
+      again: { html: `<p class="drawn" title="two" data-pointed="">changed<button data-command="press">press</button><em data-place="2">em</em><i></i></p>`, kept: [true, true, true, false], focused: true },
+      fewer: { html: `<p class="drawn">only</p>`, kept: true },
+      turned: { html: `<i data-x="2"></i><i data-x="1"></i>`, kept: [true, true] },
+      left: 1,
+      emptied: 0
+    })
+  })
+
+  test("a frame drawn again keeps its elements, so what the browser holds on them holds: hovered, its fold control stays shown as what's pointed at in it changes, at no draw without it; the keyboard stays on an action as the pointer moves", async () => {
+    await opened.page.mouse.move(1270, 715)
+    await opened.page.evaluate(() => {
+      const containerElement = document.createElement("div")
+      containerElement.id = "kept"
+      containerElement.style.width = "48rem"
+      containerElement.dataset["perspective"] = "changes"
+      document.body.prepend(containerElement)
+      const review = [
+        { command: "accept", label: "Accept", stateAfter: "ACCEPTED" as const },
+        { command: "reject", label: "Reject", stateAfter: "REJECTED" as const }
+      ]
+      new window._TextEditor_({
+        containerElement,
+        componentMap: window.COMPONENTMAP__VIEW_TEXTEDITOR,
+        modules: [window.MODULE_MOUSE],
+        viewModel_TextEditor: window.viewModelOf__Blocks([{
+          kind: "FRAME",
+          range: { first: 1, last: 1 },
+          parts: [
+            { kind: "CURRENT_LINES", run: { id: "current", lines: window.parseLines_ViewModel({ multilineText: "one", module_Language: window.MODULE_PLAINTEXT }), groups: [] } },
+            { kind: "PROPOSAL_LINES", run: { id: "proposed", lines: window.parseLines_ViewModel({ multilineText: "ONE", module_Language: window.MODULE_PLAINTEXT }), groups: [] } },
+            { kind: "PROPOSAL_LIST", items: [
+              { source: "one", title: "One", state: "OPEN" as const, status: "", places: "", rationale: "Why one.", request: "", actions: review, attributes: {} },
+              { source: "two", title: "Two", state: "OPEN" as const, status: "", places: "", rationale: "Why two.", request: "", actions: review, attributes: {} }
+            ] }
+          ]
+        }])
+      })
+    })
+    const frames = () => opened.page.evaluate(() => new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve))))
+    const centerOf = (selector: string) => opened.page.evaluate((selector) => {
+      const rect = document.querySelector(selector)?.getBoundingClientRect()
+      if (rect === undefined) throw new Error(`no ${selector}`)
+      return { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 }
+    }, selector)
+    const one = await centerOf("#kept .item_htmlView:nth-child(1) .rationale_htmlView")
+    const two = await centerOf("#kept .item_htmlView:nth-child(2) .rationale_htmlView")
+    await opened.page.mouse.move(one.x, one.y)
+    await frames()
+    // at each draw, before it's painted: whether the frame's the one that
+    // was there, whether it's hovered, and how shown its fold control is
+    await opened.page.evaluate(() => {
+      const frame = document.querySelector("#kept .frame_htmlView")
+      const seen: Array<string> = []
+      Object.assign(window, { seen_Kept: seen })
+      new MutationObserver(() => {
+        const frame_Now = document.querySelector("#kept .frame_htmlView")
+        const fold = frame_Now?.querySelector(".fold_htmlView")
+        seen.push(`${frame_Now === frame ? "kept" : "new"} ${frame_Now?.matches(":hover") ? "hovered" : "not hovered"} ${fold === null || fold === undefined ? "none" : getComputedStyle(fold).opacity}`)
+      }).observe(document.getElementById("kept") ?? document.body, { childList: true, subtree: true, attributes: true })
+    })
+    for (const point of [two, one, two, one]) {
+      await opened.page.mouse.move(point.x, point.y)
+      await frames()
+    }
+    const seen = await opened.page.evaluate(() => (window as unknown as { seen_Kept: Array<string> }).seen_Kept)
+    expect(seen.length).toBeGreaterThan(0)
+    expect([...new Set(seen)]).toEqual(["kept hovered 1"])
+    // the keyboard on the second's Reject, then the pointer on the first:
+    // drawn again, the keyboard's still there
+    await opened.page.mouse.move(two.x, two.y)
+    await frames()
+    await opened.page.evaluate(() => {
+      const accept = document.querySelector<HTMLElement>("#kept .item_htmlView:nth-child(2) .action_htmlView")
+      accept?.focus({ preventScroll: true })
+    })
+    await opened.page.keyboard.press("Tab")
+    await opened.page.evaluate(() => Object.assign(window, { focused_Kept: document.activeElement }))
+    await opened.page.mouse.move(one.x, one.y)
+    await frames()
+    expect(await opened.page.evaluate(() => {
+      const focused = (window as unknown as { focused_Kept: Element | null }).focused_Kept
+      return {
+        pointed: [...document.querySelectorAll("#kept .item_htmlView[data-pointed]")].map((item) => item.getAttribute("data-source")),
+        kept: document.activeElement === focused && focused?.isConnected === true,
+        on: `${document.activeElement?.closest(".item_htmlView")?.getAttribute("data-source")} ${document.activeElement?.textContent}`
+      }
+    })).toEqual({ pointed: ["one"], kept: true, on: "two Reject" })
+    await opened.page.evaluate(() => document.getElementById("kept")?.remove())
   })
 
   test("each run of lines draws one svg behind its lines' text, a group for each of its groups, two paths in it for each underlay, its area and its ring, each carrying its data", async () => {
@@ -912,7 +1368,7 @@ describe("beside it: what can't live in one document", () => {
       document.body.append(containerElement)
       const [one, two, three, four] = window.parseLines_ViewModel({ multilineText: "one\ntwo\nthree\nfour", module_Language: window.MODULE_PLAINTEXT })
       if (one === undefined || two === undefined || three === undefined || four === undefined) throw new Error("the lines weren't parsed")
-      const item = { source: "s", title: "Title", places: "", rationale: "", actions: [], attributes: {} }
+      const item = { source: "s", title: "Title", state: "OPEN" as const, status: "", places: "", rationale: "", request: "", actions: [], attributes: {} }
       new window._View_TextEditor_({
         containerElement,
         componentMap: window.COMPONENTMAP__VIEW_TEXTEDITOR
@@ -951,7 +1407,7 @@ describe("beside it: what can't live in one document", () => {
         new window._View_TextEditor_({
           containerElement,
           componentMap: window.COMPONENTMAP__VIEW_TEXTEDITOR
-        }).draw(window.viewModelOf__Blocks([{ kind: "FRAME", range: { first: 1, last: 1 }, parts: [{ kind: "CURRENT_LINES", run: { id: "current", lines: [line], groups: [] } }, { kind: "PROPOSAL_LINES", run: { id: "proposed", lines: [line], groups: [] } }, { kind: "PROPOSAL_LIST", items: [{ source: "one", title: "One", places: "", rationale: "", actions: [], attributes: {} }] }] }]))
+        }).draw(window.viewModelOf__Blocks([{ kind: "FRAME", range: { first: 1, last: 1 }, parts: [{ kind: "CURRENT_LINES", run: { id: "current", lines: [line], groups: [] } }, { kind: "PROPOSAL_LINES", run: { id: "proposed", lines: [line], groups: [] } }, { kind: "PROPOSAL_LIST", items: [{ source: "one", title: "One", state: "OPEN", status: "", places: "", rationale: "", request: "", actions: [], attributes: {} }] }] }]))
         const currentElement = containerElement.querySelector(".current_htmlView")
         const proposedElement = containerElement.querySelector(".proposed_htmlView")
         const proposalsElement = containerElement.querySelector(".proposals_htmlView")
@@ -1131,7 +1587,7 @@ describe("beside it: what can't live in one document", () => {
           { kind: "FRAME", range: { first: 1, last: 2 }, parts: [
             { kind: "CURRENT_LINES", run: runOf("before", "current", ["one", "two", "three"]) },
             { kind: "PROPOSAL_LINES", run: runOf("after", "proposed", ["ONE", "TWO", "THREE"]) },
-            { kind: "PROPOSAL_LIST", items: [{ source: "most", title: "Shout", places: "", rationale: "", actions: [], attributes: {} }, { source: "more", title: "Shout more", places: "", rationale: "", actions: [], attributes: {} }] }
+            { kind: "PROPOSAL_LIST", items: [{ source: "most", title: "Shout", state: "OPEN", status: "", places: "", rationale: "", request: "", actions: [], attributes: {} }, { source: "more", title: "Shout more", state: "OPEN", status: "", places: "", rationale: "", request: "", actions: [], attributes: {} }] }
           ] },
           { kind: "FRAME", range: { first: 3, last: 3 }, parts: [
             { kind: "CURRENT_LINES", run: { id: "gone-current", lines: [two], groups: [] } },
@@ -1193,7 +1649,7 @@ describe("beside it: what can't live in one document", () => {
     await opened.page.evaluate(() => document.getElementById("folding")?.remove())
   })
 
-  test("a folded frame's control, hovered, peeks at it: its changes ringed, all of them, every proposal's, plain, room made for them; off its control, the peek ends; folding a frame ends its peek; a folded frame's text, and its lines' signs, point at nothing", async () => {
+  test("a folded frame's control, hovered, peeks at it: its changes ringed, all of them, every proposal's, plain, room made for them; off its control, the peek ends; folded under a still pointer, on its control, it's peeked at at once; a folded frame's text, and its lines' signs, point at nothing; what's pointed at, once a fold's drawn, what's under the pointer then", async () => {
     await opened.page.evaluate(() => {
       const containerElement = document.createElement("div")
       containerElement.id = "peeking"
@@ -1225,7 +1681,7 @@ describe("beside it: what can't live in one document", () => {
           { kind: "FRAME", range: { first: 1, last: 2 }, parts: [
             { kind: "CURRENT_LINES", run: runOf("before", "current", ["one", "two", "three"]) },
             { kind: "PROPOSAL_LINES", run: runOf("after", "proposed", ["ONE", "TWO", "THREE"]) },
-            { kind: "PROPOSAL_LIST", items: [{ source: "most", title: "Shout", places: "", rationale: "", actions: [], attributes: {} }, { source: "more", title: "Shout more", places: "", rationale: "", actions: [], attributes: {} }] }
+            { kind: "PROPOSAL_LIST", items: [{ source: "most", title: "Shout", state: "OPEN", status: "", places: "", rationale: "", request: "", actions: [], attributes: {} }, { source: "more", title: "Shout more", state: "OPEN", status: "", places: "", rationale: "", request: "", actions: [], attributes: {} }] }
           ] },
           // another frame, unfolded, the second proposal in it too
           { kind: "FRAME", range: { first: 3, last: 3 }, parts: [
@@ -1268,14 +1724,32 @@ describe("beside it: what can't live in one document", () => {
     expect(await peeked()).toEqual({ rings: [], room: false, other: plain })
     await at(".line_htmlView .label_htmlView")
     expect(await peeked()).toEqual({ rings: [], room: false, other: plain })
-    // unfolded and folded again, under the pointer: its peek over till the
-    // pointer moves
-    await opened.page.mouse.click(...Object.values(await at(".fold_htmlView")) as [number, number])
-    await opened.page.mouse.click(...Object.values(await at(".fold_htmlView")) as [number, number])
-    expect(await peeked()).toEqual({ rings: [], room: false, other: plain })
-    const point = await at(".fold_htmlView")
-    await opened.page.mouse.move(point.x + 1, point.y)
+    // unfolded and folded again, the pointer still on its control: peeked
+    // at as soon as it's folded, the pointer not moving
+    const point_Fold = await at(".fold_htmlView")
+    await opened.page.mouse.click(point_Fold.x, point_Fold.y)
+    await opened.page.mouse.click(point_Fold.x, point_Fold.y)
     expect(await peeked()).toEqual({ rings: all, room: true, other: plain })
+    // the folded frame unfolded under a still pointer, on the other frame's
+    // change, moving it down: what's pointed at is what's under the pointer
+    // once it's drawn, as a move there finds, not what was there before
+    const pointed = () => opened.page.evaluate(async () => {
+      await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(() => requestAnimationFrame(resolve))))
+      return [...new Set([...document.querySelectorAll("#peeking [data-pointed][data-source]")].map((element) => element.getAttribute("data-source")))]
+    })
+    const point_Again = await at(".text_htmlView [data-place='again']")
+    expect(await pointed()).toEqual(["more"])
+    await opened.page.evaluate(() => {
+      const fold = document.querySelector("#peeking .fold_htmlView")
+      const rect = fold?.getBoundingClientRect()
+      fold?.dispatchEvent(new MouseEvent("click", { bubbles: true, clientX: (rect?.left ?? 0) + 2, clientY: (rect?.top ?? 0) + 2 }))
+    })
+    const pointed_Still = await pointed()
+    await opened.page.mouse.move(1270, 715)
+    await opened.page.mouse.move(point_Again.x, point_Again.y)
+    const pointed_Moved = await pointed()
+    expect(pointed_Moved).not.toEqual(["more"])
+    expect(pointed_Still).toEqual(pointed_Moved)
     await opened.page.evaluate(() => document.getElementById("peeking")?.remove())
   })
 
@@ -1307,7 +1781,7 @@ describe("beside it: what can't live in one document", () => {
               { kind: "POINT" as const, at: { line: 0, offset: 13 }, attributes: out("after", "1") },
               { kind: "BOUNDARY" as const, line: 1, attributes: out("after", "2") }
             ] }] } },
-            { kind: "PROPOSAL_LIST", items: [{ source: "out", title: "Take it out", places: "", rationale: "", actions: [], attributes: {} }] }
+            { kind: "PROPOSAL_LIST", items: [{ source: "out", title: "Take it out", state: "OPEN", status: "", places: "", rationale: "", request: "", actions: [], attributes: {} }] }
           ]
         }])
       })
@@ -1386,6 +1860,73 @@ describe("beside it: what can't live in one document", () => {
     await opened.page.evaluate(() => document.getElementById("notches")?.remove())
   })
 
+  test("a proposal being revised has its rings faded and the words it proposes faded, breathing, an open one beside it as it was, and still where motion's asked to be reduced", async () => {
+    await opened.page.mouse.move(1270, 715)
+    await opened.page.evaluate(() => {
+      const containerElement = document.createElement("div")
+      containerElement.id = "states"
+      containerElement.style.width = "40rem"
+      containerElement.dataset["perspective"] = "changes"
+      document.body.prepend(containerElement)
+      const [asIs, kept] = window.parseLines_ViewModel({ multilineText: "if (status === 429) go(delay);\nreturn DELAY_MS;", module_Language: window.MODULE_PLAINTEXT })
+      const [segment] = asIs?.segments ?? []
+      if (asIs === undefined || kept === undefined || segment === undefined) throw new Error("the lines weren't parsed")
+      const textOf = (text: string) => window.parseLines_ViewModel({ multilineText: text, module_Language: window.MODULE_PLAINTEXT })[0]?.segments[0]?.text ?? segment.text
+      const change = (side: string, source: string) => ({ "data-change": "replaced", "data-side": side, "data-source": source, "data-place": "1" })
+      const lineOf = (side: string) => ({ ...asIs, segments: [
+        { text: textOf("if (status === "), attributes: {} },
+        { text: textOf(side === "before" ? "429" : "408"), attributes: change(side, "timeout") },
+        { text: textOf(") go("), attributes: {} },
+        { text: textOf(side === "before" ? "delay" : "wait"), attributes: change(side, "rename") },
+        { text: textOf(");"), attributes: {} }
+      ] })
+      const groupsOf = (side: string) => [
+        { attributes: { "data-source": "timeout" }, underlays: [{ kind: "STRETCH" as const, from: { line: 0, offset: 15 }, to: { line: 0, offset: 18 }, attributes: change(side, "timeout") }] },
+        { attributes: { "data-source": "rename" }, underlays: [{ kind: "STRETCH" as const, from: { line: 0, offset: 23 }, to: { line: 0, offset: side === "before" ? 28 : 27 }, attributes: change(side, "rename") }] }
+      ]
+      const item = (source: string, state: "OPEN" | "REVISING" | "ACCEPTED", status: string) => ({ source, title: source, state, status, places: "", rationale: "", request: "", actions: [], attributes: {} })
+      new window._TextEditor_({
+        containerElement,
+        componentMap: window.COMPONENTMAP__VIEW_TEXTEDITOR,
+        modules: [window.MODULE_MOUSE],
+        viewModel_TextEditor: window.viewModelOf__Blocks([{
+          kind: "FRAME",
+          range: { first: 1, last: 2 },
+          parts: [
+            { kind: "CURRENT_LINES", run: { id: "current", lines: [lineOf("before"), kept], groups: groupsOf("before") } },
+            { kind: "PROPOSAL_LINES", run: { id: "proposed", lines: [lineOf("after"), kept], groups: groupsOf("after") } },
+            { kind: "PROPOSAL_LIST", items: [item("timeout", "REVISING", "Revising…"), item("rename", "OPEN", ""), item("base", "ACCEPTED", "Accepted")] }
+          ]
+        }])
+      })
+    })
+    // each ring, by its proposal and side: its opacity and what moves it;
+    // and the words each proposes, as proposed
+    const looks = () => opened.page.evaluate(async () => {
+      await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)))
+      const container = document.getElementById("states")
+      return {
+        rings: [...container?.querySelectorAll(".underlay_htmlView") ?? []].map((ring) => `${ring.getAttribute("data-source")} ${ring.getAttribute("data-side")}: ${Math.round(parseFloat(getComputedStyle(ring).strokeOpacity) * 100) / 100} ${getComputedStyle(ring).animationName}`),
+        words: [...container?.querySelectorAll(".proposed_htmlView .text_htmlView [data-source]") ?? []].map((span) => `${span.getAttribute("data-source")}: ${Math.round(parseFloat(getComputedStyle(span).opacity) * 100) / 100} ${getComputedStyle(span).animationName}`)
+      }
+    })
+    // moving, faded, between where they rest and a little above
+    const moving = await looks()
+    const faded = (each: string, ceiling: number) => {
+      const [label = "", rest = ""] = each.split(": ")
+      const [value = "", animation = ""] = rest.split(" ")
+      return parseFloat(value) < ceiling ? `${label}: faded ${animation}` : each
+    }
+    expect(moving.rings.map((ring) => faded(ring, 0.7))).toEqual(["timeout before: faded breathe_htmlView", "rename before: 1 none", "timeout after: faded breathe_htmlView", "rename after: 1 none"])
+    expect(moving.words.map((word) => faded(word, 0.85))).toEqual(["timeout: faded revise_htmlView", "rename: 1 none"])
+    // still, at rest, where motion's asked to be reduced
+    await opened.page.emulateMedia({ reducedMotion: "reduce" })
+    expect((await looks()).rings).toEqual(["timeout before: 0.45 none", "rename before: 1 none", "timeout after: 0.45 none", "rename after: 1 none"])
+    expect((await looks()).words).toEqual(["timeout: 0.55 none", "rename: 1 none"])
+    await opened.page.emulateMedia({ reducedMotion: "no-preference" })
+    await opened.page.evaluate(() => document.getElementById("states")?.remove())
+  })
+
   test("pointing at a ring points at its proposal and at its place: the place's rings, on both sides, heavier again, a faint light running round each, clockwise round the lines as proposed and counterclockwise round the lines as they are, both sides in step, one lap each in the time the longer takes at one pace, the proposal's breathing together, at a pace kept from ring to ring of one proposal and started anew at another; the place's lines' labels in the gutter heavier again, by a stroke, not a weight, so none moves, and still; still where motion's asked to be reduced", async () => {
     await opened.page.evaluate(() => {
       const containerElement = document.createElement("div")
@@ -1446,7 +1987,8 @@ describe("beside it: what can't live in one document", () => {
           }, 0)
           return twice > 0
         }),
-        elapsed: parseFloat((containerElement?.querySelector(".htmlView_editor") as HTMLElement | null)?.style.getPropertyValue("--elapsed_pointed_htmlView") ?? ""),
+        // how long the pointed proposal's rings have breathed, the least
+        breath: Math.min(...[...containerElement?.querySelectorAll(".group_htmlView[data-pointed] > .underlay_htmlView") ?? []].flatMap((ring) => ring.getAnimations().filter((animation) => animation instanceof CSSAnimation && animation.animationName === "breathe_htmlView").map((animation) => Number(animation.currentTime)))),
         // each light's ring's length, and the time its lap takes
         labels: [...containerElement?.querySelectorAll(".gutter_htmlView[data-pointed]") ?? []].map((gutter) => {
           const style = getComputedStyle(gutter.querySelector(".label_htmlView") ?? gutter)
@@ -1482,7 +2024,7 @@ describe("beside it: what can't live in one document", () => {
     await at("rename", "2")
     const second = await drawn()
     expect(second.rings.filter((ring) => ring.includes("place"))).toEqual(["rename before 2: place 3px breathe_htmlView, lap_htmlView reverse", "rename after 2: place 3px breathe_htmlView, lap_htmlView normal"])
-    expect(second.elapsed).toBeGreaterThan(250)
+    expect(second.breath).toBeGreaterThan(250)
     // both sides of a place go round in one time, though their rings'
     // lengths differ: the time the longer takes, at 16ms a pixel, kept
     // between two seconds and six
@@ -1504,7 +2046,7 @@ describe("beside it: what can't live in one document", () => {
     const after = await offsets()
     expect(after.map((offset, index) => offset !== before[index] && Math.abs(offset - (before[index] ?? 0)) < 25)).toEqual([true, true])
     await at("other", "1")
-    expect((await drawn()).elapsed).toBeLessThan(100)
+    expect((await drawn()).breath).toBeLessThan(100)
     await opened.page.emulateMedia({ reducedMotion: "reduce" })
     const still = await drawn()
     expect(still.rings.filter((ring) => ring.startsWith("other"))).toEqual(["other before 1: place 3px none, none", "other after 1: place 3px none, none"])
