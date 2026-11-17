@@ -31,11 +31,12 @@ const item_Hook: _Item_Proposals_ = {
   title: "Drop the onRetry hook",
   state: "OPEN",
   status: "",
-  places: "",
+  places: { kind: "NONE" },
   rationale: "Nothing passes onRetry any more: the callers log their retries in their own catch blocks.",
   request: "",
   actions: actions_Review,
   isDrafting: false,
+  neighbors: { range_Previous: null, range_Next: null },
   attributes: {},
 }
 
@@ -44,11 +45,12 @@ const item_Round: _Item_Proposals_ = {
   title: "Call the attempt counter round",
   state: "OPEN",
   status: "",
-  places: "",
+  places: { kind: "NONE" },
   rationale: "n says nothing; round says what it counts, in retry and in backoff alike, and in the doc comment that names it.",
   request: "",
   actions: actions_Review,
   isDrafting: false,
+  neighbors: { range_Previous: null, range_Next: null },
   attributes: {},
 }
 

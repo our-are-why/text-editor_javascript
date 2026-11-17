@@ -1060,5 +1060,5 @@ function itemOf({
   title,
   rationale
 }: _Api___itemOf_): _Item_Proposals_ {
-  return { source, title, state: "OPEN", status: "", places: "", rationale, request: "", actions: actions_Review, isDrafting: false, attributes: {} }
+  return { source, title, state: "OPEN", status: "", places: { kind: "NONE" }, rationale, request: "", actions: actions_Review, isDrafting: false, neighbors: { range_Previous: null, range_Next: null }, attributes: {} }
 }

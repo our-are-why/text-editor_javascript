@@ -7,7 +7,7 @@ import {
 import type {
   _ViewModel_TextEditor_,
   _Target_Note_,
-  _Draft_Item_,
+  _Id_Item_,
   _Block_ViewModel_,
   __BASE_Block__ViewModel_,
   _LINES_Block__ViewModel_,
@@ -25,6 +25,16 @@ import type {
   _PROPOSED_Part__Frame_,
   _PROPOSALS_Part__Frame_,
   _Item_Proposals_,
+  _Places_Item_,
+  __BASE_Places_Item_,
+  _COUNT_Places_Item_,
+  _Condition_Places_,
+  __BASE_Condition_Places_,
+  _WITHIN_Condition_Places_,
+  _CARRIED_Condition_Places_,
+  _MOVE_Places_Item_,
+  _Way_Move_,
+  _Neighbors_Item_,
   _Action_Item_,
   _Attributes_Element_,
   _Underlay_Text_,
@@ -39,13 +49,16 @@ export {
   type _ComponentMap__View_TextEditor_,
   type _ComponentMap_Block_,
   type _ComponentMap_Part_,
+  type _ComponentMap_Places_,
+  type _ComponentMap_Condition_,
   COMPONENTMAP__VIEW_TEXTEDITOR,
   type _Api___Block_TextEditor__Html_,
   type _Api___Line_Run__Html_,
   type _Api___Section_Frame__Html_,
   type _Point_Screen_,
   type _Layout_View_,
-  type _Focus_Draft_
+  type _Focus_Draft_,
+  type _Visit_Item_
 }
 
 class _View_TextEditor_ {
@@ -154,6 +167,15 @@ class _View_TextEditor_ {
     focusDraft__View_TextEditor({
       containerElement_View: this.containerElement,
       focus_Draft
+    })
+  }
+
+  visit(
+    visit_Item: _Visit_Item_
+  ): void {
+    visit__View_TextEditor({
+      containerElement_View: this.containerElement,
+      visit_Item
     })
   }
 }
@@ -528,10 +550,12 @@ function PROPOSAL_LINES__Section_Frame__Html({
 }
 
 interface _Api___PROPOSAL_LIST__Section_Frame__Html_ {
+  componentMap_View: _ComponentMap__View_TextEditor_
   part_Frame: _PROPOSALS_Part__Frame_
 }
 
 function PROPOSAL_LIST__Section_Frame__Html({
+  componentMap_View,
   part_Frame
 }: _Api___PROPOSAL_LIST__Section_Frame__Html_): JSX.Element {
   return (
@@ -539,16 +563,23 @@ function PROPOSAL_LIST__Section_Frame__Html({
       class="proposals_htmlView"
       aria-label="proposals"
     >
-      {part_Frame.items.map((item_ProposalList) => <Item_ProposalList__Html item_ProposalList={item_ProposalList} />)}
+      {part_Frame.items.map((item_ProposalList) => (
+        <Item_ProposalList__Html
+          componentMap_View={componentMap_View}
+          item_ProposalList={item_ProposalList}
+        />
+      ))}
     </ol>
   )
 }
 
 interface _Api___Item_ProposalList__Html_ {
+  componentMap_View: _ComponentMap__View_TextEditor_
   item_ProposalList: _Item_Proposals_
 }
 
 function Item_ProposalList__Html({
+  componentMap_View,
   item_ProposalList
 }: _Api___Item_ProposalList__Html_): JSX.Element {
   return (
@@ -562,10 +593,29 @@ function Item_ProposalList__Html({
       <p class="heading_htmlView">
         <span class="title_htmlView">{item_ProposalList.title}</span>
         <span class="status_htmlView">{item_ProposalList.status}</span>
+        <span
+          class="dots_htmlView"
+          aria-hidden="true"
+        >
+          <span class="dot_htmlView">.</span>
+          <span class="dot_htmlView">.</span>
+          <span class="dot_htmlView">.</span>
+        </span>
       </p>
-      <p class="places_htmlView">{item_ProposalList.places}</p>
+      <Places_Item__Html
+        componentMap_View={componentMap_View}
+        places_Item={item_ProposalList.places}
+        neighbors_Item={item_ProposalList.neighbors}
+      />
       <p class="rationale_htmlView">{item_ProposalList.rationale}</p>
-      <p class="request_htmlView">{item_ProposalList.request}</p>
+      {item_ProposalList.request === ""
+        ? null
+        : (
+          <div class="request_htmlView">
+            <p class="asked_htmlView">You asked</p>
+            <p class="said_htmlView">{item_ProposalList.request}</p>
+          </div>
+        )}
       <div class="actions_htmlView">
         {item_ProposalList.actions.map((action_Item) => (
           <Action_Item__Html
@@ -579,13 +629,13 @@ function Item_ProposalList__Html({
   )
 }
 
-interface _Api___Draft_Item__Html_ {
+interface _Api___Id_Item__Html_ {
   item_ProposalList: _Item_Proposals_
 }
 
 function Draft_Item__Html({
   item_ProposalList
-}: _Api___Draft_Item__Html_): JSX.Element {
+}: _Api___Id_Item__Html_): JSX.Element {
   return (
     <div class="draft_htmlView">
       <textarea
@@ -613,6 +663,225 @@ function Draft_Item__Html({
       </div>
     </div>
   )
+}
+
+interface _Api___Places_Item__Html_<Kind extends _Places_Item_["kind"]> {
+  componentMap_View: _ComponentMap__View_TextEditor_
+  places_Item: Extract<
+    _Places_Item_,
+    __BASE_Places_Item_<Kind>
+  >
+  neighbors_Item: _Neighbors_Item_
+}
+
+function Places_Item__Html<Kind extends _Places_Item_["kind"]>({
+  componentMap_View,
+  places_Item,
+  neighbors_Item
+}: _Api___Places_Item__Html_<Kind>): _Node_Jsx_ {
+  const Component_Places = componentMap_View.places[places_Item.kind]
+  return (
+    <Component_Places
+      componentMap_View={componentMap_View}
+      places_Item={places_Item}
+      neighbors_Item={neighbors_Item}
+    />
+  )
+}
+
+function NONE_Places_Item__Html(): _Node_Jsx_ {
+  return null
+}
+
+interface _Api___COUNT_Places_Item__Html_ {
+  componentMap_View: _ComponentMap__View_TextEditor_
+  places_Item: _COUNT_Places_Item_
+  neighbors_Item: _Neighbors_Item_
+}
+
+function COUNT_Places_Item__Html({
+  componentMap_View,
+  places_Item,
+  neighbors_Item
+}: _Api___COUNT_Places_Item__Html_): JSX.Element {
+  return (
+    <div class="places_htmlView">
+      <p class="extent_htmlView">
+        {places_Item.count_Here === places_Item.count_All
+          ? `${places_Item.count_Here} ${places_Item.count_Here === 1 ? "change" : "changes"}`
+          : `${places_Item.count_Here} of ${places_Item.count_All} changes here`}
+        <Neighbors_Item__Html neighbors_Item={neighbors_Item} />
+      </p>
+      {places_Item.conditions.map((condition_Places) => (
+        <Condition_Places__Html
+          componentMap_View={componentMap_View}
+          condition_Places={condition_Places}
+        />
+      ))}
+    </div>
+  )
+}
+
+interface _Api___Condition_Places__Html_<Kind extends _Condition_Places_["kind"]> {
+  componentMap_View: _ComponentMap__View_TextEditor_
+  condition_Places: Extract<
+    _Condition_Places_,
+    __BASE_Condition_Places_<Kind>
+  >
+}
+
+function Condition_Places__Html<Kind extends _Condition_Places_["kind"]>({
+  componentMap_View,
+  condition_Places
+}: _Api___Condition_Places__Html_<Kind>): _Node_Jsx_ {
+  const Component_Condition = componentMap_View.condition[condition_Places.kind]
+  return (
+    <Component_Condition
+      componentMap_View={componentMap_View}
+      condition_Places={condition_Places}
+    />
+  )
+}
+
+interface _Api___WITHIN_Condition_Places__Html_ {
+  componentMap_View: _ComponentMap__View_TextEditor_
+  condition_Places: _WITHIN_Condition_Places_
+}
+
+function WITHIN_Condition_Places__Html({
+  condition_Places
+}: _Api___WITHIN_Condition_Places__Html_): JSX.Element {
+  return (
+    <p class="condition_htmlView">
+      {`${condition_Places.count} of them only if `}
+      <Reference_Condition__Html condition_Places={condition_Places} />
+      {" is rejected"}
+    </p>
+  )
+}
+
+interface _Api___Reference_Condition__Html_ {
+  condition_Places: _Condition_Places_
+}
+
+function Reference_Condition__Html({
+  condition_Places
+}: _Api___Reference_Condition__Html_): JSX.Element {
+  return (
+    <span
+      class="reference_htmlView"
+      data-source={condition_Places.source}
+    >
+      {condition_Places.title}
+    </span>
+  )
+}
+
+interface _Api___CARRIED_Condition_Places__Html_ {
+  componentMap_View: _ComponentMap__View_TextEditor_
+  condition_Places: _CARRIED_Condition_Places_
+}
+
+function CARRIED_Condition_Places__Html({
+  condition_Places
+}: _Api___CARRIED_Condition_Places__Html_): JSX.Element {
+  return (
+    <p class="condition_htmlView">
+      {`${condition_Places.count} of them moved with `}
+      <Reference_Condition__Html condition_Places={condition_Places} />
+    </p>
+  )
+}
+
+interface _Api___MOVE_Places_Item__Html_ {
+  componentMap_View: _ComponentMap__View_TextEditor_
+  places_Item: _MOVE_Places_Item_
+  neighbors_Item: _Neighbors_Item_
+}
+
+function MOVE_Places_Item__Html({
+  places_Item,
+  neighbors_Item
+}: _Api___MOVE_Places_Item__Html_): JSX.Element {
+  return (
+    <div class="places_htmlView">
+      <p class="extent_htmlView">
+        {`moves ${labelOf__Range_Line$(places_Item.range)} ${WORDMAP__WAY_MOVE[places_Item.way]}`}
+        <Neighbors_Item__Html neighbors_Item={neighbors_Item} />
+      </p>
+    </div>
+  )
+}
+
+type _WordMap_Way_ = {
+  [Way in _Way_Move_]: string
+}
+
+const WORDMAP__WAY_MOVE: _WordMap_Way_ = {
+  UP: "up",
+  DOWN: "down"
+}
+
+interface _Api___Neighbors_Item__Html_ {
+  neighbors_Item: _Neighbors_Item_
+}
+
+function Neighbors_Item__Html({
+  neighbors_Item
+}: _Api___Neighbors_Item__Html_): _Node_Jsx_ {
+  if (neighbors_Item.range_Previous === null && neighbors_Item.range_Next === null) return null
+  return (
+    <span class="neighbors_htmlView">
+      <Neighbor_Item__Html
+        range_Frame={neighbors_Item.range_Previous}
+        way="PREVIOUS"
+      />
+      <Neighbor_Item__Html
+        range_Frame={neighbors_Item.range_Next}
+        way="NEXT"
+      />
+    </span>
+  )
+}
+
+interface _Api___Neighbor_Item__Html_ {
+  range_Frame: _Range_Lines_ | null
+  way: _Way_Visit_
+}
+
+type _Way_Visit_ = "PREVIOUS" | "NEXT"
+
+function Neighbor_Item__Html({
+  range_Frame,
+  way
+}: _Api___Neighbor_Item__Html_): JSX.Element {
+  const label = range_Frame === null ? WORDMAP__NONE_VISIT[way] : `${WORDMAP__WAY_VISIT[way]} ${labelOf__Range_Line$(range_Frame)}`
+  return (
+    <button
+      type="button"
+      class="neighbor_htmlView"
+      data-way={way}
+      data-frame-first={range_Frame === null ? undefined : String(range_Frame.first)}
+      data-frame-last={range_Frame === null ? undefined : String(range_Frame.last)}
+      disabled={range_Frame === null ? "" : undefined}
+      aria-label={label}
+      title={label}
+    />
+  )
+}
+
+type _WordMap_Visit_ = {
+  [Way in _Way_Visit_]: string
+}
+
+const WORDMAP__WAY_VISIT: _WordMap_Visit_ = {
+  PREVIOUS: "Up to this proposal at",
+  NEXT: "Down to this proposal at"
+}
+
+const WORDMAP__NONE_VISIT: _WordMap_Visit_ = {
+  PREVIOUS: "No change of this proposal above",
+  NEXT: "No change of this proposal below"
 }
 
 interface _Api___Action_Item__Html_ {
@@ -2224,7 +2493,7 @@ interface _Api___focusDraft__View_TextEditor_ {
 }
 
 interface _Focus_Draft_ {
-  draft_Item: _Draft_Item_
+  id_Item: _Id_Item_
   part: _Part_Focus_
 }
 
@@ -2235,10 +2504,116 @@ function focusDraft__View_TextEditor({
   focus_Draft
 }: _Api___focusDraft__View_TextEditor_): void {
   containerElement_View
-    .querySelector<HTMLElement>(`${selectorOf__Draft_Item({
-      draft_Item: focus_Draft.draft_Item
+    .querySelector<HTMLElement>(`${selectorOf__Id_Item({
+      id_Item: focus_Draft.id_Item
     })} ${SELECTORMAP__PART_FOCUS[focus_Draft.part]}`)
     ?.focus()
+}
+
+interface _Api___visit__View_TextEditor_ {
+  containerElement_View: HTMLElement
+  visit_Item: _Visit_Item_
+}
+
+interface _Visit_Item_ {
+  id_Item: _Id_Item_
+  id_Item_From: _Id_Item_
+  way: _Way_Visit_
+}
+
+function visit__View_TextEditor({
+  containerElement_View,
+  visit_Item
+}: _Api___visit__View_TextEditor_): void {
+  const element_Item = containerElement_View.querySelector<HTMLElement>(selectorOf__Id_Item({
+    id_Item: visit_Item.id_Item
+  }))
+  if (element_Item === null) return
+  const isStill = matchMedia("(prefers-reduced-motion: reduce)").matches
+  const behavior = isStill ? "instant" : "smooth"
+  const element_Pressed = containerElement_View.querySelector(`${selectorOf__Id_Item({
+    id_Item: visit_Item.id_Item_From
+  })} .neighbor_htmlView[data-way="${visit_Item.way}"]`)
+  const element_Arrived = element_Item.querySelector(`.neighbor_htmlView[data-way="${visit_Item.way}"]`)
+  const element_Scroller = scrollerOf__Element({
+    element: element_Item
+  })
+  if (element_Pressed !== null && element_Arrived !== null && isShown__Element({
+    element: element_Pressed,
+    element_Scroller
+  })) {
+    element_Scroller.scrollBy({
+      top: element_Arrived.getBoundingClientRect().top - element_Pressed.getBoundingClientRect().top,
+      behavior
+    })
+  } else {
+    element_Item.scrollIntoView({
+      block: "center",
+      behavior
+    })
+  }
+  const element_Neighbor = element_Item.querySelector<HTMLElement>(`.neighbor_htmlView[data-way="${visit_Item.way}"]:not(:disabled)`) ?? element_Item.querySelector<HTMLElement>(".neighbor_htmlView:not(:disabled)")
+  element_Neighbor?.focus({
+    preventScroll: true
+  })
+  if (isStill) return
+  element_Item.animate(
+    [
+      {
+        boxShadow: "inset 0 0 0 100vmax color-mix(in srgb, CanvasText 12%, transparent)"
+      },
+      {
+        boxShadow: "inset 0 0 0 100vmax transparent"
+      }
+    ],
+    {
+      duration: 1400,
+      easing: "ease-out"
+    }
+  )
+}
+
+interface _Api___scrollerOf__Element_ {
+  element: Element
+}
+
+function scrollerOf__Element({
+  element
+}: _Api___scrollerOf__Element_): Element {
+  const element_Parent = element.parentElement
+  if (element_Parent === null) return document.scrollingElement ?? document.documentElement
+  return /auto|scroll/.test(getComputedStyle(element_Parent).overflowY) && element_Parent.scrollHeight > element_Parent.clientHeight
+    ? element_Parent
+    : scrollerOf__Element({
+      element: element_Parent
+    })
+}
+
+interface _Api___isShown__Element_ {
+  element: Element
+  element_Scroller: Element
+}
+
+function isShown__Element({
+  element,
+  element_Scroller
+}: _Api___isShown__Element_): boolean {
+  const rect = element.getBoundingClientRect()
+  const rect_Scroller = element_Scroller === document.scrollingElement
+    ? new DOMRect(
+      0,
+      0,
+      innerWidth,
+      innerHeight
+    )
+    : element_Scroller.getBoundingClientRect()
+  return rect.top >= Math.max(
+    rect_Scroller.top,
+    0
+  ) && rect.bottom <= Math.min(
+    rect_Scroller.bottom,
+    innerHeight
+  )
 }
 
 type _SelectorMap_Part_ = {
@@ -2250,14 +2625,14 @@ const SELECTORMAP__PART_FOCUS: _SelectorMap_Part_ = {
   REVISE: ".action_htmlView[data-command][data-state-after='REQUESTED']"
 }
 
-interface _Api___selectorOf__Draft_Item_ {
-  draft_Item: _Draft_Item_
+interface _Api___selectorOf__Id_Item_ {
+  id_Item: _Id_Item_
 }
 
-function selectorOf__Draft_Item({
-  draft_Item
-}: _Api___selectorOf__Draft_Item_): string {
-  return `.frame_htmlView:has(> .fold_htmlView[data-fold-first="${draft_Item.range_Frame.first}"][data-fold-last="${draft_Item.range_Frame.last}"]) .item_htmlView[data-source="${CSS.escape(draft_Item.source)}"]`
+function selectorOf__Id_Item({
+  id_Item
+}: _Api___selectorOf__Id_Item_): string {
+  return `.frame_htmlView:has(> .fold_htmlView[data-fold-first="${id_Item.range_Frame.first}"][data-fold-last="${id_Item.range_Frame.last}"]) .item_htmlView[data-source="${CSS.escape(id_Item.source)}"]`
 }
 
 interface _Api___sourceAt__View_TextEditor_ {
@@ -2412,6 +2787,8 @@ function foldAt__View_TextEditor({
 interface _ComponentMap__View_TextEditor_ {
   block: _ComponentMap_Block_
   part: _ComponentMap_Part_
+  places: _ComponentMap_Places_
+  condition: _ComponentMap_Condition_
   line: (api_Line: _Api___Line_Run__Html_) => _Node_Jsx_
 }
 
@@ -2421,6 +2798,14 @@ type _ComponentMap_Block_ = {
 
 type _ComponentMap_Part_ = {
   [Kind in _Part_Frame_["kind"]]: (api_Part: _Api___Section_Frame__Html_<Kind>) => _Node_Jsx_
+}
+
+type _ComponentMap_Places_ = {
+  [Kind in _Places_Item_["kind"]]: (api_Places: _Api___Places_Item__Html_<Kind>) => _Node_Jsx_
+}
+
+type _ComponentMap_Condition_ = {
+  [Kind in _Condition_Places_["kind"]]: (api_Condition: _Api___Condition_Places__Html_<Kind>) => _Node_Jsx_
 }
 
 const COMPONENTMAP__VIEW_TEXTEDITOR: _ComponentMap__View_TextEditor_ = {
@@ -2433,6 +2818,15 @@ const COMPONENTMAP__VIEW_TEXTEDITOR: _ComponentMap__View_TextEditor_ = {
     CURRENT_LINES: CURRENT_LINES__Section_Frame__Html,
     PROPOSAL_LINES: PROPOSAL_LINES__Section_Frame__Html,
     PROPOSAL_LIST: PROPOSAL_LIST__Section_Frame__Html
+  },
+  places: {
+    NONE: NONE_Places_Item__Html,
+    COUNT: COUNT_Places_Item__Html,
+    MOVE: MOVE_Places_Item__Html
+  },
+  condition: {
+    WITHIN: WITHIN_Condition_Places__Html,
+    CARRIED: CARRIED_Condition_Places__Html
   },
   line: Line_Run__Html
 }

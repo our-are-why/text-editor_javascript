@@ -1,5 +1,5 @@
 import type { _Adapter_Event_ } from "./TextEditor.ts"
-import type { _Draft_Item_ } from "./ViewModel_TextEditor.ts"
+import type { _Id_Item_ } from "./ViewModel_TextEditor.ts"
 
 export {
   CONTROLS__TEXTEDITOR
@@ -48,22 +48,22 @@ const CONTROLS__TEXTEDITOR: Array<_Adapter_Event_> = [
     event: "click",
     commandOf__Event: (event) => {
       const element_Revise = event.target instanceof Element ? event.target.closest(".item_htmlView[data-state='OPEN'] .action_htmlView[data-command][data-state-after='REQUESTED']") : null
-      const draft_Item = element_Revise === null
+      const id_Item = element_Revise === null
         ? null
-        : draftOf__Element({
+        : idOf__Item({
           element: element_Revise
         })
-      if (draft_Item === null) return null
+      if (id_Item === null) return null
       const element_Notes = element_Revise?.closest(".item_htmlView")?.querySelector(".notes_htmlView")
       const isWritten = element_Notes instanceof HTMLTextAreaElement && element_Notes.value.trim() !== ""
       return element_Revise?.getAttribute("aria-expanded") === "true" && !isWritten
         ? {
           kind: "DISCARD",
-          draft_Item
+          id_Item
         }
         : {
           kind: "DRAFT",
-          draft_Item
+          id_Item
         }
     }
   },
@@ -72,15 +72,43 @@ const CONTROLS__TEXTEDITOR: Array<_Adapter_Event_> = [
     commandOf__Event: (event) => {
       const element_Draft = event.target instanceof Element ? event.target.closest(".action_htmlView[data-draft]") : null
       const kind = element_Draft?.getAttribute("data-draft")
-      const draft_Item = element_Draft === null || element_Draft === undefined
+      const id_Item = element_Draft === null || element_Draft === undefined
         ? null
-        : draftOf__Element({
+        : idOf__Item({
           element: element_Draft
         })
-      return (kind === "SEND" || kind === "DISCARD") && draft_Item !== null
+      return (kind === "SEND" || kind === "DISCARD") && id_Item !== null
         ? {
           kind,
-          draft_Item
+          id_Item
+        }
+        : null
+    }
+  },
+  {
+    event: "click",
+    commandOf__Event: (event) => {
+      const element_Neighbor = event.target instanceof Element ? event.target.closest(".neighbor_htmlView") : null
+      const id_Item_From = element_Neighbor === null ? null : idOf__Item({
+        element: element_Neighbor
+      })
+      const way = element_Neighbor?.getAttribute("data-way")
+      const first = Number(element_Neighbor?.getAttribute("data-frame-first") ?? Number.NaN)
+      const last = Number(element_Neighbor?.getAttribute("data-frame-last") ?? Number.NaN)
+      return id_Item_From !== null && (way === "PREVIOUS" || way === "NEXT") && Number.isInteger(first) && Number.isInteger(last)
+        ? {
+          kind: "VISIT",
+          visit_Item: {
+            id_Item: {
+              source: id_Item_From.source,
+              range_Frame: {
+                first,
+                last
+              }
+            },
+            id_Item_From,
+            way
+          }
         }
         : null
     }
@@ -89,35 +117,35 @@ const CONTROLS__TEXTEDITOR: Array<_Adapter_Event_> = [
     event: "keydown",
     commandOf__Event: (event) => {
       const element_Notes = event.target instanceof Element ? event.target.closest(".notes_htmlView") : null
-      const draft_Item = element_Notes === null
+      const id_Item = element_Notes === null
         ? null
-        : draftOf__Element({
+        : idOf__Item({
           element: element_Notes
         })
-      if (!(event instanceof KeyboardEvent) || draft_Item === null) return null
+      if (!(event instanceof KeyboardEvent) || id_Item === null) return null
       if (event.key === "Escape") {
         return {
           kind: "DISCARD",
-          draft_Item
+          id_Item
         }
       }
       return event.key === "Enter" && (event.metaKey || event.ctrlKey)
         ? {
           kind: "SEND",
-          draft_Item
+          id_Item
         }
         : null
     }
   }
 ]
 
-interface _Api___draftOf__Element_ {
+interface _Api___idOf__Item_ {
   element: Element
 }
 
-function draftOf__Element({
+function idOf__Item({
   element
-}: _Api___draftOf__Element_): _Draft_Item_ | null {
+}: _Api___idOf__Item_): _Id_Item_ | null {
   const source = element.closest(".item_htmlView")?.getAttribute("data-source")
   const element_Fold = element.closest(".frame_htmlView")?.querySelector(":scope > .fold_htmlView")
   const first = Number(element_Fold?.getAttribute("data-fold-first") ?? Number.NaN)

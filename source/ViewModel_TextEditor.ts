@@ -33,6 +33,17 @@ export {
   type _PROPOSALS_Part__Frame_,
   type _Item_Proposals_,
   type _State_Proposal_,
+  type _Places_Item_,
+  type __BASE_Places_Item_,
+  type _NONE_Places_Item_,
+  type _COUNT_Places_Item_,
+  type _Condition_Places_,
+  type __BASE_Condition_Places_,
+  type _WITHIN_Condition_Places_,
+  type _CARRIED_Condition_Places_,
+  type _MOVE_Places_Item_,
+  type _Way_Move_,
+  type _Neighbors_Item_,
   type _Action_Item_,
   type _Text_Line_NonTerminated_,
   type _NonEmpty_,
@@ -41,7 +52,7 @@ export {
   pointedAt__ViewModel,
   foldedAt__ViewModel,
   draftingAt__ViewModel,
-  type _Draft_Item_,
+  type _Id_Item_,
   parseLines_ViewModel,
   MODULE_PLAINTEXT,
   parseTexts_Line
@@ -178,7 +189,8 @@ interface _Item_Proposals_ {
   title: string
   state: _State_Proposal_
   status: string
-  places: string
+  places: _Places_Item_
+  neighbors: _Neighbors_Item_
   rationale: string
   request: string
   actions: Array<_Action_Item_>
@@ -187,6 +199,45 @@ interface _Item_Proposals_ {
 }
 
 type _State_Proposal_ = "OPEN" | "REQUESTED" | "REVISING" | "ACCEPTED" | "REJECTED" | "WITHDRAWN"
+
+type _Places_Item_ = _NONE_Places_Item_ | _COUNT_Places_Item_ | _MOVE_Places_Item_
+
+interface __BASE_Places_Item_<Kind extends string> {
+  kind: Kind
+}
+
+interface _NONE_Places_Item_ extends __BASE_Places_Item_<"NONE"> {}
+
+interface _COUNT_Places_Item_ extends __BASE_Places_Item_<"COUNT"> {
+  count_Here: number
+  count_All: number
+  conditions: Array<_Condition_Places_>
+}
+
+type _Condition_Places_ = _WITHIN_Condition_Places_ | _CARRIED_Condition_Places_
+
+interface __BASE_Condition_Places_<Kind extends string> {
+  kind: Kind
+  count: number
+  source: string
+  title: string
+}
+
+interface _WITHIN_Condition_Places_ extends __BASE_Condition_Places_<"WITHIN"> {}
+
+interface _CARRIED_Condition_Places_ extends __BASE_Condition_Places_<"CARRIED"> {}
+
+interface _MOVE_Places_Item_ extends __BASE_Places_Item_<"MOVE"> {
+  range: _Range_Lines_
+  way: _Way_Move_
+}
+
+type _Way_Move_ = "UP" | "DOWN"
+
+interface _Neighbors_Item_ {
+  range_Previous: _Range_Lines_ | null
+  range_Next: _Range_Lines_ | null
+}
 
 interface _Action_Item_ {
   command: string
@@ -201,7 +252,7 @@ declare const proof__Text_Line_NonTerminated: unique symbol
 function viewModelOf__Blocks(
   blocks_ViewModel: Array<_Block_ViewModel_>
 ): _ViewModel_TextEditor_ {
-  const block$_Stated = statedOf__Blocks(blocks_ViewModel)
+  const block$_Stated = neighboredOf__Blocks(statedOf__Blocks(blocks_ViewModel))
   const runs_ViewModel = runsOf__Blocks(block$_Stated)
   return {
     charCount_Max__Label_Gutter: Math.max(
@@ -211,6 +262,49 @@ function viewModelOf__Blocks(
     blocks: block$_Stated,
     runs: runs_ViewModel
   }
+}
+
+function neighboredOf__Blocks(
+  blocks_ViewModel: Array<_Block_ViewModel_>
+): Array<_Block_ViewModel_> {
+  const listed$_Source = Map.groupBy(
+    blocks_ViewModel.flatMap((block_ViewModel) => block_ViewModel.kind === "FRAME"
+      ? block_ViewModel.parts.flatMap((part_Frame) => part_Frame.kind === "PROPOSAL_LIST"
+        ? part_Frame.items.map((item_Proposals) => ({
+          source: item_Proposals.source,
+          range_Frame: block_ViewModel.range
+        }))
+        : [])
+      : []),
+    (listed) => listed.source
+  )
+  return blocks_ViewModel.map((block_ViewModel): _Block_ViewModel_ => block_ViewModel.kind !== "FRAME"
+    ? block_ViewModel
+    : {
+      ...block_ViewModel,
+      parts: mapped__NonEmpty({
+        items: block_ViewModel.parts,
+        map: (part_Frame): _Part_Frame_ => part_Frame.kind !== "PROPOSAL_LIST"
+          ? part_Frame
+          : {
+            ...part_Frame,
+            items: mapped__NonEmpty({
+              items: part_Frame.items,
+              map: (item_Proposals) => {
+                const listed$ = listed$_Source.get(item_Proposals.source) ?? []
+                const index = listed$.findIndex((listed) => listed.range_Frame.first === block_ViewModel.range.first && listed.range_Frame.last === block_ViewModel.range.last)
+                return {
+                  ...item_Proposals,
+                  neighbors: {
+                    range_Previous: listed$[index - 1]?.range_Frame ?? null,
+                    range_Next: listed$[index + 1]?.range_Frame ?? null
+                  }
+                }
+              }
+            })
+          }
+      })
+    })
 }
 
 function statedOf__Blocks(
@@ -593,10 +687,10 @@ function foldedOf__Frame({
 
 interface _Api___draftingAt__ViewModel_ {
   viewModel_TextEditor: _ViewModel_TextEditor_
-  items_Drafted: Array<_Draft_Item_>
+  items_Drafted: Array<_Id_Item_>
 }
 
-interface _Draft_Item_ {
+interface _Id_Item_ {
   source: string
   range_Frame: _Range_Lines_
 }
@@ -609,8 +703,8 @@ function draftingAt__ViewModel({
   return viewModelOf__Blocks(viewModel_TextEditor.blocks.map((block_ViewModel): _Block_ViewModel_ => {
     if (block_ViewModel.kind !== "FRAME") return block_ViewModel
     const sources_Drafted = items_Drafted
-      .filter((draft_Item) => draft_Item.range_Frame.first === block_ViewModel.range.first && draft_Item.range_Frame.last === block_ViewModel.range.last)
-      .map((draft_Item) => draft_Item.source)
+      .filter((id_Item) => id_Item.range_Frame.first === block_ViewModel.range.first && id_Item.range_Frame.last === block_ViewModel.range.last)
+      .map((id_Item) => id_Item.source)
     return sources_Drafted.length === 0
       ? block_ViewModel
       : {

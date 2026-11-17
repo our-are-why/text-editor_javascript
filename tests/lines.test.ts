@@ -9,8 +9,8 @@ import { attributesOf__Change, attributesOf__Edit, attributesOf__Nested, type _S
 // projection works it out: its two ends in two frames
 const moved = (side: _Side_Change_) => attributesOf__Change({ side, kind: "moved", source: "move" })
 const renamed = (side: _Side_Change_) => ({ ...moved(side), ...attributesOf__Edit({ kind: "replaced", source: "rename" }) })
-const item: _Item_Proposals_ = { source: "move", title: "Move beta and gamma down", state: "OPEN", status: "", places: "", rationale: "", request: "", actions: [], isDrafting: false, attributes: {} }
-const item_Rename: _Item_Proposals_ = { source: "rename", title: "Shout gamma", state: "OPEN", status: "", places: "", rationale: "", request: "", actions: [], isDrafting: false, attributes: {} }
+const item: _Item_Proposals_ = { source: "move", title: "Move beta and gamma down", state: "OPEN", status: "", places: { kind: "NONE" as const }, rationale: "", request: "", actions: [], isDrafting: false, neighbors: { range_Previous: null, range_Next: null }, attributes: {} }
+const item_Rename: _Item_Proposals_ = { source: "rename", title: "Shout gamma", state: "OPEN", status: "", places: { kind: "NONE" as const }, rationale: "", request: "", actions: [], isDrafting: false, neighbors: { range_Previous: null, range_Next: null }, attributes: {} }
 const blocks = blocksWith__Frames({
   multilineText: "alpha\nbeta\ngamma ray\n\ndelta\nepsilon",
   module_Language: MODULE_PLAINTEXT,
@@ -70,13 +70,10 @@ test("a move is one ring over all it moves, at each end, whatever's changed on t
 })
 
 test("a move's item says which lines it moves, and which way, never to which line, at both its ends; a proposal changing what it carries, its places at both, counted once, as in what it moves", () => {
-  const places = blocks.flatMap((block) => block.kind === "FRAME" ? block.parts.flatMap((part) => part.kind === "PROPOSAL_LIST" ? part.items.map((each) => `${each.source}: ${each.places}`) : []) : [])
-  expect(places).toEqual([
-    "move: moves lines 2–3 down",
-    "rename: 1 place, in what “Move beta and gamma down” moves",
-    "move: moves lines 2–3 down",
-    "rename: 1 place, in what “Move beta and gamma down” moves",
-  ])
+  const places = blocks.flatMap((block) => block.kind === "FRAME" ? block.parts.flatMap((part) => part.kind === "PROPOSAL_LIST" ? part.items.map((each) => ({ source: each.source, places: each.places })) : []) : [])
+  const moved = { source: "move", places: { kind: "MOVE" as const, range: { first: 2, last: 3 }, way: "DOWN" as const } }
+  const carried = { source: "rename", places: { kind: "COUNT" as const, count_Here: 1, count_All: 1, conditions: [{ kind: "CARRIED" as const, count: 1, source: "move", title: "Move beta and gamma down" }] } }
+  expect(places).toEqual([moved, carried, moved, carried])
 })
 
 test("a frame whose range is empty is a point before its first line, holding no lines as they are, the lines round it as they were; a blank line taken out or put in says so in its gutter, having no words to", () => {
@@ -131,7 +128,7 @@ test("text moved within a line is moved as anywhere, both its ends in its frame,
   })
   expect(drawn("order-current")).toEqual({ gutters: [["1", "changed", null]], rings: ["moved 4-13", "moved 17-20"] })
   expect(drawn("order-proposed")).toEqual({ gutters: [["~", "changed", null]], rings: ["moved 4-7", "moved 11-20"] })
-  expect(blocks_Order.flatMap((block) => block.kind === "FRAME" ? block.parts.flatMap((part) => part.kind === "PROPOSAL_LIST" ? part.items.map((each) => each.places) : []) : [])).toEqual([""])
+  expect(blocks_Order.flatMap((block) => block.kind === "FRAME" ? block.parts.flatMap((part) => part.kind === "PROPOSAL_LIST" ? part.items.map((each) => each.places) : []) : [])).toEqual([{ kind: "NONE" }])
 })
 
 test("a proposal that moves holds only moves: one that moves text and changes text too is a mistake in the scene, and throws; what else changes in what it moves is another's, carried", () => {

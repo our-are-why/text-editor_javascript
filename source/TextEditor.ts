@@ -3,13 +3,14 @@ import {
   type _ComponentMap__View_TextEditor_,
   type _Layout_View_,
   type _Point_Screen_,
-  type _Focus_Draft_
+  type _Focus_Draft_,
+  type _Visit_Item_
 } from "./View_TextEditor.tsx"
 import {
   type _ViewModel_TextEditor_,
   type _Target_Note_,
   type _Range_Lines_,
-  type _Draft_Item_,
+  type _Id_Item_,
   pointedAt__ViewModel,
   draftingAt__ViewModel,
   foldedAt__ViewModel
@@ -30,6 +31,7 @@ export {
   type _DRAFT_Command_,
   type _SEND_Command_,
   type _DISCARD_Command_,
+  type _VISIT_Command_,
   type _HandlerMap__TextEditor_,
   HANDLERMAP__TEXTEDITOR
 }
@@ -64,7 +66,8 @@ class _TextEditor_ {
       ranges_Folded: [],
       range_Peeked: null,
       items_Drafted: [],
-      focus_Draft: null
+      focus_Draft: null,
+      visit_Item: null
     }
     this.request_Draw = null
     this.point_Screen = null
@@ -118,6 +121,13 @@ class _TextEditor_ {
           focus_Draft: null
         }
       }
+      if (this.state.visit_Item !== null) {
+        this.view.visit(this.state.visit_Item)
+        this.state = {
+          ...this.state,
+          visit_Item: null
+        }
+      }
       this.dispatch({
         kind: "POINT",
         point_Screen: this.point_Screen
@@ -150,7 +160,7 @@ interface _Adapter_Event_ {
   commandOf__Event: (event: Event) => _Command_TextEditor_ | null
 }
 
-type _Command_TextEditor_ = _POINT_Command_ | _JUMP_Command_ | _FOLD_Command_ | _DRAFT_Command_ | _SEND_Command_ | _DISCARD_Command_
+type _Command_TextEditor_ = _POINT_Command_ | _JUMP_Command_ | _FOLD_Command_ | _DRAFT_Command_ | _SEND_Command_ | _DISCARD_Command_ | _VISIT_Command_
 
 interface __BASE_Command_<Kind extends string> {
   kind: Kind
@@ -170,15 +180,19 @@ interface _FOLD_Command_ extends __BASE_Command_<"FOLD"> {
 }
 
 interface _DRAFT_Command_ extends __BASE_Command_<"DRAFT"> {
-  draft_Item: _Draft_Item_
+  id_Item: _Id_Item_
 }
 
 interface _SEND_Command_ extends __BASE_Command_<"SEND"> {
-  draft_Item: _Draft_Item_
+  id_Item: _Id_Item_
 }
 
 interface _DISCARD_Command_ extends __BASE_Command_<"DISCARD"> {
-  draft_Item: _Draft_Item_
+  id_Item: _Id_Item_
+}
+
+interface _VISIT_Command_ extends __BASE_Command_<"VISIT"> {
+  visit_Item: _Visit_Item_
 }
 
 interface _State_TextEditor_ {
@@ -189,8 +203,9 @@ interface _State_TextEditor_ {
   target_Revealed: _Target_Note_ | null
   ranges_Folded: Array<_Range_Lines_>
   range_Peeked: _Range_Lines_ | null
-  items_Drafted: Array<_Draft_Item_>
+  items_Drafted: Array<_Id_Item_>
   focus_Draft: _Focus_Draft_ | null
+  visit_Item: _Visit_Item_ | null
 }
 
 function eventsOf__Adapters(
@@ -291,9 +306,9 @@ function DRAFT_stateAfter__Command({
   state,
   command
 }: _Api___stateAfter__Command_<"DRAFT">): _State_TextEditor_ {
-  const isOpen = state.items_Drafted.some((draft_Item) => isSame__Draft_Item({
-    draft_Item,
-    draft_Item_Other: command.draft_Item
+  const isOpen = state.items_Drafted.some((id_Item) => isSame__Id_Item({
+    id_Item,
+    id_Item_Other: command.id_Item
   }))
   return {
     ...state,
@@ -301,10 +316,10 @@ function DRAFT_stateAfter__Command({
       ? state.items_Drafted
       : [
         ...state.items_Drafted,
-        command.draft_Item
+        command.id_Item
       ],
     focus_Draft: {
-      draft_Item: command.draft_Item,
+      id_Item: command.id_Item,
       part: "NOTES"
     }
   }
@@ -316,7 +331,7 @@ function SEND_stateAfter__Command({
 }: _Api___stateAfter__Command_<"SEND">): _State_TextEditor_ {
   return closedAt__State({
     state,
-    draft_Item: command.draft_Item
+    id_Item: command.id_Item
   })
 }
 
@@ -326,22 +341,32 @@ function DISCARD_stateAfter__Command({
 }: _Api___stateAfter__Command_<"DISCARD">): _State_TextEditor_ {
   return closedAt__State({
     state,
-    draft_Item: command.draft_Item
+    id_Item: command.id_Item
   })
+}
+
+function VISIT_stateAfter__Command({
+  state,
+  command
+}: _Api___stateAfter__Command_<"VISIT">): _State_TextEditor_ {
+  return {
+    ...state,
+    visit_Item: command.visit_Item
+  }
 }
 
 interface _Api___closedAt__State_ {
   state: _State_TextEditor_
-  draft_Item: _Draft_Item_
+  id_Item: _Id_Item_
 }
 
 function closedAt__State({
   state,
-  draft_Item
+  id_Item
 }: _Api___closedAt__State_): _State_TextEditor_ {
-  const items_Drafted = state.items_Drafted.filter((draft_Item_Open) => !isSame__Draft_Item({
-    draft_Item: draft_Item_Open,
-    draft_Item_Other: draft_Item
+  const items_Drafted = state.items_Drafted.filter((id_Item_Open) => !isSame__Id_Item({
+    id_Item: id_Item_Open,
+    id_Item_Other: id_Item
   }))
   return items_Drafted.length === state.items_Drafted.length
     ? state
@@ -349,24 +374,24 @@ function closedAt__State({
       ...state,
       items_Drafted,
       focus_Draft: {
-        draft_Item,
+        id_Item,
         part: "REVISE"
       }
     }
 }
 
-interface _Api___isSame__Draft_Item_ {
-  draft_Item: _Draft_Item_
-  draft_Item_Other: _Draft_Item_
+interface _Api___isSame__Id_Item_ {
+  id_Item: _Id_Item_
+  id_Item_Other: _Id_Item_
 }
 
-function isSame__Draft_Item({
-  draft_Item,
-  draft_Item_Other
-}: _Api___isSame__Draft_Item_): boolean {
-  return draft_Item.source === draft_Item_Other.source
-    && draft_Item.range_Frame.first === draft_Item_Other.range_Frame.first
-    && draft_Item.range_Frame.last === draft_Item_Other.range_Frame.last
+function isSame__Id_Item({
+  id_Item,
+  id_Item_Other
+}: _Api___isSame__Id_Item_): boolean {
+  return id_Item.source === id_Item_Other.source
+    && id_Item.range_Frame.first === id_Item_Other.range_Frame.first
+    && id_Item.range_Frame.last === id_Item_Other.range_Frame.last
 }
 
 type _HandlerMap__TextEditor_ = {
@@ -379,5 +404,6 @@ const HANDLERMAP__TEXTEDITOR: _HandlerMap__TextEditor_ = {
   FOLD: FOLD_stateAfter__Command,
   DRAFT: DRAFT_stateAfter__Command,
   SEND: SEND_stateAfter__Command,
-  DISCARD: DISCARD_stateAfter__Command
+  DISCARD: DISCARD_stateAfter__Command,
+  VISIT: VISIT_stateAfter__Command
 }

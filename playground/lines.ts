@@ -1,4 +1,4 @@
-import { type _Attributes_Element_, type _Line_Run_, type _Segment_Line_, parseTexts_Line, type _Block_ViewModel_, parseLines_ViewModel, type _Module_Language_, segmentsOf__Stretches, type _Stretch_Line_, type _FRAME_Block__ViewModel_, type _Part_Frame_, type _Run_Lines_, type _Marker_Gutter_, type _Group_Underlay_, type _Underlay_Text_, type _STRETCH_Underlay_Text_, type _Position_Run_, type _Item_Proposals_, type _NonEmpty_, type _Range_Lines_ } from "../source/ViewModel_TextEditor.ts"
+import { type _Attributes_Element_, type _Line_Run_, type _Segment_Line_, parseTexts_Line, type _Block_ViewModel_, parseLines_ViewModel, type _Module_Language_, segmentsOf__Stretches, type _Stretch_Line_, type _FRAME_Block__ViewModel_, type _Part_Frame_, type _Run_Lines_, type _Marker_Gutter_, type _Group_Underlay_, type _Underlay_Text_, type _STRETCH_Underlay_Text_, type _Position_Run_, type _Item_Proposals_, type _NonEmpty_, type _Range_Lines_, type _Places_Item_, type _Way_Move_ } from "../source/ViewModel_TextEditor.ts"
 
 export {
   type _Piece_Line_,
@@ -137,7 +137,7 @@ function blocksWith__Frames<State>({
     const placed = (part_Frame: _Part_Frame_): _Part_Frame_ =>
       part_Frame.kind !== "PROPOSAL_LIST" ? part_Frame : {
         ...part_Frame,
-        items: placedItems(part_Frame.items, (item) => ({ ...item, places: placesText(item.source, places_Here, places_All, titles, moves) })),
+        items: placedItems(part_Frame.items, (item) => ({ ...item, places: placesOfItem(item.source, places_Here, places_All, titles, moves) })),
       }
     blocks.push({ ...frame, parts: [placed(part), ...more.map(placed)] })
     next = frame.range.last + 1
@@ -461,10 +461,8 @@ function firstWordedOf(
 function wayOf(
   move: _Move_Proposal_
 ): _Way_Move_ {
-  return move.to < move.range.first ? "up" : "down"
+  return move.to < move.range.first ? "UP" : "DOWN"
 }
-
-type _Way_Move_ = "up" | "down"
 
 // lines, by their numbers, as an item or a note says them
 function linesText(
@@ -513,34 +511,38 @@ function placedItems(
   return [place(item), ...more.map(place)]
 }
 
-// where a proposal is, as its item says it in a frame: a move, which lines
-// and which way, at both its ends; otherwise, how many of its places are here, of how
-// many in all, when that's not all of them; and of those here, how many only
-// if another proposal, whose removal they're inside, is rejected; and how
-// many are in what a move carries, so here at one of its ends, whichever
-// it's left at, counted once where both its ends are here. Nothing for a
-// proposal wholly here, inside nothing
-function placesText(
+// where a proposal is, as its item has it in a frame, for the view to say:
+// a move, which lines and which way, at both its ends; otherwise, how many
+// of its places are here, of how many in all; and of those here, how many
+// only if another proposal, whose removal they're inside, is rejected; and
+// how many are in what a move carries, so here at one of its ends,
+// whichever it's left at, counted once where both its ends are here, each
+// with the other proposal's title. Nothing to say for a proposal wholly
+// here, inside nothing
+function placesOfItem(
   source: string,
   places_Here: Array<_Place_Proposal_>,
   places_All: Array<_Place_Proposal_>,
   titles: Map<string, string>,
   moves: Array<_Move_Proposal_>
-): string {
+): _Places_Item_ {
   const move = moves.find((each) => each.source === source)
-  if (move !== undefined) return `moves ${linesText(move.range)} ${wayOf(move)}`
+  if (move !== undefined) return { kind: "MOVE", range: move.range, way: wayOf(move) }
   const here_Both = places_Here.filter((place) => place.source === source)
   const here = here_Both.filter((place) => !place.isLanded || !here_Both.some((other) => !other.isLanded && other.carried === place.carried))
   const all = places_All.filter((place) => place.source === source && !place.isLanded)
   const within = Map.groupBy(here.flatMap((place) => place.within === null ? [] : [place.within]), (source_Within) => source_Within)
   const carried = Map.groupBy(here.flatMap((place) => place.carried === null ? [] : [place.carried]), (source_Carried) => source_Carried)
-  if (here.length === all.length && within.size === 0 && carried.size === 0) return ""
-  const count = here.length === all.length ? `${here.length} ${here.length === 1 ? "place" : "places"}` : `${here.length} of ${all.length} places`
-  return [
-    count,
-    ...[...within].map(([source_Within, places]) => `${places.length} only if “${titles.get(source_Within) ?? source_Within}” is rejected`),
-    ...[...carried].map(([source_Carried, places]) => `${places.length === here.length ? "" : `${places.length} `}in what “${titles.get(source_Carried) ?? source_Carried}” moves`),
-  ].join(", ")
+  if (here.length === all.length && within.size === 0 && carried.size === 0) return { kind: "NONE" }
+  return {
+    kind: "COUNT",
+    count_Here: here.length,
+    count_All: all.length,
+    conditions: [
+      ...[...within].map(([source_Within, places]) => ({ kind: "WITHIN" as const, count: places.length, source: source_Within, title: titles.get(source_Within) ?? source_Within })),
+      ...[...carried].map(([source_Carried, places]) => ({ kind: "CARRIED" as const, count: places.length, source: source_Carried, title: titles.get(source_Carried) ?? source_Carried })),
+    ],
+  }
 }
 
 // what a line becomes, as its changes say: taken out, when it's all taken

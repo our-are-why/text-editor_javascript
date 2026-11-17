@@ -335,11 +335,13 @@ How each shows: an item says its state, `state`, one of the six as a kind,
 `OPEN`, `REQUESTED`, `REVISING`, `ACCEPTED`, `REJECTED`, `WITHDRAWN`, and
 what to call it, `status`, the host's words, as its actions are, drawn as a
 word after its title, "· Revision requested", "· Revising", "· Accepted",
-none for an open one; what was asked of a requested or revising one,
-`request`, under its words; and its actions, the host's for its state, as
-the playground's are Reopen alone for one requested, accepted or rejected,
-none while it's revised, and Dismiss alone once it's withdrawn, the agent's
-to take back, not yours, so nothing left of it to reopen, only to clear from
+none for an open one; what you asked of a requested or revising one,
+`request`, your words alone, under its words as a quote, a rule beside them
+and "You asked" over them, the editor's, in its state's ink, so they're
+yours, not the agent's; and its actions, the host's for its state, as the
+playground's are Reopen alone for one requested, accepted or rejected, none
+while it's revised, and Dismiss alone once it's withdrawn, the agent's to
+take back, not yours, so nothing left of it to reopen, only to clear from
 the list, an open one's first the main one, no other's, filled in the
 proposals' indigo, its words white, the others on their grey, their words
 the colour of the state each leads to, outlined once, too heavy a column of
@@ -359,40 +361,40 @@ you've decided it, accepted or rejected, or their plum,
 `--view-revision-accent`, where it's still going back and forth with the
 agent, a revision requested or under way, redder than the indigo, plainly
 another colour beside it, bluer than the rings' red for removed, tried after
-a teal, which bothered, or a grey, darker than the item's words, where the
-agent's withdrawn it, nothing of yours to colour, its icon fainter than its
-word, about half as strong, as a grey shape weighs more than a grey word, so
-where it stands is found at a glance, read before the item's words, and
-nothing says good or bad: a hue the rings never use, green, red, yellow and
-brown each keeping its one meaning there, nor the syntax, between its blue
-and its violet, saturated enough to read as live, as a slate blue, greyed,
-read as disabled; yours, once it's built, to be told some other way than a
-purple, the indigo and the plum either side of one, each state told by its
-icon's shape; a host's own colour for a state if it gives one,
-`--view-state-accepted` and the rest. A revising one's status word and the
-dots after it, the view's, the host's word without them, shimmer as one, a
-lighter streak going across the two as its arc goes round, the dots one,
-two, three, never none, one more at each third of the streak's pass, drawn
-as dots, not an ellipsis revealed a third at a time, whose dots sit where
-its font puts them, so in one a third held two, in step with it, the label's
-width never changing, the dot between its title and its state the title's,
-so it's still; still where motion's reduced, the dots all there.
-`viewModelOf__Blocks` puts each proposal's state, its item's, on its groups
-and its words, `data-state`, for a perspective to show, and lists decided
-items, accepted, rejected or withdrawn, after the rest, their titles and
-words the same as any other's, whatever their state, told apart by their
-icons, their status words and their place. The "changes" perspective fades a
-revising one's rings and the words it proposes, breathing, as doctor's
-revised lines pulsed, still where motion's asked to be reduced. An accepted
-one's words are the document's, so there's nothing left to ring, and nothing
-marks the lines they're on: a check by their numbers was tried, and dropped,
-the gutter left to its numbers and its signs. A rejected or withdrawn one's
-change is gone from the lines proposed, the projection leaving it out. Still
-to come: a frame whose proposals are all decided folding itself, the
-document's lines then, numbered again, a faint bar beside them, its handle
-to unfold it and reopen what's in it; pointing at an accepted one lighting
-the lines it changed; and the commands the actions send, the host's to carry
-out. The JavaScript example has a proposal in every state.
+a teal, which bothered, or a grey, the grey of where an item is, lighter
+than its words, where the agent's withdrawn it, nothing of yours to colour,
+its icon fainter than its word, three quarters as strong, as a grey shape
+weighs more than a grey word, so where it stands is found at a glance, read
+before the item's words, and nothing says good or bad: a hue the rings never
+use, green, red, yellow and brown each keeping its one meaning there, nor
+the syntax, between its blue and its violet, saturated enough to read as
+live, as a slate blue, greyed, read as disabled; yours, once it's built, to
+be told some other way than a purple, the indigo and the plum either side of
+one, each state told by its icon's shape; a host's own colour for a state if
+it gives one, `--view-state-accepted` and the rest. A revising one's status
+word has three dots after it, the view's, the host's word without them,
+always there, brightening in turn, a wave along them, a third of a pass
+apart, as its arc goes round once a wave, one rhythm, the word itself still,
+and the dot between its title and its state, the title's; tried before, a
+streak across word and dots, the dots stepping one, two, three, the arc at
+another pace, was three motions at two paces, too busy. Still where motion's
+reduced, the three dots all there. `viewModelOf__Blocks` puts each
+proposal's state, its item's, on its groups and its words, `data-state`, for
+a perspective to show, and lists decided items, accepted, rejected or
+withdrawn, after the rest, their titles and words the same as any other's,
+whatever their state, told apart by their icons, their status words and
+their place. The "changes" perspective fades a revising one's rings and the
+words it proposes, breathing, as doctor's revised lines pulsed, still where
+motion's asked to be reduced. An accepted one's words are the document's, so
+there's nothing left to ring, and nothing marks the lines they're on: a
+check by their numbers was tried, and dropped, the gutter left to its
+numbers and its signs. A rejected or withdrawn one's change is gone from the
+lines proposed, the projection leaving it out. Still to come: a frame whose
+proposals are all decided folding itself, the document's lines then,
+numbered again, a faint bar beside them, its handle to unfold it and reopen
+what's in it; pointing at an accepted one lighting the lines it changed; and
+the commands the actions send, the host's to carry out. The JavaScript
+example has a proposal in every state.
 
 ## how it shows them
 
@@ -439,19 +441,19 @@ beside them, read-only. So:
   ring inside the move's, at full strength, not a fallback, saying whose
   move carries it, `data-carried`; pointed at, it lights its own proposal,
   not the move; its item, in both frames, says its places are in what the
-  move moves, "2 places, in what “Move sleep up, beside the delays it waits
-  out” moves", counted once. A blank line is text like any: one that goes
-  with what moves is moved, its number brown where it leaves, → where it
-  lands, saying so only in its gutter, having no words to ring; sleep takes
-  the one before it, so each gap stays one line. It lands in a frame that's
-  a point, before a line, with nothing as it is there. Within a line, both
-  its ends are in the line's frame, where it leaves on the line as it is,
-  where it lands on the line as proposed, so it needs no notes; what doesn't
-  move stays as it was, the `||` between two operands swapped unringed; the
-  line's changed in place, its gutter yellow and `~`, its rings saying which
-  words moved. So far declared, as the stand-in has no comparison to derive
-  them. Not yet: the link in the margin between two ends shown together, and
-  a move split in pieces.
+  move moves, "2 places · 2 in what Move sleep up, beside the delays it
+  waits out moves", the move's title a chip, counted once. A blank line is
+  text like any: one that goes with what moves is moved, its number brown
+  where it leaves, → where it lands, saying so only in its gutter, having no
+  words to ring; sleep takes the one before it, so each gap stays one line.
+  It lands in a frame that's a point, before a line, with nothing as it is
+  there. Within a line, both its ends are in the line's frame, where it
+  leaves on the line as it is, where it lands on the line as proposed, so it
+  needs no notes; what doesn't move stays as it was, the `||` between two
+  operands swapped unringed; the line's changed in place, its gutter yellow
+  and `~`, its rings saying which words moved. So far declared, as the
+  stand-in has no comparison to derive them. Not yet: the link in the margin
+  between two ends shown together, and a move split in pieces.
 
 **every proposal shown at once:** all of them, each change styled as what it
 is, word by word, none hidden behind or put aside for another. Which
@@ -762,12 +764,50 @@ run through many:
 
 - **a thread** is a proposal with places in several frames, as a rename is,
   everywhere its name is. Every frame it runs through lists it, the item
-  saying where it is, how many of its places are in this frame, of how many,
-  "6 of 9 places", its actions deciding it everywhere, in every frame at
-  once; for a proposal wholly in one frame it says nothing. Later: a way to
-  step to its next place, once commands are; its rationale once, where it's
-  first listed, the others pointing to it, if every frame's saying it again
-  is noise; a mechanical one, a rename, maybe no frame at all, its places
+  saying where it is, how many of its changes are in this frame, of how
+  many, "6 of 9 changes here", its actions deciding it everywhere, in every
+  frame at once; for a proposal wholly in one frame it says nothing. An
+  item's places are data the host works out, `places`, never its words: how
+  many here, of how many, `COUNT`, and each condition on its own, `WITHIN`
+  another's removal or `CARRIED` in another's move, with that proposal's
+  source and title; a move's lines and which way, `MOVE`; or nothing to say,
+  `NONE`. The view words them, a fact, not prose, small, upright and grey:
+  the count a line, and each condition a line under it, hanging off the
+  count by a hook, whatever the list's width, each a part of the count, "1
+  of them only if … is rejected", "1 of them moved with …", as a place
+  inside a removal shows only on the lines as they are, and the numbers
+  would seem not to add up; one line, tried, ran the conditions together and
+  broke names in two; the other proposal a chip, a thing to point at,
+  pointing at it pointing at its proposal, which is always listed in the
+  same frame, as a place inside another's removal, or carried in its move,
+  is on lines that one takes too; so a chip goes nowhere, pointing at what's
+  already there, where a click taking you off to it would be a trip with no
+  way back, as that proposal's item needn't name this one. Why it's
+  proposed, its rationale, is the item's body, its darkest words after its
+  title, what's read to decide; each kind drawn by its component, looked up
+  in the map's `places` and `condition`, a host's own in their place. Right
+  after the count, or which lines a move takes, an arrow up and an arrow
+  down to its item in the frame before and the frame after, the item's
+  neighbours, `neighbors`, worked out by the view model from which frames
+  list its proposal, a folded frame, showing no list, passed over; chevrons
+  alone, where each goes in its tooltip and its label; the first and last
+  with the arrow they haven't there off and faded, so the pair keeps its
+  shape and says it's an end; none for a proposal listed once. Following one
+  is `VISIT`, one of the editor's own controls, saying the item it goes to
+  and the item it's from: once drawn, the view scrolls the nearest container
+  that scrolls so that item's arrow the same way is where the one pressed
+  was, under the pointer, so pressing again, not moving, steps on through
+  the thread, faded at an end; lights the item a moment; and puts the
+  keyboard on that arrow, or the other at an end. Near the document's top or
+  end, where it can't scroll so far, it scrolls as far as it can, the item
+  in view though not under the pointer; with the arrow pressed out of view,
+  no place to keep, the item's brought to the middle. Centring it, tried
+  first, put the arrow somewhere new each time, items being of different
+  heights. Later, maybe: room past the last line to scroll into, as
+  Monaco's, so the end's no exception, the host's to give or the editor's
+  own when it scrolls itself. Later: its rationale once, where it's first
+  listed, the others pointing to it, if every frame's saying it again is
+  noise; a mechanical one, a rename, maybe no frame at all, its places
   ringed where they are, one item for it. Across documents it's the host's,
   which knows each source's id in each document: an item can say "and 4
   places in other files" from what the host gives, and deciding in one
@@ -777,10 +817,10 @@ run through many:
   as they are, inside the removal's ring, its own ring ghosted, solid at
   half strength, there but latent, `data-within` the removal's source; on
   the lines as proposed, every proposal taken, gone with the removal, as it
-  would be; and its item, in that frame, says it, "1 only if “Drop the
-  onRetry hook” is rejected". A place is counted once: on the lines as they
-  are, every change but a put-in one; on those as proposed, every put-in
-  one.
+  would be; and its item, in that frame, says it, "1 only if Drop the
+  onRetry hook is rejected", its title a chip. A place is counted once: on
+  the lines as they are, every change but a put-in one; on those as
+  proposed, every put-in one.
 - **where words were taken out:** on the lines as proposed, a removal has
   nothing left to ring, so its ring collapses to a notch, a small wedge,
   filled in the removal's red, at the point its text left: where words left
@@ -887,7 +927,7 @@ revision's plum, the form's own word, not Revise again, which opens it, and
 Cancel, neutral, as doctor's form has its buttons under its box. Revise is a
 disclosure, as doctor's Amend is, a chevron after its words, pressed and
 pointing up while the form's open under it, `aria-expanded`. It's in that
-item alone, its proposal in its frame, `_Draft_Item_`, among the editor's
+item alone, its proposal in its frame, `_Id_Item_`, among the editor's
 `items_Drafted`, though the proposal has items in other frames too, and an
 item says it's the one, `isDrafting`, a host giving `false`, as a gutter
 says it's pointed at. `DRAFT` opens it, from Revise; `SEND`, from Submit or
@@ -1234,18 +1274,18 @@ between proposals and decide them, a screen reader's, assistive technology's
 edits, voice.
 
 The editor's own controls are the core's: what it draws to be pressed, a
-frame's fold control and its bar, a move's note, an item's Revise, its
-form's Submit and Cancel, and the form's own keys, Escape and ⌘ or Ctrl with
-Enter, each works as it's drawn, pressed or clicked, or Enter or Space on
-it, with no module in, from `CONTROLS__TEXTEDITOR`, which the editor listens
-with before any module. Pressing a button isn't an input a host chooses;
-it's what a button is, and a control that did nothing without a module would
-be broken, not lighter. A host that wants proposals read only gives them no
-actions. Modules are the ways in a host chooses besides: pointing by
-hovering, the mouse's; keys to move between proposals and decide them; a
-screen reader's; voice; each another way to the same commands, never the
-only one. And what a command did, a host hears as an observer, never through
-a module: modules are input, observers output.
+frame's fold control and its bar, a move's note, a thread's arrows, an
+item's Revise, its form's Submit and Cancel, and the form's own keys, Escape
+and ⌘ or Ctrl with Enter, each works as it's drawn, pressed or clicked, or
+Enter or Space on it, with no module in, from `CONTROLS__TEXTEDITOR`, which
+the editor listens with before any module. Pressing a button isn't an input
+a host chooses; it's what a button is, and a control that did nothing
+without a module would be broken, not lighter. A host that wants proposals
+read only gives them no actions. Modules are the ways in a host chooses
+besides: pointing by hovering, the mouse's; keys to move between proposals
+and decide them; a screen reader's; voice; each another way to the same
+commands, never the only one. And what a command did, a host hears as an
+observer, never through a module: modules are input, observers output.
 
 A module's own commands:
 

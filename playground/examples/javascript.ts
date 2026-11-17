@@ -95,11 +95,12 @@ const item_Header: _Item_Proposals_ = {
   title: "Drop the module's opening comment",
   state: "OPEN",
   status: "",
-  places: "",
+  places: { kind: "NONE" },
   rationale: "retry's doc comment says what it does, where it's read; the comment at the top only says it again.",
   request: "",
   actions: actions_Review,
   isDrafting: false,
+  neighbors: { range_Previous: null, range_Next: null },
   attributes: {},
 }
 
@@ -108,11 +109,12 @@ const item_Hook: _Item_Proposals_ = {
   title: "Drop the onRetry hook",
   state: "OPEN",
   status: "",
-  places: "",
+  places: { kind: "NONE" },
   rationale: "Nothing passes onRetry any more: the callers log their retries in their own catch blocks.",
   request: "",
   actions: actions_Review,
   isDrafting: false,
+  neighbors: { range_Previous: null, range_Next: null },
   attributes: {},
 }
 
@@ -121,11 +123,12 @@ const item_Errors: _Item_Proposals_ = {
   title: "Keep every error, not only the last",
   state: "OPEN",
   status: "",
-  places: "",
+  places: { kind: "NONE" },
   rationale: "When every attempt fails, the AggregateError should hold all of them: the first is often the telling one, a timeout before the server's 503s.",
   request: "",
   actions: actions_Review,
   isDrafting: false,
+  neighbors: { range_Previous: null, range_Next: null },
   attributes: {},
 }
 
@@ -134,11 +137,12 @@ const item_Round: _Item_Proposals_ = {
   title: "Call the attempt counter round",
   state: "OPEN",
   status: "",
-  places: "",
+  places: { kind: "NONE" },
   rationale: "n says nothing; round says what it counts, in retry and in backoff alike, and in the doc comment that names it.",
   request: "",
   actions: actions_Review,
   isDrafting: false,
+  neighbors: { range_Previous: null, range_Next: null },
   attributes: {},
 }
 
@@ -147,11 +151,12 @@ const item_Aborted: _Item_Proposals_ = {
   title: "Stop retrying once the caller aborts",
   state: "OPEN",
   status: "",
-  places: "",
+  places: { kind: "NONE" },
   rationale: "An abort during an attempt has already happened by the time sleep listens for it, so sleep waits out the whole delay before throwIfAborted notices.",
   request: "",
   actions: actions_Review,
   isDrafting: false,
+  neighbors: { range_Previous: null, range_Next: null },
   attributes: {},
 }
 
@@ -162,11 +167,12 @@ const item_Cap: _Item_Proposals_ = {
   title: "Cap the delay at 30 seconds",
   state: "REQUESTED",
   status: "Revision requested",
-  places: "",
+  places: { kind: "NONE" },
   rationale: "A caller passing many attempts waits minutes by the tenth; capped, a long outage never goes quiet for longer than half a minute.",
-  request: "You asked: make the cap an option, 30 seconds unless the caller gives another.",
+  request: "make the cap an option, 30 seconds unless the caller gives another.",
   actions: actions_Reopen,
   isDrafting: false,
+  neighbors: { range_Previous: null, range_Next: null },
   attributes: {},
 }
 
@@ -178,11 +184,12 @@ const item_Timeout: _Item_Proposals_ = {
   title: "Retry a request that timed out",
   state: "REVISING",
   status: "Revising",
-  places: "",
+  places: { kind: "NONE" },
   rationale: "A 408 means the server stopped waiting for the request, not that the request failed: sent again, it usually goes through.",
-  request: "You asked: only when the request is safe to send twice, a GET or a PUT.",
+  request: "only when the request is safe to send twice, a GET or a PUT.",
   actions: [],
   isDrafting: false,
+  neighbors: { range_Previous: null, range_Next: null },
   attributes: {},
 }
 
@@ -193,11 +200,12 @@ const item_Base: _Item_Proposals_ = {
   title: "Name the base delay DELAY_MS",
   state: "ACCEPTED",
   status: "Accepted",
-  places: "",
+  places: { kind: "NONE" },
   rationale: "BASE said nothing of what it's the base of, or in what unit.",
   request: "",
   actions: actions_Reopen,
   isDrafting: false,
+  neighbors: { range_Previous: null, range_Next: null },
   attributes: {},
 }
 
@@ -207,11 +215,12 @@ const item_Retry501: _Item_Proposals_ = {
   title: "Retry a 501 too",
   state: "REJECTED",
   status: "Rejected",
-  places: "",
+  places: { kind: "NONE" },
   rationale: "A 501 from a proxy can clear once the server behind it is back; sent again, it sometimes goes through.",
   request: "",
   actions: actions_Reopen,
   isDrafting: false,
+  neighbors: { range_Previous: null, range_Next: null },
   attributes: {},
 }
 
@@ -222,11 +231,12 @@ const item_Log: _Item_Proposals_ = {
   title: "Log each retry",
   state: "WITHDRAWN",
   status: "Withdrawn",
-  places: "",
+  places: { kind: "NONE" },
   rationale: "So a slow call shows in the logs as it happens, not only when it finally fails.",
   request: "",
   actions: actions_Dismiss,
   isDrafting: false,
+  neighbors: { range_Previous: null, range_Next: null },
   attributes: {},
 }
 
@@ -235,11 +245,12 @@ const item_Sleep: _Item_Proposals_ = {
   title: "Move sleep up, beside the delays it waits out",
   state: "OPEN",
   status: "",
-  places: "",
+  places: { kind: "NONE" },
   rationale: "Read from the top, sleep comes before retry, which waits on it, next to the constants it's given.",
   request: "",
   actions: actions_Review,
   isDrafting: false,
+  neighbors: { range_Previous: null, range_Next: null },
   attributes: {},
 }
 
@@ -248,11 +259,12 @@ const item_Delay: _Item_Proposals_ = {
   title: "Call sleep's ms delayMs",
   state: "OPEN",
   status: "",
-  places: "",
+  places: { kind: "NONE" },
   rationale: "As DELAY_MS is: the unit in the name, where the number's read, wherever sleep ends up.",
   request: "",
   actions: actions_Review,
   isDrafting: false,
+  neighbors: { range_Previous: null, range_Next: null },
   attributes: {},
 }
 
@@ -261,11 +273,12 @@ const item_Order: _Item_Proposals_ = {
   title: "Ask about the error before the round",
   state: "OPEN",
   status: "",
-  places: "",
+  places: { kind: "NONE" },
   rationale: "An error that can't be retried ends the loop in any round: asked first, it reads as the reason to stop, and the round as the limit.",
   request: "",
   actions: actions_Review,
   isDrafting: false,
+  neighbors: { range_Previous: null, range_Next: null },
   attributes: {},
 }
 
@@ -274,11 +287,12 @@ const item_Status: _Item_Proposals_ = {
   title: "Work out the status first",
   state: "OPEN",
   status: "",
-  places: "",
+  places: { kind: "NONE" },
   rationale: "With the status read before either check, isRetryable reads top to bottom as its answers: the network failing, then the server's codes.",
   request: "",
   actions: actions_Review,
   isDrafting: false,
+  neighbors: { range_Previous: null, range_Next: null },
   attributes: {},
 }
 
@@ -494,7 +508,7 @@ const moves_retry: Array<_Move_Proposal_> = [
 const javascript: _Example_ = {
   name: "javascript",
   title: "JavaScript",
-  about: "A JavaScript module, drawn whole by the view on a page of its own, as code is: numbered from 1, its indents kept as they're written, its syntax coloured, a language module's, the playground's JavaScript tokenizer, the colours the playground's, as a host's theme. Seven frames, eleven proposals through them, each case so far once. The opening comment, taken out whole, leaves nothing proposed. The doc comment's options lose onRetry, inside the line. In retry: every error kept, three lines far apart changed; words put into a line, so as it is, it shows nowhere; the onRetry call taken out whole; and the loop's condition's operands swapped within its line, the error asked about first: two moves inside a line, each ringed on the line as it is and as proposed, the || between them as it was, the round's rename carried in one. In backoff: a line put in, with replacements under it. Through three frames, a thread: the counter n renamed round, in nine places, each frame listing it with how many are there; two of them, in the doc comment and the onRetry call, inside the onRetry removal, ringed faint, applying only if it's rejected. In isRetryable, a function the agent sent whole, of which only a comment's last words and the middle of its return differ; and its status worked out a line earlier, a move with both its ends in the frame. Another move takes sleep from the module's end up beside the constants, the blank line before it going with it, its two ends in two frames; its ms named delayMs is a proposal of its own, ringed inside it at both ends, applying wherever sleep ends up. Each end has a note beside its first line: press it to go to the other end. Where it leaves, the note says only \"moved\", as the line it goes to would mean little, and needn't hold once other proposals are decided; where it lands, where it's from. A move is ringed brown, as doctor's are, numbered brown where it leaves and signed → where it lands, what other proposals change in it ringed inside it. Point at a change, or an item, to see its proposal: its rings heavier, its items lit, in every frame it's in. Press an open proposal's Revise to write what should change, under its words: Submit or Cancel, or ⌘ or Ctrl with Enter, or Escape, closes it; nothing's sent yet. Its proposals are in every state: most open; Cap the delay at 30 seconds has a revision requested, what you asked under it, Reopen its one action; Retry a request that timed out is being revised, its rings and the words it proposes faded, breathing, its word shimmering and its dots coming one by one, nothing to do with it yet; and, below the open ones in their lists, three decided: Name the base delay DELAY_MS accepted, its words the document's, and Retry a 501 too rejected and Log each retry withdrawn, nothing of either in the lines proposed, the withdrawn one's only action to dismiss it.",
+  about: "A JavaScript module, drawn whole by the view on a page of its own, as code is: numbered from 1, its indents kept as they're written, its syntax coloured, a language module's, the playground's JavaScript tokenizer, the colours the playground's, as a host's theme. Seven frames, eleven proposals through them, each case so far once. The opening comment, taken out whole, leaves nothing proposed. The doc comment's options lose onRetry, inside the line. In retry: every error kept, three lines far apart changed; words put into a line, so as it is, it shows nowhere; the onRetry call taken out whole; and the loop's condition's operands swapped within its line, the error asked about first: two moves inside a line, each ringed on the line as it is and as proposed, the || between them as it was, the round's rename carried in one. In backoff: a line put in, with replacements under it. Through three frames, a thread: the counter n renamed round, in nine places, each frame listing it with how many are there, its arrows going to its item in the frame before and the frame after; two of them, in the doc comment and the onRetry call, inside the onRetry removal, ringed faint, applying only if it's rejected. In isRetryable, a function the agent sent whole, of which only a comment's last words and the middle of its return differ; and its status worked out a line earlier, a move with both its ends in the frame. Another move takes sleep from the module's end up beside the constants, the blank line before it going with it, its two ends in two frames; its ms named delayMs is a proposal of its own, ringed inside it at both ends, applying wherever sleep ends up. Each end has a note beside its first line: press it to go to the other end. Where it leaves, the note says only \"moved\", as the line it goes to would mean little, and needn't hold once other proposals are decided; where it lands, where it's from. A move is ringed brown, as doctor's are, numbered brown where it leaves and signed → where it lands, what other proposals change in it ringed inside it. Point at a change, or an item, to see its proposal: its rings heavier, its items lit, in every frame it's in. Press an open proposal's Revise to write what should change, under its words: Submit or Cancel, or ⌘ or Ctrl with Enter, or Escape, closes it; nothing's sent yet. Its proposals are in every state: most open; Cap the delay at 30 seconds has a revision requested, what you asked under it, Reopen its one action; Retry a request that timed out is being revised, its rings and the words it proposes faded, breathing, its word shimmering and its dots coming one by one, nothing to do with it yet; and, below the open ones in their lists, three decided: Name the base delay DELAY_MS accepted, its words the document's, and Retry a 501 too rejected and Log each retry withdrawn, nothing of either in the lines proposed, the withdrawn one's only action to dismiss it.",
   // the editor, in the "changes" perspective, drawing the module into the
   // stage, its syntax JavaScript's, its frames as above, with the mouse, so
   // pointing at a proposal shows it; nothing to report

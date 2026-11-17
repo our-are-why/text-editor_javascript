@@ -1,6 +1,6 @@
 import { expect, test } from "bun:test"
 import fc from "fast-check"
-import { parseTexts_Line, segmentsOf__Stretches, parseLines_ViewModel, MODULE_PLAINTEXT, viewModelOf__Blocks, pointedAt__ViewModel, foldedAt__ViewModel, draftingAt__ViewModel, type _Draft_Item_, type _Stretch_Line_, type _Module_Language_, type _Group_Underlay_, type _Item_Proposals_ } from "../source/ViewModel_TextEditor.ts"
+import { parseTexts_Line, segmentsOf__Stretches, parseLines_ViewModel, MODULE_PLAINTEXT, viewModelOf__Blocks, pointedAt__ViewModel, foldedAt__ViewModel, draftingAt__ViewModel, type _Id_Item_, type _Stretch_Line_, type _Module_Language_, type _Group_Underlay_, type _Item_Proposals_ } from "../source/ViewModel_TextEditor.ts"
 
 // every line break a text can hold: each ends a line, "\r\n" as one
 const lineBreaks = ["\r\n", "\n", "\r", "\v", "\f", "\u0085", "\u2028", "\u2029"]
@@ -145,7 +145,7 @@ test("plain text's module marks nothing: each line is one segment, its text, car
 
 // a group behind a run, and an item in a list, of a proposal, by its source
 const groupOf = (source: string): _Group_Underlay_ => ({ attributes: { "data-source": source }, underlays: [] })
-const itemOf = (source: string): _Item_Proposals_ => ({ source, title: source, state: "OPEN", status: "", places: "", rationale: "", request: "", actions: [], isDrafting: false, attributes: {} })
+const itemOf = (source: string): _Item_Proposals_ => ({ source, title: source, state: "OPEN", status: "", places: { kind: "NONE" as const }, rationale: "", request: "", actions: [], isDrafting: false, neighbors: { range_Previous: null, range_Next: null }, attributes: {} })
 
 test("pointing at a proposal marks its groups and its items, in every run and list, and nothing else; pointing at none leaves the view model as it was", () => {
   const lines = parseLines_ViewModel({ multilineText: "one", module_Language: MODULE_PLAINTEXT })
@@ -254,15 +254,28 @@ test("a folded frame peeked has its rings, all of them, every proposal's; anothe
   expect(folded.runs.map((run) => `${run.id}: ${run.groups.map((group) => `${group.attributes["data-source"]} ${group.underlays.length}`).join(", ")}`)).toEqual(["proposed: first 2, over 1", "other-proposed: "])
 })
 
+test("each item says where else its proposal's listed, the frame before and the frame after, none past the first or the last, none for one listed once; a folded frame, showing no list, passed over", () => {
+  const lines = parseLines_ViewModel({ multilineText: "one", module_Language: MODULE_PLAINTEXT })
+  const itemOf = (source: string) => ({ source, title: source, state: "OPEN" as const, status: "", places: { kind: "NONE" as const }, rationale: "", request: "", actions: [], isDrafting: false, neighbors: { range_Previous: null, range_Next: null }, attributes: {} })
+  const viewModel = viewModelOf__Blocks([
+    { kind: "FRAME", range: { first: 1, last: 1 }, parts: [{ kind: "CURRENT_LINES", run: { id: "one", lines, groups: [] } }, { kind: "PROPOSAL_LIST", items: [itemOf("round"), itemOf("cap")] }] },
+    { kind: "FRAME", range: { first: 3, last: 3 }, parts: [{ kind: "CURRENT_LINES", run: { id: "three", lines, groups: [] } }, { kind: "PROPOSAL_LINES", run: { id: "three-proposed", lines, groups: [] } }, { kind: "PROPOSAL_LIST", items: [itemOf("round")] }] },
+    { kind: "FRAME", range: { first: 5, last: 5 }, parts: [{ kind: "CURRENT_LINES", run: { id: "five", lines, groups: [] } }, { kind: "PROPOSAL_LIST", items: [itemOf("round")] }] },
+  ])
+  const neighborsOf = (viewModel_Neighbored: typeof viewModel) => viewModel_Neighbored.blocks.flatMap((block) => block.kind === "FRAME" ? block.parts.flatMap((part) => part.kind === "PROPOSAL_LIST" ? part.items.map((item) => `${block.range.first} ${item.source}: ${item.neighbors.range_Previous?.first ?? "-"} ${item.neighbors.range_Next?.first ?? "-"}`) : []) : [])
+  expect(neighborsOf(viewModel)).toEqual(["1 round: - 3", "1 cap: - -", "3 round: 1 5", "5 round: 3 -"])
+  expect(neighborsOf(foldedAt__ViewModel({ viewModel_TextEditor: viewModel, ranges_Folded: [{ first: 3, last: 3 }], range_Peeked: null }))).toEqual(["1 round: - 5", "1 cap: - -", "5 round: 1 -"])
+})
+
 test("each item you're drafting notes in, of one proposal in one frame, says so, however many there are; that proposal's item in another frame, the frame's other items, and every item while none is drafted, don't", () => {
   const lines = parseLines_ViewModel({ multilineText: "one", module_Language: MODULE_PLAINTEXT })
-  const itemOf = (source: string) => ({ source, title: source, state: "OPEN" as const, status: "", places: "", rationale: "", request: "", actions: [], isDrafting: false, attributes: {} })
+  const itemOf = (source: string) => ({ source, title: source, state: "OPEN" as const, status: "", places: { kind: "NONE" as const }, rationale: "", request: "", actions: [], isDrafting: false, neighbors: { range_Previous: null, range_Next: null }, attributes: {} })
   const viewModel = viewModelOf__Blocks([
     { kind: "FRAME", range: { first: 1, last: 1 }, parts: [{ kind: "CURRENT_LINES", run: { id: "first", lines, groups: [] } }, { kind: "PROPOSAL_LIST", items: [itemOf("round"), itemOf("cap")] }] },
     { kind: "LINES", run: { id: "between", lines, groups: [] } },
     { kind: "FRAME", range: { first: 3, last: 3 }, parts: [{ kind: "CURRENT_LINES", run: { id: "second", lines, groups: [] } }, { kind: "PROPOSAL_LIST", items: [itemOf("round")] }] },
   ])
-  const drafted = (items_Drafted: Array<_Draft_Item_>) => draftingAt__ViewModel({ viewModel_TextEditor: viewModel, items_Drafted }).blocks.flatMap((block) => block.kind === "FRAME" ? block.parts.flatMap((part) => part.kind === "PROPOSAL_LIST" ? part.items.map((item) => `${block.range.first} ${item.source}${item.isDrafting ? " drafting" : ""}`) : []) : [])
+  const drafted = (items_Drafted: Array<_Id_Item_>) => draftingAt__ViewModel({ viewModel_TextEditor: viewModel, items_Drafted }).blocks.flatMap((block) => block.kind === "FRAME" ? block.parts.flatMap((part) => part.kind === "PROPOSAL_LIST" ? part.items.map((item) => `${block.range.first} ${item.source}${item.isDrafting ? " drafting" : ""}`) : []) : [])
   expect(drafted([{ source: "round", range_Frame: { first: 3, last: 3 } }])).toEqual(["1 round", "1 cap", "3 round drafting"])
   expect(drafted([{ source: "cap", range_Frame: { first: 1, last: 1 } }, { source: "round", range_Frame: { first: 3, last: 3 } }])).toEqual(["1 round", "1 cap drafting", "3 round drafting"])
   expect(draftingAt__ViewModel({ viewModel_TextEditor: viewModel, items_Drafted: [] })).toBe(viewModel)
