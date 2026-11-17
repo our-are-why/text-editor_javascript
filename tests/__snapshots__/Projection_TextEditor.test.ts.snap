@@ -1,0 +1,1104 @@
+// Bun Snapshot v1, https://bun.sh/docs/test/snapshots
+
+exports[`the JavaScript example draws as it was drawn by hand 1`] = `
+"label width 2
+FRAME 1-2
+  CURRENT_LINES run 1
+    "1" removed none: "// Retries a flaky async call, backing off further each time, until it"{data-change=removed data-side=before data-source=header data-state=OPEN data-syntax=comment}
+    "2" removed none: "// succeeds, runs out of attempts, or the caller gives up on it."{data-change=removed data-side=before data-source=header data-state=OPEN data-syntax=comment}
+    ring {data-source=header data-state=OPEN}
+      STRETCH 0:0-1:64 {data-change=removed data-place=1 data-side=before data-source=header}
+  PROPOSAL_LINES run 2
+  PROPOSAL_LIST
+    {"source":"header","title":"Drop the module's opening comment","state":"OPEN","status":"","places":{"kind":"NONE"},"neighbors":{"range_Previous":null,"range_Next":null},"rationale":"retry's doc comment says what it does, where it's read; the comment at the top only says it again.","request":"","actions":[{"command":"accept","label":"Accept","stateAfter":"ACCEPTED"},{"command":"reject","label":"Reject","stateAfter":"REJECTED"},{"command":"revise","label":"Revise","stateAfter":"REQUESTED"}],"isDrafting":false,"attributes":{}}
+  LINES run 3
+    "3" none none: 
+    "4" none none: "const"{data-syntax=keyword} " ATTEMPTS = " "5"{data-syntax=number} ";"
+    "5" none none: "const"{data-syntax=keyword} " DELAY_MS = " "100"{data-syntax=number} ";"
+FRAME 6-5
+  PROPOSAL_LINES run 4
+    "→" moved none: 
+    "→" moved none (from lines 41–50 → sleep before): "function"{data-change=moved data-side=after data-source=sleep data-state=OPEN data-syntax=keyword} " "{data-change=moved data-side=after data-source=sleep data-state=OPEN} "sleep"{data-change=moved data-side=after data-source=sleep data-state=OPEN data-syntax=function} "("{data-change=moved data-side=after data-source=sleep data-state=OPEN} "delayMs"{data-change=moved data-edit-change=replaced data-edit-source=delay data-side=after data-source=sleep data-state=OPEN} ", signal) {"{data-change=moved data-side=after data-source=sleep data-state=OPEN}
+    "→" moved none: "  "{data-change=moved data-side=after data-source=sleep data-state=OPEN} "return"{data-change=moved data-side=after data-source=sleep data-state=OPEN data-syntax=keyword} " "{data-change=moved data-side=after data-source=sleep data-state=OPEN} "new"{data-change=moved data-side=after data-source=sleep data-state=OPEN data-syntax=keyword} " "{data-change=moved data-side=after data-source=sleep data-state=OPEN} "Promise"{data-change=moved data-side=after data-source=sleep data-state=OPEN data-syntax=function} "((resolve, reject) => {"{data-change=moved data-side=after data-source=sleep data-state=OPEN}
+    "→" moved none: "    "{data-change=moved data-side=after data-source=sleep data-state=OPEN} "const"{data-change=moved data-side=after data-source=sleep data-state=OPEN data-syntax=keyword} " timer = "{data-change=moved data-side=after data-source=sleep data-state=OPEN} "setTimeout"{data-change=moved data-side=after data-source=sleep data-state=OPEN data-syntax=function} "(resolve, "{data-change=moved data-side=after data-source=sleep data-state=OPEN} "delayMs"{data-change=moved data-edit-change=replaced data-edit-source=delay data-side=after data-source=sleep data-state=OPEN} ");"{data-change=moved data-side=after data-source=sleep data-state=OPEN}
+    "→" moved none: "    signal?."{data-change=moved data-side=after data-source=sleep data-state=OPEN} "addEventListener"{data-change=moved data-side=after data-source=sleep data-state=OPEN data-syntax=function} "("{data-change=moved data-side=after data-source=sleep data-state=OPEN} "\\"abort\\""{data-change=moved data-side=after data-source=sleep data-state=OPEN data-syntax=string} ", () => {"{data-change=moved data-side=after data-source=sleep data-state=OPEN}
+    "→" moved none: "      "{data-change=moved data-side=after data-source=sleep data-state=OPEN} "clearTimeout"{data-change=moved data-side=after data-source=sleep data-state=OPEN data-syntax=function} "(timer);"{data-change=moved data-side=after data-source=sleep data-state=OPEN}
+    "→" moved none: "      "{data-change=moved data-side=after data-source=sleep data-state=OPEN} "reject"{data-change=moved data-side=after data-source=sleep data-state=OPEN data-syntax=function} "(signal."{data-change=moved data-side=after data-source=sleep data-state=OPEN} "reason"{data-change=moved data-side=after data-source=sleep data-state=OPEN data-syntax=property} ");"{data-change=moved data-side=after data-source=sleep data-state=OPEN}
+    "→" moved none: "    }, { once: "{data-change=moved data-side=after data-source=sleep data-state=OPEN} "true"{data-change=moved data-side=after data-source=sleep data-state=OPEN data-syntax=literal} " });"{data-change=moved data-side=after data-source=sleep data-state=OPEN}
+    "→" moved none: "  });"{data-change=moved data-side=after data-source=sleep data-state=OPEN}
+    "→" moved none: "}"{data-change=moved data-side=after data-source=sleep data-state=OPEN}
+    ring {data-source=sleep data-state=OPEN}
+      STRETCH 1:0-9:1 {data-change=moved data-place=1 data-side=after data-source=sleep}
+    ring {data-source=delay data-state=OPEN}
+      STRETCH 1:15-1:22 {data-carried=sleep data-change=replaced data-place=1 data-side=after data-source=delay}
+      STRETCH 3:38-3:45 {data-carried=sleep data-change=replaced data-place=2 data-side=after data-source=delay}
+  PROPOSAL_LIST
+    {"source":"sleep","title":"Move sleep up, beside the delays it waits out","state":"OPEN","status":"","places":{"kind":"MOVE","range":{"first":41,"last":50},"way":"UP"},"neighbors":{"range_Previous":null,"range_Next":{"first":41,"last":50}},"rationale":"Read from the top, sleep comes before retry, which waits on it, next to the constants it's given.","request":"","actions":[{"command":"accept","label":"Accept","stateAfter":"ACCEPTED"},{"command":"reject","label":"Reject","stateAfter":"REJECTED"},{"command":"revise","label":"Revise","stateAfter":"REQUESTED"}],"isDrafting":false,"attributes":{}}
+    {"source":"delay","title":"Call sleep's ms delayMs","state":"OPEN","status":"","places":{"kind":"COUNT","count_Here":2,"count_All":2,"conditions":[{"kind":"CARRIED","count":2,"source":"sleep","title":"Move sleep up, beside the delays it waits out"}]},"neighbors":{"range_Previous":null,"range_Next":{"first":41,"last":50}},"rationale":"As DELAY_MS is: the unit in the name, where the number's read, wherever sleep ends up.","request":"","actions":[{"command":"accept","label":"Accept","stateAfter":"ACCEPTED"},{"command":"reject","label":"Reject","stateAfter":"REJECTED"},{"command":"revise","label":"Revise","stateAfter":"REQUESTED"}],"isDrafting":false,"attributes":{}}
+  LINES run 5
+    "6" none none: 
+    "7" none none: "/**"{data-syntax=comment}
+    "8" none none: " * @template T"{data-syntax=comment}
+    "9" none none: " * @param {() => Promise<T>} attempt"{data-syntax=comment}
+FRAME 10-10
+  CURRENT_LINES run 6
+    "10" changed none: " * @param {{ attempts?: number, signal?: AbortSignal"{data-syntax=comment} ", onRetry?: (error: unknown, "{data-change=removed data-side=before data-source=hook data-state=OPEN data-syntax=comment} "n"{data-change=removed data-nested-change=replaced data-nested-source=round data-side=before data-source=hook data-state=OPEN data-syntax=comment} ": number) => void"{data-change=removed data-side=before data-source=hook data-state=OPEN data-syntax=comment} " }} [options]"{data-syntax=comment}
+    ring {data-source=hook data-state=OPEN}
+      STRETCH 0:52-0:99 {data-change=removed data-place=1 data-side=before data-source=hook}
+    ring {data-source=round data-state=OPEN}
+      STRETCH 0:81-0:82 {data-change=replaced data-place=1 data-side=before data-source=round data-within=hook}
+  PROPOSAL_LINES run 7
+    "" none none: " * @param {{ attempts?: number, signal?: AbortSignal }} [options]"{data-syntax=comment}
+    ring {data-source=hook data-state=OPEN}
+      POINT 0:52 {data-change=removed data-place=1 data-side=after data-source=hook}
+  PROPOSAL_LIST
+    {"source":"hook","title":"Drop the onRetry hook","state":"OPEN","status":"","places":{"kind":"COUNT","count_Here":1,"count_All":3,"conditions":[]},"neighbors":{"range_Previous":null,"range_Next":{"first":13,"last":27}},"rationale":"Nothing passes onRetry any more: the callers log their retries in their own catch blocks.","request":"","actions":[{"command":"accept","label":"Accept","stateAfter":"ACCEPTED"},{"command":"reject","label":"Reject","stateAfter":"REJECTED"},{"command":"revise","label":"Revise","stateAfter":"REQUESTED"}],"isDrafting":false,"attributes":{}}
+    {"source":"round","title":"Call the attempt counter round","state":"OPEN","status":"","places":{"kind":"COUNT","count_Here":1,"count_All":9,"conditions":[{"kind":"WITHIN","count":1,"source":"hook","title":"Drop the onRetry hook"}]},"neighbors":{"range_Previous":null,"range_Next":{"first":13,"last":27}},"rationale":"n says nothing; round says what it counts, in retry and in backoff alike, and in the doc comment that names it.","request":"","actions":[{"command":"accept","label":"Accept","stateAfter":"ACCEPTED"},{"command":"reject","label":"Reject","stateAfter":"REJECTED"},{"command":"revise","label":"Revise","stateAfter":"REQUESTED"}],"isDrafting":false,"attributes":{}}
+  LINES run 8
+    "11" none none: " * @returns {Promise<T>}"{data-syntax=comment}
+    "12" none none: " */"{data-syntax=comment}
+FRAME 13-27
+  CURRENT_LINES run 9
+    "13" changed none: "export"{data-syntax=keyword} " " "async"{data-syntax=keyword} " " "function"{data-syntax=keyword} " " "retry"{data-syntax=function} "(attempt, { attempts = ATTEMPTS, signal" ", onRetry"{data-change=removed data-side=before data-source=hook data-state=OPEN} " } = {}) {"
+    "14" changed none: "  " "let"{data-change=replaced data-side=before data-source=errors data-state=OPEN data-syntax=keyword} " lastError"{data-change=replaced data-side=before data-source=errors data-state=OPEN} ";"
+    "15" changed none: "  " "for"{data-syntax=keyword} " (" "let"{data-syntax=keyword} " " "n"{data-change=replaced data-side=before data-source=round data-state=OPEN} " = " "1"{data-syntax=number} "; " "n"{data-change=replaced data-side=before data-source=round data-state=OPEN} " <= attempts; " "n"{data-change=replaced data-side=before data-source=round data-state=OPEN} "++) {"
+    "16" none none: "    signal?." "throwIfAborted"{data-syntax=function} "();"
+    "17" none none: "    " "try"{data-syntax=keyword} " {"
+    "18" none none: "      " "return"{data-syntax=keyword} " " "await"{data-syntax=keyword} " " "attempt"{data-syntax=function} "();"
+    "19" none none: "    } " "catch"{data-syntax=keyword} " (error) {"
+    "20" changed none: "      " "lastError = error"{data-change=replaced data-side=before data-source=errors data-state=OPEN} ";"
+    "21" changed none: "      " "if"{data-syntax=keyword} " (" "n"{data-change=moved data-edit-change=replaced data-edit-source=round data-side=before data-source=order data-state=OPEN} " === attempts"{data-change=moved data-side=before data-source=order data-state=OPEN} " || " "!"{data-change=moved data-side=before data-source=order data-state=OPEN} "isRetryable"{data-change=moved data-side=before data-source=order data-state=OPEN data-syntax=function} "(error)"{data-change=moved data-side=before data-source=order data-state=OPEN} ") " "break"{data-syntax=keyword} ";"
+    "22" removed none: "      "{data-change=removed data-side=before data-source=hook data-state=OPEN} "onRetry"{data-change=removed data-side=before data-source=hook data-state=OPEN data-syntax=function} "?.(error, "{data-change=removed data-side=before data-source=hook data-state=OPEN} "n"{data-change=removed data-nested-change=replaced data-nested-source=round data-side=before data-source=hook data-state=OPEN} ");"{data-change=removed data-side=before data-source=hook data-state=OPEN}
+    "23" changed none: "      " "await"{data-syntax=keyword} " " "sleep"{data-syntax=function} "(" "backoff"{data-syntax=function} "(" "n"{data-change=replaced data-side=before data-source=round data-state=OPEN} "), signal);"
+    "24" none none: "    }"
+    "25" none none: "  }"
+    "26" changed none: "  " "throw"{data-syntax=keyword} " " "new"{data-syntax=keyword} " " "AggregateError"{data-syntax=function} "(" "[lastError]"{data-change=replaced data-side=before data-source=errors data-state=OPEN} ", " "\`gave up after "{data-syntax=string} "\${attempts}" " attempts\`"{data-syntax=string} ");"
+    "27" none none: "}"
+    ring {data-source=hook data-state=OPEN}
+      STRETCH 0:66-0:75 {data-change=removed data-place=2 data-side=before data-source=hook}
+      STRETCH 9:6-9:26 {data-change=removed data-place=3 data-side=before data-source=hook}
+    ring {data-source=errors data-state=OPEN}
+      STRETCH 1:2-1:15 {data-change=replaced data-place=1 data-side=before data-source=errors}
+      STRETCH 7:6-7:23 {data-change=replaced data-place=2 data-side=before data-source=errors}
+      STRETCH 13:27-13:38 {data-change=replaced data-place=3 data-side=before data-source=errors}
+    ring {data-source=round data-state=OPEN}
+      STRETCH 2:11-2:12 {data-change=replaced data-place=2 data-side=before data-source=round}
+      STRETCH 2:18-2:19 {data-change=replaced data-place=3 data-side=before data-source=round}
+      STRETCH 2:33-2:34 {data-change=replaced data-place=4 data-side=before data-source=round}
+      STRETCH 8:10-8:11 {data-carried=order data-change=replaced data-place=5 data-side=before data-source=round}
+      STRETCH 9:23-9:24 {data-change=replaced data-place=6 data-side=before data-source=round data-within=hook}
+      STRETCH 10:26-10:27 {data-change=replaced data-place=7 data-side=before data-source=round}
+    ring {data-source=order data-state=OPEN}
+      STRETCH 8:10-8:24 {data-change=moved data-place=1 data-side=before data-source=order}
+      STRETCH 8:28-8:47 {data-change=moved data-place=2 data-side=before data-source=order}
+  PROPOSAL_LINES run 10
+    "" none none: "export"{data-syntax=keyword} " " "async"{data-syntax=keyword} " " "function"{data-syntax=keyword} " " "retry"{data-syntax=function} "(attempt, { attempts = ATTEMPTS, signal } = {}) {"
+    "~" changed none: "  " "const"{data-change=replaced data-side=after data-source=errors data-state=OPEN data-syntax=keyword} " errors = []"{data-change=replaced data-side=after data-source=errors data-state=OPEN} ";"
+    "~" changed none: "  " "for"{data-syntax=keyword} " (" "let"{data-syntax=keyword} " " "round"{data-change=replaced data-side=after data-source=round data-state=OPEN} " = " "1"{data-syntax=number} "; " "round"{data-change=replaced data-side=after data-source=round data-state=OPEN} " <= attempts; " "round"{data-change=replaced data-side=after data-source=round data-state=OPEN} "++) {"
+    "" none none: "    signal?." "throwIfAborted"{data-syntax=function} "();"
+    "" none none: "    " "try"{data-syntax=keyword} " {"
+    "" none none: "      " "return"{data-syntax=keyword} " " "await"{data-syntax=keyword} " " "attempt"{data-syntax=function} "();"
+    "" none none: "    } " "catch"{data-syntax=keyword} " (error) {"
+    "~" changed none: "      " "errors."{data-change=replaced data-side=after data-source=errors data-state=OPEN} "push"{data-change=replaced data-side=after data-source=errors data-state=OPEN data-syntax=function} "(error)"{data-change=replaced data-side=after data-source=errors data-state=OPEN} ";"
+    "~" changed none: "      " "if"{data-syntax=keyword} " (" "!"{data-change=moved data-side=after data-source=order data-state=OPEN} "isRetryable"{data-change=moved data-side=after data-source=order data-state=OPEN data-syntax=function} "(error)"{data-change=moved data-side=after data-source=order data-state=OPEN} " || " "round"{data-change=moved data-edit-change=replaced data-edit-source=round data-side=after data-source=order data-state=OPEN} " === attempts"{data-change=moved data-side=after data-source=order data-state=OPEN} " || signal?."{data-change=inserted data-side=after data-source=aborted data-state=OPEN} "aborted"{data-change=inserted data-side=after data-source=aborted data-state=OPEN data-syntax=property} ") " "break"{data-syntax=keyword} ";"
+    "~" changed none: "      " "await"{data-syntax=keyword} " " "sleep"{data-syntax=function} "(" "backoff"{data-syntax=function} "(" "round"{data-change=replaced data-side=after data-source=round data-state=OPEN} "), signal);"
+    "" none none: "    }"
+    "" none none: "  }"
+    "~" changed none: "  " "throw"{data-syntax=keyword} " " "new"{data-syntax=keyword} " " "AggregateError"{data-syntax=function} "(" "errors"{data-change=replaced data-side=after data-source=errors data-state=OPEN} ", " "\`gave up after "{data-syntax=string} "\${attempts}" " attempts\`"{data-syntax=string} ");"
+    "" none none: "}"
+    ring {data-source=errors data-state=OPEN}
+      STRETCH 1:2-1:19 {data-change=replaced data-place=1 data-side=after data-source=errors}
+      STRETCH 7:6-7:24 {data-change=replaced data-place=2 data-side=after data-source=errors}
+      STRETCH 12:27-12:33 {data-change=replaced data-place=3 data-side=after data-source=errors}
+    ring {data-source=round data-state=OPEN}
+      STRETCH 2:11-2:16 {data-change=replaced data-place=2 data-side=after data-source=round}
+      STRETCH 2:22-2:27 {data-change=replaced data-place=3 data-side=after data-source=round}
+      STRETCH 2:41-2:46 {data-change=replaced data-place=4 data-side=after data-source=round}
+      STRETCH 8:33-8:38 {data-carried=order data-change=replaced data-place=5 data-side=after data-source=round}
+      STRETCH 9:26-9:31 {data-change=replaced data-place=7 data-side=after data-source=round}
+    ring {data-source=order data-state=OPEN}
+      STRETCH 8:10-8:29 {data-change=moved data-place=2 data-side=after data-source=order}
+      STRETCH 8:33-8:51 {data-change=moved data-place=1 data-side=after data-source=order}
+    ring {data-source=aborted data-state=OPEN}
+      STRETCH 8:52-8:70 {data-change=inserted data-place=1 data-side=after data-source=aborted}
+    ring {data-source=hook data-state=OPEN}
+      POINT 0:66 {data-change=removed data-place=2 data-side=after data-source=hook}
+      BOUNDARY 9 {data-change=removed data-place=3 data-side=after data-source=hook}
+  PROPOSAL_LIST
+    {"source":"hook","title":"Drop the onRetry hook","state":"OPEN","status":"","places":{"kind":"COUNT","count_Here":2,"count_All":3,"conditions":[]},"neighbors":{"range_Previous":{"first":10,"last":10},"range_Next":null},"rationale":"Nothing passes onRetry any more: the callers log their retries in their own catch blocks.","request":"","actions":[{"command":"accept","label":"Accept","stateAfter":"ACCEPTED"},{"command":"reject","label":"Reject","stateAfter":"REJECTED"},{"command":"revise","label":"Revise","stateAfter":"REQUESTED"}],"isDrafting":false,"attributes":{}}
+    {"source":"errors","title":"Keep every error, not only the last","state":"OPEN","status":"","places":{"kind":"NONE"},"neighbors":{"range_Previous":null,"range_Next":null},"rationale":"When every attempt fails, the AggregateError should hold all of them: the first is often the telling one, a timeout before the server's 503s.","request":"","actions":[{"command":"accept","label":"Accept","stateAfter":"ACCEPTED"},{"command":"reject","label":"Reject","stateAfter":"REJECTED"},{"command":"revise","label":"Revise","stateAfter":"REQUESTED"}],"isDrafting":false,"attributes":{}}
+    {"source":"round","title":"Call the attempt counter round","state":"OPEN","status":"","places":{"kind":"COUNT","count_Here":6,"count_All":9,"conditions":[{"kind":"WITHIN","count":1,"source":"hook","title":"Drop the onRetry hook"},{"kind":"CARRIED","count":1,"source":"order","title":"Ask about the error before the round"}]},"neighbors":{"range_Previous":{"first":10,"last":10},"range_Next":{"first":31,"last":34}},"rationale":"n says nothing; round says what it counts, in retry and in backoff alike, and in the doc comment that names it.","request":"","actions":[{"command":"accept","label":"Accept","stateAfter":"ACCEPTED"},{"command":"reject","label":"Reject","stateAfter":"REJECTED"},{"command":"revise","label":"Revise","stateAfter":"REQUESTED"}],"isDrafting":false,"attributes":{}}
+    {"source":"order","title":"Ask about the error before the round","state":"OPEN","status":"","places":{"kind":"NONE"},"neighbors":{"range_Previous":null,"range_Next":null},"rationale":"An error that can't be retried ends the loop in any round: asked first, it reads as the reason to stop, and the round as the limit.","request":"","actions":[{"command":"accept","label":"Accept","stateAfter":"ACCEPTED"},{"command":"reject","label":"Reject","stateAfter":"REJECTED"},{"command":"revise","label":"Revise","stateAfter":"REQUESTED"}],"isDrafting":false,"attributes":{}}
+    {"source":"aborted","title":"Stop retrying once the caller aborts","state":"OPEN","status":"","places":{"kind":"NONE"},"neighbors":{"range_Previous":null,"range_Next":null},"rationale":"An abort during an attempt has already happened by the time sleep listens for it, so sleep waits out the whole delay before throwIfAborted notices.","request":"","actions":[{"command":"accept","label":"Accept","stateAfter":"ACCEPTED"},{"command":"reject","label":"Reject","stateAfter":"REJECTED"},{"command":"revise","label":"Revise","stateAfter":"REQUESTED"}],"isDrafting":false,"attributes":{}}
+    {"source":"log","title":"Log each retry","state":"WITHDRAWN","status":"Withdrawn","places":{"kind":"NONE"},"neighbors":{"range_Previous":null,"range_Next":null},"rationale":"So a slow call shows in the logs as it happens, not only when it finally fails.","request":"","actions":[{"command":"dismiss","label":"Dismiss","stateAfter":null}],"isDrafting":false,"attributes":{}}
+  LINES run 11
+    "28" none none: 
+    "29" none none: "// 100ms, 200ms, 400ms, ..., and up to half as long again at random, so that"{data-syntax=comment}
+    "30" none none: "// many clients retrying at once don't all come back at the same moment"{data-syntax=comment}
+FRAME 31-34
+  CURRENT_LINES run 12
+    "31" changed none: "export"{data-syntax=keyword} " " "function"{data-syntax=keyword} " " "backoff"{data-syntax=function} "(" "n"{data-change=replaced data-side=before data-source=round data-state=OPEN} ") {"
+    "32" changed none: "  " "const"{data-syntax=keyword} " delay = DELAY_MS * " "2"{data-syntax=number} " ** (" "n"{data-change=replaced data-side=before data-source=round data-state=OPEN} " - " "1"{data-syntax=number} ");"
+    "33" changed none: "  " "return"{data-syntax=keyword} " " "delay"{data-change=replaced data-side=before data-source=cap data-state=REQUESTED} " + Math." "random"{data-syntax=function} "() * (" "delay"{data-change=replaced data-side=before data-source=cap data-state=REQUESTED} " / " "2"{data-syntax=number} ");"
+    "34" none none: "}"
+    ring {data-source=round data-state=OPEN}
+      STRETCH 0:24-0:25 {data-change=replaced data-place=8 data-side=before data-source=round}
+      STRETCH 1:33-1:34 {data-change=replaced data-place=9 data-side=before data-source=round}
+    ring {data-source=cap data-state=REQUESTED}
+      STRETCH 2:9-2:14 {data-change=replaced data-place=1 data-side=before data-source=cap}
+      STRETCH 2:34-2:39 {data-change=replaced data-place=2 data-side=before data-source=cap}
+  PROPOSAL_LINES run 13
+    "~" changed none: "export"{data-syntax=keyword} " " "function"{data-syntax=keyword} " " "backoff"{data-syntax=function} "(" "round"{data-change=replaced data-side=after data-source=round data-state=OPEN} ") {"
+    "~" changed none: "  " "const"{data-syntax=keyword} " delay = DELAY_MS * " "2"{data-syntax=number} " ** (" "round"{data-change=replaced data-side=after data-source=round data-state=OPEN} " - " "1"{data-syntax=number} ");"
+    "+" inserted none: "  "{data-change=inserted data-side=after data-source=cap data-state=REQUESTED} "const"{data-change=inserted data-side=after data-source=cap data-state=REQUESTED data-syntax=keyword} " capped = Math."{data-change=inserted data-side=after data-source=cap data-state=REQUESTED} "min"{data-change=inserted data-side=after data-source=cap data-state=REQUESTED data-syntax=function} "(delay, "{data-change=inserted data-side=after data-source=cap data-state=REQUESTED} "30_000"{data-change=inserted data-side=after data-source=cap data-state=REQUESTED data-syntax=number} ");"{data-change=inserted data-side=after data-source=cap data-state=REQUESTED}
+    "~" changed none: "  " "return"{data-syntax=keyword} " " "capped"{data-change=replaced data-side=after data-source=cap data-state=REQUESTED} " + Math." "random"{data-syntax=function} "() * (" "capped"{data-change=replaced data-side=after data-source=cap data-state=REQUESTED} " / " "2"{data-syntax=number} ");"
+    "" none none: "}"
+    ring {data-source=round data-state=OPEN}
+      STRETCH 0:24-0:29 {data-change=replaced data-place=8 data-side=after data-source=round}
+      STRETCH 1:33-1:38 {data-change=replaced data-place=9 data-side=after data-source=round}
+    ring {data-source=cap data-state=REQUESTED}
+      STRETCH 2:2-2:41 {data-change=inserted data-place=3 data-side=after data-source=cap}
+      STRETCH 3:9-3:15 {data-change=replaced data-place=1 data-side=after data-source=cap}
+      STRETCH 3:35-3:41 {data-change=replaced data-place=2 data-side=after data-source=cap}
+  PROPOSAL_LIST
+    {"source":"round","title":"Call the attempt counter round","state":"OPEN","status":"","places":{"kind":"COUNT","count_Here":2,"count_All":9,"conditions":[]},"neighbors":{"range_Previous":{"first":13,"last":27},"range_Next":null},"rationale":"n says nothing; round says what it counts, in retry and in backoff alike, and in the doc comment that names it.","request":"","actions":[{"command":"accept","label":"Accept","stateAfter":"ACCEPTED"},{"command":"reject","label":"Reject","stateAfter":"REJECTED"},{"command":"revise","label":"Revise","stateAfter":"REQUESTED"}],"isDrafting":false,"attributes":{}}
+    {"source":"cap","title":"Cap the delay at 30 seconds","state":"REQUESTED","status":"Revision requested","places":{"kind":"NONE"},"neighbors":{"range_Previous":null,"range_Next":null},"rationale":"A caller passing many attempts waits minutes by the tenth; capped, a long outage never goes quiet for longer than half a minute.","request":"make the cap an option, 30 seconds unless the caller gives another.","actions":[{"command":"reopen","label":"Reopen","stateAfter":"OPEN"}],"isDrafting":false,"attributes":{}}
+    {"source":"base","title":"Name the base delay DELAY_MS","state":"ACCEPTED","status":"Accepted","places":{"kind":"NONE"},"neighbors":{"range_Previous":null,"range_Next":null},"rationale":"BASE said nothing of what it's the base of, or in what unit.","request":"","actions":[{"command":"reopen","label":"Reopen","stateAfter":"OPEN"}],"isDrafting":false,"attributes":{}}
+  LINES run 14
+    "35" none none: 
+FRAME 36-40
+  CURRENT_LINES run 15
+    "36" none none: "function"{data-syntax=keyword} " " "isRetryable"{data-syntax=function} "(error) {"
+    "37" changed none: "  " "if"{data-syntax=keyword} " (error " "instanceof"{data-syntax=keyword} " TypeError) " "return"{data-syntax=keyword} " " "true"{data-syntax=literal} "; " "// the network failed, "{data-syntax=comment} "not the server"{data-change=replaced data-side=before data-source=timeout data-state=REVISING data-syntax=comment}
+    "38" moved none (moved → status after): "  "{data-change=moved data-side=before data-source=status data-state=OPEN} "const"{data-change=moved data-side=before data-source=status data-state=OPEN data-syntax=keyword} " status = error?."{data-change=moved data-side=before data-source=status data-state=OPEN} "response"{data-change=moved data-side=before data-source=status data-state=OPEN data-syntax=property} "?."{data-change=moved data-side=before data-source=status data-state=OPEN} "status"{data-change=moved data-side=before data-source=status data-state=OPEN data-syntax=property} " ?? "{data-change=moved data-side=before data-source=status data-state=OPEN} "0"{data-change=moved data-side=before data-source=status data-state=OPEN data-syntax=number} ";"{data-change=moved data-side=before data-source=status data-state=OPEN}
+    "39" none none: "  " "return"{data-syntax=keyword} " status === " "429"{data-syntax=number} " || (status >= " "500"{data-syntax=number} " && status !== " "501"{data-syntax=number} ");"
+    "40" none none: "}"
+    ring {data-source=timeout data-state=REVISING}
+      STRETCH 1:70-1:84 {data-change=replaced data-place=1 data-side=before data-source=timeout}
+    ring {data-source=status data-state=OPEN}
+      STRETCH 2:2-2:46 {data-change=moved data-place=1 data-side=before data-source=status}
+  PROPOSAL_LINES run 16
+    "" none none: "function"{data-syntax=keyword} " " "isRetryable"{data-syntax=function} "(error) {"
+    "→" moved none (from line 38 → status before): "  "{data-change=moved data-side=after data-source=status data-state=OPEN} "const"{data-change=moved data-side=after data-source=status data-state=OPEN data-syntax=keyword} " status = error?."{data-change=moved data-side=after data-source=status data-state=OPEN} "response"{data-change=moved data-side=after data-source=status data-state=OPEN data-syntax=property} "?."{data-change=moved data-side=after data-source=status data-state=OPEN} "status"{data-change=moved data-side=after data-source=status data-state=OPEN data-syntax=property} " ?? "{data-change=moved data-side=after data-source=status data-state=OPEN} "0"{data-change=moved data-side=after data-source=status data-state=OPEN data-syntax=number} ";"{data-change=moved data-side=after data-source=status data-state=OPEN}
+    "~" changed none: "  " "if"{data-syntax=keyword} " (error " "instanceof"{data-syntax=keyword} " TypeError) " "return"{data-syntax=keyword} " " "true"{data-syntax=literal} "; " "// the network failed, "{data-syntax=comment} "before any answer"{data-change=replaced data-side=after data-source=timeout data-state=REVISING data-syntax=comment}
+    "~" changed none: "  " "return"{data-syntax=keyword} " " "status === "{data-change=inserted data-side=after data-source=timeout data-state=REVISING} "408"{data-change=inserted data-side=after data-source=timeout data-state=REVISING data-syntax=number} " || "{data-change=inserted data-side=after data-source=timeout data-state=REVISING} "status === " "429"{data-syntax=number} " || (status >= " "500"{data-syntax=number} " && status !== " "501"{data-syntax=number} ");"
+    "" none none: "}"
+    ring {data-source=status data-state=OPEN}
+      STRETCH 1:2-1:46 {data-change=moved data-place=1 data-side=after data-source=status}
+    ring {data-source=timeout data-state=REVISING}
+      STRETCH 2:70-2:87 {data-change=replaced data-place=1 data-side=after data-source=timeout}
+      STRETCH 3:9-3:26 {data-change=inserted data-place=2 data-side=after data-source=timeout}
+  PROPOSAL_LIST
+    {"source":"timeout","title":"Retry a request that timed out","state":"REVISING","status":"Revising","places":{"kind":"NONE"},"neighbors":{"range_Previous":null,"range_Next":null},"rationale":"A 408 means the server stopped waiting for the request, not that the request failed: sent again, it usually goes through.","request":"only when the request is safe to send twice, a GET or a PUT.","actions":[],"isDrafting":false,"attributes":{}}
+    {"source":"status","title":"Work out the status first","state":"OPEN","status":"","places":{"kind":"MOVE","range":{"first":38,"last":38},"way":"UP"},"neighbors":{"range_Previous":null,"range_Next":null},"rationale":"With the status read before either check, isRetryable reads top to bottom as its answers: the network failing, then the server's codes.","request":"","actions":[{"command":"accept","label":"Accept","stateAfter":"ACCEPTED"},{"command":"reject","label":"Reject","stateAfter":"REJECTED"},{"command":"revise","label":"Revise","stateAfter":"REQUESTED"}],"isDrafting":false,"attributes":{}}
+    {"source":"retry501","title":"Retry a 501 too","state":"REJECTED","status":"Rejected","places":{"kind":"NONE"},"neighbors":{"range_Previous":null,"range_Next":null},"rationale":"A 501 from a proxy can clear once the server behind it is back; sent again, it sometimes goes through.","request":"","actions":[{"command":"reopen","label":"Reopen","stateAfter":"OPEN"}],"isDrafting":false,"attributes":{}}
+FRAME 41-50
+  CURRENT_LINES run 17
+    "41" moved none: 
+    "42" moved none (moved → sleep after): "function"{data-change=moved data-side=before data-source=sleep data-state=OPEN data-syntax=keyword} " "{data-change=moved data-side=before data-source=sleep data-state=OPEN} "sleep"{data-change=moved data-side=before data-source=sleep data-state=OPEN data-syntax=function} "("{data-change=moved data-side=before data-source=sleep data-state=OPEN} "ms"{data-change=moved data-edit-change=replaced data-edit-source=delay data-side=before data-source=sleep data-state=OPEN} ", signal) {"{data-change=moved data-side=before data-source=sleep data-state=OPEN}
+    "43" moved none: "  "{data-change=moved data-side=before data-source=sleep data-state=OPEN} "return"{data-change=moved data-side=before data-source=sleep data-state=OPEN data-syntax=keyword} " "{data-change=moved data-side=before data-source=sleep data-state=OPEN} "new"{data-change=moved data-side=before data-source=sleep data-state=OPEN data-syntax=keyword} " "{data-change=moved data-side=before data-source=sleep data-state=OPEN} "Promise"{data-change=moved data-side=before data-source=sleep data-state=OPEN data-syntax=function} "((resolve, reject) => {"{data-change=moved data-side=before data-source=sleep data-state=OPEN}
+    "44" moved none: "    "{data-change=moved data-side=before data-source=sleep data-state=OPEN} "const"{data-change=moved data-side=before data-source=sleep data-state=OPEN data-syntax=keyword} " timer = "{data-change=moved data-side=before data-source=sleep data-state=OPEN} "setTimeout"{data-change=moved data-side=before data-source=sleep data-state=OPEN data-syntax=function} "(resolve, "{data-change=moved data-side=before data-source=sleep data-state=OPEN} "ms"{data-change=moved data-edit-change=replaced data-edit-source=delay data-side=before data-source=sleep data-state=OPEN} ");"{data-change=moved data-side=before data-source=sleep data-state=OPEN}
+    "45" moved none: "    signal?."{data-change=moved data-side=before data-source=sleep data-state=OPEN} "addEventListener"{data-change=moved data-side=before data-source=sleep data-state=OPEN data-syntax=function} "("{data-change=moved data-side=before data-source=sleep data-state=OPEN} "\\"abort\\""{data-change=moved data-side=before data-source=sleep data-state=OPEN data-syntax=string} ", () => {"{data-change=moved data-side=before data-source=sleep data-state=OPEN}
+    "46" moved none: "      "{data-change=moved data-side=before data-source=sleep data-state=OPEN} "clearTimeout"{data-change=moved data-side=before data-source=sleep data-state=OPEN data-syntax=function} "(timer);"{data-change=moved data-side=before data-source=sleep data-state=OPEN}
+    "47" moved none: "      "{data-change=moved data-side=before data-source=sleep data-state=OPEN} "reject"{data-change=moved data-side=before data-source=sleep data-state=OPEN data-syntax=function} "(signal."{data-change=moved data-side=before data-source=sleep data-state=OPEN} "reason"{data-change=moved data-side=before data-source=sleep data-state=OPEN data-syntax=property} ");"{data-change=moved data-side=before data-source=sleep data-state=OPEN}
+    "48" moved none: "    }, { once: "{data-change=moved data-side=before data-source=sleep data-state=OPEN} "true"{data-change=moved data-side=before data-source=sleep data-state=OPEN data-syntax=literal} " });"{data-change=moved data-side=before data-source=sleep data-state=OPEN}
+    "49" moved none: "  });"{data-change=moved data-side=before data-source=sleep data-state=OPEN}
+    "50" moved none: "}"{data-change=moved data-side=before data-source=sleep data-state=OPEN}
+    ring {data-source=sleep data-state=OPEN}
+      STRETCH 1:0-9:1 {data-change=moved data-place=1 data-side=before data-source=sleep}
+    ring {data-source=delay data-state=OPEN}
+      STRETCH 1:15-1:17 {data-carried=sleep data-change=replaced data-place=1 data-side=before data-source=delay}
+      STRETCH 3:38-3:40 {data-carried=sleep data-change=replaced data-place=2 data-side=before data-source=delay}
+  PROPOSAL_LINES run 18
+  PROPOSAL_LIST
+    {"source":"sleep","title":"Move sleep up, beside the delays it waits out","state":"OPEN","status":"","places":{"kind":"MOVE","range":{"first":41,"last":50},"way":"UP"},"neighbors":{"range_Previous":{"first":6,"last":5},"range_Next":null},"rationale":"Read from the top, sleep comes before retry, which waits on it, next to the constants it's given.","request":"","actions":[{"command":"accept","label":"Accept","stateAfter":"ACCEPTED"},{"command":"reject","label":"Reject","stateAfter":"REJECTED"},{"command":"revise","label":"Revise","stateAfter":"REQUESTED"}],"isDrafting":false,"attributes":{}}
+    {"source":"delay","title":"Call sleep's ms delayMs","state":"OPEN","status":"","places":{"kind":"COUNT","count_Here":2,"count_All":2,"conditions":[{"kind":"CARRIED","count":2,"source":"sleep","title":"Move sleep up, beside the delays it waits out"}]},"neighbors":{"range_Previous":{"first":6,"last":5},"range_Next":null},"rationale":"As DELAY_MS is: the unit in the name, where the number's read, wherever sleep ends up.","request":"","actions":[{"command":"accept","label":"Accept","stateAfter":"ACCEPTED"},{"command":"reject","label":"Reject","stateAfter":"REJECTED"},{"command":"revise","label":"Revise","stateAfter":"REQUESTED"}],"isDrafting":false,"attributes":{}}
+  LINES run 19
+    "51" none none: "
+`;
+
+exports[`the changes document's kinds-removed draws as it was drawn by hand 1`] = `
+"label width 1
+  LINES run 1
+    "1" none none: "const"{data-syntax=keyword} " ATTEMPTS = " "5"{data-syntax=number} ";"
+FRAME 2-2
+  CURRENT_LINES run 2
+    "2" changed none: "const"{data-syntax=keyword} " DELAY_MS = " "100"{data-syntax=number} ";" " "{data-change=removed data-side=before data-source=unit data-state=OPEN} "// in milliseconds"{data-change=removed data-side=before data-source=unit data-state=OPEN data-syntax=comment}
+    ring {data-source=unit data-state=OPEN}
+      STRETCH 0:22-0:40 {data-change=removed data-place=1 data-side=before data-source=unit}
+  PROPOSAL_LINES run 3
+    "" none none: "const"{data-syntax=keyword} " DELAY_MS = " "100"{data-syntax=number} ";"
+    ring {data-source=unit data-state=OPEN}
+      POINT 0:21 {data-change=removed data-place=1 data-side=after data-source=unit}
+  PROPOSAL_LIST
+    {"source":"unit","title":"Drop the unit comment","state":"OPEN","status":"","places":{"kind":"NONE"},"neighbors":{"range_Previous":null,"range_Next":null},"rationale":"DELAY_MS says its unit in its name.","request":"","actions":[{"command":"accept","label":"Accept","stateAfter":"ACCEPTED"},{"command":"reject","label":"Reject","stateAfter":"REJECTED"},{"command":"revise","label":"Revise","stateAfter":"REQUESTED"}],"isDrafting":false,"attributes":{}}"
+`;
+
+exports[`the changes document's kinds-inserted draws as it was drawn by hand 1`] = `
+"label width 1
+  LINES run 1
+    "1" none none: "for"{data-syntax=keyword} " (" "let"{data-syntax=keyword} " n = " "1"{data-syntax=number} "; n <= attempts; n++) {"
+FRAME 2-2
+  CURRENT_LINES run 2
+    "2" none none: "  " "if"{data-syntax=keyword} " (n === attempts) " "break"{data-syntax=keyword} ";"
+  PROPOSAL_LINES run 3
+    "~" changed none: "  " "if"{data-syntax=keyword} " (n === attempts" " || signal?."{data-change=inserted data-side=after data-source=aborted data-state=OPEN} "aborted"{data-change=inserted data-side=after data-source=aborted data-state=OPEN data-syntax=property} ") " "break"{data-syntax=keyword} ";"
+    ring {data-source=aborted data-state=OPEN}
+      STRETCH 0:21-0:39 {data-change=inserted data-place=1 data-side=after data-source=aborted}
+  PROPOSAL_LIST
+    {"source":"aborted","title":"Stop once the caller aborts","state":"OPEN","status":"","places":{"kind":"NONE"},"neighbors":{"range_Previous":null,"range_Next":null},"rationale":"Otherwise the loop sleeps a whole delay before it notices.","request":"","actions":[{"command":"accept","label":"Accept","stateAfter":"ACCEPTED"},{"command":"reject","label":"Reject","stateAfter":"REJECTED"},{"command":"revise","label":"Revise","stateAfter":"REQUESTED"}],"isDrafting":false,"attributes":{}}
+  LINES run 4
+    "3" none none: "}""
+`;
+
+exports[`the changes document's kinds-replaced draws as it was drawn by hand 1`] = `
+"label width 1
+FRAME 1-2
+  CURRENT_LINES run 1
+    "1" changed none: "export"{data-syntax=keyword} " " "function"{data-syntax=keyword} " " "backoff"{data-syntax=function} "(" "n"{data-change=replaced data-side=before data-source=round data-state=OPEN} ") {"
+    "2" changed none: "  " "return"{data-syntax=keyword} " DELAY_MS * " "2"{data-syntax=number} " ** (" "n"{data-change=replaced data-side=before data-source=round data-state=OPEN} " - " "1"{data-syntax=number} ");"
+    ring {data-source=round data-state=OPEN}
+      STRETCH 0:24-0:25 {data-change=replaced data-place=1 data-side=before data-source=round}
+      STRETCH 1:26-1:27 {data-change=replaced data-place=2 data-side=before data-source=round}
+  PROPOSAL_LINES run 2
+    "~" changed none: "export"{data-syntax=keyword} " " "function"{data-syntax=keyword} " " "backoff"{data-syntax=function} "(" "round"{data-change=replaced data-side=after data-source=round data-state=OPEN} ") {"
+    "~" changed none: "  " "return"{data-syntax=keyword} " DELAY_MS * " "2"{data-syntax=number} " ** (" "round"{data-change=replaced data-side=after data-source=round data-state=OPEN} " - " "1"{data-syntax=number} ");"
+    ring {data-source=round data-state=OPEN}
+      STRETCH 0:24-0:29 {data-change=replaced data-place=1 data-side=after data-source=round}
+      STRETCH 1:26-1:31 {data-change=replaced data-place=2 data-side=after data-source=round}
+  PROPOSAL_LIST
+    {"source":"round","title":"Call the attempt counter round","state":"OPEN","status":"","places":{"kind":"NONE"},"neighbors":{"range_Previous":null,"range_Next":null},"rationale":"n says nothing; round says what it counts.","request":"","actions":[{"command":"accept","label":"Accept","stateAfter":"ACCEPTED"},{"command":"reject","label":"Reject","stateAfter":"REJECTED"},{"command":"revise","label":"Revise","stateAfter":"REQUESTED"}],"isDrafting":false,"attributes":{}}
+  LINES run 3
+    "3" none none: "}""
+`;
+
+exports[`the changes document's kinds-restyled draws as it was drawn by hand 1`] = `
+"label width 1
+FRAME 1-1
+  CURRENT_LINES run 1
+    "1" changed none: "The delay doubles each round, and " "never"{data-change=restyled data-side=before data-source=bold data-state=OPEN} " grows past thirty seconds."
+    ring {data-source=bold data-state=OPEN}
+      STRETCH 0:34-0:39 {data-change=restyled data-place=1 data-side=before data-source=bold}
+  PROPOSAL_LINES run 2
+    "~" changed none: "The delay doubles each round, and " "never"{data-change=restyled data-marks=bold data-side=after data-source=bold data-state=OPEN} " grows past thirty seconds."
+    ring {data-source=bold data-state=OPEN}
+      STRETCH 0:34-0:39 {data-change=restyled data-place=1 data-side=after data-source=bold}
+  PROPOSAL_LIST
+    {"source":"bold","title":"Stress the cap","state":"OPEN","status":"","places":{"kind":"NONE"},"rationale":"It's the promise the caller relies on.","request":"","actions":[{"command":"accept","label":"Accept","stateAfter":"ACCEPTED"},{"command":"reject","label":"Reject","stateAfter":"REJECTED"},{"command":"revise","label":"Revise","stateAfter":"REQUESTED"}],"isDrafting":false,"neighbors":{"range_Previous":null,"range_Next":null},"attributes":{}}"
+`;
+
+exports[`the changes document's kinds-replaced-restyled draws as it was drawn by hand 1`] = `
+"label width 1
+FRAME 1-1
+  CURRENT_LINES run 1
+    "1" changed none: "Between attempts it waits " "a second"{data-change=replacedRestyled data-side=before data-source=wait data-state=OPEN} " at most."
+    ring {data-source=wait data-state=OPEN}
+      STRETCH 0:26-0:34 {data-change=replacedRestyled data-place=1 data-side=before data-source=wait}
+  PROPOSAL_LINES run 2
+    "~" changed none: "Between attempts it waits " "two seconds"{data-change=replacedRestyled data-marks=bold data-side=after data-source=wait data-state=OPEN} " at most."
+    ring {data-source=wait data-state=OPEN}
+      STRETCH 0:26-0:37 {data-change=replacedRestyled data-place=1 data-side=after data-source=wait}
+  PROPOSAL_LIST
+    {"source":"wait","title":"Say the longer wait, and stress it","state":"OPEN","status":"","places":{"kind":"NONE"},"rationale":"The cap went up to two seconds.","request":"","actions":[{"command":"accept","label":"Accept","stateAfter":"ACCEPTED"},{"command":"reject","label":"Reject","stateAfter":"REJECTED"},{"command":"revise","label":"Revise","stateAfter":"REQUESTED"}],"isDrafting":false,"neighbors":{"range_Previous":null,"range_Next":null},"attributes":{}}"
+`;
+
+exports[`the changes document's kinds-moved draws as it was drawn by hand 1`] = `
+"label width 1
+  LINES run 1
+    "1" none none: "function"{data-syntax=keyword} " " "isRetryable"{data-syntax=function} "(error) {"
+FRAME 2-3
+  CURRENT_LINES run 2
+    "2" none none: "  " "if"{data-syntax=keyword} " (error " "instanceof"{data-syntax=keyword} " TypeError) " "return"{data-syntax=keyword} " " "true"{data-syntax=literal} ";"
+    "3" moved none (moved → status after): "  "{data-change=moved data-side=before data-source=status data-state=OPEN} "const"{data-change=moved data-side=before data-source=status data-state=OPEN data-syntax=keyword} " status = error?."{data-change=moved data-side=before data-source=status data-state=OPEN} "response"{data-change=moved data-side=before data-source=status data-state=OPEN data-syntax=property} "?."{data-change=moved data-side=before data-source=status data-state=OPEN} "status"{data-change=moved data-side=before data-source=status data-state=OPEN data-syntax=property} " ?? "{data-change=moved data-side=before data-source=status data-state=OPEN} "0"{data-change=moved data-side=before data-source=status data-state=OPEN data-syntax=number} ";"{data-change=moved data-side=before data-source=status data-state=OPEN}
+    ring {data-source=status data-state=OPEN}
+      STRETCH 1:2-1:46 {data-change=moved data-place=1 data-side=before data-source=status}
+  PROPOSAL_LINES run 3
+    "→" moved none (from line 3 → status before): "  "{data-change=moved data-side=after data-source=status data-state=OPEN} "const"{data-change=moved data-side=after data-source=status data-state=OPEN data-syntax=keyword} " status = error?."{data-change=moved data-side=after data-source=status data-state=OPEN} "response"{data-change=moved data-side=after data-source=status data-state=OPEN data-syntax=property} "?."{data-change=moved data-side=after data-source=status data-state=OPEN} "status"{data-change=moved data-side=after data-source=status data-state=OPEN data-syntax=property} " ?? "{data-change=moved data-side=after data-source=status data-state=OPEN} "0"{data-change=moved data-side=after data-source=status data-state=OPEN data-syntax=number} ";"{data-change=moved data-side=after data-source=status data-state=OPEN}
+    "" none none: "  " "if"{data-syntax=keyword} " (error " "instanceof"{data-syntax=keyword} " TypeError) " "return"{data-syntax=keyword} " " "true"{data-syntax=literal} ";"
+    ring {data-source=status data-state=OPEN}
+      STRETCH 0:2-0:46 {data-change=moved data-place=1 data-side=after data-source=status}
+  PROPOSAL_LIST
+    {"source":"status","title":"Work out the status first","state":"OPEN","status":"","places":{"kind":"MOVE","range":{"first":3,"last":3},"way":"UP"},"neighbors":{"range_Previous":null,"range_Next":null},"rationale":"Then the function reads as its answers, top to bottom.","request":"","actions":[{"command":"accept","label":"Accept","stateAfter":"ACCEPTED"},{"command":"reject","label":"Reject","stateAfter":"REJECTED"},{"command":"revise","label":"Revise","stateAfter":"REQUESTED"}],"isDrafting":false,"attributes":{}}
+  LINES run 4
+    "4" none none: "  " "return"{data-syntax=keyword} " status === " "429"{data-syntax=number} " || status >= " "500"{data-syntax=number} ";"
+    "5" none none: "}""
+`;
+
+exports[`the changes document's kinds-latent draws as it was drawn by hand 1`] = `
+"label width 1
+FRAME 1-2
+  CURRENT_LINES run 1
+    "1" changed none: "  " "if"{data-syntax=keyword} " (" "n"{data-change=replaced data-side=before data-source=round data-state=OPEN} " === attempts) " "break"{data-syntax=keyword} ";"
+    "2" removed none: "  "{data-change=removed data-side=before data-source=hook data-state=OPEN} "onRetry"{data-change=removed data-side=before data-source=hook data-state=OPEN data-syntax=function} "?.(error, "{data-change=removed data-side=before data-source=hook data-state=OPEN} "n"{data-change=removed data-nested-change=replaced data-nested-source=round data-side=before data-source=hook data-state=OPEN} ");"{data-change=removed data-side=before data-source=hook data-state=OPEN}
+    ring {data-source=round data-state=OPEN}
+      STRETCH 0:6-0:7 {data-change=replaced data-place=1 data-side=before data-source=round}
+      STRETCH 1:19-1:20 {data-change=replaced data-place=2 data-side=before data-source=round data-within=hook}
+    ring {data-source=hook data-state=OPEN}
+      STRETCH 1:2-1:22 {data-change=removed data-place=1 data-side=before data-source=hook}
+  PROPOSAL_LINES run 2
+    "~" changed none: "  " "if"{data-syntax=keyword} " (" "round"{data-change=replaced data-side=after data-source=round data-state=OPEN} " === attempts) " "break"{data-syntax=keyword} ";"
+    ring {data-source=round data-state=OPEN}
+      STRETCH 0:6-0:11 {data-change=replaced data-place=1 data-side=after data-source=round}
+    ring {data-source=hook data-state=OPEN}
+      BOUNDARY 1 {data-change=removed data-place=1 data-side=after data-source=hook}
+  PROPOSAL_LIST
+    {"source":"hook","title":"Drop the onRetry hook","state":"OPEN","status":"","places":{"kind":"NONE"},"neighbors":{"range_Previous":null,"range_Next":null},"rationale":"Nothing passes onRetry any more.","request":"","actions":[{"command":"accept","label":"Accept","stateAfter":"ACCEPTED"},{"command":"reject","label":"Reject","stateAfter":"REJECTED"},{"command":"revise","label":"Revise","stateAfter":"REQUESTED"}],"isDrafting":false,"attributes":{}}
+    {"source":"round","title":"Call the attempt counter round","state":"OPEN","status":"","places":{"kind":"COUNT","count_Here":2,"count_All":2,"conditions":[{"kind":"WITHIN","count":1,"source":"hook","title":"Drop the onRetry hook"}]},"neighbors":{"range_Previous":null,"range_Next":null},"rationale":"n says nothing; round says what it counts.","request":"","actions":[{"command":"accept","label":"Accept","stateAfter":"ACCEPTED"},{"command":"reject","label":"Reject","stateAfter":"REJECTED"},{"command":"revise","label":"Revise","stateAfter":"REQUESTED"}],"isDrafting":false,"attributes":{}}"
+`;
+
+exports[`the changes document's kinds-carried draws as it was drawn by hand 1`] = `
+"label width 1
+FRAME 1-2
+  CURRENT_LINES run 1
+    "1" none none: "const"{data-syntax=keyword} " DELAY_MS = " "100"{data-syntax=number} ";"
+    "2" moved none (moved → sleep after): "function"{data-change=moved data-side=before data-source=sleep data-state=OPEN data-syntax=keyword} " "{data-change=moved data-side=before data-source=sleep data-state=OPEN} "sleep"{data-change=moved data-side=before data-source=sleep data-state=OPEN data-syntax=function} "("{data-change=moved data-side=before data-source=sleep data-state=OPEN} "ms"{data-change=moved data-edit-change=replaced data-edit-source=delay data-side=before data-source=sleep data-state=OPEN} ") {}"{data-change=moved data-side=before data-source=sleep data-state=OPEN}
+    ring {data-source=sleep data-state=OPEN}
+      STRETCH 1:0-1:21 {data-change=moved data-place=1 data-side=before data-source=sleep}
+    ring {data-source=delay data-state=OPEN}
+      STRETCH 1:15-1:17 {data-carried=sleep data-change=replaced data-place=1 data-side=before data-source=delay}
+  PROPOSAL_LINES run 2
+    "→" moved none (from line 2 → sleep before): "function"{data-change=moved data-side=after data-source=sleep data-state=OPEN data-syntax=keyword} " "{data-change=moved data-side=after data-source=sleep data-state=OPEN} "sleep"{data-change=moved data-side=after data-source=sleep data-state=OPEN data-syntax=function} "("{data-change=moved data-side=after data-source=sleep data-state=OPEN} "delayMs"{data-change=moved data-edit-change=replaced data-edit-source=delay data-side=after data-source=sleep data-state=OPEN} ") {}"{data-change=moved data-side=after data-source=sleep data-state=OPEN}
+    "" none none: "const"{data-syntax=keyword} " DELAY_MS = " "100"{data-syntax=number} ";"
+    ring {data-source=sleep data-state=OPEN}
+      STRETCH 0:0-0:26 {data-change=moved data-place=1 data-side=after data-source=sleep}
+    ring {data-source=delay data-state=OPEN}
+      STRETCH 0:15-0:22 {data-carried=sleep data-change=replaced data-place=1 data-side=after data-source=delay}
+  PROPOSAL_LIST
+    {"source":"sleep","title":"Move sleep up, beside the delays","state":"OPEN","status":"","places":{"kind":"MOVE","range":{"first":2,"last":2},"way":"UP"},"neighbors":{"range_Previous":null,"range_Next":null},"rationale":"Read from the top, sleep comes before what waits on it.","request":"","actions":[{"command":"accept","label":"Accept","stateAfter":"ACCEPTED"},{"command":"reject","label":"Reject","stateAfter":"REJECTED"},{"command":"revise","label":"Revise","stateAfter":"REQUESTED"}],"isDrafting":false,"attributes":{}}
+    {"source":"delay","title":"Call sleep's ms delayMs","state":"OPEN","status":"","places":{"kind":"COUNT","count_Here":1,"count_All":1,"conditions":[{"kind":"CARRIED","count":1,"source":"sleep","title":"Move sleep up, beside the delays"}]},"neighbors":{"range_Previous":null,"range_Next":null},"rationale":"The unit in the name, as DELAY_MS has it.","request":"","actions":[{"command":"accept","label":"Accept","stateAfter":"ACCEPTED"},{"command":"reject","label":"Reject","stateAfter":"REJECTED"},{"command":"revise","label":"Revise","stateAfter":"REQUESTED"}],"isDrafting":false,"attributes":{}}"
+`;
+
+exports[`the changes document's shape-free draws as it was drawn by hand 1`] = `
+"label width 1
+FRAME 1-1
+  CURRENT_LINES run 1
+    "1" changed none: "  " "const"{data-syntax=keyword} " delay = " "DELAY_MS"{data-change=replaced data-side=before data-source=base data-state=OPEN} " * " "2"{data-syntax=number} ";"
+    ring {data-source=base data-state=OPEN}
+      STRETCH 0:16-0:24 {data-change=replaced data-place=1 data-side=before data-source=base}
+  PROPOSAL_LINES run 2
+    "~" changed none: "  " "const"{data-syntax=keyword} " delay = " "BASE_MS"{data-change=replaced data-side=after data-source=base data-state=OPEN} " * " "2"{data-syntax=number} ";"
+    ring {data-source=base data-state=OPEN}
+      STRETCH 0:16-0:23 {data-change=replaced data-place=1 data-side=after data-source=base}
+  PROPOSAL_LIST
+    {"source":"base","title":"Call it the base delay","state":"OPEN","status":"","places":{"kind":"NONE"},"neighbors":{"range_Previous":null,"range_Next":null},"rationale":"It's where the doubling starts.","request":"","actions":[{"command":"accept","label":"Accept","stateAfter":"ACCEPTED"},{"command":"reject","label":"Reject","stateAfter":"REJECTED"},{"command":"revise","label":"Revise","stateAfter":"REQUESTED"}],"isDrafting":false,"attributes":{}}"
+`;
+
+exports[`the changes document's shape-pressed draws as it was drawn by hand 1`] = `
+"label width 1
+FRAME 1-1
+  CURRENT_LINES run 1
+    "1" changed none: "    " "await"{data-syntax=keyword} " " "sleep"{data-syntax=function} "(" "backoff"{data-syntax=function} "(" "n"{data-change=replaced data-side=before data-source=round data-state=OPEN} "), signal);"
+    ring {data-source=round data-state=OPEN}
+      STRETCH 0:24-0:25 {data-change=replaced data-place=1 data-side=before data-source=round}
+  PROPOSAL_LINES run 2
+    "~" changed none: "    " "await"{data-syntax=keyword} " " "sleep"{data-syntax=function} "(" "backoff"{data-syntax=function} "(" "round"{data-change=replaced data-side=after data-source=round data-state=OPEN} "), signal);"
+    ring {data-source=round data-state=OPEN}
+      STRETCH 0:24-0:29 {data-change=replaced data-place=1 data-side=after data-source=round}
+  PROPOSAL_LIST
+    {"source":"round","title":"Call the attempt counter round","state":"OPEN","status":"","places":{"kind":"NONE"},"neighbors":{"range_Previous":null,"range_Next":null},"rationale":"n says nothing; round says what it counts.","request":"","actions":[{"command":"accept","label":"Accept","stateAfter":"ACCEPTED"},{"command":"reject","label":"Reject","stateAfter":"REJECTED"},{"command":"revise","label":"Revise","stateAfter":"REQUESTED"}],"isDrafting":false,"attributes":{}}"
+`;
+
+exports[`the changes document's shape-side-by-side draws as it was drawn by hand 1`] = `
+"label width 1
+FRAME 1-1
+  CURRENT_LINES run 1
+    "1" changed none: "  " "signal"{data-change=replaced data-side=before data-source=abort data-state=OPEN} "?"{data-change=removed data-side=before data-source=chain data-state=OPEN} "." "throwIfAborted"{data-syntax=function} "();"
+    ring {data-source=abort data-state=OPEN}
+      STRETCH 0:2-0:8 {data-change=replaced data-place=1 data-side=before data-source=abort}
+    ring {data-source=chain data-state=OPEN}
+      STRETCH 0:8-0:9 {data-change=removed data-place=1 data-side=before data-source=chain}
+  PROPOSAL_LINES run 2
+    "~" changed none: "  " "abortSignal"{data-change=replaced data-side=after data-source=abort data-state=OPEN} "." "throwIfAborted"{data-syntax=function} "();"
+    ring {data-source=abort data-state=OPEN}
+      STRETCH 0:2-0:13 {data-change=replaced data-place=1 data-side=after data-source=abort}
+    ring {data-source=chain data-state=OPEN}
+      POINT 0:13 {data-change=removed data-place=1 data-side=after data-source=chain}
+  PROPOSAL_LIST
+    {"source":"abort","title":"Call it abortSignal","state":"OPEN","status":"","places":{"kind":"NONE"},"neighbors":{"range_Previous":null,"range_Next":null},"rationale":"As the DOM does.","request":"","actions":[{"command":"accept","label":"Accept","stateAfter":"ACCEPTED"},{"command":"reject","label":"Reject","stateAfter":"REJECTED"},{"command":"revise","label":"Revise","stateAfter":"REQUESTED"}],"isDrafting":false,"attributes":{}}
+    {"source":"chain","title":"Drop the optional call","state":"OPEN","status":"","places":{"kind":"NONE"},"neighbors":{"range_Previous":null,"range_Next":null},"rationale":"signal is always given.","request":"","actions":[{"command":"accept","label":"Accept","stateAfter":"ACCEPTED"},{"command":"reject","label":"Reject","stateAfter":"REJECTED"},{"command":"revise","label":"Revise","stateAfter":"REQUESTED"}],"isDrafting":false,"attributes":{}}"
+`;
+
+exports[`the changes document's shape-stacked draws as it was drawn by hand 1`] = `
+"label width 1
+FRAME 1-2
+  CURRENT_LINES run 1
+    "1" changed none: "const"{data-syntax=keyword} " " "MIN_MS"{data-change=replaced data-side=before data-source=bounds data-state=OPEN} " = " "100"{data-syntax=number} ";"
+    "2" changed none: "const"{data-syntax=keyword} " " "MAX_MS"{data-change=replaced data-side=before data-source=bounds data-state=OPEN} " = " "30_000"{data-syntax=number} ";"
+    ring {data-source=bounds data-state=OPEN}
+      STRETCH 0:6-0:12 {data-change=replaced data-place=1 data-side=before data-source=bounds}
+      STRETCH 1:6-1:12 {data-change=replaced data-place=2 data-side=before data-source=bounds}
+  PROPOSAL_LINES run 2
+    "~" changed none: "const"{data-syntax=keyword} " " "FLOOR_MS"{data-change=replaced data-side=after data-source=bounds data-state=OPEN} " = " "100"{data-syntax=number} ";"
+    "~" changed none: "const"{data-syntax=keyword} " " "CEILING_MS"{data-change=replaced data-side=after data-source=bounds data-state=OPEN} " = " "30_000"{data-syntax=number} ";"
+    ring {data-source=bounds data-state=OPEN}
+      STRETCH 0:6-0:14 {data-change=replaced data-place=1 data-side=after data-source=bounds}
+      STRETCH 1:6-1:16 {data-change=replaced data-place=2 data-side=after data-source=bounds}
+  PROPOSAL_LIST
+    {"source":"bounds","title":"Name the bounds floor and ceiling","state":"OPEN","status":"","places":{"kind":"NONE"},"neighbors":{"range_Previous":null,"range_Next":null},"rationale":"They bound the delay, not the attempts.","request":"","actions":[{"command":"accept","label":"Accept","stateAfter":"ACCEPTED"},{"command":"reject","label":"Reject","stateAfter":"REJECTED"},{"command":"revise","label":"Revise","stateAfter":"REQUESTED"}],"isDrafting":false,"attributes":{}}"
+`;
+
+exports[`the changes document's shape-lines draws as it was drawn by hand 1`] = `
+"label width 1
+  LINES run 1
+    "1" none none: "export"{data-syntax=keyword} " " "function"{data-syntax=keyword} " " "backoff"{data-syntax=function} "(n) {"
+FRAME 2-3
+  CURRENT_LINES run 2
+    "2" changed none: "  "{data-change=replaced data-side=before data-source=jitter data-state=OPEN} "const"{data-change=replaced data-side=before data-source=jitter data-state=OPEN data-syntax=keyword} " delay = DELAY_MS * "{data-change=replaced data-side=before data-source=jitter data-state=OPEN} "2"{data-change=replaced data-side=before data-source=jitter data-state=OPEN data-syntax=number} " ** (n - "{data-change=replaced data-side=before data-source=jitter data-state=OPEN} "1"{data-change=replaced data-side=before data-source=jitter data-state=OPEN data-syntax=number} ");"{data-change=replaced data-side=before data-source=jitter data-state=OPEN}
+    "3" changed none: "  "{data-change=replaced data-side=before data-source=jitter data-state=OPEN} "return"{data-change=replaced data-side=before data-source=jitter data-state=OPEN data-syntax=keyword} " delay + Math."{data-change=replaced data-side=before data-source=jitter data-state=OPEN} "random"{data-change=replaced data-side=before data-source=jitter data-state=OPEN data-syntax=function} "() * (delay / "{data-change=replaced data-side=before data-source=jitter data-state=OPEN} "2"{data-change=replaced data-side=before data-source=jitter data-state=OPEN data-syntax=number} ");"{data-change=replaced data-side=before data-source=jitter data-state=OPEN}
+    ring {data-source=jitter data-state=OPEN}
+      STRETCH 0:2-1:45 {data-change=replaced data-place=1 data-side=before data-source=jitter}
+  PROPOSAL_LINES run 3
+    "~" changed none: "  "{data-change=replaced data-side=after data-source=jitter data-state=OPEN} "return"{data-change=replaced data-side=after data-source=jitter data-state=OPEN data-syntax=keyword} " "{data-change=replaced data-side=after data-source=jitter data-state=OPEN} "withJitter"{data-change=replaced data-side=after data-source=jitter data-state=OPEN data-syntax=function} "(n);"{data-change=replaced data-side=after data-source=jitter data-state=OPEN}
+    ring {data-source=jitter data-state=OPEN}
+      STRETCH 0:2-0:23 {data-change=replaced data-place=1 data-side=after data-source=jitter}
+  PROPOSAL_LIST
+    {"source":"jitter","title":"Use the shared jitter","state":"OPEN","status":"","places":{"kind":"NONE"},"neighbors":{"range_Previous":null,"range_Next":null},"rationale":"Every client backs off the same way.","request":"","actions":[{"command":"accept","label":"Accept","stateAfter":"ACCEPTED"},{"command":"reject","label":"Reject","stateAfter":"REJECTED"},{"command":"revise","label":"Revise","stateAfter":"REQUESTED"}],"isDrafting":false,"attributes":{}}
+  LINES run 4
+    "4" none none: "}""
+`;
+
+exports[`the changes document's shape-wrapped draws as it was drawn by hand 1`] = `
+"label width 1
+FRAME 1-1
+  CURRENT_LINES run 1
+    "1" changed none: " * @param {{ attempts?: number" ", onRetry?: (error: unknown, n: number) => "{data-change=removed data-side=before data-source=hook data-state=OPEN} "void"{data-change=removed data-side=before data-source=hook data-state=OPEN data-syntax=keyword} " }} [options]"
+    ring {data-source=hook data-state=OPEN}
+      STRETCH 0:30-0:77 {data-change=removed data-place=1 data-side=before data-source=hook}
+  PROPOSAL_LINES run 2
+    "" none none: " * @param {{ attempts?: number }} [options]"
+    ring {data-source=hook data-state=OPEN}
+      POINT 0:30 {data-change=removed data-place=1 data-side=after data-source=hook}
+  PROPOSAL_LIST
+    {"source":"hook","title":"Drop the onRetry hook","state":"OPEN","status":"","places":{"kind":"NONE"},"neighbors":{"range_Previous":null,"range_Next":null},"rationale":"Nothing passes onRetry any more.","request":"","actions":[{"command":"accept","label":"Accept","stateAfter":"ACCEPTED"},{"command":"reject","label":"Reject","stateAfter":"REJECTED"},{"command":"revise","label":"Revise","stateAfter":"REQUESTED"}],"isDrafting":false,"attributes":{}}"
+`;
+
+exports[`the changes document's shape-nested draws as it was drawn by hand 1`] = `
+"label width 1
+FRAME 1-1
+  CURRENT_LINES run 1
+    "1" changed none: "    " "if"{data-syntax=keyword} " (" "n"{data-change=moved data-edit-change=replaced data-edit-source=round data-side=before data-source=order data-state=OPEN} " === attempts"{data-change=moved data-side=before data-source=order data-state=OPEN} " || " "!"{data-change=moved data-side=before data-source=order data-state=OPEN} "isRetryable"{data-change=moved data-side=before data-source=order data-state=OPEN data-syntax=function} "(error)"{data-change=moved data-side=before data-source=order data-state=OPEN} ") " "break"{data-syntax=keyword} ";"
+    ring {data-source=order data-state=OPEN}
+      STRETCH 0:8-0:22 {data-change=moved data-place=1 data-side=before data-source=order}
+      STRETCH 0:26-0:45 {data-change=moved data-place=2 data-side=before data-source=order}
+    ring {data-source=round data-state=OPEN}
+      STRETCH 0:8-0:9 {data-carried=order data-change=replaced data-place=1 data-side=before data-source=round}
+  PROPOSAL_LINES run 2
+    "~" changed none: "    " "if"{data-syntax=keyword} " (" "!"{data-change=moved data-side=after data-source=order data-state=OPEN} "isRetryable"{data-change=moved data-side=after data-source=order data-state=OPEN data-syntax=function} "(error)"{data-change=moved data-side=after data-source=order data-state=OPEN} " || " "round"{data-change=moved data-edit-change=replaced data-edit-source=round data-side=after data-source=order data-state=OPEN} " === attempts"{data-change=moved data-side=after data-source=order data-state=OPEN} ") " "break"{data-syntax=keyword} ";"
+    ring {data-source=order data-state=OPEN}
+      STRETCH 0:8-0:27 {data-change=moved data-place=2 data-side=after data-source=order}
+      STRETCH 0:31-0:49 {data-change=moved data-place=1 data-side=after data-source=order}
+    ring {data-source=round data-state=OPEN}
+      STRETCH 0:31-0:36 {data-carried=order data-change=replaced data-place=1 data-side=after data-source=round}
+  PROPOSAL_LIST
+    {"source":"order","title":"Ask about the error before the round","state":"OPEN","status":"","places":{"kind":"NONE"},"neighbors":{"range_Previous":null,"range_Next":null},"rationale":"An error that can't be retried ends the loop in any round.","request":"","actions":[{"command":"accept","label":"Accept","stateAfter":"ACCEPTED"},{"command":"reject","label":"Reject","stateAfter":"REJECTED"},{"command":"revise","label":"Revise","stateAfter":"REQUESTED"}],"isDrafting":false,"attributes":{}}
+    {"source":"round","title":"Call the attempt counter round","state":"OPEN","status":"","places":{"kind":"COUNT","count_Here":1,"count_All":1,"conditions":[{"kind":"CARRIED","count":1,"source":"order","title":"Ask about the error before the round"}]},"neighbors":{"range_Previous":null,"range_Next":null},"rationale":"n says nothing; round says what it counts.","request":"","actions":[{"command":"accept","label":"Accept","stateAfter":"ACCEPTED"},{"command":"reject","label":"Reject","stateAfter":"REJECTED"},{"command":"revise","label":"Revise","stateAfter":"REQUESTED"}],"isDrafting":false,"attributes":{}}"
+`;
+
+exports[`the changes document's shape-start draws as it was drawn by hand 1`] = `
+"label width 1
+FRAME 1-1
+  CURRENT_LINES run 1
+    "1" changed none: "export"{data-change=removed data-side=before data-source=private data-state=OPEN data-syntax=keyword} " "{data-change=removed data-side=before data-source=private data-state=OPEN} "function"{data-syntax=keyword} " " "backoff"{data-syntax=function} "(n) {}"
+    ring {data-source=private data-state=OPEN}
+      STRETCH 0:0-0:6 {data-change=removed data-place=1 data-side=before data-source=private}
+  PROPOSAL_LINES run 2
+    "" none none: "function"{data-syntax=keyword} " " "backoff"{data-syntax=function} "(n) {}"
+    ring {data-source=private data-state=OPEN}
+      POINT 0:0 {data-change=removed data-place=1 data-side=after data-source=private}
+  PROPOSAL_LIST
+    {"source":"private","title":"Keep backoff to the module","state":"OPEN","status":"","places":{"kind":"NONE"},"neighbors":{"range_Previous":null,"range_Next":null},"rationale":"Nothing else calls it.","request":"","actions":[{"command":"accept","label":"Accept","stateAfter":"ACCEPTED"},{"command":"reject","label":"Reject","stateAfter":"REJECTED"},{"command":"revise","label":"Revise","stateAfter":"REQUESTED"}],"isDrafting":false,"attributes":{}}"
+`;
+
+exports[`the changes document's moves-frames draws as it was drawn by hand 1`] = `
+"label width 1
+  LINES run 1
+    "1" none none: "const"{data-syntax=keyword} " DELAY_MS = " "100"{data-syntax=number} ";"
+FRAME 2-1
+  PROPOSAL_LINES run 2
+    "→" moved none: 
+    "→" moved none (from lines 4–5 → sleep before): "function"{data-change=moved data-side=after data-source=sleep data-state=OPEN data-syntax=keyword} " "{data-change=moved data-side=after data-source=sleep data-state=OPEN} "sleep"{data-change=moved data-side=after data-source=sleep data-state=OPEN data-syntax=function} "(ms) {}"{data-change=moved data-side=after data-source=sleep data-state=OPEN}
+    ring {data-source=sleep data-state=OPEN}
+      STRETCH 1:0-1:21 {data-change=moved data-place=1 data-side=after data-source=sleep}
+  PROPOSAL_LIST
+    {"source":"sleep","title":"Move sleep up, beside the delays","state":"OPEN","status":"","places":{"kind":"MOVE","range":{"first":4,"last":5},"way":"UP"},"neighbors":{"range_Previous":null,"range_Next":{"first":4,"last":5}},"rationale":"Read from the top, sleep comes before what waits on it.","request":"","actions":[{"command":"accept","label":"Accept","stateAfter":"ACCEPTED"},{"command":"reject","label":"Reject","stateAfter":"REJECTED"},{"command":"revise","label":"Revise","stateAfter":"REQUESTED"}],"isDrafting":false,"attributes":{}}
+  LINES run 3
+    "2" none none: 
+    "3" none none: "export"{data-syntax=keyword} " " "function"{data-syntax=keyword} " " "retry"{data-syntax=function} "(attempt) {}"
+FRAME 4-5
+  CURRENT_LINES run 4
+    "4" moved none: 
+    "5" moved none (moved → sleep after): "function"{data-change=moved data-side=before data-source=sleep data-state=OPEN data-syntax=keyword} " "{data-change=moved data-side=before data-source=sleep data-state=OPEN} "sleep"{data-change=moved data-side=before data-source=sleep data-state=OPEN data-syntax=function} "(ms) {}"{data-change=moved data-side=before data-source=sleep data-state=OPEN}
+    ring {data-source=sleep data-state=OPEN}
+      STRETCH 1:0-1:21 {data-change=moved data-place=1 data-side=before data-source=sleep}
+  PROPOSAL_LINES run 5
+  PROPOSAL_LIST
+    {"source":"sleep","title":"Move sleep up, beside the delays","state":"OPEN","status":"","places":{"kind":"MOVE","range":{"first":4,"last":5},"way":"UP"},"neighbors":{"range_Previous":{"first":2,"last":1},"range_Next":null},"rationale":"Read from the top, sleep comes before what waits on it.","request":"","actions":[{"command":"accept","label":"Accept","stateAfter":"ACCEPTED"},{"command":"reject","label":"Reject","stateAfter":"REJECTED"},{"command":"revise","label":"Revise","stateAfter":"REQUESTED"}],"isDrafting":false,"attributes":{}}"
+`;
+
+exports[`the changes document's moves-line draws as it was drawn by hand 1`] = `
+"label width 1
+FRAME 1-1
+  CURRENT_LINES run 1
+    "1" changed none: "    " "if"{data-syntax=keyword} " (" "n === attempts"{data-change=moved data-side=before data-source=order data-state=OPEN} " || " "!"{data-change=moved data-side=before data-source=order data-state=OPEN} "isRetryable"{data-change=moved data-side=before data-source=order data-state=OPEN data-syntax=function} "(error)"{data-change=moved data-side=before data-source=order data-state=OPEN} ") " "break"{data-syntax=keyword} ";"
+    ring {data-source=order data-state=OPEN}
+      STRETCH 0:8-0:22 {data-change=moved data-place=1 data-side=before data-source=order}
+      STRETCH 0:26-0:45 {data-change=moved data-place=2 data-side=before data-source=order}
+  PROPOSAL_LINES run 2
+    "~" changed none: "    " "if"{data-syntax=keyword} " (" "!"{data-change=moved data-side=after data-source=order data-state=OPEN} "isRetryable"{data-change=moved data-side=after data-source=order data-state=OPEN data-syntax=function} "(error)"{data-change=moved data-side=after data-source=order data-state=OPEN} " || " "n === attempts"{data-change=moved data-side=after data-source=order data-state=OPEN} ") " "break"{data-syntax=keyword} ";"
+    ring {data-source=order data-state=OPEN}
+      STRETCH 0:8-0:27 {data-change=moved data-place=2 data-side=after data-source=order}
+      STRETCH 0:31-0:45 {data-change=moved data-place=1 data-side=after data-source=order}
+  PROPOSAL_LIST
+    {"source":"order","title":"Ask about the error before the round","state":"OPEN","status":"","places":{"kind":"NONE"},"neighbors":{"range_Previous":null,"range_Next":null},"rationale":"An error that can't be retried ends the loop in any round.","request":"","actions":[{"command":"accept","label":"Accept","stateAfter":"ACCEPTED"},{"command":"reject","label":"Reject","stateAfter":"REJECTED"},{"command":"revise","label":"Revise","stateAfter":"REQUESTED"}],"isDrafting":false,"attributes":{}}"
+`;
+
+exports[`the changes document's lines-removed draws as it was drawn by hand 1`] = `
+"label width 1
+FRAME 1-3
+  CURRENT_LINES run 1
+    "1" none none: "  " "if"{data-syntax=keyword} " (n === attempts) " "break"{data-syntax=keyword} ";"
+    "2" removed none: "  "{data-change=removed data-side=before data-source=hook data-state=OPEN} "onRetry"{data-change=removed data-side=before data-source=hook data-state=OPEN data-syntax=function} "?.(error, n);"{data-change=removed data-side=before data-source=hook data-state=OPEN}
+    "3" none none: "  " "await"{data-syntax=keyword} " " "sleep"{data-syntax=function} "(" "backoff"{data-syntax=function} "(n));"
+    ring {data-source=hook data-state=OPEN}
+      STRETCH 1:2-1:22 {data-change=removed data-place=1 data-side=before data-source=hook}
+  PROPOSAL_LINES run 2
+    "" none none: "  " "if"{data-syntax=keyword} " (n === attempts) " "break"{data-syntax=keyword} ";"
+    "" none none: "  " "await"{data-syntax=keyword} " " "sleep"{data-syntax=function} "(" "backoff"{data-syntax=function} "(n));"
+    ring {data-source=hook data-state=OPEN}
+      BOUNDARY 1 {data-change=removed data-place=1 data-side=after data-source=hook}
+  PROPOSAL_LIST
+    {"source":"hook","title":"Drop the onRetry hook","state":"OPEN","status":"","places":{"kind":"NONE"},"neighbors":{"range_Previous":null,"range_Next":null},"rationale":"Nothing passes onRetry any more.","request":"","actions":[{"command":"accept","label":"Accept","stateAfter":"ACCEPTED"},{"command":"reject","label":"Reject","stateAfter":"REJECTED"},{"command":"revise","label":"Revise","stateAfter":"REQUESTED"}],"isDrafting":false,"attributes":{}}"
+`;
+
+exports[`the changes document's lines-inserted draws as it was drawn by hand 1`] = `
+"label width 1
+FRAME 1-2
+  CURRENT_LINES run 1
+    "1" none none: "  " "const"{data-syntax=keyword} " delay = DELAY_MS * " "2"{data-syntax=number} " ** (n - " "1"{data-syntax=number} ");"
+    "2" changed none: "  " "return"{data-syntax=keyword} " " "delay"{data-change=replaced data-side=before data-source=cap data-state=OPEN} ";"
+    ring {data-source=cap data-state=OPEN}
+      STRETCH 1:9-1:14 {data-change=replaced data-place=1 data-side=before data-source=cap}
+  PROPOSAL_LINES run 2
+    "" none none: "  " "const"{data-syntax=keyword} " delay = DELAY_MS * " "2"{data-syntax=number} " ** (n - " "1"{data-syntax=number} ");"
+    "+" inserted none: "  "{data-change=inserted data-side=after data-source=cap data-state=OPEN} "const"{data-change=inserted data-side=after data-source=cap data-state=OPEN data-syntax=keyword} " capped = Math."{data-change=inserted data-side=after data-source=cap data-state=OPEN} "min"{data-change=inserted data-side=after data-source=cap data-state=OPEN data-syntax=function} "(delay, "{data-change=inserted data-side=after data-source=cap data-state=OPEN} "30_000"{data-change=inserted data-side=after data-source=cap data-state=OPEN data-syntax=number} ");"{data-change=inserted data-side=after data-source=cap data-state=OPEN}
+    "~" changed none: "  " "return"{data-syntax=keyword} " " "capped"{data-change=replaced data-side=after data-source=cap data-state=OPEN} ";"
+    ring {data-source=cap data-state=OPEN}
+      STRETCH 1:2-1:41 {data-change=inserted data-place=2 data-side=after data-source=cap}
+      STRETCH 2:9-2:15 {data-change=replaced data-place=1 data-side=after data-source=cap}
+  PROPOSAL_LIST
+    {"source":"cap","title":"Cap the delay at 30 seconds","state":"OPEN","status":"","places":{"kind":"NONE"},"neighbors":{"range_Previous":null,"range_Next":null},"rationale":"A long outage never goes quiet for longer than half a minute.","request":"","actions":[{"command":"accept","label":"Accept","stateAfter":"ACCEPTED"},{"command":"reject","label":"Reject","stateAfter":"REJECTED"},{"command":"revise","label":"Revise","stateAfter":"REQUESTED"}],"isDrafting":false,"attributes":{}}"
+`;
+
+exports[`the changes document's lines-blank draws as it was drawn by hand 1`] = `
+"label width 1
+  LINES run 1
+    "1" none none: "const"{data-syntax=keyword} " ATTEMPTS = " "5"{data-syntax=number} ";"
+FRAME 2-3
+  CURRENT_LINES run 2
+    "2" removed none: 
+    "3" none none: 
+  PROPOSAL_LINES run 3
+    "" none none: 
+  PROPOSAL_LIST
+    {"source":"gap","title":"One blank line between constants","state":"OPEN","status":"","places":{"kind":"NONE"},"neighbors":{"range_Previous":null,"range_Next":null},"rationale":"As everywhere else in the file.","request":"","actions":[{"command":"accept","label":"Accept","stateAfter":"ACCEPTED"},{"command":"reject","label":"Reject","stateAfter":"REJECTED"},{"command":"revise","label":"Revise","stateAfter":"REQUESTED"}],"isDrafting":false,"attributes":{}}
+  LINES run 4
+    "4" none none: "const"{data-syntax=keyword} " DELAY_MS = " "100"{data-syntax=number} ";""
+`;
+
+exports[`the changes document's lines-all draws as it was drawn by hand 1`] = `
+"label width 1
+  LINES run 1
+    "1" none none: "export"{data-syntax=keyword} " " "function"{data-syntax=keyword} " " "backoff"{data-syntax=function} "(n) {"
+FRAME 2-4
+  CURRENT_LINES run 2
+    "2" removed none: "  "{data-change=removed data-side=before data-source=check data-state=OPEN} "if"{data-change=removed data-side=before data-source=check data-state=OPEN data-syntax=keyword} " (n < "{data-change=removed data-side=before data-source=check data-state=OPEN} "1"{data-change=removed data-side=before data-source=check data-state=OPEN data-syntax=number} ") {"{data-change=removed data-side=before data-source=check data-state=OPEN}
+    "3" removed none: "    "{data-change=removed data-side=before data-source=check data-state=OPEN} "throw"{data-change=removed data-side=before data-source=check data-state=OPEN data-syntax=keyword} " "{data-change=removed data-side=before data-source=check data-state=OPEN} "new"{data-change=removed data-side=before data-source=check data-state=OPEN data-syntax=keyword} " "{data-change=removed data-side=before data-source=check data-state=OPEN} "RangeError"{data-change=removed data-side=before data-source=check data-state=OPEN data-syntax=function} "("{data-change=removed data-side=before data-source=check data-state=OPEN} "\\"n starts at 1\\""{data-change=removed data-side=before data-source=check data-state=OPEN data-syntax=string} ");"{data-change=removed data-side=before data-source=check data-state=OPEN}
+    "4" removed none: "  }"{data-change=removed data-side=before data-source=check data-state=OPEN}
+    ring {data-source=check data-state=OPEN}
+      STRETCH 0:2-2:3 {data-change=removed data-place=1 data-side=before data-source=check}
+  PROPOSAL_LINES run 3
+  PROPOSAL_LIST
+    {"source":"check","title":"Drop the range check","state":"OPEN","status":"","places":{"kind":"NONE"},"neighbors":{"range_Previous":null,"range_Next":null},"rationale":"Every caller counts from 1.","request":"","actions":[{"command":"accept","label":"Accept","stateAfter":"ACCEPTED"},{"command":"reject","label":"Reject","stateAfter":"REJECTED"},{"command":"revise","label":"Revise","stateAfter":"REQUESTED"}],"isDrafting":false,"attributes":{}}
+  LINES run 4
+    "5" none none: "  " "return"{data-syntax=keyword} " DELAY_MS * " "2"{data-syntax=number} " ** (n - " "1"{data-syntax=number} ");"
+    "6" none none: "}""
+`;
+
+exports[`the changes document's threads-frames draws as it was drawn by hand 1`] = `
+"label width 1
+FRAME 1-2
+  CURRENT_LINES run 1
+    "1" changed none: "export"{data-syntax=keyword} " " "function"{data-syntax=keyword} " " "backoff"{data-syntax=function} "(" "n"{data-change=replaced data-side=before data-source=round data-state=OPEN} ") {"
+    "2" changed none: "  " "return"{data-syntax=keyword} " DELAY_MS * " "2"{data-syntax=number} " ** (" "n"{data-change=replaced data-side=before data-source=round data-state=OPEN} " - " "1"{data-syntax=number} ");"
+    ring {data-source=round data-state=OPEN}
+      STRETCH 0:24-0:25 {data-change=replaced data-place=1 data-side=before data-source=round}
+      STRETCH 1:26-1:27 {data-change=replaced data-place=2 data-side=before data-source=round}
+  PROPOSAL_LINES run 2
+    "~" changed none: "export"{data-syntax=keyword} " " "function"{data-syntax=keyword} " " "backoff"{data-syntax=function} "(" "round"{data-change=replaced data-side=after data-source=round data-state=OPEN} ") {"
+    "~" changed none: "  " "return"{data-syntax=keyword} " DELAY_MS * " "2"{data-syntax=number} " ** (" "round"{data-change=replaced data-side=after data-source=round data-state=OPEN} " - " "1"{data-syntax=number} ");"
+    ring {data-source=round data-state=OPEN}
+      STRETCH 0:24-0:29 {data-change=replaced data-place=1 data-side=after data-source=round}
+      STRETCH 1:26-1:31 {data-change=replaced data-place=2 data-side=after data-source=round}
+  PROPOSAL_LIST
+    {"source":"round","title":"Call the attempt counter round","state":"OPEN","status":"","places":{"kind":"COUNT","count_Here":2,"count_All":5,"conditions":[]},"neighbors":{"range_Previous":null,"range_Next":{"first":5,"last":5}},"rationale":"n says nothing; round says what it counts.","request":"","actions":[{"command":"accept","label":"Accept","stateAfter":"ACCEPTED"},{"command":"reject","label":"Reject","stateAfter":"REJECTED"},{"command":"revise","label":"Revise","stateAfter":"REQUESTED"}],"isDrafting":false,"attributes":{}}
+  LINES run 3
+    "3" none none: "}"
+    "4" none none: 
+FRAME 5-5
+  CURRENT_LINES run 4
+    "5" changed none: "for"{data-syntax=keyword} " (" "let"{data-syntax=keyword} " " "n"{data-change=replaced data-side=before data-source=round data-state=OPEN} " = " "1"{data-syntax=number} "; " "n"{data-change=replaced data-side=before data-source=round data-state=OPEN} " <= attempts; " "n"{data-change=replaced data-side=before data-source=round data-state=OPEN} "++) {}"
+    ring {data-source=round data-state=OPEN}
+      STRETCH 0:9-0:10 {data-change=replaced data-place=3 data-side=before data-source=round}
+      STRETCH 0:16-0:17 {data-change=replaced data-place=4 data-side=before data-source=round}
+      STRETCH 0:31-0:32 {data-change=replaced data-place=5 data-side=before data-source=round}
+  PROPOSAL_LINES run 5
+    "~" changed none: "for"{data-syntax=keyword} " (" "let"{data-syntax=keyword} " " "round"{data-change=replaced data-side=after data-source=round data-state=OPEN} " = " "1"{data-syntax=number} "; " "round"{data-change=replaced data-side=after data-source=round data-state=OPEN} " <= attempts; " "round"{data-change=replaced data-side=after data-source=round data-state=OPEN} "++) {}"
+    ring {data-source=round data-state=OPEN}
+      STRETCH 0:9-0:14 {data-change=replaced data-place=3 data-side=after data-source=round}
+      STRETCH 0:20-0:25 {data-change=replaced data-place=4 data-side=after data-source=round}
+      STRETCH 0:39-0:44 {data-change=replaced data-place=5 data-side=after data-source=round}
+  PROPOSAL_LIST
+    {"source":"round","title":"Call the attempt counter round","state":"OPEN","status":"","places":{"kind":"COUNT","count_Here":3,"count_All":5,"conditions":[]},"neighbors":{"range_Previous":{"first":1,"last":2},"range_Next":null},"rationale":"n says nothing; round says what it counts.","request":"","actions":[{"command":"accept","label":"Accept","stateAfter":"ACCEPTED"},{"command":"reject","label":"Reject","stateAfter":"REJECTED"},{"command":"revise","label":"Revise","stateAfter":"REQUESTED"}],"isDrafting":false,"attributes":{}}"
+`;
+
+exports[`the changes document's pointing-proposal draws as it was drawn by hand 1`] = `
+"label width 1
+FRAME 1-3
+  CURRENT_LINES run 1
+    "1" changed none: "export"{data-syntax=keyword} " " "function"{data-syntax=keyword} " " "backoff"{data-syntax=function} "(" "n"{data-change=replaced data-side=before data-source=round data-state=OPEN} ") {"
+    "2" changed none: "  " "const"{data-syntax=keyword} " delay = DELAY_MS * " "2"{data-syntax=number} " ** (" "n"{data-change=replaced data-side=before data-source=round data-state=OPEN} " - " "1"{data-syntax=number} ");"
+    "3" changed none: "  " "return"{data-syntax=keyword} " " "delay"{data-change=replaced data-side=before data-source=cap data-state=OPEN} " + Math." "random"{data-syntax=function} "() * (" "delay"{data-change=replaced data-side=before data-source=cap data-state=OPEN} " / " "2"{data-syntax=number} ");"
+    ring {data-source=round data-state=OPEN}
+      STRETCH 0:24-0:25 {data-change=replaced data-place=1 data-side=before data-source=round}
+      STRETCH 1:33-1:34 {data-change=replaced data-place=2 data-side=before data-source=round}
+    ring {data-source=cap data-state=OPEN}
+      STRETCH 2:9-2:14 {data-change=replaced data-place=1 data-side=before data-source=cap}
+      STRETCH 2:34-2:39 {data-change=replaced data-place=2 data-side=before data-source=cap}
+  PROPOSAL_LINES run 2
+    "~" changed none: "export"{data-syntax=keyword} " " "function"{data-syntax=keyword} " " "backoff"{data-syntax=function} "(" "round"{data-change=replaced data-side=after data-source=round data-state=OPEN} ") {"
+    "~" changed none: "  " "const"{data-syntax=keyword} " delay = DELAY_MS * " "2"{data-syntax=number} " ** (" "round"{data-change=replaced data-side=after data-source=round data-state=OPEN} " - " "1"{data-syntax=number} ");"
+    "+" inserted none: "  "{data-change=inserted data-side=after data-source=cap data-state=OPEN} "const"{data-change=inserted data-side=after data-source=cap data-state=OPEN data-syntax=keyword} " capped = Math."{data-change=inserted data-side=after data-source=cap data-state=OPEN} "min"{data-change=inserted data-side=after data-source=cap data-state=OPEN data-syntax=function} "(delay, "{data-change=inserted data-side=after data-source=cap data-state=OPEN} "30_000"{data-change=inserted data-side=after data-source=cap data-state=OPEN data-syntax=number} ");"{data-change=inserted data-side=after data-source=cap data-state=OPEN}
+    "~" changed none: "  " "return"{data-syntax=keyword} " " "capped"{data-change=replaced data-side=after data-source=cap data-state=OPEN} " + Math." "random"{data-syntax=function} "() * (" "capped"{data-change=replaced data-side=after data-source=cap data-state=OPEN} " / " "2"{data-syntax=number} ");"
+    ring {data-source=round data-state=OPEN}
+      STRETCH 0:24-0:29 {data-change=replaced data-place=1 data-side=after data-source=round}
+      STRETCH 1:33-1:38 {data-change=replaced data-place=2 data-side=after data-source=round}
+    ring {data-source=cap data-state=OPEN}
+      STRETCH 2:2-2:41 {data-change=inserted data-place=3 data-side=after data-source=cap}
+      STRETCH 3:9-3:15 {data-change=replaced data-place=1 data-side=after data-source=cap}
+      STRETCH 3:35-3:41 {data-change=replaced data-place=2 data-side=after data-source=cap}
+  PROPOSAL_LIST
+    {"source":"round","title":"Call the attempt counter round","state":"OPEN","status":"","places":{"kind":"NONE"},"neighbors":{"range_Previous":null,"range_Next":null},"rationale":"n says nothing; round says what it counts.","request":"","actions":[{"command":"accept","label":"Accept","stateAfter":"ACCEPTED"},{"command":"reject","label":"Reject","stateAfter":"REJECTED"},{"command":"revise","label":"Revise","stateAfter":"REQUESTED"}],"isDrafting":false,"attributes":{}}
+    {"source":"cap","title":"Cap the delay at 30 seconds","state":"OPEN","status":"","places":{"kind":"NONE"},"neighbors":{"range_Previous":null,"range_Next":null},"rationale":"A long outage never goes quiet for longer than half a minute.","request":"","actions":[{"command":"accept","label":"Accept","stateAfter":"ACCEPTED"},{"command":"reject","label":"Reject","stateAfter":"REJECTED"},{"command":"revise","label":"Revise","stateAfter":"REQUESTED"}],"isDrafting":false,"attributes":{}}
+  LINES run 3
+    "4" none none: "}""
+`;
+
+exports[`the changes document's folding-peek draws as it was drawn by hand 1`] = `
+"label width 1
+FRAME 1-3
+  CURRENT_LINES run 1
+    "1" changed none: "export"{data-syntax=keyword} " " "function"{data-syntax=keyword} " " "backoff"{data-syntax=function} "(" "n"{data-change=replaced data-side=before data-source=round data-state=OPEN} ") {"
+    "2" changed none: "  " "const"{data-syntax=keyword} " delay = DELAY_MS * " "2"{data-syntax=number} " ** (" "n"{data-change=replaced data-side=before data-source=round data-state=OPEN} " - " "1"{data-syntax=number} ");"
+    "3" changed none: "  " "return"{data-syntax=keyword} " " "delay"{data-change=replaced data-side=before data-source=cap data-state=OPEN} ";"
+    ring {data-source=round data-state=OPEN}
+      STRETCH 0:24-0:25 {data-change=replaced data-place=1 data-side=before data-source=round}
+      STRETCH 1:33-1:34 {data-change=replaced data-place=2 data-side=before data-source=round}
+    ring {data-source=cap data-state=OPEN}
+      STRETCH 2:9-2:14 {data-change=replaced data-place=1 data-side=before data-source=cap}
+  PROPOSAL_LINES run 2
+    "~" changed none: "export"{data-syntax=keyword} " " "function"{data-syntax=keyword} " " "backoff"{data-syntax=function} "(" "round"{data-change=replaced data-side=after data-source=round data-state=OPEN} ") {"
+    "~" changed none: "  " "const"{data-syntax=keyword} " delay = DELAY_MS * " "2"{data-syntax=number} " ** (" "round"{data-change=replaced data-side=after data-source=round data-state=OPEN} " - " "1"{data-syntax=number} ");"
+    "+" inserted none: "  "{data-change=inserted data-side=after data-source=cap data-state=OPEN} "const"{data-change=inserted data-side=after data-source=cap data-state=OPEN data-syntax=keyword} " capped = Math."{data-change=inserted data-side=after data-source=cap data-state=OPEN} "min"{data-change=inserted data-side=after data-source=cap data-state=OPEN data-syntax=function} "(delay, "{data-change=inserted data-side=after data-source=cap data-state=OPEN} "30_000"{data-change=inserted data-side=after data-source=cap data-state=OPEN data-syntax=number} ");"{data-change=inserted data-side=after data-source=cap data-state=OPEN}
+    "~" changed none: "  " "return"{data-syntax=keyword} " " "capped"{data-change=replaced data-side=after data-source=cap data-state=OPEN} ";"
+    ring {data-source=round data-state=OPEN}
+      STRETCH 0:24-0:29 {data-change=replaced data-place=1 data-side=after data-source=round}
+      STRETCH 1:33-1:38 {data-change=replaced data-place=2 data-side=after data-source=round}
+    ring {data-source=cap data-state=OPEN}
+      STRETCH 2:2-2:41 {data-change=inserted data-place=2 data-side=after data-source=cap}
+      STRETCH 3:9-3:15 {data-change=replaced data-place=1 data-side=after data-source=cap}
+  PROPOSAL_LIST
+    {"source":"round","title":"Call the attempt counter round","state":"OPEN","status":"","places":{"kind":"NONE"},"neighbors":{"range_Previous":null,"range_Next":null},"rationale":"n says nothing; round says what it counts.","request":"","actions":[{"command":"accept","label":"Accept","stateAfter":"ACCEPTED"},{"command":"reject","label":"Reject","stateAfter":"REJECTED"},{"command":"revise","label":"Revise","stateAfter":"REQUESTED"}],"isDrafting":false,"attributes":{}}
+    {"source":"cap","title":"Cap the delay at 30 seconds","state":"OPEN","status":"","places":{"kind":"NONE"},"neighbors":{"range_Previous":null,"range_Next":null},"rationale":"A long outage never goes quiet for longer than half a minute.","request":"","actions":[{"command":"accept","label":"Accept","stateAfter":"ACCEPTED"},{"command":"reject","label":"Reject","stateAfter":"REJECTED"},{"command":"revise","label":"Revise","stateAfter":"REQUESTED"}],"isDrafting":false,"attributes":{}}
+  LINES run 3
+    "4" none none: "}""
+`;
+
+exports[`the changes document's folding-removals draws as it was drawn by hand 1`] = `
+"label width 1
+FRAME 1-2
+  CURRENT_LINES run 1
+    "1" removed none: "// Retries a flaky async call, backing off each time,"{data-change=removed data-side=before data-source=header data-state=OPEN data-syntax=comment}
+    "2" removed none: "// until it succeeds, or the caller gives up on it."{data-change=removed data-side=before data-source=header data-state=OPEN data-syntax=comment}
+    ring {data-source=header data-state=OPEN}
+      STRETCH 0:0-1:51 {data-change=removed data-place=1 data-side=before data-source=header}
+  PROPOSAL_LINES run 2
+  PROPOSAL_LIST
+    {"source":"header","title":"Drop the opening comment","state":"OPEN","status":"","places":{"kind":"NONE"},"neighbors":{"range_Previous":null,"range_Next":null},"rationale":"The doc comment says it, where it's read.","request":"","actions":[{"command":"accept","label":"Accept","stateAfter":"ACCEPTED"},{"command":"reject","label":"Reject","stateAfter":"REJECTED"},{"command":"revise","label":"Revise","stateAfter":"REQUESTED"}],"isDrafting":false,"attributes":{}}
+  LINES run 3
+    "3" none none: 
+    "4" none none: "const"{data-syntax=keyword} " ATTEMPTS = " "5"{data-syntax=number} ";""
+`;
+
+exports[`the changes document's marks-notch draws as it was drawn by hand 1`] = `
+"label width 1
+FRAME 1-1
+  CURRENT_LINES run 1
+    "1" changed none: "    " "await"{data-syntax=keyword} " " "sleep"{data-syntax=function} "(" "backoff"{data-syntax=function} "(n)" ", signal"{data-change=removed data-side=before data-source=signal data-state=OPEN} ");"
+    ring {data-source=signal data-state=OPEN}
+      STRETCH 0:26-0:34 {data-change=removed data-place=1 data-side=before data-source=signal}
+  PROPOSAL_LINES run 2
+    "" none none: "    " "await"{data-syntax=keyword} " " "sleep"{data-syntax=function} "(" "backoff"{data-syntax=function} "(n));"
+    ring {data-source=signal data-state=OPEN}
+      POINT 0:26 {data-change=removed data-place=1 data-side=after data-source=signal}
+  PROPOSAL_LIST
+    {"source":"signal","title":"Don't pass the signal to sleep","state":"OPEN","status":"","places":{"kind":"NONE"},"neighbors":{"range_Previous":null,"range_Next":null},"rationale":"The loop checks it itself.","request":"","actions":[{"command":"accept","label":"Accept","stateAfter":"ACCEPTED"},{"command":"reject","label":"Reject","stateAfter":"REJECTED"},{"command":"revise","label":"Revise","stateAfter":"REQUESTED"}],"isDrafting":false,"attributes":{}}"
+`;
+
+exports[`the changes document's marks-lines draws as it was drawn by hand 1`] = `
+"label width 1
+FRAME 1-3
+  CURRENT_LINES run 1
+    "1" none none: "  " "if"{data-syntax=keyword} " (n === attempts) " "break"{data-syntax=keyword} ";"
+    "2" removed none: "  "{data-change=removed data-side=before data-source=hook data-state=OPEN} "onRetry"{data-change=removed data-side=before data-source=hook data-state=OPEN data-syntax=function} "?.(error, n);"{data-change=removed data-side=before data-source=hook data-state=OPEN}
+    "3" none none: "  " "await"{data-syntax=keyword} " " "sleep"{data-syntax=function} "(" "backoff"{data-syntax=function} "(n));"
+    ring {data-source=hook data-state=OPEN}
+      STRETCH 1:2-1:22 {data-change=removed data-place=1 data-side=before data-source=hook}
+  PROPOSAL_LINES run 2
+    "" none none: "  " "if"{data-syntax=keyword} " (n === attempts) " "break"{data-syntax=keyword} ";"
+    "" none none: "  " "await"{data-syntax=keyword} " " "sleep"{data-syntax=function} "(" "backoff"{data-syntax=function} "(n));"
+    ring {data-source=hook data-state=OPEN}
+      BOUNDARY 1 {data-change=removed data-place=1 data-side=after data-source=hook}
+  PROPOSAL_LIST
+    {"source":"hook","title":"Drop the onRetry hook","state":"OPEN","status":"","places":{"kind":"NONE"},"neighbors":{"range_Previous":null,"range_Next":null},"rationale":"Nothing passes onRetry any more.","request":"","actions":[{"command":"accept","label":"Accept","stateAfter":"ACCEPTED"},{"command":"reject","label":"Reject","stateAfter":"REJECTED"},{"command":"revise","label":"Revise","stateAfter":"REQUESTED"}],"isDrafting":false,"attributes":{}}"
+`;
+
+exports[`the changes document's marks-one-point draws as it was drawn by hand 1`] = `
+"label width 1
+FRAME 1-1
+  CURRENT_LINES run 1
+    "1" changed none: "function"{data-syntax=keyword} " " "retry"{data-syntax=function} "(attempt" ", options"{data-change=removed data-side=before data-source=options data-state=OPEN} ", legacy"{data-change=removed data-side=before data-source=legacy data-state=OPEN} ") {}"
+    ring {data-source=options data-state=OPEN}
+      STRETCH 0:22-0:31 {data-change=removed data-place=1 data-side=before data-source=options}
+    ring {data-source=legacy data-state=OPEN}
+      STRETCH 0:31-0:39 {data-change=removed data-place=1 data-side=before data-source=legacy}
+  PROPOSAL_LINES run 2
+    "" none none: "function"{data-syntax=keyword} " " "retry"{data-syntax=function} "(attempt) {}"
+    ring {data-source=options data-state=OPEN}
+      POINT 0:22 {data-change=removed data-place=1 data-side=after data-source=options}
+    ring {data-source=legacy data-state=OPEN}
+      POINT 0:22 {data-change=removed data-place=1 data-side=after data-source=legacy}
+  PROPOSAL_LIST
+    {"source":"options","title":"Drop the options","state":"OPEN","status":"","places":{"kind":"NONE"},"neighbors":{"range_Previous":null,"range_Next":null},"rationale":"Every caller uses the defaults.","request":"","actions":[{"command":"accept","label":"Accept","stateAfter":"ACCEPTED"},{"command":"reject","label":"Reject","stateAfter":"REJECTED"},{"command":"revise","label":"Revise","stateAfter":"REQUESTED"}],"isDrafting":false,"attributes":{}}
+    {"source":"legacy","title":"Drop the legacy flag","state":"OPEN","status":"","places":{"kind":"NONE"},"neighbors":{"range_Previous":null,"range_Next":null},"rationale":"The old path is gone.","request":"","actions":[{"command":"accept","label":"Accept","stateAfter":"ACCEPTED"},{"command":"reject","label":"Reject","stateAfter":"REJECTED"},{"command":"revise","label":"Revise","stateAfter":"REQUESTED"}],"isDrafting":false,"attributes":{}}"
+`;
+
+exports[`the changes document's marks-beside-ring draws as it was drawn by hand 1`] = `
+"label width 1
+FRAME 1-1
+  CURRENT_LINES run 1
+    "1" changed none: "  " "signal"{data-change=replaced data-side=before data-source=abort data-state=OPEN} "?"{data-change=removed data-side=before data-source=chain data-state=OPEN} "." "throwIfAborted"{data-syntax=function} "();"
+    ring {data-source=abort data-state=OPEN}
+      STRETCH 0:2-0:8 {data-change=replaced data-place=1 data-side=before data-source=abort}
+    ring {data-source=chain data-state=OPEN}
+      STRETCH 0:8-0:9 {data-change=removed data-place=1 data-side=before data-source=chain}
+  PROPOSAL_LINES run 2
+    "~" changed none: "  " "abortSignal"{data-change=replaced data-side=after data-source=abort data-state=OPEN} "." "throwIfAborted"{data-syntax=function} "();"
+    ring {data-source=abort data-state=OPEN}
+      STRETCH 0:2-0:13 {data-change=replaced data-place=1 data-side=after data-source=abort}
+    ring {data-source=chain data-state=OPEN}
+      POINT 0:13 {data-change=removed data-place=1 data-side=after data-source=chain}
+  PROPOSAL_LIST
+    {"source":"abort","title":"Call it abortSignal","state":"OPEN","status":"","places":{"kind":"NONE"},"neighbors":{"range_Previous":null,"range_Next":null},"rationale":"As the DOM does.","request":"","actions":[{"command":"accept","label":"Accept","stateAfter":"ACCEPTED"},{"command":"reject","label":"Reject","stateAfter":"REJECTED"},{"command":"revise","label":"Revise","stateAfter":"REQUESTED"}],"isDrafting":false,"attributes":{}}
+    {"source":"chain","title":"Drop the optional call","state":"OPEN","status":"","places":{"kind":"NONE"},"neighbors":{"range_Previous":null,"range_Next":null},"rationale":"signal is always given.","request":"","actions":[{"command":"accept","label":"Accept","stateAfter":"ACCEPTED"},{"command":"reject","label":"Reject","stateAfter":"REJECTED"},{"command":"revise","label":"Revise","stateAfter":"REQUESTED"}],"isDrafting":false,"attributes":{}}"
+`;
+
+exports[`the changes document's marks-in-move draws as it was drawn by hand 1`] = `
+"label width 1
+FRAME 1-2
+  CURRENT_LINES run 1
+    "1" none none: "const"{data-syntax=keyword} " DELAY_MS = " "100"{data-syntax=number} ";"
+    "2" moved none (moved → sleep after): "function"{data-change=moved data-side=before data-source=sleep data-state=OPEN data-syntax=keyword} " "{data-change=moved data-side=before data-source=sleep data-state=OPEN} "sleep"{data-change=moved data-side=before data-source=sleep data-state=OPEN data-syntax=function} "(ms"{data-change=moved data-side=before data-source=sleep data-state=OPEN} ", signal"{data-change=moved data-edit-change=removed data-edit-source=signal data-side=before data-source=sleep data-state=OPEN} ") {}"{data-change=moved data-side=before data-source=sleep data-state=OPEN}
+    ring {data-source=sleep data-state=OPEN}
+      STRETCH 1:0-1:29 {data-change=moved data-place=1 data-side=before data-source=sleep}
+    ring {data-source=signal data-state=OPEN}
+      STRETCH 1:17-1:25 {data-carried=sleep data-change=removed data-place=1 data-side=before data-source=signal}
+  PROPOSAL_LINES run 2
+    "→" moved none (from line 2 → sleep before): "function"{data-change=moved data-side=after data-source=sleep data-state=OPEN data-syntax=keyword} " "{data-change=moved data-side=after data-source=sleep data-state=OPEN} "sleep"{data-change=moved data-side=after data-source=sleep data-state=OPEN data-syntax=function} "(ms) {}"{data-change=moved data-side=after data-source=sleep data-state=OPEN}
+    "" none none: "const"{data-syntax=keyword} " DELAY_MS = " "100"{data-syntax=number} ";"
+    ring {data-source=sleep data-state=OPEN}
+      STRETCH 0:0-0:21 {data-change=moved data-place=1 data-side=after data-source=sleep}
+  PROPOSAL_LIST
+    {"source":"sleep","title":"Move sleep up, beside the delays","state":"OPEN","status":"","places":{"kind":"MOVE","range":{"first":2,"last":2},"way":"UP"},"neighbors":{"range_Previous":null,"range_Next":null},"rationale":"Read from the top, sleep comes before what waits on it.","request":"","actions":[{"command":"accept","label":"Accept","stateAfter":"ACCEPTED"},{"command":"reject","label":"Reject","stateAfter":"REJECTED"},{"command":"revise","label":"Revise","stateAfter":"REQUESTED"}],"isDrafting":false,"attributes":{}}
+    {"source":"signal","title":"Drop sleep's signal","state":"OPEN","status":"","places":{"kind":"COUNT","count_Here":1,"count_All":1,"conditions":[{"kind":"CARRIED","count":1,"source":"sleep","title":"Move sleep up, beside the delays"}]},"neighbors":{"range_Previous":null,"range_Next":null},"rationale":"The loop checks it itself.","request":"","actions":[{"command":"accept","label":"Accept","stateAfter":"ACCEPTED"},{"command":"reject","label":"Reject","stateAfter":"REJECTED"},{"command":"revise","label":"Revise","stateAfter":"REQUESTED"}],"isDrafting":false,"attributes":{}}"
+`;
+
+exports[`the changes document's marks-strip draws as it was drawn by hand 1`] = `
+"label width 1
+FRAME 1-2
+  CURRENT_LINES run 1
+    "1" removed none: "// Retries a flaky async call, backing off each time,"{data-change=removed data-side=before data-source=header data-state=OPEN data-syntax=comment}
+    "2" removed none: "// until it succeeds, or the caller gives up on it."{data-change=removed data-side=before data-source=header data-state=OPEN data-syntax=comment}
+    ring {data-source=header data-state=OPEN}
+      STRETCH 0:0-1:51 {data-change=removed data-place=1 data-side=before data-source=header}
+  PROPOSAL_LINES run 2
+  PROPOSAL_LIST
+    {"source":"header","title":"Drop the opening comment","state":"OPEN","status":"","places":{"kind":"NONE"},"neighbors":{"range_Previous":null,"range_Next":null},"rationale":"The doc comment says it, where it's read.","request":"","actions":[{"command":"accept","label":"Accept","stateAfter":"ACCEPTED"},{"command":"reject","label":"Reject","stateAfter":"REJECTED"},{"command":"revise","label":"Revise","stateAfter":"REQUESTED"}],"isDrafting":false,"attributes":{}}
+  LINES run 3
+    "3" none none: 
+    "4" none none: "const"{data-syntax=keyword} " ATTEMPTS = " "5"{data-syntax=number} ";""
+`;
+
+exports[`the changes document's marks-end draws as it was drawn by hand 1`] = `
+"label width 1
+FRAME 1-3
+  CURRENT_LINES run 1
+    "1" none none: "function"{data-syntax=keyword} " " "sleep"{data-syntax=function} "(ms) {}"
+    "2" removed none: 
+    "3" removed none: "export"{data-change=removed data-side=before data-source=exports data-state=OPEN data-syntax=keyword} " { sleep };"{data-change=removed data-side=before data-source=exports data-state=OPEN}
+    ring {data-source=exports data-state=OPEN}
+      STRETCH 2:0-2:17 {data-change=removed data-place=1 data-side=before data-source=exports}
+  PROPOSAL_LINES run 2
+    "" none none: "function"{data-syntax=keyword} " " "sleep"{data-syntax=function} "(ms) {}"
+    ring {data-source=exports data-state=OPEN}
+      BOUNDARY 1 {data-change=removed data-place=1 data-side=after data-source=exports}
+  PROPOSAL_LIST
+    {"source":"exports","title":"Drop the export","state":"OPEN","status":"","places":{"kind":"NONE"},"neighbors":{"range_Previous":null,"range_Next":null},"rationale":"sleep is the module's own.","request":"","actions":[{"command":"accept","label":"Accept","stateAfter":"ACCEPTED"},{"command":"reject","label":"Reject","stateAfter":"REJECTED"},{"command":"revise","label":"Revise","stateAfter":"REQUESTED"}],"isDrafting":false,"attributes":{}}"
+`;
+
+exports[`the changes document's marks-whitespace draws as it was drawn by hand 1`] = `
+"label width 1
+FRAME 1-1
+  CURRENT_LINES run 1
+    "1" changed none: "  "{data-change=removed data-side=before data-source=indent data-state=OPEN} "  signal?." "throwIfAborted"{data-syntax=function} "();"
+    ring {data-source=indent data-state=OPEN}
+      STRETCH 0:0-0:2 {data-change=removed data-place=1 data-side=before data-source=indent}
+  PROPOSAL_LINES run 2
+    "" none none: "  signal?." "throwIfAborted"{data-syntax=function} "();"
+    ring {data-source=indent data-state=OPEN}
+      POINT 0:0 {data-change=removed data-place=1 data-side=after data-source=indent}
+  PROPOSAL_LIST
+    {"source":"indent","title":"Indent by two","state":"OPEN","status":"","places":{"kind":"NONE"},"neighbors":{"range_Previous":null,"range_Next":null},"rationale":"As the rest of the file is.","request":"","actions":[{"command":"accept","label":"Accept","stateAfter":"ACCEPTED"},{"command":"reject","label":"Reject","stateAfter":"REJECTED"},{"command":"revise","label":"Revise","stateAfter":"REQUESTED"}],"isDrafting":false,"attributes":{}}"
+`;
+
+exports[`the changes document's marks-start-to-middle draws as it was drawn by hand 1`] = `
+"label width 1
+FRAME 1-2
+  CURRENT_LINES run 1
+    "1" removed none: "// 100ms, 200ms, 400ms, and so on,"{data-change=removed data-side=before data-source=words data-state=OPEN data-syntax=comment}
+    "2" changed none: "// "{data-change=removed data-side=before data-source=words data-state=OPEN data-syntax=comment} "up to half as long again"{data-syntax=comment}
+    ring {data-source=words data-state=OPEN}
+      STRETCH 0:0-1:2 {data-change=removed data-place=1 data-side=before data-source=words}
+  PROPOSAL_LINES run 2
+    "" none none: "up to half as long again"
+    ring {data-source=words data-state=OPEN}
+      POINT 0:0 {data-change=removed data-place=1 data-side=after data-source=words}
+  PROPOSAL_LIST
+    {"source":"words","title":"Shorten the comment","state":"OPEN","status":"","places":{"kind":"NONE"},"neighbors":{"range_Previous":null,"range_Next":null},"rationale":"The numbers are in the code.","request":"","actions":[{"command":"accept","label":"Accept","stateAfter":"ACCEPTED"},{"command":"reject","label":"Reject","stateAfter":"REJECTED"},{"command":"revise","label":"Revise","stateAfter":"REQUESTED"}],"isDrafting":false,"attributes":{}}"
+`;
+
+exports[`the changes document's marks-between-lines draws as it was drawn by hand 1`] = `
+"label width 1
+FRAME 1-2
+  CURRENT_LINES run 1
+    "1" removed none: "// backoff"{data-change=removed data-side=before data-source=comment data-state=OPEN data-syntax=comment}
+    "2" changed none: "export"{data-change=removed data-side=before data-source=private data-state=OPEN data-syntax=keyword} " "{data-change=removed data-side=before data-source=private data-state=OPEN} "function"{data-syntax=keyword} " " "backoff"{data-syntax=function} "(n) {}"
+    ring {data-source=comment data-state=OPEN}
+      STRETCH 0:0-0:10 {data-change=removed data-place=1 data-side=before data-source=comment}
+    ring {data-source=private data-state=OPEN}
+      STRETCH 1:0-1:6 {data-change=removed data-place=1 data-side=before data-source=private}
+  PROPOSAL_LINES run 2
+    "" none none: "function"{data-syntax=keyword} " " "backoff"{data-syntax=function} "(n) {}"
+    ring {data-source=comment data-state=OPEN}
+      BOUNDARY 0 {data-change=removed data-place=1 data-side=after data-source=comment}
+    ring {data-source=private data-state=OPEN}
+      POINT 0:0 {data-change=removed data-place=1 data-side=after data-source=private}
+  PROPOSAL_LIST
+    {"source":"comment","title":"Drop the comment","state":"OPEN","status":"","places":{"kind":"NONE"},"neighbors":{"range_Previous":null,"range_Next":null},"rationale":"The name says it.","request":"","actions":[{"command":"accept","label":"Accept","stateAfter":"ACCEPTED"},{"command":"reject","label":"Reject","stateAfter":"REJECTED"},{"command":"revise","label":"Revise","stateAfter":"REQUESTED"}],"isDrafting":false,"attributes":{}}
+    {"source":"private","title":"Keep backoff to the module","state":"OPEN","status":"","places":{"kind":"NONE"},"neighbors":{"range_Previous":null,"range_Next":null},"rationale":"Nothing else calls it.","request":"","actions":[{"command":"accept","label":"Accept","stateAfter":"ACCEPTED"},{"command":"reject","label":"Reject","stateAfter":"REJECTED"},{"command":"revise","label":"Revise","stateAfter":"REQUESTED"}],"isDrafting":false,"attributes":{}}"
+`;
+
+exports[`the scene proposals-code draws as it was drawn by hand 1`] = `
+"label width 2
+  LINES run 1
+    "1" none none: "// counts the words in a text, as a person reading it would"
+    "2" none none: "export function countWords(text: string, locale = \\"en\\"): number {"
+    "3" none none: "  const segmenter = new Intl.Segmenter(locale, { granularity: \\"word\\" });"
+    "4" none none: "  let count = 0;"
+    "5" none none: "  for (const segment of segmenter.segment(text)) {"
+    "6" none none: "    if (segment.isWordLike) count += 1;"
+    "7" none none: "  }"
+    "8" none none: "  return count;"
+    "9" none none: "}"
+    "10" none none: 
+FRAME 11-17
+  CURRENT_LINES run 2
+    "11" none none: "// the reading time of a text, in whole minutes, at least one"
+    "12" changed none: "export function readingTime(text: string, wordsPerMinute = " "230"{data-change=replaced data-side=before data-source=faster data-state=OPEN} "): number {"
+    "13" removed none: "  if (!Number.isInteger(wordsPerMinute) || wordsPerMinute <= 0) {"{data-change=removed data-side=before data-source=check data-state=OPEN}
+    "14" removed none: "    throw new RangeError(\\"wordsPerMinute has to be a whole number of words greater than zero, as many as a person reads in a minute, and \\" + wordsPerMinute + \\" isn't one\\");"{data-change=removed data-side=before data-source=check data-state=OPEN}
+    "15" removed none: "  }"{data-change=removed data-side=before data-source=check data-state=OPEN}
+    "16" changed none: "  return Math.max(1, Math.round(" "countWords(text) / wordsPerMinute"{data-change=replaced data-side=before data-source=minutes data-state=OPEN} "));"
+    "17" none none: "}"
+    ring {data-source=faster data-state=OPEN}
+      STRETCH 1:59-1:62 {data-change=replaced data-place=1 data-side=before data-source=faster}
+    ring {data-source=check data-state=OPEN}
+      STRETCH 2:2-4:3 {data-change=removed data-place=1 data-side=before data-source=check}
+    ring {data-source=minutes data-state=OPEN}
+      STRETCH 5:32-5:65 {data-change=replaced data-place=1 data-side=before data-source=minutes}
+  PROPOSAL_LINES run 3
+    "" none none: "// the reading time of a text, in whole minutes, at least one"
+    "~" changed none: "export function readingTime(text: string, wordsPerMinute = " "250"{data-change=replaced data-side=after data-source=faster data-state=OPEN} "): number {"
+    "+" inserted none: "  const minutes = countWords(text) / wordsPerMinute;"{data-change=inserted data-side=after data-source=minutes data-state=OPEN}
+    "~" changed none: "  return Math.max(1, Math.round(" "minutes"{data-change=replaced data-side=after data-source=minutes data-state=OPEN} "));"
+    "" none none: "}"
+    ring {data-source=faster data-state=OPEN}
+      STRETCH 1:59-1:62 {data-change=replaced data-place=1 data-side=after data-source=faster}
+    ring {data-source=minutes data-state=OPEN}
+      STRETCH 2:2-2:52 {data-change=inserted data-place=2 data-side=after data-source=minutes}
+      STRETCH 3:32-3:39 {data-change=replaced data-place=1 data-side=after data-source=minutes}
+    ring {data-source=check data-state=OPEN}
+      BOUNDARY 2 {data-change=removed data-place=1 data-side=after data-source=check}
+  PROPOSAL_LIST
+    {"source":"faster","title":"A faster reader: 250 words a minute","state":"OPEN","status":"","places":{"kind":"NONE"},"neighbors":{"range_Previous":null,"range_Next":null},"rationale":"Adults read prose at about 250 words a minute; 230 makes every estimate a little long.","request":"","actions":[{"command":"accept","label":"Accept","stateAfter":"ACCEPTED"},{"command":"reject","label":"Reject","stateAfter":"REJECTED"},{"command":"revise","label":"Revise","stateAfter":"REQUESTED"}],"isDrafting":false,"attributes":{}}
+    {"source":"check","title":"Drop the check on wordsPerMinute","state":"OPEN","status":"","places":{"kind":"NONE"},"neighbors":{"range_Previous":null,"range_Next":null},"rationale":"Every caller passes a positive whole number, so the check only ever throws in tests.","request":"","actions":[{"command":"accept","label":"Accept","stateAfter":"ACCEPTED"},{"command":"reject","label":"Reject","stateAfter":"REJECTED"},{"command":"revise","label":"Revise","stateAfter":"REQUESTED"}],"isDrafting":false,"attributes":{}}
+    {"source":"minutes","title":"Name the minutes before rounding them","state":"OPEN","status":"","places":{"kind":"NONE"},"neighbors":{"range_Previous":null,"range_Next":null},"rationale":"With a name, the rounding reads as one step on a value you already understand.","request":"","actions":[{"command":"accept","label":"Accept","stateAfter":"ACCEPTED"},{"command":"reject","label":"Reject","stateAfter":"REJECTED"},{"command":"revise","label":"Revise","stateAfter":"REQUESTED"}],"isDrafting":false,"attributes":{}}
+  LINES run 4
+    "18" none none: 
+    "19" none none: "type Summary = {"
+    "20" none none: "  words: number;"
+    "21" none none: "  minutes: number;"
+    "22" none none: "  longestLine: string;"
+    "23" none none: "};"
+    "24" none none: 
+    "25" none none: "export function summarize(text: string): Summary {"
+    "26" none none: "  const lines = text.split(\\"\\\\n\\");"
+    "27" none none: "  const longestLine = lines.reduce((longest, line) => (line.length > longest.length ? line : longest), \\"\\");"
+    "28" none none: "  return { words: countWords(text), minutes: readingTime(text), longestLine };"
+    "29" none none: "}""
+`;
+
+exports[`the scene proposals-thread draws as it was drawn by hand 1`] = `
+"label width 2
+  LINES run 1
+    "1" none none: "// Retries a flaky async call, backing off further each time, until it"{data-syntax=comment}
+    "2" none none: "// succeeds, runs out of attempts, or the caller gives up on it."{data-syntax=comment}
+    "3" none none: 
+    "4" none none: "const"{data-syntax=keyword} " ATTEMPTS = " "5"{data-syntax=number} ";"
+    "5" none none: "const"{data-syntax=keyword} " DELAY_MS = " "100"{data-syntax=number} ";"
+    "6" none none: 
+    "7" none none: "/**"{data-syntax=comment}
+    "8" none none: " * @template T"{data-syntax=comment}
+    "9" none none: " * @param {() => Promise<T>} attempt"{data-syntax=comment}
+FRAME 10-10
+  CURRENT_LINES run 2
+    "10" changed none: " * @param {{ attempts?: number, signal?: AbortSignal"{data-syntax=comment} ", onRetry?: (error: unknown, "{data-change=removed data-side=before data-source=hook data-state=OPEN data-syntax=comment} "n"{data-change=removed data-nested-change=replaced data-nested-source=round data-side=before data-source=hook data-state=OPEN data-syntax=comment} ": number) => void"{data-change=removed data-side=before data-source=hook data-state=OPEN data-syntax=comment} " }} [options]"{data-syntax=comment}
+    ring {data-source=hook data-state=OPEN}
+      STRETCH 0:52-0:99 {data-change=removed data-place=1 data-side=before data-source=hook}
+    ring {data-source=round data-state=OPEN}
+      STRETCH 0:81-0:82 {data-change=replaced data-place=1 data-side=before data-source=round data-within=hook}
+  PROPOSAL_LINES run 3
+    "" none none: " * @param {{ attempts?: number, signal?: AbortSignal }} [options]"{data-syntax=comment}
+    ring {data-source=hook data-state=OPEN}
+      POINT 0:52 {data-change=removed data-place=1 data-side=after data-source=hook}
+  PROPOSAL_LIST
+    {"source":"hook","title":"Drop the onRetry hook","state":"OPEN","status":"","places":{"kind":"COUNT","count_Here":1,"count_All":3,"conditions":[]},"neighbors":{"range_Previous":null,"range_Next":{"first":13,"last":27}},"rationale":"Nothing passes onRetry any more: the callers log their retries in their own catch blocks.","request":"","actions":[{"command":"accept","label":"Accept","stateAfter":"ACCEPTED"},{"command":"reject","label":"Reject","stateAfter":"REJECTED"},{"command":"revise","label":"Revise","stateAfter":"REQUESTED"}],"isDrafting":false,"attributes":{}}
+    {"source":"round","title":"Call the attempt counter round","state":"OPEN","status":"","places":{"kind":"COUNT","count_Here":1,"count_All":9,"conditions":[{"kind":"WITHIN","count":1,"source":"hook","title":"Drop the onRetry hook"}]},"neighbors":{"range_Previous":null,"range_Next":{"first":13,"last":27}},"rationale":"n says nothing; round says what it counts, in retry and in backoff alike, and in the doc comment that names it.","request":"","actions":[{"command":"accept","label":"Accept","stateAfter":"ACCEPTED"},{"command":"reject","label":"Reject","stateAfter":"REJECTED"},{"command":"revise","label":"Revise","stateAfter":"REQUESTED"}],"isDrafting":false,"attributes":{}}
+  LINES run 4
+    "11" none none: " * @returns {Promise<T>}"{data-syntax=comment}
+    "12" none none: " */"{data-syntax=comment}
+FRAME 13-27
+  CURRENT_LINES run 5
+    "13" changed none: "export"{data-syntax=keyword} " " "async"{data-syntax=keyword} " " "function"{data-syntax=keyword} " " "retry"{data-syntax=function} "(attempt, { attempts = ATTEMPTS, signal" ", onRetry"{data-change=removed data-side=before data-source=hook data-state=OPEN} " } = {}) {"
+    "14" none none: "  " "let"{data-syntax=keyword} " lastError;"
+    "15" changed none: "  " "for"{data-syntax=keyword} " (" "let"{data-syntax=keyword} " " "n"{data-change=replaced data-side=before data-source=round data-state=OPEN} " = " "1"{data-syntax=number} "; " "n"{data-change=replaced data-side=before data-source=round data-state=OPEN} " <= attempts; " "n"{data-change=replaced data-side=before data-source=round data-state=OPEN} "++) {"
+    "16" none none: "    signal?." "throwIfAborted"{data-syntax=function} "();"
+    "17" none none: "    " "try"{data-syntax=keyword} " {"
+    "18" none none: "      " "return"{data-syntax=keyword} " " "await"{data-syntax=keyword} " " "attempt"{data-syntax=function} "();"
+    "19" none none: "    } " "catch"{data-syntax=keyword} " (error) {"
+    "20" none none: "      lastError = error;"
+    "21" changed none: "      " "if"{data-syntax=keyword} " (" "n"{data-change=replaced data-side=before data-source=round data-state=OPEN} " === attempts || !" "isRetryable"{data-syntax=function} "(error)) " "break"{data-syntax=keyword} ";"
+    "22" removed none: "      "{data-change=removed data-side=before data-source=hook data-state=OPEN} "onRetry"{data-change=removed data-side=before data-source=hook data-state=OPEN data-syntax=function} "?.(error, "{data-change=removed data-side=before data-source=hook data-state=OPEN} "n"{data-change=removed data-nested-change=replaced data-nested-source=round data-side=before data-source=hook data-state=OPEN} ");"{data-change=removed data-side=before data-source=hook data-state=OPEN}
+    "23" changed none: "      " "await"{data-syntax=keyword} " " "sleep"{data-syntax=function} "(" "backoff"{data-syntax=function} "(" "n"{data-change=replaced data-side=before data-source=round data-state=OPEN} "), signal);"
+    "24" none none: "    }"
+    "25" none none: "  }"
+    "26" none none: "  " "throw"{data-syntax=keyword} " " "new"{data-syntax=keyword} " " "AggregateError"{data-syntax=function} "([lastError], " "\`gave up after "{data-syntax=string} "\${attempts}" " attempts\`"{data-syntax=string} ");"
+    "27" none none: "}"
+    ring {data-source=hook data-state=OPEN}
+      STRETCH 0:66-0:75 {data-change=removed data-place=2 data-side=before data-source=hook}
+      STRETCH 9:6-9:26 {data-change=removed data-place=3 data-side=before data-source=hook}
+    ring {data-source=round data-state=OPEN}
+      STRETCH 2:11-2:12 {data-change=replaced data-place=2 data-side=before data-source=round}
+      STRETCH 2:18-2:19 {data-change=replaced data-place=3 data-side=before data-source=round}
+      STRETCH 2:33-2:34 {data-change=replaced data-place=4 data-side=before data-source=round}
+      STRETCH 8:10-8:11 {data-change=replaced data-place=5 data-side=before data-source=round}
+      STRETCH 9:23-9:24 {data-change=replaced data-place=6 data-side=before data-source=round data-within=hook}
+      STRETCH 10:26-10:27 {data-change=replaced data-place=7 data-side=before data-source=round}
+  PROPOSAL_LINES run 6
+    "" none none: "export"{data-syntax=keyword} " " "async"{data-syntax=keyword} " " "function"{data-syntax=keyword} " " "retry"{data-syntax=function} "(attempt, { attempts = ATTEMPTS, signal } = {}) {"
+    "" none none: "  " "let"{data-syntax=keyword} " lastError;"
+    "~" changed none: "  " "for"{data-syntax=keyword} " (" "let"{data-syntax=keyword} " " "round"{data-change=replaced data-side=after data-source=round data-state=OPEN} " = " "1"{data-syntax=number} "; " "round"{data-change=replaced data-side=after data-source=round data-state=OPEN} " <= attempts; " "round"{data-change=replaced data-side=after data-source=round data-state=OPEN} "++) {"
+    "" none none: "    signal?." "throwIfAborted"{data-syntax=function} "();"
+    "" none none: "    " "try"{data-syntax=keyword} " {"
+    "" none none: "      " "return"{data-syntax=keyword} " " "await"{data-syntax=keyword} " " "attempt"{data-syntax=function} "();"
+    "" none none: "    } " "catch"{data-syntax=keyword} " (error) {"
+    "" none none: "      lastError = error;"
+    "~" changed none: "      " "if"{data-syntax=keyword} " (" "round"{data-change=replaced data-side=after data-source=round data-state=OPEN} " === attempts || !" "isRetryable"{data-syntax=function} "(error)) " "break"{data-syntax=keyword} ";"
+    "~" changed none: "      " "await"{data-syntax=keyword} " " "sleep"{data-syntax=function} "(" "backoff"{data-syntax=function} "(" "round"{data-change=replaced data-side=after data-source=round data-state=OPEN} "), signal);"
+    "" none none: "    }"
+    "" none none: "  }"
+    "" none none: "  " "throw"{data-syntax=keyword} " " "new"{data-syntax=keyword} " " "AggregateError"{data-syntax=function} "([lastError], " "\`gave up after "{data-syntax=string} "\${attempts}" " attempts\`"{data-syntax=string} ");"
+    "" none none: "}"
+    ring {data-source=round data-state=OPEN}
+      STRETCH 2:11-2:16 {data-change=replaced data-place=2 data-side=after data-source=round}
+      STRETCH 2:22-2:27 {data-change=replaced data-place=3 data-side=after data-source=round}
+      STRETCH 2:41-2:46 {data-change=replaced data-place=4 data-side=after data-source=round}
+      STRETCH 8:10-8:15 {data-change=replaced data-place=5 data-side=after data-source=round}
+      STRETCH 9:26-9:31 {data-change=replaced data-place=7 data-side=after data-source=round}
+    ring {data-source=hook data-state=OPEN}
+      POINT 0:66 {data-change=removed data-place=2 data-side=after data-source=hook}
+      BOUNDARY 9 {data-change=removed data-place=3 data-side=after data-source=hook}
+  PROPOSAL_LIST
+    {"source":"hook","title":"Drop the onRetry hook","state":"OPEN","status":"","places":{"kind":"COUNT","count_Here":2,"count_All":3,"conditions":[]},"neighbors":{"range_Previous":{"first":10,"last":10},"range_Next":null},"rationale":"Nothing passes onRetry any more: the callers log their retries in their own catch blocks.","request":"","actions":[{"command":"accept","label":"Accept","stateAfter":"ACCEPTED"},{"command":"reject","label":"Reject","stateAfter":"REJECTED"},{"command":"revise","label":"Revise","stateAfter":"REQUESTED"}],"isDrafting":false,"attributes":{}}
+    {"source":"round","title":"Call the attempt counter round","state":"OPEN","status":"","places":{"kind":"COUNT","count_Here":6,"count_All":9,"conditions":[{"kind":"WITHIN","count":1,"source":"hook","title":"Drop the onRetry hook"}]},"neighbors":{"range_Previous":{"first":10,"last":10},"range_Next":{"first":31,"last":34}},"rationale":"n says nothing; round says what it counts, in retry and in backoff alike, and in the doc comment that names it.","request":"","actions":[{"command":"accept","label":"Accept","stateAfter":"ACCEPTED"},{"command":"reject","label":"Reject","stateAfter":"REJECTED"},{"command":"revise","label":"Revise","stateAfter":"REQUESTED"}],"isDrafting":false,"attributes":{}}
+  LINES run 7
+    "28" none none: 
+    "29" none none: "// 100ms, 200ms, 400ms, ..., and up to half as long again at random, so that"{data-syntax=comment}
+    "30" none none: "// many clients retrying at once don't all come back at the same moment"{data-syntax=comment}
+FRAME 31-34
+  CURRENT_LINES run 8
+    "31" changed none: "export"{data-syntax=keyword} " " "function"{data-syntax=keyword} " " "backoff"{data-syntax=function} "(" "n"{data-change=replaced data-side=before data-source=round data-state=OPEN} ") {"
+    "32" changed none: "  " "const"{data-syntax=keyword} " delay = DELAY_MS * " "2"{data-syntax=number} " ** (" "n"{data-change=replaced data-side=before data-source=round data-state=OPEN} " - " "1"{data-syntax=number} ");"
+    "33" none none: "  " "return"{data-syntax=keyword} " delay + Math." "random"{data-syntax=function} "() * (delay / " "2"{data-syntax=number} ");"
+    "34" none none: "}"
+    ring {data-source=round data-state=OPEN}
+      STRETCH 0:24-0:25 {data-change=replaced data-place=8 data-side=before data-source=round}
+      STRETCH 1:33-1:34 {data-change=replaced data-place=9 data-side=before data-source=round}
+  PROPOSAL_LINES run 9
+    "~" changed none: "export"{data-syntax=keyword} " " "function"{data-syntax=keyword} " " "backoff"{data-syntax=function} "(" "round"{data-change=replaced data-side=after data-source=round data-state=OPEN} ") {"
+    "~" changed none: "  " "const"{data-syntax=keyword} " delay = DELAY_MS * " "2"{data-syntax=number} " ** (" "round"{data-change=replaced data-side=after data-source=round data-state=OPEN} " - " "1"{data-syntax=number} ");"
+    "" none none: "  " "return"{data-syntax=keyword} " delay + Math." "random"{data-syntax=function} "() * (delay / " "2"{data-syntax=number} ");"
+    "" none none: "}"
+    ring {data-source=round data-state=OPEN}
+      STRETCH 0:24-0:29 {data-change=replaced data-place=8 data-side=after data-source=round}
+      STRETCH 1:33-1:38 {data-change=replaced data-place=9 data-side=after data-source=round}
+  PROPOSAL_LIST
+    {"source":"round","title":"Call the attempt counter round","state":"OPEN","status":"","places":{"kind":"COUNT","count_Here":2,"count_All":9,"conditions":[]},"neighbors":{"range_Previous":{"first":13,"last":27},"range_Next":null},"rationale":"n says nothing; round says what it counts, in retry and in backoff alike, and in the doc comment that names it.","request":"","actions":[{"command":"accept","label":"Accept","stateAfter":"ACCEPTED"},{"command":"reject","label":"Reject","stateAfter":"REJECTED"},{"command":"revise","label":"Revise","stateAfter":"REQUESTED"}],"isDrafting":false,"attributes":{}}
+  LINES run 10
+    "35" none none: 
+    "36" none none: "function"{data-syntax=keyword} " " "isRetryable"{data-syntax=function} "(error) {"
+    "37" none none: "  " "if"{data-syntax=keyword} " (error " "instanceof"{data-syntax=keyword} " TypeError) " "return"{data-syntax=keyword} " " "true"{data-syntax=literal} "; " "// the network failed, not the server"{data-syntax=comment}
+    "38" none none: "  " "const"{data-syntax=keyword} " status = error?." "response"{data-syntax=property} "?." "status"{data-syntax=property} " ?? " "0"{data-syntax=number} ";"
+    "39" none none: "  " "return"{data-syntax=keyword} " status === " "429"{data-syntax=number} " || (status >= " "500"{data-syntax=number} " && status !== " "501"{data-syntax=number} ");"
+    "40" none none: "}"
+    "41" none none: 
+    "42" none none: "function"{data-syntax=keyword} " " "sleep"{data-syntax=function} "(ms, signal) {"
+    "43" none none: "  " "return"{data-syntax=keyword} " " "new"{data-syntax=keyword} " " "Promise"{data-syntax=function} "((resolve, reject) => {"
+    "44" none none: "    " "const"{data-syntax=keyword} " timer = " "setTimeout"{data-syntax=function} "(resolve, ms);"
+    "45" none none: "    signal?." "addEventListener"{data-syntax=function} "(" "\\"abort\\""{data-syntax=string} ", () => {"
+    "46" none none: "      " "clearTimeout"{data-syntax=function} "(timer);"
+    "47" none none: "      " "reject"{data-syntax=function} "(signal." "reason"{data-syntax=property} ");"
+    "48" none none: "    }, { once: " "true"{data-syntax=literal} " });"
+    "49" none none: "  });"
+    "50" none none: "}"
+    "51" none none: "
+`;

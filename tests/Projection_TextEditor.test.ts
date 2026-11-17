@@ -1,0 +1,201 @@
+import { expect, test } from "bun:test"
+import { parseModel_TextEditor, type _Changes_Host_, type _Change_Host_, type _Model_TextEditor_ } from "../source/Model_TextEditor.ts"
+import { viewModelOf__Model, type _Proposal_Host_ } from "../source/Projection_TextEditor.ts"
+import { MODULE_PLAINTEXT, type _Range_Lines_, type _ViewModel_TextEditor_, type _Line_Run_, type _Underlay_Text_, type _Run_Lines_ } from "../source/ViewModel_TextEditor.ts"
+import { actions_Review } from "../playground/items.ts"
+import { viewModel_retry } from "../playground/examples/javascript.ts"
+import { changes } from "../playground/documents/changes.ts"
+import { proposalsCode } from "../playground/scenes/proposalsCode.ts"
+import { proposalsThread } from "../playground/scenes/proposalsThread.ts"
+
+// a model from a document and its changes as a host writes them, the test
+// failing, with why, if it's refused
+function modelOf(
+  multilineText: string,
+  proposed: Array<_Changes_Host_>
+): _Model_TextEditor_ {
+  const result = parseModel_TextEditor({ multilineText, proposed })
+  if (result.kind === "REFUSED") throw new Error(result.refusals.map((refusal) => `${refusal.source}: ${refusal.reason}`).join("\n"))
+  return result.model_TextEditor
+}
+
+// a whole line, or lines, replaced, as an agent quotes them and writes what
+// they become
+function linesOf(
+  multilineText: string,
+  first: number,
+  last: number,
+  next: string
+): _Change_Host_ {
+  const lines = multilineText.split("\n")
+  return { kind: "REPLACE", range: { from: { line: first, offset: 0 }, to: { line: last, offset: (lines[last] ?? "").length } }, multilineText: next }
+}
+
+// what the playground, as host, says of a proposal
+function proposalOf(
+  source: string,
+  title: string,
+  rationale: string
+): _Proposal_Host_ {
+  return { source, title, state: "OPEN", status: "", rationale, request: "", actions: actions_Review, attributes: {} }
+}
+
+const round = proposalOf("round", "Call the attempt counter round", "n says nothing; round says what it counts.")
+// a span of text, from one position to another, and what it becomes
+function spanOf(
+  from: [number, number],
+  to: [number, number],
+  next: string
+): _Change_Host_ {
+  return { kind: "REPLACE", range: { from: { line: from[0], offset: from[1] }, to: { line: to[0], offset: to[1] } }, multilineText: next }
+}
+
+// a view model as text, for its snapshot: every field of it, a line of text
+// for each line drawn, its rings after its lines, its list after its runs.
+// Run ids, and each proposal's places, are numbered as they come, as what a
+// scene calls them is no part of what's drawn. A field it doesn't know is a
+// mistake in it, and throws, so nothing's left out unseen
+function drawnAs(
+  viewModel: _ViewModel_TextEditor_
+): string {
+  const ids = new Map<string, string>()
+  const places = new Map<string, string>()
+  const idOf = (id: string) => {
+    if (!ids.has(id)) ids.set(id, `run ${ids.size + 1}`)
+    return ids.get(id)
+  }
+  const placeOf = (source: string, place: string) => {
+    const key = `${source} ${place}`
+    if (!places.has(key)) places.set(key, String([...places.keys()].filter((each) => each.startsWith(`${source} `)).length + 1))
+    return places.get(key)
+  }
+  // an object's fields, each one it's known to have, or a mistake
+  const known = (object: object, fields: Array<string>, what: string) => {
+    for (const field of Object.keys(object)) if (!fields.includes(field)) throw new Error(`a ${what} has a field the snapshot doesn't draw: ${field}`)
+  }
+  const attributesOf = (attributes: Record<string, string>) => {
+    const entries = Object.entries(attributes).toSorted(([one], [other]) => one.localeCompare(other))
+    return entries.length === 0 ? "" : `{${entries.map(([name, value]) => `${name}=${name === "data-place" ? placeOf(attributes["data-source"] ?? "", value) : value}`).join(" ")}}`
+  }
+  const lineOf = (line: _Line_Run_) => {
+    known(line, ["gutter", "note", "segments"], "line")
+    known(line.gutter, ["label", "marker", "pointed"], "gutter")
+    if (line.note !== null) known(line.note, ["label", "target"], "note")
+    for (const segment of line.segments) known(segment, ["text", "attributes"], "segment")
+    const note = line.note === null ? "" : ` (${line.note.label} → ${line.note.target.source} ${line.note.target.side})`
+    return `    ${JSON.stringify(line.gutter.label)} ${line.gutter.marker} ${line.gutter.pointed}${note}: ${line.segments.map((segment) => `${JSON.stringify(segment.text)}${attributesOf(segment.attributes)}`).join(" ")}`
+  }
+  const underlayOf = (underlay: _Underlay_Text_) => {
+    const attributes = attributesOf(underlay.attributes)
+    if (underlay.kind === "STRETCH") {
+      known(underlay, ["kind", "from", "to", "attributes"], "ring")
+      return `      STRETCH ${underlay.from.line}:${underlay.from.offset}-${underlay.to.line}:${underlay.to.offset} ${attributes}`
+    }
+    if (underlay.kind === "POINT") {
+      known(underlay, ["kind", "at", "attributes"], "notch")
+      return `      POINT ${underlay.at.line}:${underlay.at.offset} ${attributes}`
+    }
+    known(underlay, ["kind", "line", "attributes"], "notch")
+    return `      BOUNDARY ${underlay.line} ${attributes}`
+  }
+  const runOf = (kind: string, run: _Run_Lines_) => {
+    known(run, ["id", "lines", "groups"], "run")
+    for (const group of run.groups) known(group, ["attributes", "underlays"], "group")
+    return [
+      `  ${kind} ${idOf(run.id)}`,
+      ...run.lines.map(lineOf),
+      ...run.groups.flatMap((group) => [`    ring ${attributesOf(group.attributes)}`, ...group.underlays.map(underlayOf)])
+    ]
+  }
+  known(viewModel, ["charCount_Max__Label_Gutter", "blocks", "runs"], "view model")
+  return [
+    `label width ${viewModel.charCount_Max__Label_Gutter}`,
+    ...viewModel.blocks.flatMap((block) => {
+      if (block.kind === "LINES") {
+        known(block, ["kind", "run"], "block")
+        return runOf("LINES", block.run)
+      }
+      if (block.kind === "FOLDED") {
+        known(block, ["kind", "range", "run"], "block")
+        return [`FOLDED ${block.range.first}-${block.range.last}`, ...runOf("FOLDED", block.run)]
+      }
+      known(block, ["kind", "range", "parts"], "block")
+      return [
+        `FRAME ${block.range.first}-${block.range.last}`,
+        ...block.parts.flatMap((part) => part.kind === "PROPOSAL_LIST"
+          ? [`  PROPOSAL_LIST`, ...part.items.map((item) => `    ${JSON.stringify(item)}`)]
+          : runOf(part.kind, part.run))
+      ]
+    })
+  ].join("\n")
+}
+
+// the runs a view model lists beside its blocks: the runs in its blocks,
+// the same ones, in the same order
+function runsIn(
+  viewModel: _ViewModel_TextEditor_
+): Array<_Run_Lines_> {
+  return viewModel.blocks.flatMap((block) => block.kind === "FRAME" ? block.parts.flatMap((part) => part.kind === "PROPOSAL_LIST" ? [] : [part.run]) : [block.run])
+}
+
+test("frames are the lines changes touch, run together only where they share a line, so frames back to back stay two; a host's range joins the frames it shares a line with, and widens them, but makes none where nothing changes, and never cuts a change", () => {
+  const text = "a\nb\nc\nd\ne"
+  const framesOf = (proposed: Array<_Changes_Host_>, ranges_Frame: Array<_Range_Lines_>) => viewModelOf__Model({
+    model_TextEditor: modelOf(text, proposed),
+    proposals: [proposalOf("one", "One", ""), proposalOf("other", "Other", "")],
+    ranges_Frame,
+    module_Language: MODULE_PLAINTEXT
+  }).blocks.flatMap((block) => block.kind === "FRAME" ? [`${block.range.first}-${block.range.last}`] : [])
+  const backToBack: Array<_Changes_Host_> = [{ source: "one", changes: [linesOf(text, 1, 1, "B")] }, { source: "other", changes: [linesOf(text, 2, 2, "C")] }]
+  expect(framesOf(backToBack, [])).toEqual(["2-2", "3-3"])
+  expect(framesOf(backToBack, [{ first: 2, last: 3 }])).toEqual(["2-3"])
+  expect(framesOf(backToBack, [{ first: 1, last: 4 }])).toEqual(["1-4"])
+  expect(framesOf(backToBack, [{ first: 5, last: 5 }])).toEqual(["2-2", "3-3"])
+  expect(framesOf([{ source: "one", changes: [linesOf(text, 1, 2, "B\nC")] }], [{ first: 3, last: 3 }])).toEqual(["2-3"])
+})
+
+test("a change inside another's span, where the other keeps its words, is no condition of it: on the lines as proposed it's in the other's text, ringed as its own, and its item says nothing of the other", () => {
+  const line = "      if (n === attempts) break;"
+  const viewModel = viewModelOf__Model({
+    model_TextEditor: modelOf(line, [
+      { source: "loop", changes: [linesOf(line, 0, 0, "      if (n === attempts) return;")] },
+      { source: "round", changes: [spanOf([0, 10], [0, 11], "round")] }
+    ]),
+    proposals: [proposalOf("loop", "Return, don't break", ""), round],
+    ranges_Frame: [],
+    module_Language: MODULE_PLAINTEXT
+  })
+  const frame = viewModel.blocks.find((block) => block.kind === "FRAME")
+  const parts = frame?.kind === "FRAME" ? frame.parts : []
+  const proposed = parts.find((part) => part.kind === "PROPOSAL_LINES")
+  const list = parts.find((part) => part.kind === "PROPOSAL_LIST")
+  expect(proposed?.kind === "PROPOSAL_LINES" ? proposed.run.lines.map((each) => each.segments.map((segment) => `${segment.attributes["data-source"] ?? "-"}:${segment.text}`).join("|")) : []).toEqual(["-:      if (|round:round|-: === attempts) |loop:return|-:;"])
+  expect(list?.kind === "PROPOSAL_LIST" ? list.items.map((item) => `${item.source} ${item.places.kind}`) : []).toEqual(["loop NONE", "round NONE"])
+})
+
+// what the editor draws of the JavaScript example, and of each of the
+// changes document's cases: each what was drawn by hand before the editor
+// drew it, kept when it was, but for a removal's notch right after a
+// replacement's ring, which the hand-drawn cases' stand-in for the
+// projection put before the ring, counting only the text left unchanged,
+// and which is after it, where the words taken out were
+test("the JavaScript example draws as it was drawn by hand", () => {
+  expect(viewModel_retry.runs).toEqual(runsIn(viewModel_retry))
+  expect(drawnAs(viewModel_retry)).toMatchSnapshot()
+})
+
+for (const each of changes.sections.flatMap((section) => section.cases)) {
+  if (each.viewModel_TextEditor === null) continue
+  const viewModel_TextEditor = each.viewModel_TextEditor
+  test(`the changes document's ${each.name} draws as it was drawn by hand`, () => {
+    expect(viewModel_TextEditor.runs).toEqual(runsIn(viewModel_TextEditor))
+    expect(drawnAs(viewModel_TextEditor)).toMatchSnapshot()
+  })
+}
+
+for (const scene of [proposalsCode, proposalsThread]) {
+  test(`the scene ${scene.name} draws as it was drawn by hand`, () => {
+    expect(scene.viewModel_TextEditor.runs).toEqual(runsIn(scene.viewModel_TextEditor))
+    expect(drawnAs(scene.viewModel_TextEditor)).toMatchSnapshot()
+  })
+}

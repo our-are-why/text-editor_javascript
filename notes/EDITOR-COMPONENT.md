@@ -166,83 +166,157 @@ Two layers, kept apart, so the editor's model isn't tangled with any host's:
   tells the host, which sends the document as it now is.
 
 ```ts
-// a document: one line at least, each its text and its marks
-interface _Document_Model_ {
-  lines: _NonEmpty_<_Text_Model_>
+// the model: the document, and what each source proposes for it; plain
+// data, never changed, a transaction leaving a new one
+interface _Model_TextEditor_ {
+  document: _Text_Model_
+  proposed: Array<_Changes_Source_>
 }
 
+// a text, the document's or what a change proposes: one line at least,
+// each proven to hold no line break. Marks, an overlay, join it beside its
+// lines when a host needs them
 interface _Text_Model_ {
-  text: _Text_Line_NonTerminated_
-  overlay: Array<_Mark_Text_>
+  lines: _NonEmpty_<_Text_Line_NonTerminated_>
 }
 
-// a mark over a range of a line's text: a kind the host names, bold, a link,
-// and what that kind needs, a link's target; what it means is the host's
-interface _Mark_Text_ extends _Range_Text_ {
-  kind: _Kind_Mark_
-  data: _Data_Mark_
-}
-
-// what one source proposes, as changes to the document
+// what one source proposes: its changes, in the document's order, none
+// overlapping another of its own
 interface _Changes_Source_ {
-  source: _Id_Source_
+  source: string
   changes: _NonEmpty_<_Change_>
 }
 
 type _Change_ = _REPLACE_Change_ | _MOVE_Change_
 
-// what every change has: its span
+// what every change has: its span of the document
 interface __BASE_Change_<Kind extends string> {
   kind: Kind
-  range: _Range_Document_
+  range: _Range_Text_
 }
 
-// a span and what it becomes, one line or several: an empty span puts text
-// in; one that takes text out becomes one empty line, as "" parses to one
-interface _REPLACE_Change_ extends __BASE_Change_<"replace"> {
-  next: _NonEmpty_<_Text_Model_>
+// a span and the whole of what it becomes, as the host gives it: an empty
+// span puts text in; one taken out becomes one empty line, as "" parses
+// to one
+interface _REPLACE_Change_ extends __BASE_Change_<"REPLACE"> {
+  next: _Text_Model_
 }
 
-// a span taken from where it is and put somewhere else, as it is: what
-// else changes in it is another source's, never the move's
-interface _MOVE_Change_ extends __BASE_Change_<"move"> {
-  to: _Position_Document_
+// a span taken from where it is and put, as it is, at another position
+interface _MOVE_Change_ extends __BASE_Change_<"MOVE"> {
+  at: _Position_Text_
 }
 
-interface _Range_Document_ {
-  from: _Position_Document_
-  to: _Position_Document_
+interface _Range_Text_ {
+  from: _Position_Text_
+  to: _Position_Text_
 }
 
-// a line's index, and a code point's offset in it: both proofs, made only by
-// the parsers that check them
-interface _Position_Document_ {
-  line: _Index_Line_
-  offset: _Offset_Text_
+// a line's index, from 0, and a code point's offset in it
+interface _Position_Text_ {
+  line: number
+  offset: number
+}
+
+// which text: the document's, or what one change proposes, by its source
+// and its index among that source's changes
+type _Id_Text_ = _DOCUMENT_Id_Text_ | _CHANGE_Id_Text_
+
+interface __BASE_Id_Text_<Kind extends string> {
+  kind: Kind
+}
+
+interface _DOCUMENT_Id_Text_ extends __BASE_Id_Text_<"DOCUMENT"> {}
+
+interface _CHANGE_Id_Text_ extends __BASE_Id_Text_<"CHANGE"> {
+  source: string
+  index: number
+}
+
+// an edit, done and undone as one: its steps, in order, each on the model
+// the one before leaves
+interface _Transaction_Model_ {
+  steps: _NonEmpty_<_Step_Transaction_>
+}
+
+type _Step_Transaction_ =
+  | _TEXT_Step_Transaction_
+  | _CHANGE_Step_Transaction_
+
+interface __BASE_Step_Transaction_<Kind extends string> {
+  kind: Kind
+}
+
+// a span of one text and what it becomes; on the document's, every
+// change's span, and where each move goes, carried through it
+interface _TEXT_Step_Transaction_ extends __BASE_Step_Transaction_<"TEXT"> {
+  id_Text: _Id_Text_
+  range: _Range_Text_
+  next: _Text_Model_
+}
+
+// one change set as given, by its source and its index among that source's
+// changes: in what undoes taking text out, each change with a span or a
+// point there put back where it was
+interface _CHANGE_Step_Transaction_
+  extends __BASE_Step_Transaction_<"CHANGE"> {
+  source: string
+  index: number
+  change: _Change_
 }
 ```
 
-A sketch. It was written out once, as `source/Model_Editor.ts`, and taken
-back out: the view's scenes come first, written by hand as what's shown, and
-the projection from a document and its changes to what they show is what
-settles these types. A source's id, a mark's kind and its data are the
-host's, given and only handed back; offsets and line indices are proofs. The line's text proof, `_Text_Line_NonTerminated_`, and its parser
-move to the model once there is one, as the model can't depend on the view.
-What the parsers at the boundary check, once there are: ranges inside the
-document, `from` not after `to`; marks inside their line; changes from
-different sources never crossing, one only ever wholly inside another's
-removal.
+Written, as `source/Model_TextEditor.ts`, tested without a screen in
+`tests/Model_TextEditor.test.ts`, the host's changes given as
+`_Changes_Host_`, each text one string, as it writes it. It was sketched
+once before, as `source/Model_Editor.ts`, and taken back out: the view's
+scenes came first, written by hand as what's shown, as turning a document
+and its changes into what's shown is what settles these types. The scenes
+and the example are drawn now, and this is settled against them: what the
+example's frames hold, a thread's places in three frames, one inside
+another's removal, one carried in a move, three sources on one line.
 
-- **a change is a complete next state, of its span:** what the span becomes,
-  text and overlay. What changed within it is never written down: it's
-  derived, as doctor derives it, by `compareTexts` in its
-  `source/shared/text.ts`, the text cut into words, runs of spaces and other
-  characters, the two compared word by word, then the marks of the words
-  kept compared character by character; so: removed, inserted, replaced,
-  replaced and restyled, restyled. How fine is a presentation's choice, a
-  region's kind's: words for prose, tokens for code. So the two never
-  disagree, an agent's slip shows as a change, and what a round changed is
-  the same comparison, of two rounds.
+- **a change is the host's, kept as it's given:** a span and the whole of
+  what it becomes, as the agent quoted it and wrote it, a word to a
+  function. What changed within it is never written down: it's derived,
+  by `comparisonOf__Texts`, doctor's `compareTexts` brought over, the text
+  cut into words, runs of spaces and other characters, the two compared
+  word by word: removed, inserted, replaced; restyled once texts have
+  marks. How fine is a region's kind's, once there are regions: words for
+  prose, tokens for code. So the two never disagree, an agent's slip shows
+  as a change, and what a round changed is the same comparison, of two
+  rounds. Cutting changes down to the words that differ was the other way:
+  a smaller model, but a function the agent sent as one would go back to
+  the host in pieces, and what's typed on the lines as proposed between two
+  of its words would be no one's.
+- **every character's in one text:** the document's, or what one change
+  proposes, `_Id_Text_`; the caret's in one, a selection's kept in one, and
+  a step edits one. On a frame's lines as proposed, a character's in the
+  innermost change whose text holds it, or, where none does, the document's,
+  shown there as it is. Typing in a change's text edits the proposal, kept
+  inside it, its next round written by you, as doctor's edited round is.
+  What a pending or accepted proposal's span holds on the lines as they are,
+  what it takes out, replaces or moves, at both ends of a move, is locked,
+  as doctor locks it: you edit its text instead, or decide it, or reopen it,
+  first. So an edit to the document only ever moves a span along, never cuts
+  into one, and a change loses what it hung on only by what the host sends.
+  The lock's the pipeline's, as it goes by the proposals' states, which are
+  the host's; the model's spans are what it's drawn from.
+- **typing in the document's own text, where no proposal is, is the host's
+  to say:** it edits the document, or it's a proposal of yours, suggesting
+  mode, as doctor's is all the while a task's active, with no way round it.
+  Suggesting mode's the editor's own, built in, as only the core has what it
+  takes, the model, the pipeline, the view showing a line held as you type;
+  only when it's on is the host's, as the editor knows nothing of tasks. It
+  comes after editing inside proposals, and before doctor's editor is
+  replaced, as doctor can't do without it. What doctor's branch
+  `experiment/manual-proposals` worked out carries over: your edits divided
+  as the agent's are, a line changed one proposal, a run of new lines one, a
+  line taken out or moved one each; the line you're in held as you type,
+  marked purple, yours, and lifted into its proposal once the caret leaves
+  it, as a frame opening under the caret would throw it about; your rounds
+  of a proposal, one after another, folded into one. It needs a step of its
+  own that makes a change, beside `TEXT` and `CHANGE`.
 - **spans, not lines:** a span is any range, a phrase in a long line of
   prose, a sentence, lines. A line is a granularity a host can choose:
   doctor's adapter would send a span for each line it changes, as its holders
@@ -266,21 +340,190 @@ removal.
   of moves: the comparison that derives what changed within a span derives
   them there too, text the same at both ends, in another place, and splits
   what it finds into a source that moves and one that changes, each its own.
-  Moves of whole lines, and within a line, first; splits, after.
-- **nested, never crossing:** a change from one source may lie wholly inside
-  another source's removal, as a rename's place does inside lines another
-  proposal takes out: it's the inside one's fallback there, applying only if
-  the removal's rejected. Decided in any order, the two come to the same:
-  both taken, the removal takes the lines, and the inside change, what it
-  hung on gone, is dropped, as an anchor says when what it hung on is gone;
-  the removal rejected, the inside change applies; the inside one taken
-  first, the removal's anchors carry through it, and it takes the same
-  lines. Changes that cross, neither inside the other, are a conflict the
-  agent resolves, or the host splits, never the editor.
-- **for now:** besides nesting, changes from different sources never
-  overlap, nor does a move's span or where it goes fall in another source's;
-  positions are as the document has them now, anchors that carry them
-  through what's accepted coming after.
+  Moves of whole lines, and within a line, first; splits, after. To begin
+  with, a move's only the host's, a `MOVE` it gives; found by the comparison
+  after. Whole lines moved to a line's start or end keep their lines whole:
+  the line break they bring goes to the side that keeps them so, as the
+  document's last line, which has to take the break before it, put first
+  needs its break after it, and the first line, taking the break after it,
+  put last, its break before it; `landedOf__Move` says what a move puts
+  down.
+- **nested, never crossing:** a source's change may lie wholly inside
+  another source's span. Where the outer one removes or replaces what the
+  inner's on, the inner's its fallback there, applying only if the outer's
+  rejected, `WITHIN`; where the outer keeps it, as a function the agent
+  sent whole keeps most of its words, the inner applies there too, carried
+  into the outer's text by the comparison; inside a move, it goes where
+  the move goes, `CARRIED`. Decided in any order, they come to the same:
+  both taken, the outer's text replaces the span, and the inner, carried
+  through the comparison, survives where its words were kept and is
+  dropped where they were taken out, as a position says when what it hung
+  on is gone; the outer rejected, the inner applies; the inner taken
+  first, the outer's span carries through it. Spans that cross, neither
+  inside the other, are refused when the model's parsed, and why, for the
+  agent to resolve or the host to split, never the editor.
+- **positions are numbers, not proofs:** a line's index and a code point's
+  offset, checked when the model's parsed and kept good by carrying them
+  through every step, as a proof can't say which text, or which version of
+  it, a position's good in. Positions count code points, as doctor's do, so
+  a host and its agent, in any language, agree on them; UTF-16, which the
+  DOM counts, is the view's alone. Anchors aren't things of their own:
+  they're positions, a change's span, where a move goes, the caret, carried
+  through each step.
+- **one history, of the edits you make:** each a transaction, undone and
+  redone as one, by the transaction that undoes it, which the model works
+  out as it applies one. The history itself is the editor's state, held with
+  the pipeline. What the host sends, a source's next round, a decision
+  taken, is a new model, and for now clears it; carrying the history through
+  what the host sends, so undo survives an agent's round, comes after. What
+  undoes a transaction gives back the model it was applied to exactly, and
+  what undoes that, the model the transaction left. Taking text out carries
+  a point at its end, where a change puts text in, to where it began, where
+  it can't be told from a point that was there already, as positions alone
+  can't say which was which; so what undoes it puts the text back, `TEXT`,
+  then each change with a span or a point there where it was, `CHANGE`,
+  worked out as the text's taken out, while where each was is still known.
+  Carried through what the host sends, later, those positions are carried as
+  any are.
+- **moved over from the view model:** `_Text_Line_NonTerminated_`, its
+  parser `parseTexts_Line`, `REGEXP_LINEBREAK`, `_NonEmpty_` and
+  `mapped__NonEmpty`, as the model can't depend on the view; the view model
+  imports them from it.
+- **not yet:** marks, an overlay, joining `_Text_Model_` beside its lines
+  when a host needs them, doctor first; regions; moves found by the
+  comparison, and moves that split; your edits made proposals; changes
+  from different sources overlapping, besides nesting.
+
+Its functions, each tested without a screen:
+
+- `parseModel_TextEditor`: the host's document and changes, each text as it
+  writes it, one string, checked, proven and made a model, `PARSED`, or
+  `REFUSED`, each refusal its source and why: a span outside the document,
+  or ending before it starts; a source's changes overlapping; two sources'
+  crossing.
+- `applied__Transaction`: the model a transaction leaves, and the
+  transaction that undoes it.
+- `carried__Position`: a position carried through a step, staying before
+  what's put in at it, or after, as asked: a change's span keeps out what's
+  typed at its edges; the caret goes after what it types.
+- `textWith__Sources`: the document as it would be with some sources'
+  changes applied: a frame's lines as proposed, with all its sources'; the
+  document as decided, with those accepted.
+- `comparisonOf__Texts`: what changed from one text to another, by lines
+  first, then words: lines kept as they are kept; in what changed between
+  them, each line paired with the line it became most alike, by the words
+  they share, spaces aside, if they share half their words or more, and the
+  pair's words compared, doctor's way, the text cut into words, runs of
+  spaces and other characters, compared by Myers' algorithm; a line
+  nothing's alike enough to, taken out or put in whole. Words alone,
+  compared across lines, an agent's function sent whole came out wrong, a
+  line's words matched with another line's, `return` replaced by `const`
+  where a line was put in above. Past 2,000 differing words, taken as one
+  replacement; past 2,500 lines to pair, lines unpaired. Every character's
+  in one run, kept, removed, inserted or replaced, so a change inside
+  another's span can be carried through it exactly; what's drawn leaves out
+  spaces at a change's ends, as doctor does, which is the projection's.
+- `comparisonOf__Change`: a replacement's runs, what it takes out where it
+  is in the document, what it puts in where it is in its text.
+- `piecesWith__Sources`: the document, or a range of it, as it would be with
+  some sources' changes applied, as pieces, each the document's text, saying
+  where in the document it's from, wherever a move puts it, or a change's,
+  saying which change and where in its text; `textWith__Sources` their text,
+  run together. Each piece a move puts down says which move, `move`, the
+  changes it carries inside it too. A change that puts in nothing leaves an
+  empty piece where it would, so where a removal went is known. The
+  projection draws the lines as proposed from them, each ring from the piece
+  it's in, each notch at its empty piece.
+
+The projection, as `source/Projection_TextEditor.ts`: `viewModelOf__Model`,
+from the model, what the host says of each source, `_Proposal_Host_`, its
+title, state, words and actions, the ranges it asks to frame, and the
+language module, the view model the view draws now. Its frames are the lines
+changes touch, a span ending at a line's start not touching that line, and a
+point between lines, where whole lines are put in, touching none; run
+together where they share a line, never back to back, the host's ranges
+joining the frames they share a line with. Each frame's lines as they are,
+numbered, its lines as proposed, from the pieces, signed, each line's syntax
+the language module's, as proposed in the document the proposals would
+leave; the rings, each a run of a change, removed or replaced on the lines
+as they are, inserted or replaced on those proposed, its two sides one
+place, `data-place`, numbered through the frames by source; and its list,
+each item's places counted. The rings' words, `data-change`, `data-side`,
+`data-source`, `data-place`, are the editor's now, as only it works them
+out; the playground's own, in `playground/looks.ts`, stay till its
+hand-drawn cases go. A frame's text runs through the line break after its
+last line, unless it's the document's last, so taking out its lines whole
+leaves it none, and its lines as proposed are none. A change inside
+another's span is the other's fallback where the other takes its words out
+or replaces them: its words carry it as `data-nested-change` and
+`data-nested-source`, the other's on them as they are, its ring
+`data-within`, and its item a condition, `WITHIN`, the other's title with
+it; where the other keeps its words, it's no condition, in the other's text
+as proposed, ringed as its own. Each removal has its other side on the lines
+as proposed, a notch, `POINT` or `BOUNDARY`, at the place the model's pieces
+say its text went, the empty piece a change that puts in nothing leaves;
+between lines where it takes whole lines, nothing but spaces round it on its
+first line and its last, after the line its text began on if it begins with
+a line break, or before it; none where the lines as proposed are none, nor
+for one inside another's removal. A run of nothing but line breaks, a blank
+line taken out, has no ring, and so no notch: there are no words to ring,
+and its gutter says it. A blank line's gutter says it's taken out, or put
+in, by its own line break, the one after it, or before it at the document's
+end. Moves: each change has an end where its span is, and a move another
+where it lands; frames are made of ends, so a move's two ends can be in two
+frames, or one. A span that begins with the line break after a line with
+words in it doesn't touch that line, so a move of the document's last lines
+frames them alone. Where whole lines land between two lines, put in or
+moved, the end's a point, a frame of its own with no lines as they are,
+`range` its last line the one before its first; a host's range takes a point
+on its top edge, before its first line, as it frames what lands there. Moved
+text is ringed `moved` at both its ends, numbered where it leaves and signed
+→ where it lands, a blank line it takes along said in the gutter; a move of
+whole lines has a note at each end, on its first line with words, `moved`
+where it leaves, `from line` and its lines where it lands, and its item says
+which lines and which way, `MOVE`; a move within a line has neither, its
+item counting its places. A change inside what a move carries goes with it,
+at both ends: its words carry it as `data-edit-change` and
+`data-edit-source`, the move's on them as theirs, its ring `data-carried`,
+and its item a condition, `CARRIED`, the move's title with it; what's taken
+out of what a move carries has no notch, as where it was is at the move's
+other end. In threA decided proposal is listed where its changes are, as any
+is: an accepted one's words are the document's, its change given as what's
+there already, so there's nothing to ring; a rejected or withdrawn one's
+change is neither ringed nor applied on the lines as proposed, and nothing
+inside what it would have taken out is its fallback. In four pieces,
+replacements, removals and nesting, moves, then the playground's pages: the
+JavaScript example, the two scenes of code with proposals, and 34 of the
+changes document's 37 cases are drawn from a document and its changes, as an
+agent would write them, the example's host framing its three functions; and
+each is what was drawn by hand, run ids and place numbers aside, as names,
+kept as snapshots, `tests/__snapshots__/Projection_TextEditor.test.ts.snap`,
+taken of the hand-drawn view models before the projection replaced them, so
+it's checked against them for good. Each snapshot is text, every field of a
+view model, a line for each line drawn, its gutter, its note and its
+segments' words and data, then its rings, then its list, run ids and places
+numbered as they come; a field the text doesn't know fails the test, so
+nothing's left out unseen, and the runs a view model lists beside its blocks
+are checked to be the runs in them. As JSON, a view model's every field over
+many lines, the runs twice, they were 1.1 MB, every change to the view
+model's shape rewriting all of them; as text, 132 KB, a change to it the
+lines it changes. On the way, two cases drawn by hand were a word short, the
+word a replacement takes out not ringed where it is, now ringed; one, a ring
+over several lines, whose words, half kept, no longer made one ring by the
+comparison, was given a line with nothing kept; two, a removal right after a
+replaced word, have their notch after the replacement's ring, where the
+words taken out were, where the hand-drawn cases' stand-in put it before,
+counting only the text left unchanged; and two whose removals begin with the
+line break after a line with words in it frame that line by a host's range,
+as they were drawn. The example's revision of isRetryable, sent whole once,
+is two changes now, as a move inside another's change waits. Still drawn by
+hand, as a text has no marks yet: the two cases whose words are restyled,
+the prose scene with proposals, and Everything, which the browser tests
+draw, with the playground's stand-in for the projection,
+`playground/lines.ts`, kept for them alone. The host projects for now,
+`playground/projected.ts`, handing the editor the view model, as it did; the
+editor takes the model itself when it edits it, marks in the model by then,
+and the stand-in and the last hand-drawn view models go.
 
 Where an agent writes the changes, as doctor's does, it writes them as
 agents write edits reliably: the text as it is, quoted exactly, and what it
@@ -717,11 +960,19 @@ are never drawn inside a document line, as an inline diff would: a current
 line holds only the document's text, a proposed line only the proposals', so
 no line mixes the two, and a line's offsets are its own text's positions. A
 frame is the view model's, not the model's: proposals don't belong to one,
-so it can be loose, and change, and nothing be anchored again. By default
-it's the lines proposals touch, run together where they'd meet; a host can
-widen one, a function's lines for what's in the function. Frames never
-overlap, and never hold frames. With one proposal one reads as doctor's does
-now: its lines, its version under them, its bar.
+so it can be loose, and change, and nothing be anchored again. Which lines a
+frame takes is how the changes are shown, not what they are, and can differ
+with the context and the use, over the same proposals. By default it's the
+lines a change touches, run together where they share a line; frames back to
+back, one ending on the line before the other starts, stay two. A host
+widens them by giving ranges to frame, a function's lines for what's in the
+function, or none, for frames as tight as the changes; and later the user,
+as editor state, as folding is: more lines shown above, the whole function
+taken in. A range joins the frames it shares a line with, never one it's
+only back to back with. A frame never cuts through a change's lines: asked
+for less, it's the change's lines. Frames never overlap, and never hold
+frames: that's the invariant every framing keeps. With one proposal one
+reads as doctor's does now: its lines, its version under them, its bar.
 
 **folding:** a frame unfolded is for reviewing: its lines as they are, as
 proposed, and its list. Folded, it's a preview: its lines as proposed alone,

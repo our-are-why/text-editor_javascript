@@ -1,8 +1,11 @@
 import type { _Document_, _Section_Document_ } from "../document.ts"
-import { viewModelOf__Blocks, MODULE_PLAINTEXT, type _ViewModel_TextEditor_, type _Module_Language_, type _FRAME_Block__ViewModel_, type _Range_Lines_, type _Line_Run_, type _NonEmpty_, type _Item_Proposals_, type _Part_Frame_, type _Attributes_Element_ } from "../../source/ViewModel_TextEditor.ts"
-import { blocksWith__Frames, lineOf, blankOf, type _Move_Proposal_, type _Marked_Piece_ } from "../lines.ts"
+import { viewModelOf__Blocks, MODULE_PLAINTEXT, type _ViewModel_TextEditor_, type _Module_Language_, type _FRAME_Block__ViewModel_, type _Range_Lines_, type _Line_Run_, type _Item_Proposals_, type _Part_Frame_, type _Attributes_Element_ } from "../../source/ViewModel_TextEditor.ts"
+import { type _NonEmpty_, type _Changes_Host_, type _Change_Host_ } from "../../source/Model_TextEditor.ts"
+import type { _Proposal_Host_ } from "../../source/Projection_TextEditor.ts"
+import { projectedOf } from "../projected.ts"
+import { blocksWith__Frames, lineOf, type _Move_Proposal_, type _Marked_Piece_ } from "../lines.ts"
 import { actions_Review } from "../items.ts"
-import { attributesOf__Change, attributesOf__Nested, attributesOf__Edit, attributesOf__Marks, type _Side_Change_, type _Kind_Change_ } from "../looks.ts"
+import { attributesOf__Change, attributesOf__Marks, type _Side_Change_, type _Kind_Change_ } from "../looks.ts"
 import { module_JavaScript } from "../syntax.ts"
 
 export {
@@ -10,18 +13,11 @@ export {
 }
 
 // every case of how the view draws a change, each drawn by the editor from
-// a view model written by hand: a few lines of code, a frame over some of
-// them, and the proposals in it, each its own, so a case shows one thing
-
-// the proposals more than one case has, each its item
-const item_Round = itemOf({ source: "round", title: "Call the attempt counter round", rationale: "n says nothing; round says what it counts." })
-const item_Hook = itemOf({ source: "hook", title: "Drop the onRetry hook", rationale: "Nothing passes onRetry any more." })
-const item_Sleep = itemOf({ source: "sleep", title: "Move sleep up, beside the delays", rationale: "Read from the top, sleep comes before what waits on it." })
-const item_Delay = itemOf({ source: "delay", title: "Call sleep's ms delayMs", rationale: "The unit in the name, as DELAY_MS has it." })
-const item_Order = itemOf({ source: "order", title: "Ask about the error before the round", rationale: "An error that can't be retried ends the loop in any round." })
-const item_Cap = itemOf({ source: "cap", title: "Cap the delay at 30 seconds", rationale: "A long outage never goes quiet for longer than half a minute." })
-const item_Check = itemOf({ source: "check", title: "Drop the range check", rationale: "Every caller counts from 1." })
-const item_Header = itemOf({ source: "header", title: "Drop the opening comment", rationale: "The doc comment says it, where it's read." })
+// a few lines of code and the changes proposed for them, as an agent would
+// write them, and what the playground, as host, says of each proposal, the
+// projection working out the rest, so a case shows one thing; but the two
+// whose words are restyled, drawn from a view model written by hand, as a
+// text has no marks yet
 
 // what a ring says: its colour, what the change does; its dash, whether
 // only the look changes; its strength, whether it applies only if another
@@ -41,17 +37,16 @@ const kinds: _Section_Document_ = {
         question: "A line that only loses words isn't signed ~ on the lines as proposed, as nothing on it is ringed, so reading down the gutter it looks unchanged.",
         recommend: "Sign it ~: the view model knows the line changed, whatever's left on it to ring; the notch says where."
       },
-      viewModel_TextEditor: drawnOf({
+      viewModel_TextEditor: projectedOf({
         multilineText: "const ATTEMPTS = 5;\nconst DELAY_MS = 100; // in milliseconds",
         module_Language: module_JavaScript,
-        frames: [frameOf({
-          id: "unit",
-          range: { first: 2, last: 2 },
-          current: [lineOf("const DELAY_MS = 100;", ringed(" // in milliseconds", "before", "removed", "unit"))],
-          proposed: [lineOf("const DELAY_MS = 100;")],
-          items: [itemOf({ source: "unit", title: "Drop the unit comment", rationale: "DELAY_MS says its unit in its name." })]
-        })],
-        moves: []
+        proposed: [
+          { source: "unit", changes: [replacing([1, 0], [1, 40], "const DELAY_MS = 100;")] }
+        ],
+        proposals: [
+          proposalOf({ source: "unit", title: "Drop the unit comment", rationale: "DELAY_MS says its unit in its name." })
+        ],
+        ranges_Frame: []
       })
     },
     {
@@ -61,17 +56,16 @@ const kinds: _Section_Document_ = {
       size: "wide",
       drawn: "Green, round the new words on the lines as proposed. On the lines as they are there's nothing yet to ring, so nothing is.",
       open: null,
-      viewModel_TextEditor: drawnOf({
+      viewModel_TextEditor: projectedOf({
         multilineText: "for (let n = 1; n <= attempts; n++) {\n  if (n === attempts) break;\n}",
         module_Language: module_JavaScript,
-        frames: [frameOf({
-          id: "aborted",
-          range: { first: 2, last: 2 },
-          current: [lineOf("  if (n === attempts) break;")],
-          proposed: [lineOf("  if (n === attempts", ringed(" || signal?.aborted", "after", "inserted", "aborted"), ") break;")],
-          items: [itemOf({ source: "aborted", title: "Stop once the caller aborts", rationale: "Otherwise the loop sleeps a whole delay before it notices." })]
-        })],
-        moves: []
+        proposed: [
+          { source: "aborted", changes: [replacing([1, 20], [1, 20], " || signal?.aborted")] }
+        ],
+        proposals: [
+          proposalOf({ source: "aborted", title: "Stop once the caller aborts", rationale: "Otherwise the loop sleeps a whole delay before it notices." })
+        ],
+        ranges_Frame: []
       })
     },
     {
@@ -81,23 +75,16 @@ const kinds: _Section_Document_ = {
       size: "wide",
       drawn: "Yellow, round the words on both sides: what they are, and what they'd become.",
       open: null,
-      viewModel_TextEditor: drawnOf({
+      viewModel_TextEditor: projectedOf({
         multilineText: "export function backoff(n) {\n  return DELAY_MS * 2 ** (n - 1);\n}",
         module_Language: module_JavaScript,
-        frames: [frameOf({
-          id: "round",
-          range: { first: 1, last: 2 },
-          current: [
-            lineOf("export function backoff(", ringed("n", "before", "replaced", "round"), ") {"),
-            lineOf("  return DELAY_MS * 2 ** (", ringed("n", "before", "replaced", "round"), " - 1);"),
-          ],
-          proposed: [
-            lineOf("export function backoff(", ringed("round", "after", "replaced", "round"), ") {"),
-            lineOf("  return DELAY_MS * 2 ** (", ringed("round", "after", "replaced", "round"), " - 1);"),
-          ],
-          items: [item_Round]
-        })],
-        moves: []
+        proposed: [
+          { source: "round", changes: [replacing([0, 0], [1, 33], "export function backoff(round) {\n  return DELAY_MS * 2 ** (round - 1);")] }
+        ],
+        proposals: [
+          proposalOf({ source: "round", title: "Call the attempt counter round", rationale: "n says nothing; round says what it counts." })
+        ],
+        ranges_Frame: []
       })
     },
     {
@@ -147,23 +134,16 @@ const kinds: _Section_Document_ = {
       size: "wide",
       drawn: "Brown, at both its ends: numbered brown where it leaves, signed → where it lands, a note beside each end going to the other. Press a note to go there; point at one to light the ring at the other end.",
       open: null,
-      viewModel_TextEditor: drawnOf({
+      viewModel_TextEditor: projectedOf({
         multilineText: "function isRetryable(error) {\n  if (error instanceof TypeError) return true;\n  const status = error?.response?.status ?? 0;\n  return status === 429 || status >= 500;\n}",
         module_Language: module_JavaScript,
-        frames: [frameOf({
-          id: "status",
-          range: { first: 2, last: 3 },
-          current: [
-            lineOf("  if (error instanceof TypeError) return true;"),
-            lineOf(ringed("  const status = error?.response?.status ?? 0;", "before", "moved", "status")),
-          ],
-          proposed: [
-            lineOf(ringed("  const status = error?.response?.status ?? 0;", "after", "moved", "status")),
-            lineOf("  if (error instanceof TypeError) return true;"),
-          ],
-          items: [itemOf({ source: "status", title: "Work out the status first", rationale: "Then the function reads as its answers, top to bottom." })]
-        })],
-        moves: [{ source: "status", range: { first: 3, last: 3 }, to: 2 }]
+        proposed: [
+          { source: "status", changes: [moving([2, 0], [3, 0], [1, 0])] }
+        ],
+        proposals: [
+          proposalOf({ source: "status", title: "Work out the status first", rationale: "Then the function reads as its answers, top to bottom." })
+        ],
+        ranges_Frame: [{ first: 2, last: 3 }]
       })
     },
     {
@@ -173,20 +153,18 @@ const kinds: _Section_Document_ = {
       size: "wide",
       drawn: "The rename's place inside the removal is ringed at half strength: it applies only if the removal's rejected, and its item says so. On the lines as proposed, every proposal taken, it's gone with the removal.",
       open: null,
-      viewModel_TextEditor: drawnOf({
+      viewModel_TextEditor: projectedOf({
         multilineText: "  if (n === attempts) break;\n  onRetry?.(error, n);",
         module_Language: module_JavaScript,
-        frames: [frameOf({
-          id: "hook",
-          range: { first: 1, last: 2 },
-          current: [
-            lineOf("  if (", ringed("n", "before", "replaced", "round"), " === attempts) break;"),
-            lineOf(ringed("  onRetry?.(error, ", "before", "removed", "hook"), { text: "n", attributes: { ...attributesOf__Change({ side: "before", kind: "removed", source: "hook" }), ...attributesOf__Nested({ kind: "replaced", source: "round" }) } }, ringed(");", "before", "removed", "hook")),
-          ],
-          proposed: [lineOf("  if (", ringed("round", "after", "replaced", "round"), " === attempts) break;")],
-          items: [item_Hook, item_Round]
-        })],
-        moves: []
+        proposed: [
+          { source: "hook", changes: [replacing([0, 28], [1, 22], "")] },
+          { source: "round", changes: [replacing([0, 6], [0, 7], "round"), replacing([1, 19], [1, 20], "round")] }
+        ],
+        proposals: [
+          proposalOf({ source: "hook", title: "Drop the onRetry hook", rationale: "Nothing passes onRetry any more." }),
+          proposalOf({ source: "round", title: "Call the attempt counter round", rationale: "n says nothing; round says what it counts." })
+        ],
+        ranges_Frame: [{ first: 1, last: 2 }]
       })
     },
     {
@@ -196,23 +174,18 @@ const kinds: _Section_Document_ = {
       size: "wide",
       drawn: "Another proposal's change to words the move carries is ringed inside the move's ring at both its ends, at full strength: it applies wherever the words end up.",
       open: null,
-      viewModel_TextEditor: drawnOf({
+      viewModel_TextEditor: projectedOf({
         multilineText: "const DELAY_MS = 100;\nfunction sleep(ms) {}",
         module_Language: module_JavaScript,
-        frames: [frameOf({
-          id: "sleep",
-          range: { first: 1, last: 2 },
-          current: [
-            lineOf("const DELAY_MS = 100;"),
-            lineOf(ringed("function sleep(", "before", "moved", "sleep"), carried({ text: "ms", side: "before", move: "sleep", kind: "replaced", source: "delay" }), ringed(") {}", "before", "moved", "sleep")),
-          ],
-          proposed: [
-            lineOf(ringed("function sleep(", "after", "moved", "sleep"), carried({ text: "delayMs", side: "after", move: "sleep", kind: "replaced", source: "delay" }), ringed(") {}", "after", "moved", "sleep")),
-            lineOf("const DELAY_MS = 100;"),
-          ],
-          items: [item_Sleep, item_Delay]
-        })],
-        moves: [{ source: "sleep", range: { first: 2, last: 2 }, to: 1 }]
+        proposed: [
+          { source: "sleep", changes: [moving([0, 21], [1, 21], [0, 0])] },
+          { source: "delay", changes: [replacing([1, 15], [1, 17], "delayMs")] }
+        ],
+        proposals: [
+          proposalOf({ source: "sleep", title: "Move sleep up, beside the delays", rationale: "Read from the top, sleep comes before what waits on it." }),
+          proposalOf({ source: "delay", title: "Call sleep's ms delayMs", rationale: "The unit in the name, as DELAY_MS has it." })
+        ],
+        ranges_Frame: [{ first: 1, last: 2 }]
       })
     },
   ],
@@ -232,17 +205,16 @@ const shape: _Section_Document_ = {
       size: "wide",
       drawn: "Past its words' ink into the spaces either side, clear of the characters beyond. Nothing moves.",
       open: null,
-      viewModel_TextEditor: drawnOf({
+      viewModel_TextEditor: projectedOf({
         multilineText: "  const delay = DELAY_MS * 2;",
         module_Language: module_JavaScript,
-        frames: [frameOf({
-          id: "base",
-          range: { first: 1, last: 1 },
-          current: [lineOf("  const delay = ", ringed("DELAY_MS", "before", "replaced", "base"), " * 2;")],
-          proposed: [lineOf("  const delay = ", ringed("BASE_MS", "after", "replaced", "base"), " * 2;")],
-          items: [itemOf({ source: "base", title: "Call it the base delay", rationale: "It's where the doubling starts." })]
-        })],
-        moves: []
+        proposed: [
+          { source: "base", changes: [replacing([0, 0], [0, 29], "  const delay = BASE_MS * 2;")] }
+        ],
+        proposals: [
+          proposalOf({ source: "base", title: "Call it the base delay", rationale: "It's where the doubling starts." })
+        ],
+        ranges_Frame: []
       })
     },
     {
@@ -252,17 +224,16 @@ const shape: _Section_Document_ = {
       size: "wide",
       drawn: "Brackets press on both its ends, so the view makes the room the ring lacks: the text after it moves along a few pixels, and the ring is as far past its words, and as clear of the brackets, as anywhere.",
       open: null,
-      viewModel_TextEditor: drawnOf({
+      viewModel_TextEditor: projectedOf({
         multilineText: "    await sleep(backoff(n), signal);",
         module_Language: module_JavaScript,
-        frames: [frameOf({
-          id: "round",
-          range: { first: 1, last: 1 },
-          current: [lineOf("    await sleep(backoff(", ringed("n", "before", "replaced", "round"), "), signal);")],
-          proposed: [lineOf("    await sleep(backoff(", ringed("round", "after", "replaced", "round"), "), signal);")],
-          items: [item_Round]
-        })],
-        moves: []
+        proposed: [
+          { source: "round", changes: [replacing([0, 0], [0, 36], "    await sleep(backoff(round), signal);")] }
+        ],
+        proposals: [
+          proposalOf({ source: "round", title: "Call the attempt counter round", rationale: "n says nothing; round says what it counts." })
+        ],
+        ranges_Frame: []
       })
     },
     {
@@ -272,20 +243,18 @@ const shape: _Section_Document_ = {
       size: "wide",
       drawn: "One ring ends where the next starts. Each keeps its reach past its words, and the view makes room between them, so they're apart by twice the block inset and never touch, even pointed at.",
       open: null,
-      viewModel_TextEditor: drawnOf({
+      viewModel_TextEditor: projectedOf({
         multilineText: "  signal?.throwIfAborted();",
         module_Language: module_JavaScript,
-        frames: [frameOf({
-          id: "signal",
-          range: { first: 1, last: 1 },
-          current: [lineOf("  ", ringed("signal", "before", "replaced", "abort"), ringed("?", "before", "removed", "chain"), ".throwIfAborted();")],
-          proposed: [lineOf("  ", ringed("abortSignal", "after", "replaced", "abort"), ".throwIfAborted();")],
-          items: [
-            itemOf({ source: "abort", title: "Call it abortSignal", rationale: "As the DOM does." }),
-            itemOf({ source: "chain", title: "Drop the optional call", rationale: "signal is always given." }),
-          ]
-        })],
-        moves: []
+        proposed: [
+          { source: "abort", changes: [replacing([0, 2], [0, 8], "abortSignal")] },
+          { source: "chain", changes: [replacing([0, 8], [0, 9], "")] }
+        ],
+        proposals: [
+          proposalOf({ source: "abort", title: "Call it abortSignal", rationale: "As the DOM does." }),
+          proposalOf({ source: "chain", title: "Drop the optional call", rationale: "signal is always given." })
+        ],
+        ranges_Frame: []
       })
     },
     {
@@ -295,23 +264,16 @@ const shape: _Section_Document_ = {
       size: "wide",
       drawn: "Each ring stops short of its row's top and bottom, so rings on rows one over the other are apart, the room between lines being all there is.",
       open: null,
-      viewModel_TextEditor: drawnOf({
+      viewModel_TextEditor: projectedOf({
         multilineText: "const MIN_MS = 100;\nconst MAX_MS = 30_000;",
         module_Language: module_JavaScript,
-        frames: [frameOf({
-          id: "bounds",
-          range: { first: 1, last: 2 },
-          current: [
-            lineOf("const ", ringed("MIN_MS", "before", "replaced", "bounds"), " = 100;"),
-            lineOf("const ", ringed("MAX_MS", "before", "replaced", "bounds"), " = 30_000;"),
-          ],
-          proposed: [
-            lineOf("const ", ringed("FLOOR_MS", "after", "replaced", "bounds"), " = 100;"),
-            lineOf("const ", ringed("CEILING_MS", "after", "replaced", "bounds"), " = 30_000;"),
-          ],
-          items: [itemOf({ source: "bounds", title: "Name the bounds floor and ceiling", rationale: "They bound the delay, not the attempts." })]
-        })],
-        moves: []
+        proposed: [
+          { source: "bounds", changes: [replacing([0, 0], [1, 22], "const FLOOR_MS = 100;\nconst CEILING_MS = 30_000;")] }
+        ],
+        proposals: [
+          proposalOf({ source: "bounds", title: "Name the bounds floor and ceiling", rationale: "They bound the delay, not the attempts." })
+        ],
+        ranges_Frame: []
       })
     },
     {
@@ -321,20 +283,16 @@ const shape: _Section_Document_ = {
       size: "wide",
       drawn: "One shape over every line its words are on, its side stepping in and out with their ends, never by less than half an em.",
       open: null,
-      viewModel_TextEditor: drawnOf({
+      viewModel_TextEditor: projectedOf({
         multilineText: "export function backoff(n) {\n  const delay = DELAY_MS * 2 ** (n - 1);\n  return delay + Math.random() * (delay / 2);\n}",
         module_Language: module_JavaScript,
-        frames: [frameOf({
-          id: "jitter",
-          range: { first: 2, last: 3 },
-          current: [
-            lineOf(ringed("  const delay = DELAY_MS * 2 ** (n - 1);", "before", "replaced", "jitter")),
-            lineOf(ringed("  return delay + Math.random() * (delay / 2);", "before", "replaced", "jitter")),
-          ],
-          proposed: [lineOf(ringed("  return jittered(DELAY_MS * 2 ** (n - 1));", "after", "replaced", "jitter"))],
-          items: [itemOf({ source: "jitter", title: "Use the shared jitter", rationale: "Every client backs off the same way." })]
-        })],
-        moves: []
+        proposed: [
+          { source: "jitter", changes: [replacing([1, 0], [2, 45], "  return withJitter(n);")] }
+        ],
+        proposals: [
+          proposalOf({ source: "jitter", title: "Use the shared jitter", rationale: "Every client backs off the same way." })
+        ],
+        ranges_Frame: []
       })
     },
     {
@@ -344,17 +302,16 @@ const shape: _Section_Document_ = {
       size: "narrow",
       drawn: "Where a wrap cuts it, its sides at the cut are dashed, a dash at each end, so its two parts read as one.",
       open: null,
-      viewModel_TextEditor: drawnOf({
+      viewModel_TextEditor: projectedOf({
         multilineText: " * @param {{ attempts?: number, onRetry?: (error: unknown, n: number) => void }} [options]",
         module_Language: module_JavaScript,
-        frames: [frameOf({
-          id: "hook",
-          range: { first: 1, last: 1 },
-          current: [lineOf(" * @param {{ attempts?: number", ringed(", onRetry?: (error: unknown, n: number) => void", "before", "removed", "hook"), " }} [options]")],
-          proposed: [lineOf(" * @param {{ attempts?: number }} [options]")],
-          items: [item_Hook]
-        })],
-        moves: []
+        proposed: [
+          { source: "hook", changes: [replacing([0, 0], [0, 90], " * @param {{ attempts?: number }} [options]")] }
+        ],
+        proposals: [
+          proposalOf({ source: "hook", title: "Drop the onRetry hook", rationale: "Nothing passes onRetry any more." })
+        ],
+        ranges_Frame: []
       })
     },
     {
@@ -364,17 +321,18 @@ const shape: _Section_Document_ = {
       size: "wide",
       drawn: "The rename's ring starts where the move's does. It keeps its own reach past its words, and the move's ring reaches a nest further, with room made at that end for both, so the inner ring is as far inside on every side they share, and the two never meet, even pointed at.",
       open: null,
-      viewModel_TextEditor: drawnOf({
+      viewModel_TextEditor: projectedOf({
         multilineText: "    if (n === attempts || !isRetryable(error)) break;",
         module_Language: module_JavaScript,
-        frames: [frameOf({
-          id: "order",
-          range: { first: 1, last: 1 },
-          current: [lineOf("    if (", carried({ text: "n", side: "before", move: "order", kind: "replaced", source: "round" }), ringed(" === attempts", "before", "moved", "order"), " || ", ringed("!isRetryable(error)", "before", "moved", "order"), ") break;")],
-          proposed: [lineOf("    if (", ringed("!isRetryable(error)", "after", "moved", "order"), " || ", carried({ text: "round", side: "after", move: "order", kind: "replaced", source: "round" }), ringed(" === attempts", "after", "moved", "order"), ") break;")],
-          items: [item_Order, item_Round]
-        })],
-        moves: []
+        proposed: [
+          { source: "order", changes: [moving([0, 8], [0, 22], [0, 45]), moving([0, 26], [0, 45], [0, 8])] },
+          { source: "round", changes: [replacing([0, 8], [0, 9], "round")] }
+        ],
+        proposals: [
+          proposalOf({ source: "order", title: "Ask about the error before the round", rationale: "An error that can't be retried ends the loop in any round." }),
+          proposalOf({ source: "round", title: "Call the attempt counter round", rationale: "n says nothing; round says what it counts." })
+        ],
+        ranges_Frame: []
       })
     },
     {
@@ -384,17 +342,16 @@ const shape: _Section_Document_ = {
       size: "wide",
       drawn: "Its left end reaches past the first character into the gap before the text, so the line keeps its left edge.",
       open: null,
-      viewModel_TextEditor: drawnOf({
+      viewModel_TextEditor: projectedOf({
         multilineText: "export function backoff(n) {}",
         module_Language: module_JavaScript,
-        frames: [frameOf({
-          id: "private",
-          range: { first: 1, last: 1 },
-          current: [lineOf(ringed("export ", "before", "removed", "private"), "function backoff(n) {}")],
-          proposed: [lineOf("function backoff(n) {}")],
-          items: [itemOf({ source: "private", title: "Keep backoff to the module", rationale: "Nothing else calls it." })]
-        })],
-        moves: []
+        proposed: [
+          { source: "private", changes: [replacing([0, 0], [0, 29], "function backoff(n) {}")] }
+        ],
+        proposals: [
+          proposalOf({ source: "private", title: "Keep backoff to the module", rationale: "Nothing else calls it." })
+        ],
+        ranges_Frame: []
       })
     },
   ],
@@ -413,26 +370,16 @@ const moves: _Section_Document_ = {
       size: "wide",
       drawn: "Each end in a frame of its own, ringed brown. Where it leaves, its number's brown and its note says only moved; where it lands there are no lines as they are, only a point between two lines, its sign → and its note saying where it's from. The blank line before it goes with it, said only in the gutter, having no words to ring. Press a note to go to the other end; point at it to light that end's ring.",
       open: null,
-      viewModel_TextEditor: drawnOf({
+      viewModel_TextEditor: projectedOf({
         multilineText: "const DELAY_MS = 100;\n\nexport function retry(attempt) {}\n\nfunction sleep(ms) {}",
         module_Language: module_JavaScript,
-        frames: [
-          frameOf({
-            id: "landing",
-            range: { first: 2, last: 1 },
-            current: [],
-            proposed: [blankOf("moved"), lineOf(ringed("function sleep(ms) {}", "after", "moved", "sleep"))],
-            items: [item_Sleep]
-          }),
-          frameOf({
-            id: "leaving",
-            range: { first: 4, last: 5 },
-            current: [blankOf("moved"), lineOf(ringed("function sleep(ms) {}", "before", "moved", "sleep"))],
-            proposed: [],
-            items: [item_Sleep]
-          }),
+        proposed: [
+          { source: "sleep", changes: [moving([2, 33], [4, 21], [1, 0])] }
         ],
-        moves: [{ source: "sleep", range: { first: 4, last: 5 }, to: 2 }]
+        proposals: [
+          proposalOf({ source: "sleep", title: "Move sleep up, beside the delays", rationale: "Read from the top, sleep comes before what waits on it." })
+        ],
+        ranges_Frame: []
       })
     },
     {
@@ -442,17 +389,16 @@ const moves: _Section_Document_ = {
       size: "wide",
       drawn: "Each operand ringed brown at both its ends, on one line as it is and as proposed. The || between them isn't ringed, as it stays where it is.",
       open: null,
-      viewModel_TextEditor: drawnOf({
+      viewModel_TextEditor: projectedOf({
         multilineText: "    if (n === attempts || !isRetryable(error)) break;",
         module_Language: module_JavaScript,
-        frames: [frameOf({
-          id: "order",
-          range: { first: 1, last: 1 },
-          current: [lineOf("    if (", ringed("n === attempts", "before", "moved", "order"), " || ", ringed("!isRetryable(error)", "before", "moved", "order"), ") break;")],
-          proposed: [lineOf("    if (", ringed("!isRetryable(error)", "after", "moved", "order"), " || ", ringed("n === attempts", "after", "moved", "order"), ") break;")],
-          items: [item_Order]
-        })],
-        moves: []
+        proposed: [
+          { source: "order", changes: [moving([0, 8], [0, 22], [0, 45]), moving([0, 26], [0, 45], [0, 8])] }
+        ],
+        proposals: [
+          proposalOf({ source: "order", title: "Ask about the error before the round", rationale: "An error that can't be retried ends the loop in any round." })
+        ],
+        ranges_Frame: []
       })
     },
   ],
@@ -471,21 +417,16 @@ const lines: _Section_Document_ = {
       size: "wide",
       drawn: "Ringed red, its number red. On the lines as proposed it's gone: a notch on the frame's bar, at the boundary where it was, marks where.",
       open: null,
-      viewModel_TextEditor: drawnOf({
+      viewModel_TextEditor: projectedOf({
         multilineText: "  if (n === attempts) break;\n  onRetry?.(error, n);\n  await sleep(backoff(n));",
         module_Language: module_JavaScript,
-        frames: [frameOf({
-          id: "hook",
-          range: { first: 1, last: 3 },
-          current: [
-            lineOf("  if (n === attempts) break;"),
-            lineOf(ringed("  onRetry?.(error, n);", "before", "removed", "hook")),
-            lineOf("  await sleep(backoff(n));"),
-          ],
-          proposed: [lineOf("  if (n === attempts) break;"), lineOf("  await sleep(backoff(n));")],
-          items: [item_Hook]
-        })],
-        moves: []
+        proposed: [
+          { source: "hook", changes: [replacing([1, 0], [2, 0], "")] }
+        ],
+        proposals: [
+          proposalOf({ source: "hook", title: "Drop the onRetry hook", rationale: "Nothing passes onRetry any more." })
+        ],
+        ranges_Frame: [{ first: 1, last: 3 }]
       })
     },
     {
@@ -495,21 +436,16 @@ const lines: _Section_Document_ = {
       size: "wide",
       drawn: "Ringed green, signed + in the gutter.",
       open: null,
-      viewModel_TextEditor: drawnOf({
+      viewModel_TextEditor: projectedOf({
         multilineText: "  const delay = DELAY_MS * 2 ** (n - 1);\n  return delay;",
         module_Language: module_JavaScript,
-        frames: [frameOf({
-          id: "cap",
-          range: { first: 1, last: 2 },
-          current: [lineOf("  const delay = DELAY_MS * 2 ** (n - 1);"), lineOf("  return delay;")],
-          proposed: [
-            lineOf("  const delay = DELAY_MS * 2 ** (n - 1);"),
-            lineOf(ringed("  const capped = Math.min(delay, 30_000);", "after", "inserted", "cap")),
-            lineOf("  return ", ringed("capped", "after", "replaced", "cap"), ";"),
-          ],
-          items: [item_Cap]
-        })],
-        moves: []
+        proposed: [
+          { source: "cap", changes: [replacing([1, 0], [1, 15], "  const capped = Math.min(delay, 30_000);\n  return capped;")] }
+        ],
+        proposals: [
+          proposalOf({ source: "cap", title: "Cap the delay at 30 seconds", rationale: "A long outage never goes quiet for longer than half a minute." })
+        ],
+        ranges_Frame: [{ first: 1, last: 2 }]
       })
     },
     {
@@ -519,17 +455,16 @@ const lines: _Section_Document_ = {
       size: "wide",
       drawn: "Having no words to ring, it says it only in the gutter, its number red.",
       open: null,
-      viewModel_TextEditor: drawnOf({
+      viewModel_TextEditor: projectedOf({
         multilineText: "const ATTEMPTS = 5;\n\n\nconst DELAY_MS = 100;",
         module_Language: module_JavaScript,
-        frames: [frameOf({
-          id: "gap",
-          range: { first: 2, last: 3 },
-          current: [blankOf("removed"), lineOf("")],
-          proposed: [lineOf("")],
-          items: [itemOf({ source: "gap", title: "One blank line between constants", rationale: "As everywhere else in the file." })]
-        })],
-        moves: []
+        proposed: [
+          { source: "gap", changes: [replacing([1, 0], [2, 0], "")] }
+        ],
+        proposals: [
+          proposalOf({ source: "gap", title: "One blank line between constants", rationale: "As everywhere else in the file." })
+        ],
+        ranges_Frame: [{ first: 2, last: 3 }]
       })
     },
     {
@@ -539,21 +474,16 @@ const lines: _Section_Document_ = {
       size: "wide",
       drawn: "The lines as proposed have no lines, so the frame goes from its lines as they are straight to its list; folded, it's a slim strip. The ring over the three lines steps with their ends.",
       open: null,
-      viewModel_TextEditor: drawnOf({
+      viewModel_TextEditor: projectedOf({
         multilineText: "export function backoff(n) {\n  if (n < 1) {\n    throw new RangeError(\"n starts at 1\");\n  }\n  return DELAY_MS * 2 ** (n - 1);\n}",
         module_Language: module_JavaScript,
-        frames: [frameOf({
-          id: "check",
-          range: { first: 2, last: 4 },
-          current: [
-            lineOf(ringed("  if (n < 1) {", "before", "removed", "check")),
-            lineOf(ringed("    throw new RangeError(\"n starts at 1\");", "before", "removed", "check")),
-            lineOf(ringed("  }", "before", "removed", "check")),
-          ],
-          proposed: [],
-          items: [item_Check]
-        })],
-        moves: []
+        proposed: [
+          { source: "check", changes: [replacing([1, 0], [4, 0], "")] }
+        ],
+        proposals: [
+          proposalOf({ source: "check", title: "Drop the range check", rationale: "Every caller counts from 1." })
+        ],
+        ranges_Frame: []
       })
     },
   ],
@@ -572,32 +502,16 @@ const threads: _Section_Document_ = {
       size: "wide",
       drawn: "Each frame lists it, saying how many of its places are there, of how many. Point at any of its places, or its item, to light them all, in every frame.",
       open: null,
-      viewModel_TextEditor: drawnOf({
+      viewModel_TextEditor: projectedOf({
         multilineText: "export function backoff(n) {\n  return DELAY_MS * 2 ** (n - 1);\n}\n\nfor (let n = 1; n <= attempts; n++) {}",
         module_Language: module_JavaScript,
-        frames: [
-          frameOf({
-            id: "backoff",
-            range: { first: 1, last: 2 },
-            current: [
-              lineOf("export function backoff(", ringed("n", "before", "replaced", "round"), ") {"),
-              lineOf("  return DELAY_MS * 2 ** (", ringed("n", "before", "replaced", "round"), " - 1);"),
-            ],
-            proposed: [
-              lineOf("export function backoff(", ringed("round", "after", "replaced", "round"), ") {"),
-              lineOf("  return DELAY_MS * 2 ** (", ringed("round", "after", "replaced", "round"), " - 1);"),
-            ],
-            items: [item_Round]
-          }),
-          frameOf({
-            id: "loop",
-            range: { first: 5, last: 5 },
-            current: [lineOf("for (let ", ringed("n", "before", "replaced", "round"), " = 1; ", ringed("n", "before", "replaced", "round"), " <= attempts; ", ringed("n", "before", "replaced", "round"), "++) {}")],
-            proposed: [lineOf("for (let ", ringed("round", "after", "replaced", "round"), " = 1; ", ringed("round", "after", "replaced", "round"), " <= attempts; ", ringed("round", "after", "replaced", "round"), "++) {}")],
-            items: [item_Round]
-          }),
+        proposed: [
+          { source: "round", changes: [replacing([0, 0], [1, 33], "export function backoff(round) {\n  return DELAY_MS * 2 ** (round - 1);"), replacing([4, 0], [4, 38], "for (let round = 1; round <= attempts; round++) {}")] }
         ],
-        moves: []
+        proposals: [
+          proposalOf({ source: "round", title: "Call the attempt counter round", rationale: "n says nothing; round says what it counts." })
+        ],
+        ranges_Frame: []
       })
     },
   ],
@@ -616,26 +530,18 @@ const pointing: _Section_Document_ = {
       size: "wide",
       drawn: "Point at a ring: every ring of its proposal heavier, breathing together, in every frame; the change under the pointer heavier again, both its sides, a faint light running round each, clockwise as proposed and counterclockwise as it is, both in step. The gutter's labels of its lines are drawn heavier too, by a stroke, so nothing moves. Point at an item to light its proposal the same way.",
       open: null,
-      viewModel_TextEditor: drawnOf({
+      viewModel_TextEditor: projectedOf({
         multilineText: "export function backoff(n) {\n  const delay = DELAY_MS * 2 ** (n - 1);\n  return delay + Math.random() * (delay / 2);\n}",
         module_Language: module_JavaScript,
-        frames: [frameOf({
-          id: "backoff",
-          range: { first: 1, last: 3 },
-          current: [
-            lineOf("export function backoff(", ringed("n", "before", "replaced", "round"), ") {"),
-            lineOf("  const delay = DELAY_MS * 2 ** (", ringed("n", "before", "replaced", "round"), " - 1);"),
-            lineOf("  return ", ringed("delay", "before", "replaced", "cap"), " + Math.random() * (", ringed("delay", "before", "replaced", "cap"), " / 2);"),
-          ],
-          proposed: [
-            lineOf("export function backoff(", ringed("round", "after", "replaced", "round"), ") {"),
-            lineOf("  const delay = DELAY_MS * 2 ** (", ringed("round", "after", "replaced", "round"), " - 1);"),
-            lineOf(ringed("  const capped = Math.min(delay, 30_000);", "after", "inserted", "cap")),
-            lineOf("  return ", ringed("capped", "after", "replaced", "cap"), " + Math.random() * (", ringed("capped", "after", "replaced", "cap"), " / 2);"),
-          ],
-          items: [item_Round, item_Cap]
-        })],
-        moves: []
+        proposed: [
+          { source: "round", changes: [replacing([0, 0], [1, 40], "export function backoff(round) {\n  const delay = DELAY_MS * 2 ** (round - 1);")] },
+          { source: "cap", changes: [replacing([2, 0], [2, 45], "  const capped = Math.min(delay, 30_000);\n  return capped + Math.random() * (capped / 2);")] }
+        ],
+        proposals: [
+          proposalOf({ source: "round", title: "Call the attempt counter round", rationale: "n says nothing; round says what it counts." }),
+          proposalOf({ source: "cap", title: "Cap the delay at 30 seconds", rationale: "A long outage never goes quiet for longer than half a minute." })
+        ],
+        ranges_Frame: [{ first: 1, last: 3 }]
       })
     },
   ],
@@ -654,26 +560,18 @@ const folding: _Section_Document_ = {
       size: "wide",
       drawn: "Hover the frame to see its chevron, left of its first line, and press it, or the bar, to fold it: its lines as proposed alone, no rings, no list. Hover the chevron to peek: every ring in it, plain, with room made for them. Press it again to unfold.",
       open: null,
-      viewModel_TextEditor: drawnOf({
+      viewModel_TextEditor: projectedOf({
         multilineText: "export function backoff(n) {\n  const delay = DELAY_MS * 2 ** (n - 1);\n  return delay;\n}",
         module_Language: module_JavaScript,
-        frames: [frameOf({
-          id: "backoff",
-          range: { first: 1, last: 3 },
-          current: [
-            lineOf("export function backoff(", ringed("n", "before", "replaced", "round"), ") {"),
-            lineOf("  const delay = DELAY_MS * 2 ** (", ringed("n", "before", "replaced", "round"), " - 1);"),
-            lineOf("  return delay;"),
-          ],
-          proposed: [
-            lineOf("export function backoff(", ringed("round", "after", "replaced", "round"), ") {"),
-            lineOf("  const delay = DELAY_MS * 2 ** (", ringed("round", "after", "replaced", "round"), " - 1);"),
-            lineOf(ringed("  const capped = Math.min(delay, 30_000);", "after", "inserted", "cap")),
-            lineOf("  return ", ringed("capped", "after", "replaced", "cap"), ";"),
-          ],
-          items: [item_Round, item_Cap]
-        })],
-        moves: []
+        proposed: [
+          { source: "round", changes: [replacing([0, 0], [1, 40], "export function backoff(round) {\n  const delay = DELAY_MS * 2 ** (round - 1);")] },
+          { source: "cap", changes: [replacing([2, 0], [2, 15], "  const capped = Math.min(delay, 30_000);\n  return capped;")] }
+        ],
+        proposals: [
+          proposalOf({ source: "round", title: "Call the attempt counter round", rationale: "n says nothing; round says what it counts." }),
+          proposalOf({ source: "cap", title: "Cap the delay at 30 seconds", rationale: "A long outage never goes quiet for longer than half a minute." })
+        ],
+        ranges_Frame: [{ first: 1, last: 3 }]
       })
     },
     {
@@ -683,20 +581,16 @@ const folding: _Section_Document_ = {
       size: "wide",
       drawn: "Fold it: with nothing left to show, it's a slim strip, its bar and chevron in it.",
       open: null,
-      viewModel_TextEditor: drawnOf({
+      viewModel_TextEditor: projectedOf({
         multilineText: "// Retries a flaky async call, backing off each time,\n// until it succeeds, or the caller gives up on it.\n\nconst ATTEMPTS = 5;",
         module_Language: module_JavaScript,
-        frames: [frameOf({
-          id: "header",
-          range: { first: 1, last: 2 },
-          current: [
-            lineOf(ringed("// Retries a flaky async call, backing off each time,", "before", "removed", "header")),
-            lineOf(ringed("// until it succeeds, or the caller gives up on it.", "before", "removed", "header")),
-          ],
-          proposed: [],
-          items: [item_Header]
-        })],
-        moves: []
+        proposed: [
+          { source: "header", changes: [replacing([0, 0], [2, 0], "")] }
+        ],
+        proposals: [
+          proposalOf({ source: "header", title: "Drop the opening comment", rationale: "The doc comment says it, where it's read." })
+        ],
+        ranges_Frame: []
       })
     },
   ],
@@ -717,17 +611,16 @@ const marks: _Section_Document_ = {
       size: "wide",
       drawn: "A notch on the point between the two closing brackets, over the row, its tip down on the point, filled in the removal's red. It takes no room, so nothing moves.",
       open: null,
-      viewModel_TextEditor: drawnOf({
+      viewModel_TextEditor: projectedOf({
         multilineText: "    await sleep(backoff(n), signal);",
         module_Language: module_JavaScript,
-        frames: [frameOf({
-          id: "signal",
-          range: { first: 1, last: 1 },
-          current: [lineOf("    await sleep(backoff(n)", ringed(", signal", "before", "removed", "signal"), ");")],
-          proposed: [lineOf("    await sleep(backoff(n));")],
-          items: [itemOf({ source: "signal", title: "Don't pass the signal to sleep", rationale: "The loop checks it itself." })]
-        })],
-        moves: []
+        proposed: [
+          { source: "signal", changes: [replacing([0, 0], [0, 36], "    await sleep(backoff(n));")] }
+        ],
+        proposals: [
+          proposalOf({ source: "signal", title: "Don't pass the signal to sleep", rationale: "The loop checks it itself." })
+        ],
+        ranges_Frame: []
       })
     },
     {
@@ -737,21 +630,16 @@ const marks: _Section_Document_ = {
       size: "wide",
       drawn: "A notch in the gutter, cut into the frame's bar at the boundary between the two lines left, its tip toward the text, as a notch in a line points down at its point. The bar is the frame's own lane, where nothing else is drawn, so the notch reads as lines cut out of the frame. It's found reading down the gutter, as every other change is; it takes no room; and nothing's drawn near the text for it, so it's never taken for an underline.",
       open: null,
-      viewModel_TextEditor: drawnOf({
+      viewModel_TextEditor: projectedOf({
         multilineText: "  if (n === attempts) break;\n  onRetry?.(error, n);\n  await sleep(backoff(n));",
         module_Language: module_JavaScript,
-        frames: [frameOf({
-          id: "hook",
-          range: { first: 1, last: 3 },
-          current: [
-            lineOf("  if (n === attempts) break;"),
-            lineOf(ringed("  onRetry?.(error, n);", "before", "removed", "hook")),
-            lineOf("  await sleep(backoff(n));"),
-          ],
-          proposed: [lineOf("  if (n === attempts) break;"), lineOf("  await sleep(backoff(n));")],
-          items: [item_Hook]
-        })],
-        moves: []
+        proposed: [
+          { source: "hook", changes: [replacing([1, 0], [2, 0], "")] }
+        ],
+        proposals: [
+          proposalOf({ source: "hook", title: "Drop the onRetry hook", rationale: "Nothing passes onRetry any more." })
+        ],
+        ranges_Frame: [{ first: 1, last: 3 }]
       })
     },
     {
@@ -761,20 +649,18 @@ const marks: _Section_Document_ = {
       size: "wide",
       drawn: "Two proposals take out words that meet, so both fall on one point. Now: a notch each, drawn one over the other, so they look like one, and pointing finds only one of them. Planned: one notch for both, as several removals on one point always share one, in a line or between lines; pointing at it lights both removals, and its hover shows what each took out, in the order it was.",
       open: null,
-      viewModel_TextEditor: drawnOf({
+      viewModel_TextEditor: projectedOf({
         multilineText: "function retry(attempt, options, legacy) {}",
         module_Language: module_JavaScript,
-        frames: [frameOf({
-          id: "params",
-          range: { first: 1, last: 1 },
-          current: [lineOf("function retry(attempt", ringed(", options", "before", "removed", "options"), ringed(", legacy", "before", "removed", "legacy"), ") {}")],
-          proposed: [lineOf("function retry(attempt) {}")],
-          items: [
-            itemOf({ source: "options", title: "Drop the options", rationale: "Every caller uses the defaults." }),
-            itemOf({ source: "legacy", title: "Drop the legacy flag", rationale: "The old path is gone." }),
-          ]
-        })],
-        moves: []
+        proposed: [
+          { source: "options", changes: [replacing([0, 22], [0, 31], "")] },
+          { source: "legacy", changes: [replacing([0, 31], [0, 39], "")] }
+        ],
+        proposals: [
+          proposalOf({ source: "options", title: "Drop the options", rationale: "Every caller uses the defaults." }),
+          proposalOf({ source: "legacy", title: "Drop the legacy flag", rationale: "The old path is gone." })
+        ],
+        ranges_Frame: []
       })
     },
     {
@@ -784,20 +670,18 @@ const marks: _Section_Document_ = {
       size: "wide",
       drawn: "Now: the notch beside the rename's ring, where its edge may touch the notch. Planned: the words after it moved along a few pixels so the ring's edge clears the notch, as two rings beside each other are kept apart.",
       open: null,
-      viewModel_TextEditor: drawnOf({
+      viewModel_TextEditor: projectedOf({
         multilineText: "  signal?.throwIfAborted();",
         module_Language: module_JavaScript,
-        frames: [frameOf({
-          id: "signal",
-          range: { first: 1, last: 1 },
-          current: [lineOf("  ", ringed("signal", "before", "replaced", "abort"), ringed("?", "before", "removed", "chain"), ".throwIfAborted();")],
-          proposed: [lineOf("  ", ringed("abortSignal", "after", "replaced", "abort"), ".throwIfAborted();")],
-          items: [
-            itemOf({ source: "abort", title: "Call it abortSignal", rationale: "As the DOM does." }),
-            itemOf({ source: "chain", title: "Drop the optional call", rationale: "signal is always given." }),
-          ]
-        })],
-        moves: []
+        proposed: [
+          { source: "abort", changes: [replacing([0, 2], [0, 8], "abortSignal")] },
+          { source: "chain", changes: [replacing([0, 8], [0, 9], "")] }
+        ],
+        proposals: [
+          proposalOf({ source: "abort", title: "Call it abortSignal", rationale: "As the DOM does." }),
+          proposalOf({ source: "chain", title: "Drop the optional call", rationale: "signal is always given." })
+        ],
+        ranges_Frame: []
       })
     },
     {
@@ -807,23 +691,18 @@ const marks: _Section_Document_ = {
       size: "wide",
       drawn: "Another proposal takes words out of what the move carries. Now: no notch, as where those words were is at the move's other end. Planned: where the move lands, the notch hangs from the brown ring's top edge, a notch cut in the move's ring where words were taken out of it.",
       open: null,
-      viewModel_TextEditor: drawnOf({
+      viewModel_TextEditor: projectedOf({
         multilineText: "const DELAY_MS = 100;\nfunction sleep(ms, signal) {}",
         module_Language: module_JavaScript,
-        frames: [frameOf({
-          id: "sleep",
-          range: { first: 1, last: 2 },
-          current: [
-            lineOf("const DELAY_MS = 100;"),
-            lineOf(ringed("function sleep(ms", "before", "moved", "sleep"), carried({ text: ", signal", side: "before", move: "sleep", kind: "removed", source: "signal" }), ringed(") {}", "before", "moved", "sleep")),
-          ],
-          proposed: [
-            lineOf(ringed("function sleep(ms) {}", "after", "moved", "sleep")),
-            lineOf("const DELAY_MS = 100;"),
-          ],
-          items: [item_Sleep, itemOf({ source: "signal", title: "Drop sleep's signal", rationale: "The loop checks it itself." })]
-        })],
-        moves: [{ source: "sleep", range: { first: 2, last: 2 }, to: 1 }]
+        proposed: [
+          { source: "sleep", changes: [moving([0, 21], [1, 29], [0, 0])] },
+          { source: "signal", changes: [replacing([1, 17], [1, 25], "")] }
+        ],
+        proposals: [
+          proposalOf({ source: "sleep", title: "Move sleep up, beside the delays", rationale: "Read from the top, sleep comes before what waits on it." }),
+          proposalOf({ source: "signal", title: "Drop sleep's signal", rationale: "The loop checks it itself." })
+        ],
+        ranges_Frame: [{ first: 1, last: 2 }]
       })
     },
     {
@@ -833,20 +712,16 @@ const marks: _Section_Document_ = {
       size: "wide",
       drawn: "The lines as proposed have no lines, so the frame goes from its lines as they are straight to its list. The whole frame is a removal, and its empty band says so, so there's no notch, on the bar or anywhere: one there would say nothing more. Folded, it's a slim strip.",
       open: null,
-      viewModel_TextEditor: drawnOf({
+      viewModel_TextEditor: projectedOf({
         multilineText: "// Retries a flaky async call, backing off each time,\n// until it succeeds, or the caller gives up on it.\n\nconst ATTEMPTS = 5;",
         module_Language: module_JavaScript,
-        frames: [frameOf({
-          id: "header",
-          range: { first: 1, last: 2 },
-          current: [
-            lineOf(ringed("// Retries a flaky async call, backing off each time,", "before", "removed", "header")),
-            lineOf(ringed("// until it succeeds, or the caller gives up on it.", "before", "removed", "header")),
-          ],
-          proposed: [],
-          items: [item_Header]
-        })],
-        moves: []
+        proposed: [
+          { source: "header", changes: [replacing([0, 0], [2, 0], "")] }
+        ],
+        proposals: [
+          proposalOf({ source: "header", title: "Drop the opening comment", rationale: "The doc comment says it, where it's read." })
+        ],
+        ranges_Frame: []
       })
     },
     {
@@ -856,17 +731,16 @@ const marks: _Section_Document_ = {
       size: "wide",
       drawn: "The document ends at line 3, with no line break after it, so the removal takes the line break before its lines: by position it ends at the end of line 1, a point in a line. It takes whole lines, so it's a notch on the bar, below the last line left: the view model decides by what was taken, not by where the line breaks fall.",
       open: null,
-      viewModel_TextEditor: drawnOf({
+      viewModel_TextEditor: projectedOf({
         multilineText: "function sleep(ms) {}\n\nexport { sleep };",
         module_Language: module_JavaScript,
-        frames: [frameOf({
-          id: "exports",
-          range: { first: 1, last: 3 },
-          current: [lineOf("function sleep(ms) {}"), blankOf("removed"), lineOf(ringed("export { sleep };", "before", "removed", "exports"))],
-          proposed: [lineOf("function sleep(ms) {}")],
-          items: [itemOf({ source: "exports", title: "Drop the export", rationale: "sleep is the module's own." })]
-        })],
-        moves: []
+        proposed: [
+          { source: "exports", changes: [replacing([0, 21], [2, 17], "")] }
+        ],
+        proposals: [
+          proposalOf({ source: "exports", title: "Drop the export", rationale: "sleep is the module's own." })
+        ],
+        ranges_Frame: [{ first: 1, last: 3 }]
       })
     },
     {
@@ -888,17 +762,16 @@ const marks: _Section_Document_ = {
         question: "Re-indenting a block marks every line in it, which may be more noise than help.",
         recommend: "Draw them: text is text. Whoever derives the proposals can say a re-indent is one change, and the editor draws what it's given."
       },
-      viewModel_TextEditor: drawnOf({
+      viewModel_TextEditor: projectedOf({
         multilineText: "    signal?.throwIfAborted();",
         module_Language: module_JavaScript,
-        frames: [frameOf({
-          id: "indent",
-          range: { first: 1, last: 1 },
-          current: [lineOf(ringed("  ", "before", "removed", "indent"), "  signal?.throwIfAborted();")],
-          proposed: [lineOf("  signal?.throwIfAborted();")],
-          items: [itemOf({ source: "indent", title: "Indent by two", rationale: "As the rest of the file is." })]
-        })],
-        moves: []
+        proposed: [
+          { source: "indent", changes: [replacing([0, 0], [0, 2], "")] }
+        ],
+        proposals: [
+          proposalOf({ source: "indent", title: "Indent by two", rationale: "As the rest of the file is." })
+        ],
+        ranges_Frame: []
       })
     },
     {
@@ -911,20 +784,16 @@ const marks: _Section_Document_ = {
         question: "This loses the sign that whole lines went. It could instead be drawn as a notch in the gutter for the whole lines and a notch in the text for the rest.",
         recommend: "One notch, in the text, where its text was: one removal, one other side. How much went is for its ring to show, on the lines as they are."
       },
-      viewModel_TextEditor: drawnOf({
+      viewModel_TextEditor: projectedOf({
         multilineText: "// 100ms, 200ms, 400ms, and so on,\n// up to half as long again",
         module_Language: module_JavaScript,
-        frames: [frameOf({
-          id: "words",
-          range: { first: 1, last: 2 },
-          current: [
-            lineOf(ringed("// 100ms, 200ms, 400ms, and so on,", "before", "removed", "words")),
-            lineOf(ringed("// ", "before", "removed", "words"), "up to half as long again"),
-          ],
-          proposed: [lineOf("up to half as long again")],
-          items: [itemOf({ source: "words", title: "Shorten the comment", rationale: "The numbers are in the code." })]
-        })],
-        moves: []
+        proposed: [
+          { source: "words", changes: [replacing([0, 0], [1, 3], "")] }
+        ],
+        proposals: [
+          proposalOf({ source: "words", title: "Shorten the comment", rationale: "The numbers are in the code." })
+        ],
+        ranges_Frame: []
       })
     },
     {
@@ -934,23 +803,18 @@ const marks: _Section_Document_ = {
       size: "wide",
       drawn: "Taking export from line 2's start, and taking line 1 whole, leave the same place in the text, the start of line 2, as proposed: a notch over column 0 for the words, a notch on the bar above the line for the line. The view model says which: each removal's other side is an underlay of a kind of its own, a point in a line or a boundary between lines, beside the stretch a ring goes round, with the removal's data, sharing its place, as every change's other side does. The view draws each kind as its map of kinds says.",
       open: null,
-      viewModel_TextEditor: drawnOf({
+      viewModel_TextEditor: projectedOf({
         multilineText: "// backoff\nexport function backoff(n) {}",
         module_Language: module_JavaScript,
-        frames: [frameOf({
-          id: "exports",
-          range: { first: 1, last: 2 },
-          current: [
-            lineOf(ringed("// backoff", "before", "removed", "comment")),
-            lineOf(ringed("export ", "before", "removed", "private"), "function backoff(n) {}"),
-          ],
-          proposed: [lineOf("function backoff(n) {}")],
-          items: [
-            itemOf({ source: "comment", title: "Drop the comment", rationale: "The name says it." }),
-            itemOf({ source: "private", title: "Keep backoff to the module", rationale: "Nothing else calls it." }),
-          ]
-        })],
-        moves: []
+        proposed: [
+          { source: "comment", changes: [replacing([0, 0], [1, 0], "")] },
+          { source: "private", changes: [replacing([1, 0], [1, 7], "")] }
+        ],
+        proposals: [
+          proposalOf({ source: "comment", title: "Drop the comment", rationale: "The name says it." }),
+          proposalOf({ source: "private", title: "Keep backoff to the module", rationale: "Nothing else calls it." })
+        ],
+        ranges_Frame: [{ first: 1, last: 2 }]
       })
     },
   ],
@@ -959,7 +823,7 @@ const marks: _Section_Document_ = {
 const changes: _Document_ = {
   name: "changes",
   title: "Changes",
-  about: "Every case of how the view draws a change, enumerated: the rings round words, and the marks planned for where words are taken out. Each case is drawn by the editor, in the changes perspective, from a view model written by hand; under it, what it shows, and what's still to decide. Normal cases are the usual; edge cases, where something presses on the usual; planned ones, settled but not built, drawn as the view draws them now. Point at changes and items, and fold frames, as the cases say.",
+  about: "Every case of how the view draws a change, enumerated: the rings round words, and the marks planned for where words are taken out. Each case is drawn by the editor, in the changes perspective, from a few lines and the changes proposed for them, as an agent would write them, the editor working out what to draw; but two, whose words are restyled, from a view model written by hand, as a text has no marks yet; under it, what it shows, and what's still to decide. Normal cases are the usual; edge cases, where something presses on the usual; planned ones, settled but not built, drawn as the view draws them now. Point at changes and items, and fold frames, as the cases say.",
   sections: [kinds, shape, moves, lines, threads, pointing, folding, marks],
 }
 
@@ -985,6 +849,41 @@ function drawnOf<State>({
     frames,
     moves
   }))
+}
+
+// a span of a case's lines, from a line and a character in it to another,
+// each from 0, and what it becomes
+function replacing(
+  from: [number, number],
+  to: [number, number],
+  multilineText: string
+): _Change_Host_ {
+  return { kind: "REPLACE", range: { from: { line: from[0], offset: from[1] }, to: { line: to[0], offset: to[1] } }, multilineText }
+}
+
+// a span of a case's lines taken from where it is and put at another place
+function moving(
+  from: [number, number],
+  to: [number, number],
+  at: [number, number]
+): _Change_Host_ {
+  return { kind: "MOVE", range: { from: { line: from[0], offset: from[1] }, to: { line: to[0], offset: to[1] } }, at: { line: at[0], offset: at[1] } }
+}
+
+interface _Api___proposalOf_ {
+  source: string
+  title: string
+  rationale: string
+}
+
+// what the playground, as host, says of a proposal: open, with its review
+// actions
+function proposalOf({
+  source,
+  title,
+  rationale
+}: _Api___proposalOf_): _Proposal_Host_ {
+  return { source, title, state: "OPEN", status: "", rationale, request: "", actions: actions_Review, attributes: {} }
 }
 
 interface _Api___frameOf_ {
@@ -1024,27 +923,6 @@ function ringed(
   source: string
 ): _Marked_Piece_ {
   return { text, attributes: attributesOf__Change({ side, kind, source }) }
-}
-
-interface _Api___carried_ {
-  text: string
-  side: _Side_Change_
-  move: string
-  kind: _Kind_Change_
-  source: string
-}
-
-// a stretch another proposal changes inside what a move carries: the
-// move's, with the change under names of its own
-function carried({
-  text,
-  side,
-  move,
-  kind,
-  source
-}: _Api___carried_): _Marked_Piece_ {
-  const attributes: _Attributes_Element_ = { ...attributesOf__Change({ side, kind: "moved", source: move }), ...attributesOf__Edit({ kind, source }) }
-  return { text, attributes }
 }
 
 interface _Api___itemOf_ {

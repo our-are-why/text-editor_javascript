@@ -1,18 +1,18 @@
 import type { _Scene_ } from "../scene.ts"
-import { parseTexts_Line, viewModelOf__Blocks, MODULE_PLAINTEXT } from "../../source/ViewModel_TextEditor.ts"
+import { MODULE_PLAINTEXT } from "../../source/ViewModel_TextEditor.ts"
+import { parseTexts_Line } from "../../source/Model_TextEditor.ts"
 import { actions_Review } from "../items.ts"
-import { blocksWith__Frames, lineOf } from "../lines.ts"
-import { attributesOf__Change } from "../looks.ts"
+import { projectedOf } from "../projected.ts"
 import { readingTime } from "./code.ts"
 
 export {
   proposalsCode
 }
 
-// the code file's lines, numbered from 1, for the frame's lines as they are
-// to be exactly the file's
+// the code file's lines, as its changes quote them: the number replaced, on
+// readingTime's first line
 const texts_readingTime = parseTexts_Line(readingTime)
-const textAt = (number: number): string => texts_readingTime[number - 1] ?? ""
+const offset_230 = (texts_readingTime[11] ?? "").indexOf("230")
 
 // the whole code file, a function in it framed in place, widened by the host
 // to all of it, though its proposals touch only some of its lines: a number
@@ -26,97 +26,19 @@ const proposalsCode: _Scene_ = {
   variables: {},
   labels: [],
   invariants: [],
-  viewModel_TextEditor: viewModelOf__Blocks(blocksWith__Frames({
+  viewModel_TextEditor: projectedOf({
     multilineText: readingTime,
     module_Language: MODULE_PLAINTEXT,
-    frames: [{
-      kind: "FRAME",
-      range: { first: 11, last: 17 },
-      parts: [
-        {
-          kind: "CURRENT_LINES",
-          run: { id: "current", lines: [
-            lineOf(textAt(11)),
-            lineOf(
-              "export function readingTime(text: string, wordsPerMinute = ",
-              { text: "230", attributes: attributesOf__Change({ side: "before", kind: "replaced", source: "faster" }) },
-              "): number {"
-            ),
-            lineOf({ text: textAt(13), attributes: attributesOf__Change({ side: "before", kind: "removed", source: "check" }) }),
-            lineOf({ text: textAt(14), attributes: attributesOf__Change({ side: "before", kind: "removed", source: "check" }) }),
-            lineOf({ text: textAt(15), attributes: attributesOf__Change({ side: "before", kind: "removed", source: "check" }) }),
-            lineOf(
-              "  return Math.max(1, Math.round(",
-              { text: "countWords(text) / wordsPerMinute", attributes: attributesOf__Change({ side: "before", kind: "replaced", source: "minutes" }) },
-              "));"
-            ),
-            lineOf(textAt(17)),
-          ], groups: [] },
-        },
-        {
-          kind: "PROPOSAL_LINES",
-          run: { id: "proposed", lines: [
-            lineOf(textAt(11)),
-            lineOf(
-              "export function readingTime(text: string, wordsPerMinute = ",
-              { text: "250", attributes: attributesOf__Change({ side: "after", kind: "replaced", source: "faster" }) },
-              "): number {"
-            ),
-            lineOf({ text: "  const minutes = countWords(text) / wordsPerMinute;", attributes: attributesOf__Change({ side: "after", kind: "inserted", source: "minutes" }) }),
-            lineOf(
-              "  return Math.max(1, Math.round(",
-              { text: "minutes", attributes: attributesOf__Change({ side: "after", kind: "replaced", source: "minutes" }) },
-              "));"
-            ),
-            lineOf(textAt(17)),
-          ], groups: [] },
-        },
-        {
-          kind: "PROPOSAL_LIST",
-          items: [
-            {
-              source: "faster",
-              title: "A faster reader: 250 words a minute",
-              state: "OPEN",
-              status: "",
-              rationale: "Adults read prose at about 250 words a minute; 230 makes every estimate a little long.",
-              request: "",
-              actions: actions_Review,
-              isDrafting: false,
-              neighbors: { range_Previous: null, range_Next: null },
-              attributes: {},
-          places: { kind: "NONE" },
-            },
-            {
-              source: "check",
-              title: "Drop the check on wordsPerMinute",
-              state: "OPEN",
-              status: "",
-              rationale: "Every caller passes a positive whole number, so the check only ever throws in tests.",
-              request: "",
-              actions: actions_Review,
-              isDrafting: false,
-              neighbors: { range_Previous: null, range_Next: null },
-              attributes: {},
-          places: { kind: "NONE" },
-            },
-            {
-              source: "minutes",
-              title: "Name the minutes before rounding them",
-              state: "OPEN",
-              status: "",
-              rationale: "With a name, the rounding reads as one step on a value you already understand.",
-              request: "",
-              actions: actions_Review,
-              isDrafting: false,
-              neighbors: { range_Previous: null, range_Next: null },
-              attributes: {},
-          places: { kind: "NONE" },
-            },
-          ],
-        },
-      ],
-    }],
-    moves: [],
-  })),
+    proposed: [
+      { source: "faster", changes: [{ kind: "REPLACE", range: { from: { line: 11, offset: offset_230 }, to: { line: 11, offset: offset_230 + 3 } }, multilineText: "250" }] },
+      { source: "check", changes: [{ kind: "REPLACE", range: { from: { line: 12, offset: 0 }, to: { line: 15, offset: 0 } }, multilineText: "" }] },
+      { source: "minutes", changes: [{ kind: "REPLACE", range: { from: { line: 15, offset: 0 }, to: { line: 15, offset: (texts_readingTime[15] ?? "").length } }, multilineText: "  const minutes = countWords(text) / wordsPerMinute;\n  return Math.max(1, Math.round(minutes));" }] }
+    ],
+    proposals: [
+      { source: "faster", title: "A faster reader: 250 words a minute", state: "OPEN", status: "", rationale: "Adults read prose at about 250 words a minute; 230 makes every estimate a little long.", request: "", actions: actions_Review, attributes: {} },
+      { source: "check", title: "Drop the check on wordsPerMinute", state: "OPEN", status: "", rationale: "Every caller passes a positive whole number, so the check only ever throws in tests.", request: "", actions: actions_Review, attributes: {} },
+      { source: "minutes", title: "Name the minutes before rounding them", state: "OPEN", status: "", rationale: "With a name, the rounding reads as one step on a value you already understand.", request: "", actions: actions_Review, attributes: {} }
+    ],
+    ranges_Frame: [{ first: 11, last: 17 }]
+  }),
 }

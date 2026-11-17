@@ -1,4 +1,5 @@
-import { type _Attributes_Element_, type _Line_Run_, type _Segment_Line_, parseTexts_Line, type _Block_ViewModel_, parseLines_ViewModel, type _Module_Language_, segmentsOf__Stretches, type _Stretch_Line_, type _FRAME_Block__ViewModel_, type _Part_Frame_, type _Run_Lines_, type _Marker_Gutter_, type _Group_Underlay_, type _Underlay_Text_, type _STRETCH_Underlay_Text_, type _Position_Run_, type _Item_Proposals_, type _NonEmpty_, type _Range_Lines_, type _Places_Item_, type _Way_Move_ } from "../source/ViewModel_TextEditor.ts"
+import { type _Attributes_Element_, type _Line_Run_, type _Segment_Line_, type _Block_ViewModel_, parseLines_ViewModel, type _Module_Language_, segmentsOf__Stretches, type _Stretch_Line_, type _FRAME_Block__ViewModel_, type _Part_Frame_, type _Run_Lines_, type _Marker_Gutter_, type _Group_Underlay_, type _Underlay_Text_, type _STRETCH_Underlay_Text_, type _Position_Run_, type _Item_Proposals_, type _Range_Lines_, type _Places_Item_, type _Way_Move_ } from "../source/ViewModel_TextEditor.ts"
+import { parseTexts_Line, type _NonEmpty_ } from "../source/Model_TextEditor.ts"
 
 export {
   type _Piece_Line_,

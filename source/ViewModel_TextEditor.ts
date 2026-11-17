@@ -1,3 +1,10 @@
+import {
+  type _Text_Line_NonTerminated_,
+  type _NonEmpty_,
+  mapped__NonEmpty,
+  parseTexts_Line
+} from "./Model_TextEditor.ts"
+
 export {
   type _ViewModel_TextEditor_,
   type _Block_ViewModel_,
@@ -45,8 +52,6 @@ export {
   type _Way_Move_,
   type _Neighbors_Item_,
   type _Action_Item_,
-  type _Text_Line_NonTerminated_,
-  type _NonEmpty_,
   viewModelOf__Blocks,
   segmentsOf__Stretches,
   pointedAt__ViewModel,
@@ -54,8 +59,7 @@ export {
   draftingAt__ViewModel,
   type _Id_Item_,
   parseLines_ViewModel,
-  MODULE_PLAINTEXT,
-  parseTexts_Line
+  MODULE_PLAINTEXT
 }
 
 interface _ViewModel_TextEditor_ {
@@ -244,10 +248,6 @@ interface _Action_Item_ {
   label: string
   stateAfter: _State_Proposal_ | null
 }
-
-type _Text_Line_NonTerminated_ = string & { [proof__Text_Line_NonTerminated]: true }
-
-declare const proof__Text_Line_NonTerminated: unique symbol
 
 function viewModelOf__Blocks(
   blocks_ViewModel: Array<_Block_ViewModel_>
@@ -728,25 +728,6 @@ function draftingAt__ViewModel({
   }))
 }
 
-interface _Api___mapped__NonEmpty_<Item, Mapped> {
-  items: _NonEmpty_<Item>
-  map: (item: Item) => Mapped
-}
-
-function mapped__NonEmpty<Item, Mapped>({
-  items,
-  map
-}: _Api___mapped__NonEmpty_<Item, Mapped>): _NonEmpty_<Mapped> {
-  const [
-    first,
-    ...rest
-  ] = items
-  return [
-    map(first),
-    ...rest.map((item) => map(item))
-  ]
-}
-
 interface _Api___pointedIn__Part_ {
   part_Frame: _Part_Frame_
   source: string | null
@@ -870,26 +851,6 @@ function lineOf__Text({
     })
   }
 }
-
-function parseTexts_Line(
-  multilineText: string
-): _NonEmpty_<_Text_Line_NonTerminated_> {
-  const [
-    first = "",
-    ...rest
-  ] = multilineText.split(REGEXP_LINEBREAK)
-  return [
-    first,
-    ...rest
-  ] as _NonEmpty_<_Text_Line_NonTerminated_>
-}
-
-const REGEXP_LINEBREAK = /\r\n|[\n\r\v\f\u0085\u2028\u2029]/
-
-type _NonEmpty_<Item> = [
-  Item,
-  ...Array<Item>
-]
 
 const MODULE_PLAINTEXT: _Module_Language_<null> = {
   state_Start: null,
