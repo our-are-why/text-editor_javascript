@@ -587,7 +587,10 @@ nothing else; each its own, never one state standing for two:
 - **requested:** a revision asked for, your notes sent, the agent not yet at
   it;
 - **revising:** the agent at it, its next round coming;
-- **accepted:** applied to the document;
+- **accepted:** decided for, to be applied to the document; when, is the
+  host's, perhaps once the whole task's proposals are settled, the editor
+  drawing what it's given, an accepted change not yet applied ringed as
+  any, one applied nothing left to ring;
 - **rejected:** never confirmed, and without a reason, though one may be
   given, later, if you choose;
 - **withdrawn:** taken back by the agent, as when a newer proposal
@@ -616,6 +619,33 @@ it, rejected letting it apply. The states are the host's, as doctor's are,
 `proposed`, `revising`, `accepted`, `rejected` and `withdrawn`, doctor's
 `revising` the two waiting ones here; the editor shows each and asks for its
 transitions, an item's actions as the host gives them for its state.
+
+The six are the editor's, built in, for every host: one lifecycle, which
+looks, components and hosts can rely on, a host's own workflow mapped onto
+it, its words for each in `status`. Settled in talking it over:
+
+- **one decider:** a proposal has one decision; several reviewers, a vote,
+  "approved by 1 of 2", are out of scope, a host free to say so in its
+  status words, the editor never knowing.
+- **no deciding part of one:** there's no accepting part of a proposal, and
+  no locking parts of it while others change. What can be decided apart is
+  proposed apart; keeping some of a proposal and changing the rest is the
+  reviser's to take care with, the agent's, or yours editing it inline.
+- **notes on what's selected:** what the editor gives the reviser, once
+  there's selection: a request's notes, each on a stretch you've selected,
+  of the proposal's text or of what it replaces, "keep this", "change
+  this", sent with the request for the next round. Each is carried to the
+  next round through the comparison of the two rounds, so the next round
+  shows which were met; its words gone, it says so. The interface for it is
+  the work, after editing and selection.
+- **relations:** besides the ones worked out from where changes are, a
+  change within another's removal or replacement its fallback, one inside a
+  move carried with it, one inside another's kept words applied there,
+  **alternatives** are next: two proposals for the same span, two ways to
+  say it, refused now, "the same span as", excluding each other, accepting
+  one settling the others. Relations no span shows, one proposal depending
+  on another, as a rename's uses on its definition, would be the agent's to
+  declare: not now. One that supersedes another withdraws it, as above.
 
 How each shows: an item says its state, `state`, one of the six as a kind,
 `OPEN`, `REQUESTED`, `REVISING`, `ACCEPTED`, `REJECTED`, `WITHDRAWN`, and
@@ -671,8 +701,8 @@ withdrawn, after the rest, their titles and words the same as any other's,
 whatever their state, told apart by their icons, their status words and
 their place. The "changes" look fades a revising one's rings and the
 words it proposes, breathing, as doctor's revised lines pulsed, still where
-motion's asked to be reduced. An accepted one's words are the document's, so
-there's nothing left to ring, and nothing marks the lines they're on: a
+motion's asked to be reduced. An accepted one the host's applied has its
+words the document's, so there's nothing left to ring, and nothing marks the lines they're on: a
 check by their numbers was tried, and dropped, the gutter left to its
 numbers and its signs. A rejected or withdrawn one's change is gone from the
 lines proposed, the projection leaving it out. Still to come: a frame whose

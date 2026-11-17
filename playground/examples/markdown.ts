@@ -63,7 +63,7 @@ A call that throws is tried again when the network failed, or when the server an
 
 ## How long it waits
 
-Each wait is twice the one before, starting at 100 ms, with up to half as much again added at random, so callers that failed together don't all retry together.
+Each wait is twice the one before, starting at \`DELAY_MS\`, 100 ms, with up to half as much again added at random, so callers that failed together don't all retry together.
 
 > A call that keeps failing waits longer each round: by the tenth attempt, almost a minute.
 
@@ -110,16 +110,18 @@ function replacing(
 
 // each proposal's changes, as an agent writes them, keeping the README in
 // step with the module's own proposals, the words it changes quoted where
-// they are, whole lines with their line breaks: the example's call given a
+// they are, whole lines with their line breaks: in its opening words, how a
+// caller gives up said, inline code put in; the example's call given a
 // signal, inside the fence, its code JavaScript's; in the options' list, a
 // default made bold, its emphasis's one asterisk each side made two, words
 // replaced in a line, and onRetry's line taken out whole; what's retried,
 // its heading, words and table, moved up whole before the options, a row
 // put into the table, being revised, and a row taken out, rejected, both in
-// what the move carries; and in how long it waits, the base delay named,
-// accepted, inline code put in, the quote's last words changed, a revision
-// of it asked for, and the link's address, withdrawn
+// what the move carries; and in how long it waits, the base delay's name,
+// accepted, applied already, its words the README's, the quote's last words
+// changed, a revision of it asked for, and the link's address, withdrawn
 const proposed_readme: Array<_Changes_Host_> = [
+  { source: "signal", changes: [replacing(quoteOf(3, "gives up on it"), "gives up on it through its `signal`")] },
   { source: "example", changes: [replacing(quoteOf(18, "fetchUser(id), { attempts: 3 }"), "fetchUser(id, { signal }), { attempts: 3, signal }")] },
   { source: "stress", changes: [replacing(quoteOf(23, "*5*"), "**5**")] },
   { source: "aborted", changes: [replacing(quoteOf(24, "stops waiting"), "stops, mid-wait or between attempts,")] },
@@ -127,13 +129,24 @@ const proposed_readme: Array<_Changes_Host_> = [
   { source: "order", changes: [{ kind: "MOVE", range: linesOf(27, 36), at: { line: 20, offset: 0 } }] },
   { source: "timeout", changes: [replacing(pointOf(33, "| 429"), "| 408           | yes     |\n")] },
   { source: "retry501", changes: [replacing(quoteOf(34, ", but 501"), ""), replacing(linesOf(35, 35), "")] },
-  { source: "base", changes: [replacing(quoteOf(39, "100 ms"), "`DELAY_MS`, 100 ms")] },
+  { source: "base", changes: [replacing(quoteOf(39, "`DELAY_MS`"), "`DELAY_MS`")] },
   { source: "cap", changes: [replacing(quoteOf(41, "by the tenth attempt, almost a minute"), "but never longer than 30 seconds")] },
   { source: "link", changes: [replacing(quoteOf(43, "https://example.com/backoff"), "https://example.com/guides/backoff")] },
 ]
 
 // what the playground, as host, says of each proposal, listed in every
 // frame its changes are in
+const proposal_Signal: _Proposal_Host_ = {
+  source: "signal",
+  title: "Say how a caller gives up",
+  state: "OPEN",
+  status: "",
+  rationale: "Giving up is aborting the signal; saying so sends the reader to the option that does it.",
+  request: "",
+  actions: actions_Review,
+  attributes: {},
+}
+
 const proposal_Example: _Proposal_Host_ = {
   source: "example",
   title: "Pass a signal in the example",
@@ -215,7 +228,8 @@ const proposal_Retry501: _Proposal_Host_ = {
   attributes: {},
 }
 
-// accepted, its words the module's already
+// accepted, and applied, as the host would once the task's settled: its
+// words the README's already, so nothing's left to ring
 const proposal_Base: _Proposal_Host_ = {
   source: "base",
   title: "Name the base delay DELAY_MS",
@@ -255,6 +269,7 @@ const proposal_Link: _Proposal_Host_ = {
 // the proposals, in the order a frame lists them, decided ones after the
 // rest whatever their place here
 const proposals_readme: Array<_Proposal_Host_> = [
+  proposal_Signal,
   proposal_Example,
   proposal_Stress,
   proposal_Aborted,
@@ -302,7 +317,7 @@ const labels_Perspective = new Map<_Perspective_TextEditor_, string>([
 const markdown: _Example_ = {
   name: "markdown",
   title: "Markdown",
-  about: "The JavaScript example's module's README, in Markdown, drawn whole as its source, its syntax worked out by a language module, the playground's Markdown tokenizer, and styled by the playground, as a host's theme: its syntax kept as it's written, faint, and what that marks shown as it marks it, headings and strong words bold, emphasis italic, code and links coloured. Its marks are its syntax, so the document holds none, and a proposal that makes words bold puts in asterisks. Its changes are read two ways, a button over it for each, both in the editor's changes look: as Markdown, the playground's reading, first, what a change means, a word made bold one dashed ring, restyled, round it and its asterisks, as it was and as it becomes, and the base delay's name put in before the words it keeps; and as text, the editor's reading, every character that changed ringed, the asterisks put in green, as code's are. The fenced JavaScript is the JavaScript module's to colour, the Markdown module handing its lines on. Ten proposals, keeping the README in step with the module's: a signal passed in the example's call, inside the fence; in the options, framed whole, a default made bold, words replaced, and onRetry's line taken out; what it retries, its heading, words and table, moved up before the options, carrying a row put in, being revised, and a row taken out, rejected, so not ringed; and in how long it waits, framed from its words to its link, the base delay named, accepted, the quote's last words changed, a revision asked for, and the link's address, withdrawn, so not ringed. Point at a ring or an item to see a proposal; press a move's note to go to its other end.",
+  about: "The JavaScript example's module's README, in Markdown, drawn whole as its source, its syntax worked out by a language module, the playground's Markdown tokenizer, and styled by the playground, as a host's theme: its syntax kept as it's written, faint, and what that marks shown as it marks it, headings and strong words bold, emphasis italic, code and links coloured. Its marks are its syntax, so the document holds none, and a proposal that makes words bold puts in asterisks. Its changes are read two ways, a button over it for each, both in the editor's changes look: as Markdown, the playground's reading, first, what a change means, a word made bold one dashed ring, restyled, round it and its asterisks, as it was and as it becomes; and as text, the editor's reading, every character that changed ringed, the asterisks put in green, as code's are. The fenced JavaScript is the JavaScript module's to colour, the Markdown module handing its lines on. Eleven proposals, keeping the README in step with the module's: in its opening words, how a caller gives up, inline code put in; a signal passed in the example's call, inside the fence; in the options, framed whole, a default made bold, words replaced, and onRetry's line taken out; what it retries, its heading, words and table, moved up before the options, carrying a row put in, being revised, and a row taken out, rejected, so not ringed; and in how long it waits, framed from its words to its link, the base delay's name, accepted and applied, its words the README's already, so nothing to ring, the quote's last words changed, a revision asked for, and the link's address, withdrawn, so not ringed. Point at a ring or an item to see a proposal; press a move's note to go to its other end.",
   // the editor, put together as above, drawing the README and its
   // proposals into the stage, over it a button for each perspective, the
   // one shown pressed; pressing another shows it, and reports which

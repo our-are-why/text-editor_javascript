@@ -222,7 +222,16 @@ exports[`the Markdown example draws as it did when it was looked over 1`] = `
   LINES run 1
     "1" none none: "#"{data-syntax=heading marker} " retry"{data-syntax=heading}
     "2" none none: 
+FRAME 3-3
+  CURRENT_LINES run 2
     "3" none none: "Retries a flaky async call, backing off further each time, until it succeeds, runs out of attempts, or the caller gives up on it."
+  PROPOSAL_LINES run 3
+    "~" changed none: "Retries a flaky async call, backing off further each time, until it succeeds, runs out of attempts, or the caller gives up on it" " through its "{data-change=inserted data-side=after data-source=signal data-state=OPEN} "\`"{data-change=inserted data-side=after data-source=signal data-state=OPEN data-syntax=code marker} "signal"{data-change=inserted data-side=after data-source=signal data-state=OPEN data-syntax=code} "\`"{data-change=inserted data-side=after data-source=signal data-state=OPEN data-syntax=code marker} "."
+    ring {data-source=signal data-state=OPEN}
+      STRETCH 0:129-0:149 {data-change=inserted data-place=1 data-side=after data-source=signal}
+  PROPOSAL_LIST
+    {"actions":[{"command":"accept","label":"Accept","stateAfter":"ACCEPTED"},{"command":"reject","label":"Reject","stateAfter":"REJECTED"},{"command":"revise","label":"Revise","stateAfter":"REQUESTED"}],"attributes":{},"isDrafting":false,"neighbors":{"range_Next":null,"range_Previous":null},"places":{"kind":"NONE"},"rationale":"Giving up is aborting the signal; saying so sends the reader to the option that does it.","request":"","source":"signal","state":"OPEN","status":"","title":"Say how a caller gives up"}
+  LINES run 4
     "4" none none: 
     "5" none none: "##"{data-syntax=heading marker} " Install"{data-syntax=heading}
     "6" none none: 
@@ -238,20 +247,20 @@ exports[`the Markdown example draws as it did when it was looked over 1`] = `
     "16" none none: "import"{data-syntax=keyword} " { retry } " "from"{data-syntax=keyword} " " "\\"@tools/retry\\""{data-syntax=string} ";"
     "17" none none: 
 FRAME 18-18
-  CURRENT_LINES run 2
+  CURRENT_LINES run 5
     "18" none none: "const"{data-syntax=keyword} " user = " "await"{data-syntax=keyword} " " "retry"{data-syntax=function} "(() => " "fetchUser"{data-syntax=function} "(id), { attempts: " "3"{data-syntax=number} " });"
-  PROPOSAL_LINES run 3
+  PROPOSAL_LINES run 6
     "~" changed none: "const"{data-syntax=keyword} " user = " "await"{data-syntax=keyword} " " "retry"{data-syntax=function} "(() => " "fetchUser"{data-syntax=function} "(id" ", { signal }"{data-change=inserted data-side=after data-source=example data-state=OPEN} "), { attempts: " "3"{data-syntax=number} ", signal"{data-change=inserted data-side=after data-source=example data-state=OPEN} " });"
     ring {data-source=example data-state=OPEN}
       STRETCH 0:43-0:55 {data-change=inserted data-place=1 data-side=after data-source=example}
       STRETCH 0:71-0:79 {data-change=inserted data-place=2 data-side=after data-source=example}
   PROPOSAL_LIST
     {"actions":[{"command":"accept","label":"Accept","stateAfter":"ACCEPTED"},{"command":"reject","label":"Reject","stateAfter":"REJECTED"},{"command":"revise","label":"Revise","stateAfter":"REQUESTED"}],"attributes":{},"isDrafting":false,"neighbors":{"range_Next":null,"range_Previous":null},"places":{"kind":"NONE"},"rationale":"A caller who can cancel should see where the signal goes: to the call, so a request in flight stops, and to retry, so a wait does.","request":"","source":"example","state":"OPEN","status":"","title":"Pass a signal in the example"}
-  LINES run 4
+  LINES run 7
     "19" none none: "\`\`\`"{data-syntax=marker}
     "20" none none: 
 FRAME 21-20
-  PROPOSAL_LINES run 5
+  PROPOSAL_LINES run 8
     "→" moved none (from lines 27–36 → order before): "##"{data-change=moved data-side=after data-source=order data-state=OPEN data-syntax=heading marker} " What it retries"{data-change=moved data-side=after data-source=order data-state=OPEN data-syntax=heading}
     "→" moved none: 
     "→" moved none: "A call that throws is tried again when the network failed, or when the server answered with a status that says it may work later:"{data-change=moved data-side=after data-source=order data-state=OPEN}
@@ -271,11 +280,11 @@ FRAME 21-20
     {"actions":[{"command":"accept","label":"Accept","stateAfter":"ACCEPTED"},{"command":"reject","label":"Reject","stateAfter":"REJECTED"},{"command":"revise","label":"Revise","stateAfter":"REQUESTED"}],"attributes":{},"isDrafting":false,"neighbors":{"range_Next":{"first":27,"last":36},"range_Previous":null},"places":{"kind":"MOVE","range":{"first":27,"last":36},"way":"UP"},"rationale":"Whether a call's retried at all is the first thing a caller asks; the options only tune how.","request":"","source":"order","state":"OPEN","status":"","title":"Say what it retries before its options"}
     {"actions":[],"attributes":{},"isDrafting":false,"neighbors":{"range_Next":{"first":27,"last":36},"range_Previous":null},"places":{"conditions":[{"count":1,"kind":"CARRIED","source":"order","title":"Say what it retries before its options"}],"count_All":1,"count_Here":1,"kind":"COUNT"},"rationale":"A 408 means the server stopped waiting for the request, not that the request failed: sent again, it usually goes through.","request":"only when the request is safe to send twice, a GET or a PUT.","source":"timeout","state":"REVISING","status":"Revising","title":"Retry a request that timed out"}
     {"actions":[{"command":"reopen","label":"Reopen","stateAfter":"OPEN"}],"attributes":{},"isDrafting":false,"neighbors":{"range_Next":{"first":27,"last":36},"range_Previous":null},"places":{"kind":"NONE"},"rationale":"Some servers send a 501 for a method they'll support after a deploy; tried again a minute later, it works.","request":"","source":"retry501","state":"REJECTED","status":"Rejected","title":"Retry a 501 too"}
-  LINES run 6
+  LINES run 9
     "21" none none: "##"{data-syntax=heading marker} " Options"{data-syntax=heading}
     "22" none none: 
 FRAME 23-25
-  CURRENT_LINES run 7
+  CURRENT_LINES run 10
     "23" none none: "-"{data-syntax=marker} " " "\`"{data-syntax=code marker} "attempts"{data-syntax=code} "\`"{data-syntax=code marker} ": how many times to try, " "*"{data-syntax=emphasis marker} "5"{data-syntax=emphasis} "*"{data-syntax=emphasis marker} " unless you say otherwise."
     "24" changed none: "-"{data-syntax=marker} " " "\`"{data-syntax=code marker} "signal"{data-syntax=code} "\`"{data-syntax=code marker} ": an " "\`"{data-syntax=code marker} "AbortSignal"{data-syntax=code} "\`"{data-syntax=code marker} "; once it aborts, retry " "stops waiting"{data-change=replaced data-side=before data-source=aborted data-state=OPEN} " and throws."
     "25" removed none: "-"{data-change=removed data-side=before data-source=hook data-state=OPEN data-syntax=marker} " "{data-change=removed data-side=before data-source=hook data-state=OPEN} "\`"{data-change=removed data-side=before data-source=hook data-state=OPEN data-syntax=code marker} "onRetry"{data-change=removed data-side=before data-source=hook data-state=OPEN data-syntax=code} "\`"{data-change=removed data-side=before data-source=hook data-state=OPEN data-syntax=code marker} ": called before each new attempt, with the error and the attempt's number."{data-change=removed data-side=before data-source=hook data-state=OPEN}
@@ -283,7 +292,7 @@ FRAME 23-25
       STRETCH 1:52-1:65 {data-change=replaced data-place=1 data-side=before data-source=aborted}
     ring {data-source=hook data-state=OPEN}
       STRETCH 2:0-2:85 {data-change=removed data-place=1 data-side=before data-source=hook}
-  PROPOSAL_LINES run 8
+  PROPOSAL_LINES run 11
     "~" changed none: "-"{data-syntax=marker} " " "\`"{data-syntax=code marker} "attempts"{data-syntax=code} "\`"{data-syntax=code marker} ": how many times to try, " "*"{data-syntax=strong marker} "*"{data-change=inserted data-side=after data-source=stress data-state=OPEN data-syntax=strong marker} "5"{data-syntax=strong} "*"{data-change=inserted data-side=after data-source=stress data-state=OPEN data-syntax=strong marker} "*"{data-syntax=strong marker} " unless you say otherwise."
     "~" changed none: "-"{data-syntax=marker} " " "\`"{data-syntax=code marker} "signal"{data-syntax=code} "\`"{data-syntax=code marker} ": an " "\`"{data-syntax=code marker} "AbortSignal"{data-syntax=code} "\`"{data-syntax=code marker} "; once it aborts, retry " "stops, mid-wait or between attempts,"{data-change=replaced data-side=after data-source=aborted data-state=OPEN} " and throws."
     ring {data-source=stress data-state=OPEN}
@@ -297,10 +306,10 @@ FRAME 23-25
     {"actions":[{"command":"accept","label":"Accept","stateAfter":"ACCEPTED"},{"command":"reject","label":"Reject","stateAfter":"REJECTED"},{"command":"revise","label":"Revise","stateAfter":"REQUESTED"}],"attributes":{},"isDrafting":false,"neighbors":{"range_Next":null,"range_Previous":null},"places":{"kind":"NONE"},"rationale":"It's the number most callers live with, so it's the one to find at a glance.","request":"","source":"stress","state":"OPEN","status":"","title":"Make the default bold"}
     {"actions":[{"command":"accept","label":"Accept","stateAfter":"ACCEPTED"},{"command":"reject","label":"Reject","stateAfter":"REJECTED"},{"command":"revise","label":"Revise","stateAfter":"REQUESTED"}],"attributes":{},"isDrafting":false,"neighbors":{"range_Next":null,"range_Previous":null},"places":{"kind":"NONE"},"rationale":"With the module's own proposal, retry asks about the signal between attempts as well as while it waits; said as it is, an abort only cuts a wait short.","request":"","source":"aborted","state":"OPEN","status":"","title":"Say an abort stops the attempts too"}
     {"actions":[{"command":"accept","label":"Accept","stateAfter":"ACCEPTED"},{"command":"reject","label":"Reject","stateAfter":"REJECTED"},{"command":"revise","label":"Revise","stateAfter":"REQUESTED"}],"attributes":{},"isDrafting":false,"neighbors":{"range_Next":null,"range_Previous":null},"places":{"kind":"NONE"},"rationale":"Nothing passes onRetry any more: the callers log their retries in their own catch blocks.","request":"","source":"hook","state":"OPEN","status":"","title":"Drop the onRetry hook"}
-  LINES run 9
+  LINES run 12
     "26" none none: 
 FRAME 27-36
-  CURRENT_LINES run 10
+  CURRENT_LINES run 13
     "27" moved none (moved → order after): "##"{data-change=moved data-side=before data-source=order data-state=OPEN data-syntax=heading marker} " What it retries"{data-change=moved data-side=before data-source=order data-state=OPEN data-syntax=heading}
     "28" moved none: 
     "29" moved none: "A call that throws is tried again when the network failed, or when the server answered with a status that says it may work later:"{data-change=moved data-side=before data-source=order data-state=OPEN}
@@ -313,33 +322,166 @@ FRAME 27-36
     "36" moved none: 
     ring {data-source=order data-state=OPEN}
       STRETCH 0:0-8:27 {data-change=moved data-place=1 data-side=before data-source=order}
-  PROPOSAL_LINES run 11
+  PROPOSAL_LINES run 14
   PROPOSAL_LIST
     {"actions":[{"command":"accept","label":"Accept","stateAfter":"ACCEPTED"},{"command":"reject","label":"Reject","stateAfter":"REJECTED"},{"command":"revise","label":"Revise","stateAfter":"REQUESTED"}],"attributes":{},"isDrafting":false,"neighbors":{"range_Next":null,"range_Previous":{"first":21,"last":20}},"places":{"kind":"MOVE","range":{"first":27,"last":36},"way":"UP"},"rationale":"Whether a call's retried at all is the first thing a caller asks; the options only tune how.","request":"","source":"order","state":"OPEN","status":"","title":"Say what it retries before its options"}
     {"actions":[],"attributes":{},"isDrafting":false,"neighbors":{"range_Next":null,"range_Previous":{"first":21,"last":20}},"places":{"conditions":[],"count_All":1,"count_Here":0,"kind":"COUNT"},"rationale":"A 408 means the server stopped waiting for the request, not that the request failed: sent again, it usually goes through.","request":"only when the request is safe to send twice, a GET or a PUT.","source":"timeout","state":"REVISING","status":"Revising","title":"Retry a request that timed out"}
     {"actions":[{"command":"reopen","label":"Reopen","stateAfter":"OPEN"}],"attributes":{},"isDrafting":false,"neighbors":{"range_Next":null,"range_Previous":{"first":21,"last":20}},"places":{"kind":"NONE"},"rationale":"Some servers send a 501 for a method they'll support after a deploy; tried again a minute later, it works.","request":"","source":"retry501","state":"REJECTED","status":"Rejected","title":"Retry a 501 too"}
-  LINES run 12
+  LINES run 15
     "37" none none: "##"{data-syntax=heading marker} " How long it waits"{data-syntax=heading}
     "38" none none: 
 FRAME 39-43
-  CURRENT_LINES run 13
-    "39" changed none: "Each wait is twice the one before, starting at " "100 ms"{data-change=replaced data-side=before data-source=base data-state=ACCEPTED} ", with up to half as much again added at random, so callers that failed together don't all retry together."
+  CURRENT_LINES run 16
+    "39" none none: "Each wait is twice the one before, starting at " "\`"{data-syntax=code marker} "DELAY_MS"{data-syntax=code} "\`"{data-syntax=code marker} ", 100 ms, with up to half as much again added at random, so callers that failed together don't all retry together."
     "40" none none: 
     "41" changed none: ">"{data-syntax=quote marker} " A call that keeps failing waits longer each round: "{data-syntax=quote} "by the tenth attempt, almost a minute"{data-change=replaced data-side=before data-source=cap data-state=REQUESTED data-syntax=quote} "."{data-syntax=quote}
     "42" none none: 
     "43" none none: "See " "["{data-syntax=marker} "why the waits grow"{data-syntax=link} "]("{data-syntax=marker} "https://example.com/backoff"{data-syntax=url} ")"{data-syntax=marker} ", and " "**"{data-syntax=strong marker} "please"{data-syntax=strong} "**"{data-syntax=strong marker} " say if anything's odd."
-    ring {data-source=base data-state=ACCEPTED}
-      STRETCH 0:47-0:53 {data-change=replaced data-place=1 data-side=before data-source=base}
     ring {data-source=cap data-state=REQUESTED}
       STRETCH 2:53-2:90 {data-change=replaced data-place=1 data-side=before data-source=cap}
-  PROPOSAL_LINES run 14
-    "~" changed none: "Each wait is twice the one before, starting at " "\`"{data-change=replaced data-side=after data-source=base data-state=ACCEPTED data-syntax=code marker} "DELAY_MS"{data-change=replaced data-side=after data-source=base data-state=ACCEPTED data-syntax=code} "\`"{data-change=replaced data-side=after data-source=base data-state=ACCEPTED data-syntax=code marker} ", 100 ms"{data-change=replaced data-side=after data-source=base data-state=ACCEPTED} ", with up to half as much again added at random, so callers that failed together don't all retry together."
+  PROPOSAL_LINES run 17
+    "" none none: "Each wait is twice the one before, starting at " "\`"{data-syntax=code marker} "DELAY_MS"{data-syntax=code} "\`"{data-syntax=code marker} ", 100 ms, with up to half as much again added at random, so callers that failed together don't all retry together."
     "" none none: 
     "~" changed none: ">"{data-syntax=quote marker} " A call that keeps failing waits longer each round: "{data-syntax=quote} "but never longer than 30 seconds"{data-change=replaced data-side=after data-source=cap data-state=REQUESTED data-syntax=quote} "."{data-syntax=quote}
     "" none none: 
     "" none none: "See " "["{data-syntax=marker} "why the waits grow"{data-syntax=link} "]("{data-syntax=marker} "https://example.com/backoff"{data-syntax=url} ")"{data-syntax=marker} ", and " "**"{data-syntax=strong marker} "please"{data-syntax=strong} "**"{data-syntax=strong marker} " say if anything's odd."
-    ring {data-source=base data-state=ACCEPTED}
-      STRETCH 0:47-0:65 {data-change=replaced data-place=1 data-side=after data-source=base}
+    ring {data-source=cap data-state=REQUESTED}
+      STRETCH 2:53-2:85 {data-change=replaced data-place=1 data-side=after data-source=cap}
+  PROPOSAL_LIST
+    {"actions":[{"command":"reopen","label":"Reopen","stateAfter":"OPEN"}],"attributes":{},"isDrafting":false,"neighbors":{"range_Next":null,"range_Previous":null},"places":{"kind":"NONE"},"rationale":"With the module's cap, a long outage never goes quiet for longer than half a minute; the README should say so.","request":"make the cap an option, 30 seconds unless the caller gives another.","source":"cap","state":"REQUESTED","status":"Revision requested","title":"Cap the delay at 30 seconds"}
+    {"actions":[{"command":"reopen","label":"Reopen","stateAfter":"OPEN"}],"attributes":{},"isDrafting":false,"neighbors":{"range_Next":null,"range_Previous":null},"places":{"kind":"NONE"},"rationale":"It's the name a caller finds in the module, and would search for.","request":"","source":"base","state":"ACCEPTED","status":"Accepted","title":"Name the base delay DELAY_MS"}
+    {"actions":[{"command":"dismiss","label":"Dismiss","stateAfter":null}],"attributes":{},"isDrafting":false,"neighbors":{"range_Next":null,"range_Previous":null},"places":{"kind":"NONE"},"rationale":"The guides moved under /guides.","request":"","source":"link","state":"WITHDRAWN","status":"Withdrawn","title":"Link the guide where it's moved"}"
+`;
+
+exports[`the Markdown example, its changes read as Markdown, draws as it did when it was looked over 1`] = `
+"label width 2
+  LINES run 1
+    "1" none none: "#"{data-syntax=heading marker} " retry"{data-syntax=heading}
+    "2" none none: 
+FRAME 3-3
+  CURRENT_LINES run 2
+    "3" none none: "Retries a flaky async call, backing off further each time, until it succeeds, runs out of attempts, or the caller gives up on it."
+  PROPOSAL_LINES run 3
+    "~" changed none: "Retries a flaky async call, backing off further each time, until it succeeds, runs out of attempts, or the caller gives up on it" " through its "{data-change=inserted data-side=after data-source=signal data-state=OPEN} "\`"{data-change=inserted data-side=after data-source=signal data-state=OPEN data-syntax=code marker} "signal"{data-change=inserted data-side=after data-source=signal data-state=OPEN data-syntax=code} "\`"{data-change=inserted data-side=after data-source=signal data-state=OPEN data-syntax=code marker} "."
+    ring {data-source=signal data-state=OPEN}
+      STRETCH 0:129-0:149 {data-change=inserted data-place=1 data-side=after data-source=signal}
+  PROPOSAL_LIST
+    {"actions":[{"command":"accept","label":"Accept","stateAfter":"ACCEPTED"},{"command":"reject","label":"Reject","stateAfter":"REJECTED"},{"command":"revise","label":"Revise","stateAfter":"REQUESTED"}],"attributes":{},"isDrafting":false,"neighbors":{"range_Next":null,"range_Previous":null},"places":{"kind":"NONE"},"rationale":"Giving up is aborting the signal; saying so sends the reader to the option that does it.","request":"","source":"signal","state":"OPEN","status":"","title":"Say how a caller gives up"}
+  LINES run 4
+    "4" none none: 
+    "5" none none: "##"{data-syntax=heading marker} " Install"{data-syntax=heading}
+    "6" none none: 
+    "7" none none: "\`\`\`sh"{data-syntax=marker}
+    "8" none none: "bun add @tools/retry"{data-syntax=code}
+    "9" none none: "\`\`\`"{data-syntax=marker}
+    "10" none none: 
+    "11" none none: "##"{data-syntax=heading marker} " Use"{data-syntax=heading}
+    "12" none none: 
+    "13" none none: "Wrap the call in a function, and pass it to " "\`"{data-syntax=code marker} "retry"{data-syntax=code} "\`"{data-syntax=code marker} ", with any options:"
+    "14" none none: 
+    "15" none none: "\`\`\`js"{data-syntax=marker}
+    "16" none none: "import"{data-syntax=keyword} " { retry } " "from"{data-syntax=keyword} " " "\\"@tools/retry\\""{data-syntax=string} ";"
+    "17" none none: 
+FRAME 18-18
+  CURRENT_LINES run 5
+    "18" none none: "const"{data-syntax=keyword} " user = " "await"{data-syntax=keyword} " " "retry"{data-syntax=function} "(() => " "fetchUser"{data-syntax=function} "(id), { attempts: " "3"{data-syntax=number} " });"
+  PROPOSAL_LINES run 6
+    "~" changed none: "const"{data-syntax=keyword} " user = " "await"{data-syntax=keyword} " " "retry"{data-syntax=function} "(() => " "fetchUser"{data-syntax=function} "(id" ", { signal }"{data-change=inserted data-side=after data-source=example data-state=OPEN} "), { attempts: " "3"{data-syntax=number} ", signal"{data-change=inserted data-side=after data-source=example data-state=OPEN} " });"
+    ring {data-source=example data-state=OPEN}
+      STRETCH 0:43-0:55 {data-change=inserted data-place=1 data-side=after data-source=example}
+      STRETCH 0:71-0:79 {data-change=inserted data-place=2 data-side=after data-source=example}
+  PROPOSAL_LIST
+    {"actions":[{"command":"accept","label":"Accept","stateAfter":"ACCEPTED"},{"command":"reject","label":"Reject","stateAfter":"REJECTED"},{"command":"revise","label":"Revise","stateAfter":"REQUESTED"}],"attributes":{},"isDrafting":false,"neighbors":{"range_Next":null,"range_Previous":null},"places":{"kind":"NONE"},"rationale":"A caller who can cancel should see where the signal goes: to the call, so a request in flight stops, and to retry, so a wait does.","request":"","source":"example","state":"OPEN","status":"","title":"Pass a signal in the example"}
+  LINES run 7
+    "19" none none: "\`\`\`"{data-syntax=marker}
+    "20" none none: 
+FRAME 21-20
+  PROPOSAL_LINES run 8
+    "→" moved none (from lines 27–36 → order before): "##"{data-change=moved data-side=after data-source=order data-state=OPEN data-syntax=heading marker} " What it retries"{data-change=moved data-side=after data-source=order data-state=OPEN data-syntax=heading}
+    "→" moved none: 
+    "→" moved none: "A call that throws is tried again when the network failed, or when the server answered with a status that says it may work later:"{data-change=moved data-side=after data-source=order data-state=OPEN}
+    "→" moved none: 
+    "→" moved none: "|"{data-change=moved data-side=after data-source=order data-state=OPEN data-syntax=marker} " status        "{data-change=moved data-side=after data-source=order data-state=OPEN} "|"{data-change=moved data-side=after data-source=order data-state=OPEN data-syntax=marker} " retried "{data-change=moved data-side=after data-source=order data-state=OPEN} "|"{data-change=moved data-side=after data-source=order data-state=OPEN data-syntax=marker}
+    "→" moved none: "|---------------|---------|"{data-change=moved data-side=after data-source=order data-state=OPEN data-syntax=marker}
+    "→" moved none: "|"{data-change=moved data-edit-change=inserted data-edit-source=timeout data-side=after data-source=order data-state=OPEN data-syntax=marker} " 408           "{data-change=moved data-edit-change=inserted data-edit-source=timeout data-side=after data-source=order data-state=OPEN} "|"{data-change=moved data-edit-change=inserted data-edit-source=timeout data-side=after data-source=order data-state=OPEN data-syntax=marker} " yes     "{data-change=moved data-edit-change=inserted data-edit-source=timeout data-side=after data-source=order data-state=OPEN} "|"{data-change=moved data-edit-change=inserted data-edit-source=timeout data-side=after data-source=order data-state=OPEN data-syntax=marker}
+    "→" moved none: "|"{data-change=moved data-side=after data-source=order data-state=OPEN data-syntax=marker} " 429           "{data-change=moved data-side=after data-source=order data-state=OPEN} "|"{data-change=moved data-side=after data-source=order data-state=OPEN data-syntax=marker} " yes     "{data-change=moved data-side=after data-source=order data-state=OPEN} "|"{data-change=moved data-side=after data-source=order data-state=OPEN data-syntax=marker}
+    "→" moved none: "|"{data-change=moved data-side=after data-source=order data-state=OPEN data-syntax=marker} " 5xx, but 501  "{data-change=moved data-side=after data-source=order data-state=OPEN} "|"{data-change=moved data-side=after data-source=order data-state=OPEN data-syntax=marker} " yes     "{data-change=moved data-side=after data-source=order data-state=OPEN} "|"{data-change=moved data-side=after data-source=order data-state=OPEN data-syntax=marker}
+    "→" moved none: "|"{data-change=moved data-side=after data-source=order data-state=OPEN data-syntax=marker} " 501           "{data-change=moved data-side=after data-source=order data-state=OPEN} "|"{data-change=moved data-side=after data-source=order data-state=OPEN data-syntax=marker} " no      "{data-change=moved data-side=after data-source=order data-state=OPEN} "|"{data-change=moved data-side=after data-source=order data-state=OPEN data-syntax=marker}
+    "→" moved none: 
+    ring {data-source=order data-state=OPEN}
+      STRETCH 0:0-9:27 {data-change=moved data-place=1 data-side=after data-source=order}
+    ring {data-source=timeout data-state=REVISING}
+      STRETCH 6:0-6:27 {data-carried=order data-change=inserted data-place=1 data-side=after data-source=timeout}
+  PROPOSAL_LIST
+    {"actions":[{"command":"accept","label":"Accept","stateAfter":"ACCEPTED"},{"command":"reject","label":"Reject","stateAfter":"REJECTED"},{"command":"revise","label":"Revise","stateAfter":"REQUESTED"}],"attributes":{},"isDrafting":false,"neighbors":{"range_Next":{"first":27,"last":36},"range_Previous":null},"places":{"kind":"MOVE","range":{"first":27,"last":36},"way":"UP"},"rationale":"Whether a call's retried at all is the first thing a caller asks; the options only tune how.","request":"","source":"order","state":"OPEN","status":"","title":"Say what it retries before its options"}
+    {"actions":[],"attributes":{},"isDrafting":false,"neighbors":{"range_Next":{"first":27,"last":36},"range_Previous":null},"places":{"conditions":[{"count":1,"kind":"CARRIED","source":"order","title":"Say what it retries before its options"}],"count_All":1,"count_Here":1,"kind":"COUNT"},"rationale":"A 408 means the server stopped waiting for the request, not that the request failed: sent again, it usually goes through.","request":"only when the request is safe to send twice, a GET or a PUT.","source":"timeout","state":"REVISING","status":"Revising","title":"Retry a request that timed out"}
+    {"actions":[{"command":"reopen","label":"Reopen","stateAfter":"OPEN"}],"attributes":{},"isDrafting":false,"neighbors":{"range_Next":{"first":27,"last":36},"range_Previous":null},"places":{"kind":"NONE"},"rationale":"Some servers send a 501 for a method they'll support after a deploy; tried again a minute later, it works.","request":"","source":"retry501","state":"REJECTED","status":"Rejected","title":"Retry a 501 too"}
+  LINES run 9
+    "21" none none: "##"{data-syntax=heading marker} " Options"{data-syntax=heading}
+    "22" none none: 
+FRAME 23-25
+  CURRENT_LINES run 10
+    "23" changed none: "-"{data-syntax=marker} " " "\`"{data-syntax=code marker} "attempts"{data-syntax=code} "\`"{data-syntax=code marker} ": how many times to try, " "*"{data-change=restyled data-side=before data-source=stress data-state=OPEN data-syntax=emphasis marker} "5"{data-change=restyled data-side=before data-source=stress data-state=OPEN data-syntax=emphasis} "*"{data-change=restyled data-side=before data-source=stress data-state=OPEN data-syntax=emphasis marker} " unless you say otherwise."
+    "24" changed none: "-"{data-syntax=marker} " " "\`"{data-syntax=code marker} "signal"{data-syntax=code} "\`"{data-syntax=code marker} ": an " "\`"{data-syntax=code marker} "AbortSignal"{data-syntax=code} "\`"{data-syntax=code marker} "; once it aborts, retry " "stops waiting"{data-change=replaced data-side=before data-source=aborted data-state=OPEN} " and throws."
+    "25" removed none: "-"{data-change=removed data-side=before data-source=hook data-state=OPEN data-syntax=marker} " "{data-change=removed data-side=before data-source=hook data-state=OPEN} "\`"{data-change=removed data-side=before data-source=hook data-state=OPEN data-syntax=code marker} "onRetry"{data-change=removed data-side=before data-source=hook data-state=OPEN data-syntax=code} "\`"{data-change=removed data-side=before data-source=hook data-state=OPEN data-syntax=code marker} ": called before each new attempt, with the error and the attempt's number."{data-change=removed data-side=before data-source=hook data-state=OPEN}
+    ring {data-source=stress data-state=OPEN}
+      STRETCH 0:37-0:40 {data-change=restyled data-place=1 data-side=before data-source=stress}
+    ring {data-source=aborted data-state=OPEN}
+      STRETCH 1:52-1:65 {data-change=replaced data-place=1 data-side=before data-source=aborted}
+    ring {data-source=hook data-state=OPEN}
+      STRETCH 2:0-2:85 {data-change=removed data-place=1 data-side=before data-source=hook}
+  PROPOSAL_LINES run 11
+    "~" changed none: "-"{data-syntax=marker} " " "\`"{data-syntax=code marker} "attempts"{data-syntax=code} "\`"{data-syntax=code marker} ": how many times to try, " "**"{data-change=restyled data-side=after data-source=stress data-state=OPEN data-syntax=strong marker} "5"{data-change=restyled data-side=after data-source=stress data-state=OPEN data-syntax=strong} "**"{data-change=restyled data-side=after data-source=stress data-state=OPEN data-syntax=strong marker} " unless you say otherwise."
+    "~" changed none: "-"{data-syntax=marker} " " "\`"{data-syntax=code marker} "signal"{data-syntax=code} "\`"{data-syntax=code marker} ": an " "\`"{data-syntax=code marker} "AbortSignal"{data-syntax=code} "\`"{data-syntax=code marker} "; once it aborts, retry " "stops, mid-wait or between attempts,"{data-change=replaced data-side=after data-source=aborted data-state=OPEN} " and throws."
+    ring {data-source=stress data-state=OPEN}
+      STRETCH 0:37-0:42 {data-change=restyled data-place=1 data-side=after data-source=stress}
+    ring {data-source=aborted data-state=OPEN}
+      STRETCH 1:52-1:88 {data-change=replaced data-place=1 data-side=after data-source=aborted}
+    ring {data-source=hook data-state=OPEN}
+      BOUNDARY 2 {data-change=removed data-place=1 data-side=after data-source=hook}
+  PROPOSAL_LIST
+    {"actions":[{"command":"accept","label":"Accept","stateAfter":"ACCEPTED"},{"command":"reject","label":"Reject","stateAfter":"REJECTED"},{"command":"revise","label":"Revise","stateAfter":"REQUESTED"}],"attributes":{},"isDrafting":false,"neighbors":{"range_Next":null,"range_Previous":null},"places":{"kind":"NONE"},"rationale":"It's the number most callers live with, so it's the one to find at a glance.","request":"","source":"stress","state":"OPEN","status":"","title":"Make the default bold"}
+    {"actions":[{"command":"accept","label":"Accept","stateAfter":"ACCEPTED"},{"command":"reject","label":"Reject","stateAfter":"REJECTED"},{"command":"revise","label":"Revise","stateAfter":"REQUESTED"}],"attributes":{},"isDrafting":false,"neighbors":{"range_Next":null,"range_Previous":null},"places":{"kind":"NONE"},"rationale":"With the module's own proposal, retry asks about the signal between attempts as well as while it waits; said as it is, an abort only cuts a wait short.","request":"","source":"aborted","state":"OPEN","status":"","title":"Say an abort stops the attempts too"}
+    {"actions":[{"command":"accept","label":"Accept","stateAfter":"ACCEPTED"},{"command":"reject","label":"Reject","stateAfter":"REJECTED"},{"command":"revise","label":"Revise","stateAfter":"REQUESTED"}],"attributes":{},"isDrafting":false,"neighbors":{"range_Next":null,"range_Previous":null},"places":{"kind":"NONE"},"rationale":"Nothing passes onRetry any more: the callers log their retries in their own catch blocks.","request":"","source":"hook","state":"OPEN","status":"","title":"Drop the onRetry hook"}
+  LINES run 12
+    "26" none none: 
+FRAME 27-36
+  CURRENT_LINES run 13
+    "27" moved none (moved → order after): "##"{data-change=moved data-side=before data-source=order data-state=OPEN data-syntax=heading marker} " What it retries"{data-change=moved data-side=before data-source=order data-state=OPEN data-syntax=heading}
+    "28" moved none: 
+    "29" moved none: "A call that throws is tried again when the network failed, or when the server answered with a status that says it may work later:"{data-change=moved data-side=before data-source=order data-state=OPEN}
+    "30" moved none: 
+    "31" moved none: "|"{data-change=moved data-side=before data-source=order data-state=OPEN data-syntax=marker} " status        "{data-change=moved data-side=before data-source=order data-state=OPEN} "|"{data-change=moved data-side=before data-source=order data-state=OPEN data-syntax=marker} " retried "{data-change=moved data-side=before data-source=order data-state=OPEN} "|"{data-change=moved data-side=before data-source=order data-state=OPEN data-syntax=marker}
+    "32" moved none: "|---------------|---------|"{data-change=moved data-side=before data-source=order data-state=OPEN data-syntax=marker}
+    "33" moved none: "|"{data-change=moved data-side=before data-source=order data-state=OPEN data-syntax=marker} " 429           "{data-change=moved data-side=before data-source=order data-state=OPEN} "|"{data-change=moved data-side=before data-source=order data-state=OPEN data-syntax=marker} " yes     "{data-change=moved data-side=before data-source=order data-state=OPEN} "|"{data-change=moved data-side=before data-source=order data-state=OPEN data-syntax=marker}
+    "34" moved none: "|"{data-change=moved data-side=before data-source=order data-state=OPEN data-syntax=marker} " 5xx, but 501  "{data-change=moved data-side=before data-source=order data-state=OPEN} "|"{data-change=moved data-side=before data-source=order data-state=OPEN data-syntax=marker} " yes     "{data-change=moved data-side=before data-source=order data-state=OPEN} "|"{data-change=moved data-side=before data-source=order data-state=OPEN data-syntax=marker}
+    "35" moved none: "|"{data-change=moved data-side=before data-source=order data-state=OPEN data-syntax=marker} " 501           "{data-change=moved data-side=before data-source=order data-state=OPEN} "|"{data-change=moved data-side=before data-source=order data-state=OPEN data-syntax=marker} " no      "{data-change=moved data-side=before data-source=order data-state=OPEN} "|"{data-change=moved data-side=before data-source=order data-state=OPEN data-syntax=marker}
+    "36" moved none: 
+    ring {data-source=order data-state=OPEN}
+      STRETCH 0:0-8:27 {data-change=moved data-place=1 data-side=before data-source=order}
+  PROPOSAL_LINES run 14
+  PROPOSAL_LIST
+    {"actions":[{"command":"accept","label":"Accept","stateAfter":"ACCEPTED"},{"command":"reject","label":"Reject","stateAfter":"REJECTED"},{"command":"revise","label":"Revise","stateAfter":"REQUESTED"}],"attributes":{},"isDrafting":false,"neighbors":{"range_Next":null,"range_Previous":{"first":21,"last":20}},"places":{"kind":"MOVE","range":{"first":27,"last":36},"way":"UP"},"rationale":"Whether a call's retried at all is the first thing a caller asks; the options only tune how.","request":"","source":"order","state":"OPEN","status":"","title":"Say what it retries before its options"}
+    {"actions":[],"attributes":{},"isDrafting":false,"neighbors":{"range_Next":null,"range_Previous":{"first":21,"last":20}},"places":{"conditions":[],"count_All":1,"count_Here":0,"kind":"COUNT"},"rationale":"A 408 means the server stopped waiting for the request, not that the request failed: sent again, it usually goes through.","request":"only when the request is safe to send twice, a GET or a PUT.","source":"timeout","state":"REVISING","status":"Revising","title":"Retry a request that timed out"}
+    {"actions":[{"command":"reopen","label":"Reopen","stateAfter":"OPEN"}],"attributes":{},"isDrafting":false,"neighbors":{"range_Next":null,"range_Previous":{"first":21,"last":20}},"places":{"kind":"NONE"},"rationale":"Some servers send a 501 for a method they'll support after a deploy; tried again a minute later, it works.","request":"","source":"retry501","state":"REJECTED","status":"Rejected","title":"Retry a 501 too"}
+  LINES run 15
+    "37" none none: "##"{data-syntax=heading marker} " How long it waits"{data-syntax=heading}
+    "38" none none: 
+FRAME 39-43
+  CURRENT_LINES run 16
+    "39" none none: "Each wait is twice the one before, starting at " "\`"{data-syntax=code marker} "DELAY_MS"{data-syntax=code} "\`"{data-syntax=code marker} ", 100 ms, with up to half as much again added at random, so callers that failed together don't all retry together."
+    "40" none none: 
+    "41" changed none: ">"{data-syntax=quote marker} " A call that keeps failing waits longer each round: "{data-syntax=quote} "by the tenth attempt, almost a minute"{data-change=replaced data-side=before data-source=cap data-state=REQUESTED data-syntax=quote} "."{data-syntax=quote}
+    "42" none none: 
+    "43" none none: "See " "["{data-syntax=marker} "why the waits grow"{data-syntax=link} "]("{data-syntax=marker} "https://example.com/backoff"{data-syntax=url} ")"{data-syntax=marker} ", and " "**"{data-syntax=strong marker} "please"{data-syntax=strong} "**"{data-syntax=strong marker} " say if anything's odd."
+    ring {data-source=cap data-state=REQUESTED}
+      STRETCH 2:53-2:90 {data-change=replaced data-place=1 data-side=before data-source=cap}
+  PROPOSAL_LINES run 17
+    "" none none: "Each wait is twice the one before, starting at " "\`"{data-syntax=code marker} "DELAY_MS"{data-syntax=code} "\`"{data-syntax=code marker} ", 100 ms, with up to half as much again added at random, so callers that failed together don't all retry together."
+    "" none none: 
+    "~" changed none: ">"{data-syntax=quote marker} " A call that keeps failing waits longer each round: "{data-syntax=quote} "but never longer than 30 seconds"{data-change=replaced data-side=after data-source=cap data-state=REQUESTED data-syntax=quote} "."{data-syntax=quote}
+    "" none none: 
+    "" none none: "See " "["{data-syntax=marker} "why the waits grow"{data-syntax=link} "]("{data-syntax=marker} "https://example.com/backoff"{data-syntax=url} ")"{data-syntax=marker} ", and " "**"{data-syntax=strong marker} "please"{data-syntax=strong} "**"{data-syntax=strong marker} " say if anything's odd."
     ring {data-source=cap data-state=REQUESTED}
       STRETCH 2:53-2:85 {data-change=replaced data-place=1 data-side=after data-source=cap}
   PROPOSAL_LIST
@@ -1295,134 +1437,4 @@ FRAME 22-22
     "28" none none: 
     "29" none none: "Next step: ring the electrician on Monday, and ask the landlord about the"
     "30" none none: "yard while we're there.""
-`;
-
-exports[`the Markdown example, its changes read as Markdown, draws as it did when it was looked over 1`] = `
-"label width 2
-  LINES run 1
-    "1" none none: "#"{data-syntax=heading marker} " retry"{data-syntax=heading}
-    "2" none none: 
-    "3" none none: "Retries a flaky async call, backing off further each time, until it succeeds, runs out of attempts, or the caller gives up on it."
-    "4" none none: 
-    "5" none none: "##"{data-syntax=heading marker} " Install"{data-syntax=heading}
-    "6" none none: 
-    "7" none none: "\`\`\`sh"{data-syntax=marker}
-    "8" none none: "bun add @tools/retry"{data-syntax=code}
-    "9" none none: "\`\`\`"{data-syntax=marker}
-    "10" none none: 
-    "11" none none: "##"{data-syntax=heading marker} " Use"{data-syntax=heading}
-    "12" none none: 
-    "13" none none: "Wrap the call in a function, and pass it to " "\`"{data-syntax=code marker} "retry"{data-syntax=code} "\`"{data-syntax=code marker} ", with any options:"
-    "14" none none: 
-    "15" none none: "\`\`\`js"{data-syntax=marker}
-    "16" none none: "import"{data-syntax=keyword} " { retry } " "from"{data-syntax=keyword} " " "\\"@tools/retry\\""{data-syntax=string} ";"
-    "17" none none: 
-FRAME 18-18
-  CURRENT_LINES run 2
-    "18" none none: "const"{data-syntax=keyword} " user = " "await"{data-syntax=keyword} " " "retry"{data-syntax=function} "(() => " "fetchUser"{data-syntax=function} "(id), { attempts: " "3"{data-syntax=number} " });"
-  PROPOSAL_LINES run 3
-    "~" changed none: "const"{data-syntax=keyword} " user = " "await"{data-syntax=keyword} " " "retry"{data-syntax=function} "(() => " "fetchUser"{data-syntax=function} "(id" ", { signal }"{data-change=inserted data-side=after data-source=example data-state=OPEN} "), { attempts: " "3"{data-syntax=number} ", signal"{data-change=inserted data-side=after data-source=example data-state=OPEN} " });"
-    ring {data-source=example data-state=OPEN}
-      STRETCH 0:43-0:55 {data-change=inserted data-place=1 data-side=after data-source=example}
-      STRETCH 0:71-0:79 {data-change=inserted data-place=2 data-side=after data-source=example}
-  PROPOSAL_LIST
-    {"actions":[{"command":"accept","label":"Accept","stateAfter":"ACCEPTED"},{"command":"reject","label":"Reject","stateAfter":"REJECTED"},{"command":"revise","label":"Revise","stateAfter":"REQUESTED"}],"attributes":{},"isDrafting":false,"neighbors":{"range_Next":null,"range_Previous":null},"places":{"kind":"NONE"},"rationale":"A caller who can cancel should see where the signal goes: to the call, so a request in flight stops, and to retry, so a wait does.","request":"","source":"example","state":"OPEN","status":"","title":"Pass a signal in the example"}
-  LINES run 4
-    "19" none none: "\`\`\`"{data-syntax=marker}
-    "20" none none: 
-FRAME 21-20
-  PROPOSAL_LINES run 5
-    "→" moved none (from lines 27–36 → order before): "##"{data-change=moved data-side=after data-source=order data-state=OPEN data-syntax=heading marker} " What it retries"{data-change=moved data-side=after data-source=order data-state=OPEN data-syntax=heading}
-    "→" moved none: 
-    "→" moved none: "A call that throws is tried again when the network failed, or when the server answered with a status that says it may work later:"{data-change=moved data-side=after data-source=order data-state=OPEN}
-    "→" moved none: 
-    "→" moved none: "|"{data-change=moved data-side=after data-source=order data-state=OPEN data-syntax=marker} " status        "{data-change=moved data-side=after data-source=order data-state=OPEN} "|"{data-change=moved data-side=after data-source=order data-state=OPEN data-syntax=marker} " retried "{data-change=moved data-side=after data-source=order data-state=OPEN} "|"{data-change=moved data-side=after data-source=order data-state=OPEN data-syntax=marker}
-    "→" moved none: "|---------------|---------|"{data-change=moved data-side=after data-source=order data-state=OPEN data-syntax=marker}
-    "→" moved none: "|"{data-change=moved data-edit-change=inserted data-edit-source=timeout data-side=after data-source=order data-state=OPEN data-syntax=marker} " 408           "{data-change=moved data-edit-change=inserted data-edit-source=timeout data-side=after data-source=order data-state=OPEN} "|"{data-change=moved data-edit-change=inserted data-edit-source=timeout data-side=after data-source=order data-state=OPEN data-syntax=marker} " yes     "{data-change=moved data-edit-change=inserted data-edit-source=timeout data-side=after data-source=order data-state=OPEN} "|"{data-change=moved data-edit-change=inserted data-edit-source=timeout data-side=after data-source=order data-state=OPEN data-syntax=marker}
-    "→" moved none: "|"{data-change=moved data-side=after data-source=order data-state=OPEN data-syntax=marker} " 429           "{data-change=moved data-side=after data-source=order data-state=OPEN} "|"{data-change=moved data-side=after data-source=order data-state=OPEN data-syntax=marker} " yes     "{data-change=moved data-side=after data-source=order data-state=OPEN} "|"{data-change=moved data-side=after data-source=order data-state=OPEN data-syntax=marker}
-    "→" moved none: "|"{data-change=moved data-side=after data-source=order data-state=OPEN data-syntax=marker} " 5xx, but 501  "{data-change=moved data-side=after data-source=order data-state=OPEN} "|"{data-change=moved data-side=after data-source=order data-state=OPEN data-syntax=marker} " yes     "{data-change=moved data-side=after data-source=order data-state=OPEN} "|"{data-change=moved data-side=after data-source=order data-state=OPEN data-syntax=marker}
-    "→" moved none: "|"{data-change=moved data-side=after data-source=order data-state=OPEN data-syntax=marker} " 501           "{data-change=moved data-side=after data-source=order data-state=OPEN} "|"{data-change=moved data-side=after data-source=order data-state=OPEN data-syntax=marker} " no      "{data-change=moved data-side=after data-source=order data-state=OPEN} "|"{data-change=moved data-side=after data-source=order data-state=OPEN data-syntax=marker}
-    "→" moved none: 
-    ring {data-source=order data-state=OPEN}
-      STRETCH 0:0-9:27 {data-change=moved data-place=1 data-side=after data-source=order}
-    ring {data-source=timeout data-state=REVISING}
-      STRETCH 6:0-6:27 {data-carried=order data-change=inserted data-place=1 data-side=after data-source=timeout}
-  PROPOSAL_LIST
-    {"actions":[{"command":"accept","label":"Accept","stateAfter":"ACCEPTED"},{"command":"reject","label":"Reject","stateAfter":"REJECTED"},{"command":"revise","label":"Revise","stateAfter":"REQUESTED"}],"attributes":{},"isDrafting":false,"neighbors":{"range_Next":{"first":27,"last":36},"range_Previous":null},"places":{"kind":"MOVE","range":{"first":27,"last":36},"way":"UP"},"rationale":"Whether a call's retried at all is the first thing a caller asks; the options only tune how.","request":"","source":"order","state":"OPEN","status":"","title":"Say what it retries before its options"}
-    {"actions":[],"attributes":{},"isDrafting":false,"neighbors":{"range_Next":{"first":27,"last":36},"range_Previous":null},"places":{"conditions":[{"count":1,"kind":"CARRIED","source":"order","title":"Say what it retries before its options"}],"count_All":1,"count_Here":1,"kind":"COUNT"},"rationale":"A 408 means the server stopped waiting for the request, not that the request failed: sent again, it usually goes through.","request":"only when the request is safe to send twice, a GET or a PUT.","source":"timeout","state":"REVISING","status":"Revising","title":"Retry a request that timed out"}
-    {"actions":[{"command":"reopen","label":"Reopen","stateAfter":"OPEN"}],"attributes":{},"isDrafting":false,"neighbors":{"range_Next":{"first":27,"last":36},"range_Previous":null},"places":{"kind":"NONE"},"rationale":"Some servers send a 501 for a method they'll support after a deploy; tried again a minute later, it works.","request":"","source":"retry501","state":"REJECTED","status":"Rejected","title":"Retry a 501 too"}
-  LINES run 6
-    "21" none none: "##"{data-syntax=heading marker} " Options"{data-syntax=heading}
-    "22" none none: 
-FRAME 23-25
-  CURRENT_LINES run 7
-    "23" changed none: "-"{data-syntax=marker} " " "\`"{data-syntax=code marker} "attempts"{data-syntax=code} "\`"{data-syntax=code marker} ": how many times to try, " "*"{data-change=restyled data-side=before data-source=stress data-state=OPEN data-syntax=emphasis marker} "5"{data-change=restyled data-side=before data-source=stress data-state=OPEN data-syntax=emphasis} "*"{data-change=restyled data-side=before data-source=stress data-state=OPEN data-syntax=emphasis marker} " unless you say otherwise."
-    "24" changed none: "-"{data-syntax=marker} " " "\`"{data-syntax=code marker} "signal"{data-syntax=code} "\`"{data-syntax=code marker} ": an " "\`"{data-syntax=code marker} "AbortSignal"{data-syntax=code} "\`"{data-syntax=code marker} "; once it aborts, retry " "stops waiting"{data-change=replaced data-side=before data-source=aborted data-state=OPEN} " and throws."
-    "25" removed none: "-"{data-change=removed data-side=before data-source=hook data-state=OPEN data-syntax=marker} " "{data-change=removed data-side=before data-source=hook data-state=OPEN} "\`"{data-change=removed data-side=before data-source=hook data-state=OPEN data-syntax=code marker} "onRetry"{data-change=removed data-side=before data-source=hook data-state=OPEN data-syntax=code} "\`"{data-change=removed data-side=before data-source=hook data-state=OPEN data-syntax=code marker} ": called before each new attempt, with the error and the attempt's number."{data-change=removed data-side=before data-source=hook data-state=OPEN}
-    ring {data-source=stress data-state=OPEN}
-      STRETCH 0:37-0:40 {data-change=restyled data-place=1 data-side=before data-source=stress}
-    ring {data-source=aborted data-state=OPEN}
-      STRETCH 1:52-1:65 {data-change=replaced data-place=1 data-side=before data-source=aborted}
-    ring {data-source=hook data-state=OPEN}
-      STRETCH 2:0-2:85 {data-change=removed data-place=1 data-side=before data-source=hook}
-  PROPOSAL_LINES run 8
-    "~" changed none: "-"{data-syntax=marker} " " "\`"{data-syntax=code marker} "attempts"{data-syntax=code} "\`"{data-syntax=code marker} ": how many times to try, " "**"{data-change=restyled data-side=after data-source=stress data-state=OPEN data-syntax=strong marker} "5"{data-change=restyled data-side=after data-source=stress data-state=OPEN data-syntax=strong} "**"{data-change=restyled data-side=after data-source=stress data-state=OPEN data-syntax=strong marker} " unless you say otherwise."
-    "~" changed none: "-"{data-syntax=marker} " " "\`"{data-syntax=code marker} "signal"{data-syntax=code} "\`"{data-syntax=code marker} ": an " "\`"{data-syntax=code marker} "AbortSignal"{data-syntax=code} "\`"{data-syntax=code marker} "; once it aborts, retry " "stops, mid-wait or between attempts,"{data-change=replaced data-side=after data-source=aborted data-state=OPEN} " and throws."
-    ring {data-source=stress data-state=OPEN}
-      STRETCH 0:37-0:42 {data-change=restyled data-place=1 data-side=after data-source=stress}
-    ring {data-source=aborted data-state=OPEN}
-      STRETCH 1:52-1:88 {data-change=replaced data-place=1 data-side=after data-source=aborted}
-    ring {data-source=hook data-state=OPEN}
-      BOUNDARY 2 {data-change=removed data-place=1 data-side=after data-source=hook}
-  PROPOSAL_LIST
-    {"actions":[{"command":"accept","label":"Accept","stateAfter":"ACCEPTED"},{"command":"reject","label":"Reject","stateAfter":"REJECTED"},{"command":"revise","label":"Revise","stateAfter":"REQUESTED"}],"attributes":{},"isDrafting":false,"neighbors":{"range_Next":null,"range_Previous":null},"places":{"kind":"NONE"},"rationale":"It's the number most callers live with, so it's the one to find at a glance.","request":"","source":"stress","state":"OPEN","status":"","title":"Make the default bold"}
-    {"actions":[{"command":"accept","label":"Accept","stateAfter":"ACCEPTED"},{"command":"reject","label":"Reject","stateAfter":"REJECTED"},{"command":"revise","label":"Revise","stateAfter":"REQUESTED"}],"attributes":{},"isDrafting":false,"neighbors":{"range_Next":null,"range_Previous":null},"places":{"kind":"NONE"},"rationale":"With the module's own proposal, retry asks about the signal between attempts as well as while it waits; said as it is, an abort only cuts a wait short.","request":"","source":"aborted","state":"OPEN","status":"","title":"Say an abort stops the attempts too"}
-    {"actions":[{"command":"accept","label":"Accept","stateAfter":"ACCEPTED"},{"command":"reject","label":"Reject","stateAfter":"REJECTED"},{"command":"revise","label":"Revise","stateAfter":"REQUESTED"}],"attributes":{},"isDrafting":false,"neighbors":{"range_Next":null,"range_Previous":null},"places":{"kind":"NONE"},"rationale":"Nothing passes onRetry any more: the callers log their retries in their own catch blocks.","request":"","source":"hook","state":"OPEN","status":"","title":"Drop the onRetry hook"}
-  LINES run 9
-    "26" none none: 
-FRAME 27-36
-  CURRENT_LINES run 10
-    "27" moved none (moved → order after): "##"{data-change=moved data-side=before data-source=order data-state=OPEN data-syntax=heading marker} " What it retries"{data-change=moved data-side=before data-source=order data-state=OPEN data-syntax=heading}
-    "28" moved none: 
-    "29" moved none: "A call that throws is tried again when the network failed, or when the server answered with a status that says it may work later:"{data-change=moved data-side=before data-source=order data-state=OPEN}
-    "30" moved none: 
-    "31" moved none: "|"{data-change=moved data-side=before data-source=order data-state=OPEN data-syntax=marker} " status        "{data-change=moved data-side=before data-source=order data-state=OPEN} "|"{data-change=moved data-side=before data-source=order data-state=OPEN data-syntax=marker} " retried "{data-change=moved data-side=before data-source=order data-state=OPEN} "|"{data-change=moved data-side=before data-source=order data-state=OPEN data-syntax=marker}
-    "32" moved none: "|---------------|---------|"{data-change=moved data-side=before data-source=order data-state=OPEN data-syntax=marker}
-    "33" moved none: "|"{data-change=moved data-side=before data-source=order data-state=OPEN data-syntax=marker} " 429           "{data-change=moved data-side=before data-source=order data-state=OPEN} "|"{data-change=moved data-side=before data-source=order data-state=OPEN data-syntax=marker} " yes     "{data-change=moved data-side=before data-source=order data-state=OPEN} "|"{data-change=moved data-side=before data-source=order data-state=OPEN data-syntax=marker}
-    "34" moved none: "|"{data-change=moved data-side=before data-source=order data-state=OPEN data-syntax=marker} " 5xx, but 501  "{data-change=moved data-side=before data-source=order data-state=OPEN} "|"{data-change=moved data-side=before data-source=order data-state=OPEN data-syntax=marker} " yes     "{data-change=moved data-side=before data-source=order data-state=OPEN} "|"{data-change=moved data-side=before data-source=order data-state=OPEN data-syntax=marker}
-    "35" moved none: "|"{data-change=moved data-side=before data-source=order data-state=OPEN data-syntax=marker} " 501           "{data-change=moved data-side=before data-source=order data-state=OPEN} "|"{data-change=moved data-side=before data-source=order data-state=OPEN data-syntax=marker} " no      "{data-change=moved data-side=before data-source=order data-state=OPEN} "|"{data-change=moved data-side=before data-source=order data-state=OPEN data-syntax=marker}
-    "36" moved none: 
-    ring {data-source=order data-state=OPEN}
-      STRETCH 0:0-8:27 {data-change=moved data-place=1 data-side=before data-source=order}
-  PROPOSAL_LINES run 11
-  PROPOSAL_LIST
-    {"actions":[{"command":"accept","label":"Accept","stateAfter":"ACCEPTED"},{"command":"reject","label":"Reject","stateAfter":"REJECTED"},{"command":"revise","label":"Revise","stateAfter":"REQUESTED"}],"attributes":{},"isDrafting":false,"neighbors":{"range_Next":null,"range_Previous":{"first":21,"last":20}},"places":{"kind":"MOVE","range":{"first":27,"last":36},"way":"UP"},"rationale":"Whether a call's retried at all is the first thing a caller asks; the options only tune how.","request":"","source":"order","state":"OPEN","status":"","title":"Say what it retries before its options"}
-    {"actions":[],"attributes":{},"isDrafting":false,"neighbors":{"range_Next":null,"range_Previous":{"first":21,"last":20}},"places":{"conditions":[],"count_All":1,"count_Here":0,"kind":"COUNT"},"rationale":"A 408 means the server stopped waiting for the request, not that the request failed: sent again, it usually goes through.","request":"only when the request is safe to send twice, a GET or a PUT.","source":"timeout","state":"REVISING","status":"Revising","title":"Retry a request that timed out"}
-    {"actions":[{"command":"reopen","label":"Reopen","stateAfter":"OPEN"}],"attributes":{},"isDrafting":false,"neighbors":{"range_Next":null,"range_Previous":{"first":21,"last":20}},"places":{"kind":"NONE"},"rationale":"Some servers send a 501 for a method they'll support after a deploy; tried again a minute later, it works.","request":"","source":"retry501","state":"REJECTED","status":"Rejected","title":"Retry a 501 too"}
-  LINES run 12
-    "37" none none: "##"{data-syntax=heading marker} " How long it waits"{data-syntax=heading}
-    "38" none none: 
-FRAME 39-43
-  CURRENT_LINES run 13
-    "39" none none: "Each wait is twice the one before, starting at 100 ms, with up to half as much again added at random, so callers that failed together don't all retry together."
-    "40" none none: 
-    "41" changed none: ">"{data-syntax=quote marker} " A call that keeps failing waits longer each round: "{data-syntax=quote} "by the tenth attempt, almost a minute"{data-change=replaced data-side=before data-source=cap data-state=REQUESTED data-syntax=quote} "."{data-syntax=quote}
-    "42" none none: 
-    "43" none none: "See " "["{data-syntax=marker} "why the waits grow"{data-syntax=link} "]("{data-syntax=marker} "https://example.com/backoff"{data-syntax=url} ")"{data-syntax=marker} ", and " "**"{data-syntax=strong marker} "please"{data-syntax=strong} "**"{data-syntax=strong marker} " say if anything's odd."
-    ring {data-source=cap data-state=REQUESTED}
-      STRETCH 2:53-2:90 {data-change=replaced data-place=1 data-side=before data-source=cap}
-  PROPOSAL_LINES run 14
-    "~" changed none: "Each wait is twice the one before, starting at " "\`"{data-change=inserted data-side=after data-source=base data-state=ACCEPTED data-syntax=code marker} "DELAY_MS"{data-change=inserted data-side=after data-source=base data-state=ACCEPTED data-syntax=code} "\`"{data-change=inserted data-side=after data-source=base data-state=ACCEPTED data-syntax=code marker} ", "{data-change=inserted data-side=after data-source=base data-state=ACCEPTED} "100 ms, with up to half as much again added at random, so callers that failed together don't all retry together."
-    "" none none: 
-    "~" changed none: ">"{data-syntax=quote marker} " A call that keeps failing waits longer each round: "{data-syntax=quote} "but never longer than 30 seconds"{data-change=replaced data-side=after data-source=cap data-state=REQUESTED data-syntax=quote} "."{data-syntax=quote}
-    "" none none: 
-    "" none none: "See " "["{data-syntax=marker} "why the waits grow"{data-syntax=link} "]("{data-syntax=marker} "https://example.com/backoff"{data-syntax=url} ")"{data-syntax=marker} ", and " "**"{data-syntax=strong marker} "please"{data-syntax=strong} "**"{data-syntax=strong marker} " say if anything's odd."
-    ring {data-source=base data-state=ACCEPTED}
-      STRETCH 0:47-0:58 {data-change=inserted data-place=1 data-side=after data-source=base}
-    ring {data-source=cap data-state=REQUESTED}
-      STRETCH 2:53-2:85 {data-change=replaced data-place=1 data-side=after data-source=cap}
-  PROPOSAL_LIST
-    {"actions":[{"command":"reopen","label":"Reopen","stateAfter":"OPEN"}],"attributes":{},"isDrafting":false,"neighbors":{"range_Next":null,"range_Previous":null},"places":{"kind":"NONE"},"rationale":"With the module's cap, a long outage never goes quiet for longer than half a minute; the README should say so.","request":"make the cap an option, 30 seconds unless the caller gives another.","source":"cap","state":"REQUESTED","status":"Revision requested","title":"Cap the delay at 30 seconds"}
-    {"actions":[{"command":"reopen","label":"Reopen","stateAfter":"OPEN"}],"attributes":{},"isDrafting":false,"neighbors":{"range_Next":null,"range_Previous":null},"places":{"kind":"NONE"},"rationale":"It's the name a caller finds in the module, and would search for.","request":"","source":"base","state":"ACCEPTED","status":"Accepted","title":"Name the base delay DELAY_MS"}
-    {"actions":[{"command":"dismiss","label":"Dismiss","stateAfter":null}],"attributes":{},"isDrafting":false,"neighbors":{"range_Next":null,"range_Previous":null},"places":{"kind":"NONE"},"rationale":"The guides moved under /guides.","request":"","source":"link","state":"WITHDRAWN","status":"Withdrawn","title":"Link the guide where it's moved"}"
 `;
