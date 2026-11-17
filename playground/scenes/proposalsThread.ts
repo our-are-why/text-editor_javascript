@@ -35,6 +35,7 @@ const item_Hook: _Item_Proposals_ = {
   rationale: "Nothing passes onRetry any more: the callers log their retries in their own catch blocks.",
   request: "",
   actions: actions_Review,
+  isDrafting: false,
   attributes: {},
 }
 
@@ -47,6 +48,7 @@ const item_Round: _Item_Proposals_ = {
   rationale: "n says nothing; round says what it counts, in retry and in backoff alike, and in the doc comment that names it.",
   request: "",
   actions: actions_Review,
+  isDrafting: false,
   attributes: {},
 }
 

@@ -1,6 +1,6 @@
 import { expect, test } from "bun:test"
 import fc from "fast-check"
-import { parseTexts_Line, segmentsOf__Stretches, parseLines_ViewModel, MODULE_PLAINTEXT, viewModelOf__Blocks, pointedAt__ViewModel, foldedAt__ViewModel, type _Stretch_Line_, type _Module_Language_, type _Group_Underlay_, type _Item_Proposals_ } from "../source/ViewModel_TextEditor.ts"
+import { parseTexts_Line, segmentsOf__Stretches, parseLines_ViewModel, MODULE_PLAINTEXT, viewModelOf__Blocks, pointedAt__ViewModel, foldedAt__ViewModel, draftingAt__ViewModel, type _Draft_Item_, type _Stretch_Line_, type _Module_Language_, type _Group_Underlay_, type _Item_Proposals_ } from "../source/ViewModel_TextEditor.ts"
 
 // every line break a text can hold: each ends a line, "\r\n" as one
 const lineBreaks = ["\r\n", "\n", "\r", "\v", "\f", "\u0085", "\u2028", "\u2029"]
@@ -145,7 +145,7 @@ test("plain text's module marks nothing: each line is one segment, its text, car
 
 // a group behind a run, and an item in a list, of a proposal, by its source
 const groupOf = (source: string): _Group_Underlay_ => ({ attributes: { "data-source": source }, underlays: [] })
-const itemOf = (source: string): _Item_Proposals_ => ({ source, title: source, state: "OPEN", status: "", places: "", rationale: "", request: "", actions: [], attributes: {} })
+const itemOf = (source: string): _Item_Proposals_ => ({ source, title: source, state: "OPEN", status: "", places: "", rationale: "", request: "", actions: [], isDrafting: false, attributes: {} })
 
 test("pointing at a proposal marks its groups and its items, in every run and list, and nothing else; pointing at none leaves the view model as it was", () => {
   const lines = parseLines_ViewModel({ multilineText: "one", module_Language: MODULE_PLAINTEXT })
@@ -252,6 +252,20 @@ test("a folded frame peeked has its rings, all of them, every proposal's; anothe
   ])
   const folded = foldedAt__ViewModel({ viewModel_TextEditor: viewModel, ranges_Folded: [{ first: 1, last: 2 }, { first: 4, last: 5 }], range_Peeked: { first: 1, last: 2 } })
   expect(folded.runs.map((run) => `${run.id}: ${run.groups.map((group) => `${group.attributes["data-source"]} ${group.underlays.length}`).join(", ")}`)).toEqual(["proposed: first 2, over 1", "other-proposed: "])
+})
+
+test("each item you're drafting notes in, of one proposal in one frame, says so, however many there are; that proposal's item in another frame, the frame's other items, and every item while none is drafted, don't", () => {
+  const lines = parseLines_ViewModel({ multilineText: "one", module_Language: MODULE_PLAINTEXT })
+  const itemOf = (source: string) => ({ source, title: source, state: "OPEN" as const, status: "", places: "", rationale: "", request: "", actions: [], isDrafting: false, attributes: {} })
+  const viewModel = viewModelOf__Blocks([
+    { kind: "FRAME", range: { first: 1, last: 1 }, parts: [{ kind: "CURRENT_LINES", run: { id: "first", lines, groups: [] } }, { kind: "PROPOSAL_LIST", items: [itemOf("round"), itemOf("cap")] }] },
+    { kind: "LINES", run: { id: "between", lines, groups: [] } },
+    { kind: "FRAME", range: { first: 3, last: 3 }, parts: [{ kind: "CURRENT_LINES", run: { id: "second", lines, groups: [] } }, { kind: "PROPOSAL_LIST", items: [itemOf("round")] }] },
+  ])
+  const drafted = (items_Drafted: Array<_Draft_Item_>) => draftingAt__ViewModel({ viewModel_TextEditor: viewModel, items_Drafted }).blocks.flatMap((block) => block.kind === "FRAME" ? block.parts.flatMap((part) => part.kind === "PROPOSAL_LIST" ? part.items.map((item) => `${block.range.first} ${item.source}${item.isDrafting ? " drafting" : ""}`) : []) : [])
+  expect(drafted([{ source: "round", range_Frame: { first: 3, last: 3 } }])).toEqual(["1 round", "1 cap", "3 round drafting"])
+  expect(drafted([{ source: "cap", range_Frame: { first: 1, last: 1 } }, { source: "round", range_Frame: { first: 3, last: 3 } }])).toEqual(["1 round", "1 cap drafting", "3 round drafting"])
+  expect(draftingAt__ViewModel({ viewModel_TextEditor: viewModel, items_Drafted: [] })).toBe(viewModel)
 })
 
 test("a proposal's state, its item's, is on its groups and on its words, each run's, for a perspective to show; its item listed after the rest once it's decided, accepted, rejected or withdrawn, the others in their order", () => {

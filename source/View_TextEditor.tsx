@@ -7,6 +7,7 @@ import {
 import type {
   _ViewModel_TextEditor_,
   _Target_Note_,
+  _Draft_Item_,
   _Block_ViewModel_,
   __BASE_Block__ViewModel_,
   _LINES_Block__ViewModel_,
@@ -43,7 +44,8 @@ export {
   type _Api___Line_Run__Html_,
   type _Api___Section_Frame__Html_,
   type _Point_Screen_,
-  type _Layout_View_
+  type _Layout_View_,
+  type _Focus_Draft_
 }
 
 class _View_TextEditor_ {
@@ -143,6 +145,15 @@ class _View_TextEditor_ {
     reveal__View_TextEditor({
       containerElement_View: this.containerElement,
       target_Note
+    })
+  }
+
+  focusDraft(
+    focus_Draft: _Focus_Draft_
+  ): void {
+    focusDraft__View_TextEditor({
+      containerElement_View: this.containerElement,
+      focus_Draft
     })
   }
 }
@@ -546,6 +557,7 @@ function Item_ProposalList__Html({
       class="item_htmlView"
       data-source={item_ProposalList.source}
       data-state={item_ProposalList.state}
+      data-drafting={item_ProposalList.isDrafting ? "" : undefined}
     >
       <p class="heading_htmlView">
         <span class="title_htmlView">{item_ProposalList.title}</span>
@@ -555,18 +567,62 @@ function Item_ProposalList__Html({
       <p class="rationale_htmlView">{item_ProposalList.rationale}</p>
       <p class="request_htmlView">{item_ProposalList.request}</p>
       <div class="actions_htmlView">
-        {item_ProposalList.actions.map((action_Item) => <Action_Item__Html action_Item={action_Item} />)}
+        {item_ProposalList.actions.map((action_Item) => (
+          <Action_Item__Html
+            action_Item={action_Item}
+            isExpanded={item_ProposalList.state === "OPEN" && action_Item.stateAfter === "REQUESTED" ? item_ProposalList.isDrafting : null}
+          />
+        ))}
       </div>
+      {item_ProposalList.isDrafting && <Draft_Item__Html item_ProposalList={item_ProposalList} />}
     </li>
+  )
+}
+
+interface _Api___Draft_Item__Html_ {
+  item_ProposalList: _Item_Proposals_
+}
+
+function Draft_Item__Html({
+  item_ProposalList
+}: _Api___Draft_Item__Html_): JSX.Element {
+  return (
+    <div class="draft_htmlView">
+      <textarea
+        class="notes_htmlView"
+        aria-label={`Your notes for revising “${item_ProposalList.title}”`}
+        placeholder="What should change?"
+        rows="3"
+      />
+      <div class="actions_htmlView">
+        <button
+          type="button"
+          class="action_htmlView"
+          data-draft="SEND"
+          data-state-after="REQUESTED"
+        >
+          Submit
+        </button>
+        <button
+          type="button"
+          class="action_htmlView"
+          data-draft="DISCARD"
+        >
+          Cancel
+        </button>
+      </div>
+    </div>
   )
 }
 
 interface _Api___Action_Item__Html_ {
   action_Item: _Action_Item_
+  isExpanded: boolean | null
 }
 
 function Action_Item__Html({
-  action_Item
+  action_Item,
+  isExpanded
 }: _Api___Action_Item__Html_): JSX.Element {
   return (
     <button
@@ -574,6 +630,7 @@ function Action_Item__Html({
       class="action_htmlView"
       data-command={action_Item.command}
       data-state-after={action_Item.stateAfter === null ? undefined : action_Item.stateAfter}
+      aria-expanded={isExpanded === null ? undefined : String(isExpanded)}
     >
       {action_Item.label}
     </button>
@@ -2159,6 +2216,48 @@ function reveal__View_TextEditor({
       block: "center",
       behavior: "smooth"
     })
+}
+
+interface _Api___focusDraft__View_TextEditor_ {
+  containerElement_View: HTMLElement
+  focus_Draft: _Focus_Draft_
+}
+
+interface _Focus_Draft_ {
+  draft_Item: _Draft_Item_
+  part: _Part_Focus_
+}
+
+type _Part_Focus_ = "NOTES" | "REVISE"
+
+function focusDraft__View_TextEditor({
+  containerElement_View,
+  focus_Draft
+}: _Api___focusDraft__View_TextEditor_): void {
+  containerElement_View
+    .querySelector<HTMLElement>(`${selectorOf__Draft_Item({
+      draft_Item: focus_Draft.draft_Item
+    })} ${SELECTORMAP__PART_FOCUS[focus_Draft.part]}`)
+    ?.focus()
+}
+
+type _SelectorMap_Part_ = {
+  [Part in _Part_Focus_]: string
+}
+
+const SELECTORMAP__PART_FOCUS: _SelectorMap_Part_ = {
+  NOTES: ".notes_htmlView",
+  REVISE: ".action_htmlView[data-command][data-state-after='REQUESTED']"
+}
+
+interface _Api___selectorOf__Draft_Item_ {
+  draft_Item: _Draft_Item_
+}
+
+function selectorOf__Draft_Item({
+  draft_Item
+}: _Api___selectorOf__Draft_Item_): string {
+  return `.frame_htmlView:has(> .fold_htmlView[data-fold-first="${draft_Item.range_Frame.first}"][data-fold-last="${draft_Item.range_Frame.last}"]) .item_htmlView[data-source="${CSS.escape(draft_Item.source)}"]`
 }
 
 interface _Api___sourceAt__View_TextEditor_ {

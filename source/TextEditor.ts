@@ -2,27 +2,34 @@ import {
   _View_TextEditor_,
   type _ComponentMap__View_TextEditor_,
   type _Layout_View_,
-  type _Point_Screen_
+  type _Point_Screen_,
+  type _Focus_Draft_
 } from "./View_TextEditor.tsx"
 import {
   type _ViewModel_TextEditor_,
   type _Target_Note_,
   type _Range_Lines_,
+  type _Draft_Item_,
   pointedAt__ViewModel,
+  draftingAt__ViewModel,
   foldedAt__ViewModel
 } from "./ViewModel_TextEditor.ts"
+import { CONTROLS__TEXTEDITOR } from "./Controls_TextEditor.ts"
 
 export {
   _TextEditor_,
   type _Api__TextEditor_,
   type _Module_TextEditor_,
-  type _Adapter_Module_,
+  type _Adapter_Event_,
   type _State_TextEditor_,
   type _Command_TextEditor_,
   type __BASE_Command_,
   type _POINT_Command_,
   type _JUMP_Command_,
   type _FOLD_Command_,
+  type _DRAFT_Command_,
+  type _SEND_Command_,
+  type _DISCARD_Command_,
   type _HandlerMap__TextEditor_,
   HANDLERMAP__TEXTEDITOR
 }
@@ -31,6 +38,7 @@ class _TextEditor_ {
   containerElement: HTMLElement
   view: _View_TextEditor_
   modules: Array<_Module_TextEditor_>
+  adapters: Array<_Adapter_Event_>
   state: _State_TextEditor_
   request_Draw: number | null
   point_Screen: _Point_Screen_ | null
@@ -54,11 +62,17 @@ class _TextEditor_ {
       target_Pointed: null,
       target_Revealed: null,
       ranges_Folded: [],
-      range_Peeked: null
+      range_Peeked: null,
+      items_Drafted: [],
+      focus_Draft: null
     }
     this.request_Draw = null
     this.point_Screen = null
-    for (const event of eventsOf__Modules(this.modules)) {
+    this.adapters = [
+      ...CONTROLS__TEXTEDITOR,
+      ...this.modules.flatMap((module_TextEditor) => module_TextEditor.adapters)
+    ]
+    for (const event of eventsOf__Adapters(this.adapters)) {
       this.containerElement.addEventListener(
         event,
         (event_Heard) => this.hear(event_Heard)
@@ -70,10 +84,7 @@ class _TextEditor_ {
   hear(
     event: Event
   ): void {
-    for (const adapter of adaptersFor__Event({
-      modules: this.modules,
-      event
-    })) {
+    for (const adapter of this.adapters.filter((adapter_Each) => adapter_Each.event === event.type)) {
       const command = adapter.commandOf__Event(event)
       if (command !== null && this.dispatch(command)) return
     }
@@ -100,6 +111,13 @@ class _TextEditor_ {
     this.request_Draw = requestAnimationFrame(() => {
       this.request_Draw = null
       this.view.draw(viewModelOf__State(this.state))
+      if (this.state.focus_Draft !== null) {
+        this.view.focusDraft(this.state.focus_Draft)
+        this.state = {
+          ...this.state,
+          focus_Draft: null
+        }
+      }
       this.dispatch({
         kind: "POINT",
         point_Screen: this.point_Screen
@@ -124,15 +142,15 @@ interface _Api__TextEditor_ {
 
 interface _Module_TextEditor_ {
   name: string
-  adapters: Array<_Adapter_Module_>
+  adapters: Array<_Adapter_Event_>
 }
 
-interface _Adapter_Module_ {
+interface _Adapter_Event_ {
   event: string
   commandOf__Event: (event: Event) => _Command_TextEditor_ | null
 }
 
-type _Command_TextEditor_ = _POINT_Command_ | _JUMP_Command_ | _FOLD_Command_
+type _Command_TextEditor_ = _POINT_Command_ | _JUMP_Command_ | _FOLD_Command_ | _DRAFT_Command_ | _SEND_Command_ | _DISCARD_Command_
 
 interface __BASE_Command_<Kind extends string> {
   kind: Kind
@@ -151,6 +169,18 @@ interface _FOLD_Command_ extends __BASE_Command_<"FOLD"> {
   point_Screen: _Point_Screen_
 }
 
+interface _DRAFT_Command_ extends __BASE_Command_<"DRAFT"> {
+  draft_Item: _Draft_Item_
+}
+
+interface _SEND_Command_ extends __BASE_Command_<"SEND"> {
+  draft_Item: _Draft_Item_
+}
+
+interface _DISCARD_Command_ extends __BASE_Command_<"DISCARD"> {
+  draft_Item: _Draft_Item_
+}
+
 interface _State_TextEditor_ {
   viewModel_TextEditor: _ViewModel_TextEditor_
   source_Pointed: string | null
@@ -159,39 +189,32 @@ interface _State_TextEditor_ {
   target_Revealed: _Target_Note_ | null
   ranges_Folded: Array<_Range_Lines_>
   range_Peeked: _Range_Lines_ | null
+  items_Drafted: Array<_Draft_Item_>
+  focus_Draft: _Focus_Draft_ | null
 }
 
-function eventsOf__Modules(
-  modules: Array<_Module_TextEditor_>
+function eventsOf__Adapters(
+  adapters: Array<_Adapter_Event_>
 ): Array<string> {
-  return [...new Set(modules.flatMap((module_TextEditor) => module_TextEditor.adapters.map((adapter) => adapter.event)))]
+  return [...new Set(adapters.map((adapter) => adapter.event))]
 }
 
 function viewModelOf__State(
   state: _State_TextEditor_
 ): _ViewModel_TextEditor_ {
   return pointedAt__ViewModel({
-    viewModel_TextEditor: foldedAt__ViewModel({
-      viewModel_TextEditor: state.viewModel_TextEditor,
-      ranges_Folded: state.ranges_Folded,
-      range_Peeked: state.range_Peeked
+    viewModel_TextEditor: draftingAt__ViewModel({
+      viewModel_TextEditor: foldedAt__ViewModel({
+        viewModel_TextEditor: state.viewModel_TextEditor,
+        ranges_Folded: state.ranges_Folded,
+        range_Peeked: state.range_Peeked
+      }),
+      items_Drafted: state.items_Drafted
     }),
     source: state.source_Pointed,
     place: state.place_Pointed,
     target_Note: state.target_Pointed
   })
-}
-
-interface _Api___adaptersFor__Event_ {
-  modules: Array<_Module_TextEditor_>
-  event: Event
-}
-
-function adaptersFor__Event({
-  modules,
-  event
-}: _Api___adaptersFor__Event_): Array<_Adapter_Module_> {
-  return modules.flatMap((module_TextEditor) => module_TextEditor.adapters.filter((adapter) => adapter.event === event.type))
 }
 
 interface _Api___stateAfter__Command_<Kind extends _Command_TextEditor_["kind"]> {
@@ -264,6 +287,88 @@ function FOLD_stateAfter__Command({
   }
 }
 
+function DRAFT_stateAfter__Command({
+  state,
+  command
+}: _Api___stateAfter__Command_<"DRAFT">): _State_TextEditor_ {
+  const isOpen = state.items_Drafted.some((draft_Item) => isSame__Draft_Item({
+    draft_Item,
+    draft_Item_Other: command.draft_Item
+  }))
+  return {
+    ...state,
+    items_Drafted: isOpen
+      ? state.items_Drafted
+      : [
+        ...state.items_Drafted,
+        command.draft_Item
+      ],
+    focus_Draft: {
+      draft_Item: command.draft_Item,
+      part: "NOTES"
+    }
+  }
+}
+
+function SEND_stateAfter__Command({
+  state,
+  command
+}: _Api___stateAfter__Command_<"SEND">): _State_TextEditor_ {
+  return closedAt__State({
+    state,
+    draft_Item: command.draft_Item
+  })
+}
+
+function DISCARD_stateAfter__Command({
+  state,
+  command
+}: _Api___stateAfter__Command_<"DISCARD">): _State_TextEditor_ {
+  return closedAt__State({
+    state,
+    draft_Item: command.draft_Item
+  })
+}
+
+interface _Api___closedAt__State_ {
+  state: _State_TextEditor_
+  draft_Item: _Draft_Item_
+}
+
+function closedAt__State({
+  state,
+  draft_Item
+}: _Api___closedAt__State_): _State_TextEditor_ {
+  const items_Drafted = state.items_Drafted.filter((draft_Item_Open) => !isSame__Draft_Item({
+    draft_Item: draft_Item_Open,
+    draft_Item_Other: draft_Item
+  }))
+  return items_Drafted.length === state.items_Drafted.length
+    ? state
+    : {
+      ...state,
+      items_Drafted,
+      focus_Draft: {
+        draft_Item,
+        part: "REVISE"
+      }
+    }
+}
+
+interface _Api___isSame__Draft_Item_ {
+  draft_Item: _Draft_Item_
+  draft_Item_Other: _Draft_Item_
+}
+
+function isSame__Draft_Item({
+  draft_Item,
+  draft_Item_Other
+}: _Api___isSame__Draft_Item_): boolean {
+  return draft_Item.source === draft_Item_Other.source
+    && draft_Item.range_Frame.first === draft_Item_Other.range_Frame.first
+    && draft_Item.range_Frame.last === draft_Item_Other.range_Frame.last
+}
+
 type _HandlerMap__TextEditor_ = {
   [Kind in _Command_TextEditor_["kind"]]: (api_Handler: _Api___stateAfter__Command_<Kind>) => _State_TextEditor_
 }
@@ -271,5 +376,8 @@ type _HandlerMap__TextEditor_ = {
 const HANDLERMAP__TEXTEDITOR: _HandlerMap__TextEditor_ = {
   POINT: POINT_stateAfter__Command,
   JUMP: JUMP_stateAfter__Command,
-  FOLD: FOLD_stateAfter__Command
+  FOLD: FOLD_stateAfter__Command,
+  DRAFT: DRAFT_stateAfter__Command,
+  SEND: SEND_stateAfter__Command,
+  DISCARD: DISCARD_stateAfter__Command
 }

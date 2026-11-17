@@ -40,6 +40,8 @@ export {
   segmentsOf__Stretches,
   pointedAt__ViewModel,
   foldedAt__ViewModel,
+  draftingAt__ViewModel,
+  type _Draft_Item_,
   parseLines_ViewModel,
   MODULE_PLAINTEXT,
   parseTexts_Line
@@ -180,6 +182,7 @@ interface _Item_Proposals_ {
   rationale: string
   request: string
   actions: Array<_Action_Item_>
+  isDrafting: boolean
   attributes: _Attributes_Element_
 }
 
@@ -586,6 +589,49 @@ function foldedOf__Frame({
       groups: isPeeked ? part_Proposed?.run.groups ?? [] : []
     }
   }
+}
+
+interface _Api___draftingAt__ViewModel_ {
+  viewModel_TextEditor: _ViewModel_TextEditor_
+  items_Drafted: Array<_Draft_Item_>
+}
+
+interface _Draft_Item_ {
+  source: string
+  range_Frame: _Range_Lines_
+}
+
+function draftingAt__ViewModel({
+  viewModel_TextEditor,
+  items_Drafted
+}: _Api___draftingAt__ViewModel_): _ViewModel_TextEditor_ {
+  if (items_Drafted.length === 0) return viewModel_TextEditor
+  return viewModelOf__Blocks(viewModel_TextEditor.blocks.map((block_ViewModel): _Block_ViewModel_ => {
+    if (block_ViewModel.kind !== "FRAME") return block_ViewModel
+    const sources_Drafted = items_Drafted
+      .filter((draft_Item) => draft_Item.range_Frame.first === block_ViewModel.range.first && draft_Item.range_Frame.last === block_ViewModel.range.last)
+      .map((draft_Item) => draft_Item.source)
+    return sources_Drafted.length === 0
+      ? block_ViewModel
+      : {
+        ...block_ViewModel,
+        parts: mapped__NonEmpty({
+          items: block_ViewModel.parts,
+          map: (part_Frame): _Part_Frame_ => part_Frame.kind === "PROPOSAL_LIST"
+            ? {
+              ...part_Frame,
+              items: mapped__NonEmpty({
+                items: part_Frame.items,
+                map: (item_Proposals) => ({
+                  ...item_Proposals,
+                  isDrafting: sources_Drafted.includes(item_Proposals.source)
+                })
+              })
+            }
+            : part_Frame
+        })
+      }
+  }))
 }
 
 interface _Api___mapped__NonEmpty_<Item, Mapped> {

@@ -874,7 +874,40 @@ hovered goes a step deeper, its grey darker, the main one's indigo deeper,
 `--view-action-hover-ground` and `--view-action-main-hover-ground`, as a
 click shows nothing else yet; and the keyboard's on one ringed in the page's
 ink, `--view-focus-ring`, no colour, as each colour there says where a
-proposal stands.
+proposal stands. In a narrow list, under 40rem, an item's actions go under
+its words, not beside them, still on the right, wrapping if even that's too
+narrow, so its words keep room to be read. Revise, an open item's action
+that leads to a revision requested, asks for your notes before anything's
+sent, as asking for a revision is sending them: a box for them under the
+item's words and its actions, which stay as they were, the item's whole
+width, the keyboard put in it, three lines tall whatever's written,
+scrolling past them, so the item doesn't grow as it's written in, never
+resized by hand, and under the box, on the right, Submit, filled in the
+revision's plum, the form's own word, not Revise again, which opens it, and
+Cancel, neutral, as doctor's form has its buttons under its box. Revise is a
+disclosure, as doctor's Amend is, a chevron after its words, pressed and
+pointing up while the form's open under it, `aria-expanded`. It's in that
+item alone, its proposal in its frame, `_Draft_Item_`, among the editor's
+`items_Drafted`, though the proposal has items in other frames too, and an
+item says it's the one, `isDrafting`, a host giving `false`, as a gutter
+says it's pointed at. `DRAFT` opens it, from Revise; `SEND`, from Submit or
+⌘ or Ctrl with Enter, and `DISCARD`, from Cancel or Escape, deliberately
+throwing away what's in it, or Revise pressed again with nothing written in
+it, close it, the keyboard back on Revise, the editor asking for that once
+it's drawn, `focus_Draft`, as it asks for a note's target to be revealed;
+Revise pressed again with something written puts the keyboard back in it, as
+doctor's Amend does, so what's written is never thrown away by the button
+that opened it; all three the editor's own controls', which work with no
+module in. Revise on another item opens its form too, as many open as you're
+writing, each in its own item, kept as it is, what's written in it with it,
+as GitHub's inline comments are, where doctor kept to one open at a time, a
+written one kept and gone to instead of another opening. What's written is
+the box's own, kept as what's around it's drawn again, not yet the state's,
+and gone once it's closed; and Submit sends nothing yet: once the pipeline's
+built, it's the host's command for revising, with what was written. Later,
+as doctor's do, Accept and Reject off while something's written in the form,
+so it's sent or cleared before deciding, never thrown away by it, once
+what's written is the state's.
 
 Deciding is a command, on the current proposal or one named: accept, reject,
 revise, amend; an item's actions are the editor's buttons for them, or,
@@ -992,9 +1025,12 @@ and a pointer that doesn't move sends nothing; where nothing under it
 changed, the state's the same, and nothing's drawn again. One module,
 `MODULE_MOUSE`, in `source/modules/mouse.ts`, every move of the pointer a
 `POINT` where it is, as it can move out of a ring still over the same
-element, leaving the editor a `POINT` at nothing, a click on a note a
-`JUMP`. Not yet: the model, lowering's stages, results beyond taken,
-observers, the keyboard and the current proposal.
+element, leaving the editor a `POINT` at nothing. A click on a note, a
+`JUMP`, and on a frame's fold control or its bar, a `FOLD`, are the editor's
+own controls', `CONTROLS__TEXTEDITOR`, in `source/Controls_TextEditor.ts`,
+which it always listens with, before any module's. Not yet: the model,
+lowering's stages, results beyond taken, observers, the keyboard and the
+current proposal.
 
 How it's drawn:
 
@@ -1194,8 +1230,22 @@ editor's container element, and:
 The core holds the mechanisms; the modules hold their uses: which key means
 what, what to announce and how urgently. Modules: the keyboard, the mouse,
 text input through EditContext, the clipboard, dragging, keys to move
-between proposals and decide them, a screen reader's, assistive
-technology's edits, voice.
+between proposals and decide them, a screen reader's, assistive technology's
+edits, voice.
+
+The editor's own controls are the core's: what it draws to be pressed, a
+frame's fold control and its bar, a move's note, an item's Revise, its
+form's Submit and Cancel, and the form's own keys, Escape and ⌘ or Ctrl with
+Enter, each works as it's drawn, pressed or clicked, or Enter or Space on
+it, with no module in, from `CONTROLS__TEXTEDITOR`, which the editor listens
+with before any module. Pressing a button isn't an input a host chooses;
+it's what a button is, and a control that did nothing without a module would
+be broken, not lighter. A host that wants proposals read only gives them no
+actions. Modules are the ways in a host chooses besides: pointing by
+hovering, the mouse's; keys to move between proposals and decide them; a
+screen reader's; voice; each another way to the same commands, never the
+only one. And what a command did, a host hears as an observer, never through
+a module: modules are input, observers output.
 
 A module's own commands:
 

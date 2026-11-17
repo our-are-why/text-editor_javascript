@@ -415,6 +415,27 @@
   gap: 0.4rem;
 }
 
+/* in a narrow list, an item's actions under its words, not beside them,
+   still on the right, wrapping if even that's too narrow, so its words keep
+   room to be read; its form's actions wrap too */
+.htmlView_editor .proposals_htmlView {
+  container: list_htmlView / inline-size;
+}
+
+@container list_htmlView (width < 40rem) {
+  .htmlView_editor .item_htmlView {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .htmlView_editor .item_htmlView > .actions_htmlView {
+    grid-column: 1;
+    grid-row: auto;
+    justify-content: flex-end;
+    flex-wrap: wrap;
+    margin-top: 0.4rem;
+  }
+}
+
 /* where it stands, beside it, in the gutter's column of numbers, as a
    line's number is beside the line: a check, accepted; a cross, rejected;
    an arc going round, being revised, still where motion's asked to be
@@ -614,4 +635,84 @@
 
 .htmlView_editor .item_htmlView[data-state="OPEN"] .action_htmlView:first-child:hover {
   background: var(--view-action-main-hover-ground, light-dark(#3c39ad, #6866e2));
+}
+
+/* while you write what should change, asking for its revision: under its
+   words and its actions, which stay as they were, a box for your notes the
+   item's whole width, three lines tall whatever's in it, scrolling past
+   them, so the item doesn't grow as it's written in, never resized by hand,
+   its edge plain enough to find; and under the box, on the right, where
+   its actions end, Submit, filled in the revision's plum, as submitting
+   leads to a revision requested, and Cancel, neutral */
+.htmlView_editor .draft_htmlView {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  margin-top: 0.4rem;
+}
+
+.htmlView_editor .draft_htmlView > .actions_htmlView {
+  justify-content: flex-end;
+  flex-wrap: wrap;
+}
+
+/* the action that opens the form, a disclosure: a chevron after its words,
+   pointing down while the form's closed, up and the button pressed while
+   it's open under it, pressing it again closing it */
+.htmlView_editor .action_htmlView[aria-expanded]::after {
+  content: "";
+  display: inline-block;
+  width: 0.3em;
+  height: 0.3em;
+  margin-left: 0.45em;
+  border: solid currentColor;
+  border-width: 0 0.11em 0.11em 0;
+  transform: translateY(-0.2em) rotate(45deg);
+}
+
+.htmlView_editor .action_htmlView[aria-expanded="true"]::after {
+  transform: translateY(0.05em) rotate(-135deg);
+}
+
+.htmlView_editor .action_htmlView[aria-expanded="true"] {
+  background: var(--view-action-pressed-ground, light-dark(#cfcfcf, #454545));
+}
+
+.htmlView_editor .notes_htmlView {
+  grid-column: 1;
+  box-sizing: border-box;
+  width: 100%;
+  height: calc(3lh + 0.7rem + 2px);
+  overflow-y: auto;
+  margin: 0;
+  padding: 0.35rem 0.5rem;
+  border: 1px solid var(--view-input-edge, color-mix(in srgb, CanvasText 45%, transparent));
+  border-radius: 2px;
+  background: var(--view-input-ground, var(--view-ground, Canvas));
+  color: inherit;
+  font: inherit;
+  resize: none;
+}
+
+.htmlView_editor .notes_htmlView::placeholder {
+  color: var(--view-placeholder-ink, color-mix(in srgb, CanvasText 58%, transparent));
+}
+
+.htmlView_editor .notes_htmlView:focus-visible {
+  outline: 2px solid var(--view-focus-ring, CanvasText);
+  outline-offset: -1px;
+}
+
+.htmlView_editor .item_htmlView[data-drafting] .action_htmlView[data-draft="SEND"] {
+  background: var(--view-action-revision-ground, light-dark(#8e3591, #a2449f));
+  color: var(--view-action-main-ink, #ffffff);
+}
+
+.htmlView_editor .item_htmlView[data-drafting] .action_htmlView[data-draft="SEND"]:hover {
+  background: var(--view-action-revision-hover-ground, light-dark(#782b7b, #b252af));
+}
+
+.htmlView_editor .item_htmlView[data-drafting] .action_htmlView[data-draft="DISCARD"] {
+  color: var(--view-action-ink, light-dark(#3b3b3b, #cccccc));
 }

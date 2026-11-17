@@ -96,7 +96,7 @@ describe("beside it: what can't live in one document", () => {
           parts: [
             { kind: "CURRENT_LINES", run: { id: "current", lines: [lineOf("two")], groups: [] } },
             { kind: "PROPOSAL_LINES", run: { id: "proposed", lines: [lineOf("two, proposed")], groups: [] } },
-            { kind: "PROPOSAL_LIST", items: [{ source: "most", title: "Most of the orders", state: "OPEN", status: "", places: "", rationale: "", request: "", actions: [], attributes: {} }] }
+            { kind: "PROPOSAL_LIST", items: [{ source: "most", title: "Most of the orders", state: "OPEN", status: "", places: "", rationale: "", request: "", actions: [], isDrafting: false, attributes: {} }] }
           ]
         },
         { kind: "LINES", run: { id: "after", lines: [lineOf("three")], groups: [] } }
@@ -195,8 +195,8 @@ describe("beside it: what can't live in one document", () => {
             {
               kind: "PROPOSAL_LIST",
               items: [
-                { source: "most", title: "Most of the orders", state: "OPEN", status: "", places: "", rationale: "", request: "", actions: [], attributes: {} },
-                { source: "all", title: "All of them", state: "OPEN", status: "", places: "", rationale: "", request: "", actions: [], attributes: {} }
+                { source: "most", title: "Most of the orders", state: "OPEN", status: "", places: "", rationale: "", request: "", actions: [], isDrafting: false, attributes: {} },
+                { source: "all", title: "All of them", state: "OPEN", status: "", places: "", rationale: "", request: "", actions: [], isDrafting: false, attributes: {} }
               ]
             }
           ]
@@ -321,7 +321,7 @@ describe("beside it: what can't live in one document", () => {
       containerElement.dataset["perspective"] = "changes"
       containerElement.style.setProperty("--view-state-rejected", "rgb(1, 2, 3)")
       document.body.append(containerElement)
-      const itemOf = (state: "OPEN" | "REQUESTED" | "REVISING" | "ACCEPTED" | "REJECTED" | "WITHDRAWN") => ({ source: state, title: state, state, status: state === "OPEN" ? "" : state, places: "", rationale: "", request: "", actions: [], attributes: {} })
+      const itemOf = (state: "OPEN" | "REQUESTED" | "REVISING" | "ACCEPTED" | "REJECTED" | "WITHDRAWN") => ({ source: state, title: state, state, status: state === "OPEN" ? "" : state, places: "", rationale: "", request: "", actions: [], isDrafting: false, attributes: {} })
       new window._View_TextEditor_({
         containerElement,
         componentMap: window.COMPONENTMAP__VIEW_TEXTEDITOR
@@ -456,7 +456,7 @@ describe("beside it: what can't live in one document", () => {
         range: { first: 1, last: 1 },
         parts: [
           { kind: "CURRENT_LINES", run: { id: "current", lines: window.parseLines_ViewModel({ multilineText: "one", module_Language: window.MODULE_PLAINTEXT }), groups: [] } },
-          { kind: "PROPOSAL_LIST", items: [{ source: "timeout", title: "Retry a timeout", state: "REVISING" as const, status: "Revising", places: "", rationale: "", request: "", actions: [], attributes: {} }] }
+          { kind: "PROPOSAL_LIST", items: [{ source: "timeout", title: "Retry a timeout", state: "REVISING" as const, status: "Revising", places: "", rationale: "", request: "", actions: [], isDrafting: false, attributes: {} }] }
         ]
       }]))
     })
@@ -526,8 +526,8 @@ describe("beside it: what can't live in one document", () => {
             { kind: "CURRENT_LINES", run: { id: "current", lines: window.parseLines_ViewModel({ multilineText: "one", module_Language: window.MODULE_PLAINTEXT }), groups: [] } },
             { kind: "PROPOSAL_LINES", run: { id: "proposed", lines: window.parseLines_ViewModel({ multilineText: "ONE", module_Language: window.MODULE_PLAINTEXT }), groups: [] } },
             { kind: "PROPOSAL_LIST", items: [
-              { source: "open", title: "Open", state: "OPEN" as const, status: "", places: "", rationale: "Why.", request: "", actions: review, attributes: {} },
-              { source: "taken", title: "Taken", state: "ACCEPTED" as const, status: "Accepted", places: "", rationale: "Why.", request: "", actions: [{ command: "reopen", label: "Reopen", stateAfter: "OPEN" as const }], attributes: {} }
+              { source: "open", title: "Open", state: "OPEN" as const, status: "", places: "", rationale: "Why.", request: "", actions: review, isDrafting: false, attributes: {} },
+              { source: "taken", title: "Taken", state: "ACCEPTED" as const, status: "Accepted", places: "", rationale: "Why.", request: "", actions: [{ command: "reopen", label: "Reopen", stateAfter: "OPEN" as const }], isDrafting: false, attributes: {} }
             ] }
           ]
         }])
@@ -625,6 +625,259 @@ describe("beside it: what can't live in one document", () => {
     await opened.page.evaluate(() => document.getElementById("lit")?.remove())
   })
 
+  test("Revise asks for your notes: a box under its item's words and actions, the keyboard in it, Submit, in the revision's plum, and Cancel, neutral, under it, in that item alone, though its proposal's in another frame too, Revise pressed, open; what's written kept as the pointer moves; Submit, Cancel, Escape, ⌘ or Ctrl with Enter, or Revise again with nothing written, close it, the keyboard back on Revise, and Revise again with something written puts the keyboard back in it; Revise on another item opens its form too, the first kept, what's written in it with it", async () => {
+    await opened.page.mouse.move(1270, 715)
+    await opened.page.evaluate(() => {
+      const containerElement = document.createElement("div")
+      containerElement.id = "drafting"
+      containerElement.style.width = "48rem"
+      containerElement.dataset["perspective"] = "changes"
+      document.body.prepend(containerElement)
+      const review = [
+        { command: "accept", label: "Accept", stateAfter: "ACCEPTED" as const },
+        { command: "reject", label: "Reject", stateAfter: "REJECTED" as const },
+        { command: "revise", label: "Revise", stateAfter: "REQUESTED" as const }
+      ]
+      const itemOf = (source: string) => ({ source, title: source, state: "OPEN" as const, status: "", places: "", rationale: "Why.", request: "", actions: review, isDrafting: false, attributes: {} })
+      const lines = window.parseLines_ViewModel({ multilineText: "one", module_Language: window.MODULE_PLAINTEXT })
+      new window._TextEditor_({
+        containerElement,
+        componentMap: window.COMPONENTMAP__VIEW_TEXTEDITOR,
+        modules: [window.MODULE_MOUSE],
+        viewModel_TextEditor: window.viewModelOf__Blocks([
+          { kind: "FRAME", range: { first: 1, last: 1 }, parts: [
+            { kind: "CURRENT_LINES", run: { id: "first", lines, groups: [] } },
+            { kind: "PROPOSAL_LIST", items: [itemOf("round"), itemOf("cap")] }
+          ] },
+          { kind: "FRAME", range: { first: 3, last: 3 }, parts: [
+            { kind: "CURRENT_LINES", run: { id: "second", lines, groups: [] } },
+            { kind: "PROPOSAL_LIST", items: [itemOf("round"), { ...itemOf("taken"), state: "ACCEPTED" as const, status: "Accepted", actions: [{ command: "reopen", label: "Reopen", stateAfter: "OPEN" as const }] }] }
+          ] }
+        ])
+      })
+    })
+    const item = (first: number, source: string) => `#drafting .frame_htmlView:has(> .fold_htmlView[data-fold-first="${first}"]) .item_htmlView[data-source="${source}"]`
+    // which items are drafted, each item's actions, where the keyboard is,
+    // and what's written where it is
+    const looks = () => opened.page.evaluate(async () => {
+      await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)))
+      const frameOf = (element: Element) => element.closest(".frame_htmlView")?.querySelector(":scope > .fold_htmlView")?.getAttribute("data-fold-first")
+      const focused = document.activeElement
+      const item_Focused = focused?.closest("#drafting .item_htmlView")
+      return {
+        drafted: [...document.querySelectorAll("#drafting .item_htmlView[data-drafting]")].map((each) => `${frameOf(each)} ${each.getAttribute("data-source")}`),
+        expanded: [...document.querySelectorAll("#drafting .action_htmlView[aria-expanded]")].map((each) => `${frameOf(each)} ${each.closest(".item_htmlView")?.getAttribute("data-source")} ${each.getAttribute("aria-expanded")}`),
+        actions: [...document.querySelectorAll("#drafting .item_htmlView")].map((each) => `${frameOf(each)} ${each.getAttribute("data-source")}: ${[...each.querySelectorAll(".action_htmlView")].map((action) => action.textContent?.trim()).join(" ")}`),
+        focused: item_Focused === null || item_Focused === undefined || focused === null ? "elsewhere" : `${frameOf(item_Focused)} ${item_Focused.getAttribute("data-source")} ${focused.classList.contains("notes_htmlView") ? "notes" : focused.textContent?.trim()}`,
+        written: focused instanceof HTMLTextAreaElement ? focused.value : null
+      }
+    })
+    const press = async (selector: string) => {
+      const point = await opened.page.evaluate((selector) => {
+        const rect = document.querySelector(selector)?.getBoundingClientRect()
+        if (rect === undefined) throw new Error(`no ${selector}`)
+        return { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 }
+      }, selector)
+      await opened.page.mouse.click(point.x, point.y)
+    }
+    const closed = ["1 round: Accept Reject Revise", "1 cap: Accept Reject Revise", "3 round: Accept Reject Revise", "3 taken: Reopen"]
+    const shut = ["1 round false", "1 cap false", "3 round false"]
+    // Revise in the first frame's round: there alone, its actions kept,
+    // Revise open
+    await press(`${item(1, "round")} .action_htmlView[data-command="revise"]`)
+    expect(await looks()).toEqual({
+      drafted: ["1 round"],
+      expanded: ["1 round true", "1 cap false", "3 round false"],
+      actions: ["1 round: Accept Reject Revise Submit Cancel", "1 cap: Accept Reject Revise", "3 round: Accept Reject Revise", "3 taken: Reopen"],
+      focused: "1 round notes",
+      written: ""
+    })
+    // laid out: the box under the item's words and its actions, from where
+    // its words start to where its actions end, never resized by hand; Submit
+    // and Cancel under the box, ending where it does
+    expect(await opened.page.evaluate((selector) => {
+      const rectOf = (child: string) => document.querySelector(`${selector} ${child}`)?.getBoundingClientRect()
+      const [words, actions, notes, send, cancel] = [rectOf(".rationale_htmlView"), rectOf(".actions_htmlView"), rectOf(".notes_htmlView"), rectOf("[data-draft='SEND']"), rectOf("[data-draft='DISCARD']")]
+      return [
+        (notes?.top ?? 0) >= Math.max(words?.bottom ?? 0, actions?.bottom ?? 0),
+        notes?.left === words?.left,
+        notes?.right === actions?.right,
+        (send?.top ?? 0) >= (notes?.bottom ?? 0),
+        cancel?.right === notes?.right,
+        getComputedStyle(document.querySelector(`${selector} .notes_htmlView`) ?? document.body).resize
+      ]
+    }, item(1, "round"))).toEqual([true, true, true, true, true, "none"])
+    // as it looks: Submit filled in plum, white on it, not Accept's indigo;
+    // Cancel as neutral as Reopen
+    const inks = await opened.page.evaluate(({ drafted, other, taken }) => {
+      const styleOf = (selector: string) => {
+        const element = document.querySelector(selector)
+        return element === null ? null : getComputedStyle(element)
+      }
+      return {
+        send: `${styleOf(`${drafted} [data-draft="SEND"]`)?.backgroundColor} ${styleOf(`${drafted} [data-draft="SEND"]`)?.color}`,
+        accept: styleOf(`${other} .action_htmlView`)?.backgroundColor,
+        cancel: styleOf(`${drafted} [data-draft="DISCARD"]`)?.color,
+        reopen: styleOf(`${taken} .action_htmlView`)?.color
+      }
+    }, { drafted: item(1, "round"), other: item(1, "cap"), taken: item(3, "taken") })
+    expect(inks.send.endsWith("rgb(255, 255, 255)")).toBe(true)
+    expect(inks.send.startsWith(inks.accept ?? "")).toBe(false)
+    expect(inks.cancel).toBe(inks.reopen)
+    // three lines tall, however many are written, scrolling past them
+    const tall = () => opened.page.evaluate((selector) => {
+      const notes = document.querySelector(`${selector} .notes_htmlView`)
+      return notes === null ? null : { height: Math.round(notes.getBoundingClientRect().height), scrolls: notes.scrollHeight > notes.clientHeight }
+    }, item(1, "round"))
+    const empty = await tall()
+    await opened.page.keyboard.type("one\ntwo\nthree\nfour\nfive\nsix")
+    expect(await tall()).toEqual({ height: empty?.height ?? Number.NaN, scrolls: true })
+    expect(empty?.scrolls).toBe(false)
+    await opened.page.keyboard.press("Control+A")
+    await opened.page.keyboard.press("Backspace")
+    // what's written kept as the pointer moves and what's pointed at's drawn
+    // again
+    await opened.page.keyboard.type("only a GET or a PUT")
+    await press(`${item(1, "cap")} .rationale_htmlView`)
+    await opened.page.evaluate((selector) => document.querySelector<HTMLElement>(selector)?.focus(), `${item(1, "round")} .notes_htmlView`)
+    expect((await looks()).written).toBe("only a GET or a PUT")
+    // Escape: closed, the keyboard on Revise
+    await opened.page.keyboard.press("Escape")
+    expect(await looks()).toEqual({ drafted: [], expanded: shut, actions: closed, focused: "1 round Revise", written: null })
+    // Revise by the keyboard: open again, empty, what was written gone
+    await opened.page.keyboard.press("Enter")
+    expect(await looks()).toEqual({ drafted: ["1 round"], expanded: ["1 round true", ...shut.slice(1)], actions: ["1 round: Accept Reject Revise Submit Cancel", ...closed.slice(1)], focused: "1 round notes", written: "" })
+    // Ctrl with Enter: sent, closed
+    await opened.page.keyboard.type("x")
+    await opened.page.keyboard.press("Control+Enter")
+    expect(await looks()).toEqual({ drafted: [], expanded: shut, actions: closed, focused: "1 round Revise", written: null })
+    // Revise again while it's open: closed, the keyboard still on Revise
+    await press(`${item(1, "round")} .action_htmlView[data-command="revise"]`)
+    expect((await looks()).drafted).toEqual(["1 round"])
+    await press(`${item(1, "round")} .action_htmlView[data-command="revise"]`)
+    expect(await looks()).toEqual({ drafted: [], expanded: shut, actions: closed, focused: "1 round Revise", written: null })
+    // Revise on another item opens its form too, the first kept as it was,
+    // what's written in it with it
+    await press(`${item(1, "round")} .action_htmlView[data-command="revise"]`)
+    expect((await looks()).drafted).toEqual(["1 round"])
+    await opened.page.keyboard.type("keep this")
+    await press(`${item(3, "round")} .action_htmlView[data-command="revise"]`)
+    const both = await looks()
+    expect([both.drafted, both.expanded, both.focused]).toEqual([["1 round", "3 round"], ["1 round true", "1 cap false", "3 round true"], "3 round notes"])
+    expect(await opened.page.evaluate((selector) => document.querySelector<HTMLTextAreaElement>(`${selector} .notes_htmlView`)?.value, item(1, "round"))).toBe("keep this")
+    // Revise again on one with something written in it: kept open, the
+    // keyboard back in it
+    await press(`${item(1, "round")} .action_htmlView[data-command="revise"]`)
+    const kept = await looks()
+    expect([kept.drafted, kept.focused, kept.written]).toEqual([["1 round", "3 round"], "1 round notes", "keep this"])
+    // Escape closes that one alone
+    await opened.page.keyboard.press("Escape")
+    const one = await looks()
+    expect([one.drafted, one.focused]).toEqual([["3 round"], "1 round Revise"])
+    // Cancel, then Submit, by the mouse
+    await press(`${item(3, "round")} [data-draft="DISCARD"]`)
+    expect(await looks()).toEqual({ drafted: [], expanded: shut, actions: closed, focused: "3 round Revise", written: null })
+    await press(`${item(1, "cap")} .action_htmlView[data-command="revise"]`)
+    expect((await looks()).drafted).toEqual(["1 cap"])
+    await press(`${item(1, "cap")} [data-draft="SEND"]`)
+    expect(await looks()).toEqual({ drafted: [], expanded: shut, actions: closed, focused: "1 cap Revise", written: null })
+    await opened.page.evaluate(() => document.getElementById("drafting")?.remove())
+  })
+
+  test("the editor's own controls work as drawn with no module in: Revise opens its form, Escape closes it, its fold control folds its frame; pointing by hovering, which isn't a control, is the mouse's, a module's", async () => {
+    await opened.page.mouse.move(1270, 715)
+    await opened.page.evaluate(() => {
+      const containerElement = document.createElement("div")
+      containerElement.id = "bare"
+      containerElement.style.width = "48rem"
+      containerElement.dataset["perspective"] = "changes"
+      document.body.prepend(containerElement)
+      new window._TextEditor_({
+        containerElement,
+        componentMap: window.COMPONENTMAP__VIEW_TEXTEDITOR,
+        modules: [],
+        viewModel_TextEditor: window.viewModelOf__Blocks([{
+          kind: "FRAME",
+          range: { first: 1, last: 1 },
+          parts: [
+            { kind: "CURRENT_LINES", run: { id: "current", lines: window.parseLines_ViewModel({ multilineText: "one", module_Language: window.MODULE_PLAINTEXT }), groups: [] } },
+            { kind: "PROPOSAL_LINES", run: { id: "proposed", lines: window.parseLines_ViewModel({ multilineText: "ONE", module_Language: window.MODULE_PLAINTEXT }), groups: [] } },
+            { kind: "PROPOSAL_LIST", items: [{ source: "open", title: "Open", state: "OPEN" as const, status: "", places: "", rationale: "Why.", request: "", actions: [{ command: "revise", label: "Revise", stateAfter: "REQUESTED" as const }], isDrafting: false, attributes: {} }] }
+          ]
+        }])
+      })
+    })
+    // what's pointed at, what's drafted, where the keyboard is, and whether
+    // the frame's folded
+    const looks = () => opened.page.evaluate(async () => {
+      await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)))
+      return {
+        pointed: document.querySelectorAll("#bare [data-pointed]").length,
+        drafted: document.querySelectorAll("#bare .item_htmlView[data-drafting]").length,
+        typing: document.activeElement?.matches("#bare .notes_htmlView") ?? false,
+        folded: document.querySelectorAll("#bare .frame_htmlView[data-folded]").length
+      }
+    })
+    const centerOf = (selector: string) => opened.page.evaluate((selector) => {
+      const rect = document.querySelector(selector)?.getBoundingClientRect()
+      if (rect === undefined) throw new Error(`no ${selector}`)
+      return { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 }
+    }, selector)
+    const words = await centerOf("#bare .rationale_htmlView")
+    await opened.page.mouse.move(words.x, words.y)
+    expect(await looks()).toEqual({ pointed: 0, drafted: 0, typing: false, folded: 0 })
+    const revise = await centerOf("#bare .action_htmlView")
+    await opened.page.mouse.click(revise.x, revise.y)
+    expect(await looks()).toEqual({ pointed: 0, drafted: 1, typing: true, folded: 0 })
+    await opened.page.keyboard.press("Escape")
+    expect(await looks()).toEqual({ pointed: 0, drafted: 0, typing: false, folded: 0 })
+    const fold = await centerOf("#bare .fold_htmlView")
+    await opened.page.mouse.click(fold.x, fold.y)
+    expect(await looks()).toEqual({ pointed: 0, drafted: 0, typing: false, folded: 1 })
+    await opened.page.evaluate(() => document.getElementById("bare")?.remove())
+  })
+
+  test("in a narrow list, an item's actions go under its words, still on the right, wrapping if they must; in a wide one, beside them", async () => {
+    // where an item's actions are, against its words, in a list as wide as
+    // its view
+    const placed = (width: string) => opened.page.evaluate((width) => {
+      const containerElement = document.createElement("div")
+      containerElement.style.width = width
+      containerElement.dataset["perspective"] = "changes"
+      document.body.prepend(containerElement)
+      const review = [
+        { command: "accept", label: "Accept", stateAfter: "ACCEPTED" as const },
+        { command: "reject", label: "Reject", stateAfter: "REJECTED" as const },
+        { command: "revise", label: "Revise", stateAfter: "REQUESTED" as const }
+      ]
+      new window._View_TextEditor_({
+        containerElement,
+        componentMap: window.COMPONENTMAP__VIEW_TEXTEDITOR
+      }).draw(window.viewModelOf__Blocks([{
+        kind: "FRAME",
+        range: { first: 1, last: 1 },
+        parts: [
+          { kind: "CURRENT_LINES", run: { id: "current", lines: window.parseLines_ViewModel({ multilineText: "one", module_Language: window.MODULE_PLAINTEXT }), groups: [] } },
+          { kind: "PROPOSAL_LIST", items: [{ source: "open", title: "Open", state: "OPEN" as const, status: "", places: "", rationale: "Why it's proposed, at some length, so it wraps where it's narrow.", request: "", actions: review, isDrafting: false, attributes: {} }] }
+        ]
+      }]))
+      const rectOf = (selector: string) => containerElement.querySelector(selector)?.getBoundingClientRect()
+      const [words, actions, item] = [rectOf(".rationale_htmlView"), rectOf(".item_htmlView > .actions_htmlView"), containerElement.querySelector(".item_htmlView")]
+      const [accept, revise] = [rectOf(".action_htmlView"), rectOf(".action_htmlView:last-child")]
+      const right = item === null ? 0 : item.getBoundingClientRect().right - parseFloat(getComputedStyle(item).paddingRight)
+      containerElement.remove()
+      return {
+        under: (actions?.top ?? 0) >= (words?.bottom ?? 0),
+        beside: (actions?.left ?? 0) >= (words?.right ?? 0),
+        right: Math.round(actions?.right ?? 0) === Math.round(right),
+        wrapped: (revise?.top ?? 0) > (accept?.top ?? 0)
+      }
+    }, width)
+    expect(await placed("56rem")).toEqual({ under: false, beside: true, right: true, wrapped: false })
+    expect(await placed("28rem")).toEqual({ under: true, beside: false, right: true, wrapped: false })
+    expect(await placed("12rem")).toEqual({ under: true, beside: false, right: true, wrapped: true })
+  })
+
   test("each proposal's item shows its title, its state after it, a muted word, where it is, why it's proposed, what was asked of it, and its actions, each a button carrying its command, each of those only when it says something; its state as data; decided ones listed after the rest; only an open one's first action the main one", async () => {
     const items = await opened.page.evaluate(() => {
       const containerElement = document.createElement("div")
@@ -640,10 +893,10 @@ describe("beside it: what can't live in one document", () => {
           {
             kind: "PROPOSAL_LIST",
             items: [
-              { source: "taken", title: "Taken already", state: "ACCEPTED" as const, status: "Accepted", places: "", rationale: "It was right.", request: "", actions: [{ command: "reopen", label: "Reopen", stateAfter: "OPEN" as const }], attributes: {} },
-              { source: "most", title: "Most of the orders", state: "OPEN" as const, status: "", places: "2 of 5 places, 1 only if “Cut the lathe” is rejected", rationale: "Most of them need the lathe.", request: "", actions: [{ command: "accept", label: "Accept", stateAfter: "ACCEPTED" as const }, { command: "reject", label: "Reject", stateAfter: "REJECTED" as const }], attributes: {} },
-              { source: "all", title: "All of them", state: "OPEN" as const, status: "", places: "", rationale: "", request: "", actions: [{ command: "accept", label: "Take it", stateAfter: "ACCEPTED" as const }], attributes: {} },
-              { source: "capped", title: "Cap it", state: "REQUESTED" as const, status: "Revision requested", places: "", rationale: "", request: "You asked: make it an option.", actions: [{ command: "reopen", label: "Reopen", stateAfter: "OPEN" as const }], attributes: {} }
+              { source: "taken", title: "Taken already", state: "ACCEPTED" as const, status: "Accepted", places: "", rationale: "It was right.", request: "", actions: [{ command: "reopen", label: "Reopen", stateAfter: "OPEN" as const }], isDrafting: false, attributes: {} },
+              { source: "most", title: "Most of the orders", state: "OPEN" as const, status: "", places: "2 of 5 places, 1 only if “Cut the lathe” is rejected", rationale: "Most of them need the lathe.", request: "", actions: [{ command: "accept", label: "Accept", stateAfter: "ACCEPTED" as const }, { command: "reject", label: "Reject", stateAfter: "REJECTED" as const }], isDrafting: false, attributes: {} },
+              { source: "all", title: "All of them", state: "OPEN" as const, status: "", places: "", rationale: "", request: "", actions: [{ command: "accept", label: "Take it", stateAfter: "ACCEPTED" as const }], isDrafting: false, attributes: {} },
+              { source: "capped", title: "Cap it", state: "REQUESTED" as const, status: "Revision requested", places: "", rationale: "", request: "You asked: make it an option.", actions: [{ command: "reopen", label: "Reopen", stateAfter: "OPEN" as const }], isDrafting: false, attributes: {} }
             ]
           }
         ]
@@ -807,8 +1060,8 @@ describe("beside it: what can't live in one document", () => {
             { kind: "CURRENT_LINES", run: { id: "current", lines: window.parseLines_ViewModel({ multilineText: "one", module_Language: window.MODULE_PLAINTEXT }), groups: [] } },
             { kind: "PROPOSAL_LINES", run: { id: "proposed", lines: window.parseLines_ViewModel({ multilineText: "ONE", module_Language: window.MODULE_PLAINTEXT }), groups: [] } },
             { kind: "PROPOSAL_LIST", items: [
-              { source: "one", title: "One", state: "OPEN" as const, status: "", places: "", rationale: "Why one.", request: "", actions: review, attributes: {} },
-              { source: "two", title: "Two", state: "OPEN" as const, status: "", places: "", rationale: "Why two.", request: "", actions: review, attributes: {} }
+              { source: "one", title: "One", state: "OPEN" as const, status: "", places: "", rationale: "Why one.", request: "", actions: review, isDrafting: false, attributes: {} },
+              { source: "two", title: "Two", state: "OPEN" as const, status: "", places: "", rationale: "Why two.", request: "", actions: review, isDrafting: false, attributes: {} }
             ] }
           ]
         }])
@@ -1368,7 +1621,7 @@ describe("beside it: what can't live in one document", () => {
       document.body.append(containerElement)
       const [one, two, three, four] = window.parseLines_ViewModel({ multilineText: "one\ntwo\nthree\nfour", module_Language: window.MODULE_PLAINTEXT })
       if (one === undefined || two === undefined || three === undefined || four === undefined) throw new Error("the lines weren't parsed")
-      const item = { source: "s", title: "Title", state: "OPEN" as const, status: "", places: "", rationale: "", request: "", actions: [], attributes: {} }
+      const item = { source: "s", title: "Title", state: "OPEN" as const, status: "", places: "", rationale: "", request: "", actions: [], isDrafting: false, attributes: {} }
       new window._View_TextEditor_({
         containerElement,
         componentMap: window.COMPONENTMAP__VIEW_TEXTEDITOR
@@ -1407,7 +1660,7 @@ describe("beside it: what can't live in one document", () => {
         new window._View_TextEditor_({
           containerElement,
           componentMap: window.COMPONENTMAP__VIEW_TEXTEDITOR
-        }).draw(window.viewModelOf__Blocks([{ kind: "FRAME", range: { first: 1, last: 1 }, parts: [{ kind: "CURRENT_LINES", run: { id: "current", lines: [line], groups: [] } }, { kind: "PROPOSAL_LINES", run: { id: "proposed", lines: [line], groups: [] } }, { kind: "PROPOSAL_LIST", items: [{ source: "one", title: "One", state: "OPEN", status: "", places: "", rationale: "", request: "", actions: [], attributes: {} }] }] }]))
+        }).draw(window.viewModelOf__Blocks([{ kind: "FRAME", range: { first: 1, last: 1 }, parts: [{ kind: "CURRENT_LINES", run: { id: "current", lines: [line], groups: [] } }, { kind: "PROPOSAL_LINES", run: { id: "proposed", lines: [line], groups: [] } }, { kind: "PROPOSAL_LIST", items: [{ source: "one", title: "One", state: "OPEN", status: "", places: "", rationale: "", request: "", actions: [], isDrafting: false, attributes: {} }] }] }]))
         const currentElement = containerElement.querySelector(".current_htmlView")
         const proposedElement = containerElement.querySelector(".proposed_htmlView")
         const proposalsElement = containerElement.querySelector(".proposals_htmlView")
@@ -1587,7 +1840,7 @@ describe("beside it: what can't live in one document", () => {
           { kind: "FRAME", range: { first: 1, last: 2 }, parts: [
             { kind: "CURRENT_LINES", run: runOf("before", "current", ["one", "two", "three"]) },
             { kind: "PROPOSAL_LINES", run: runOf("after", "proposed", ["ONE", "TWO", "THREE"]) },
-            { kind: "PROPOSAL_LIST", items: [{ source: "most", title: "Shout", state: "OPEN", status: "", places: "", rationale: "", request: "", actions: [], attributes: {} }, { source: "more", title: "Shout more", state: "OPEN", status: "", places: "", rationale: "", request: "", actions: [], attributes: {} }] }
+            { kind: "PROPOSAL_LIST", items: [{ source: "most", title: "Shout", state: "OPEN", status: "", places: "", rationale: "", request: "", actions: [], isDrafting: false, attributes: {} }, { source: "more", title: "Shout more", state: "OPEN", status: "", places: "", rationale: "", request: "", actions: [], isDrafting: false, attributes: {} }] }
           ] },
           { kind: "FRAME", range: { first: 3, last: 3 }, parts: [
             { kind: "CURRENT_LINES", run: { id: "gone-current", lines: [two], groups: [] } },
@@ -1681,7 +1934,7 @@ describe("beside it: what can't live in one document", () => {
           { kind: "FRAME", range: { first: 1, last: 2 }, parts: [
             { kind: "CURRENT_LINES", run: runOf("before", "current", ["one", "two", "three"]) },
             { kind: "PROPOSAL_LINES", run: runOf("after", "proposed", ["ONE", "TWO", "THREE"]) },
-            { kind: "PROPOSAL_LIST", items: [{ source: "most", title: "Shout", state: "OPEN", status: "", places: "", rationale: "", request: "", actions: [], attributes: {} }, { source: "more", title: "Shout more", state: "OPEN", status: "", places: "", rationale: "", request: "", actions: [], attributes: {} }] }
+            { kind: "PROPOSAL_LIST", items: [{ source: "most", title: "Shout", state: "OPEN", status: "", places: "", rationale: "", request: "", actions: [], isDrafting: false, attributes: {} }, { source: "more", title: "Shout more", state: "OPEN", status: "", places: "", rationale: "", request: "", actions: [], isDrafting: false, attributes: {} }] }
           ] },
           // another frame, unfolded, the second proposal in it too
           { kind: "FRAME", range: { first: 3, last: 3 }, parts: [
@@ -1781,7 +2034,7 @@ describe("beside it: what can't live in one document", () => {
               { kind: "POINT" as const, at: { line: 0, offset: 13 }, attributes: out("after", "1") },
               { kind: "BOUNDARY" as const, line: 1, attributes: out("after", "2") }
             ] }] } },
-            { kind: "PROPOSAL_LIST", items: [{ source: "out", title: "Take it out", state: "OPEN", status: "", places: "", rationale: "", request: "", actions: [], attributes: {} }] }
+            { kind: "PROPOSAL_LIST", items: [{ source: "out", title: "Take it out", state: "OPEN", status: "", places: "", rationale: "", request: "", actions: [], isDrafting: false, attributes: {} }] }
           ]
         }])
       })
@@ -1884,7 +2137,7 @@ describe("beside it: what can't live in one document", () => {
         { attributes: { "data-source": "timeout" }, underlays: [{ kind: "STRETCH" as const, from: { line: 0, offset: 15 }, to: { line: 0, offset: 18 }, attributes: change(side, "timeout") }] },
         { attributes: { "data-source": "rename" }, underlays: [{ kind: "STRETCH" as const, from: { line: 0, offset: 23 }, to: { line: 0, offset: side === "before" ? 28 : 27 }, attributes: change(side, "rename") }] }
       ]
-      const item = (source: string, state: "OPEN" | "REVISING" | "ACCEPTED", status: string) => ({ source, title: source, state, status, places: "", rationale: "", request: "", actions: [], attributes: {} })
+      const item = (source: string, state: "OPEN" | "REVISING" | "ACCEPTED", status: string) => ({ source, title: source, state, status, places: "", rationale: "", request: "", actions: [], isDrafting: false, attributes: {} })
       new window._TextEditor_({
         containerElement,
         componentMap: window.COMPONENTMAP__VIEW_TEXTEDITOR,
