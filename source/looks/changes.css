@@ -1,20 +1,21 @@
-/* The "changes" perspective: how the proposals' changes look while a host
-   has it on, `data-perspective="changes"` on the view's container, as
-   doctor shows them. Never with the text's own colour, a strike or an
-   underline, which are the text's, its marks' and its syntax's: a change
-   is a ring round its words, red where they go, yellow where they're
-   replaced, green where they're new, brown where they're moved, at both
-   ends, dashed where only their look changes, ghosted, at half strength,
-   where they're inside another proposal's removal, so apply only if it's
-   rejected; and a line in a frame says what it becomes in its gutter, its
-   label in the same colours, never with a band across its text. A ring is a text underlay's path, behind the text, one shape over
-   every span, row and line its words are on, each change's data on it:
-   `data-change`, its kind, `data-side`, `data-source`, and `data-within`
-   when it's inside another's removal; a proposal has no ring of its own,
-   only its changes', which its group, `data-source`, says are its. A host
-   can use this, or put its own in its place. */
+/* The "changes" look: how the proposals' changes look while it's on,
+   `data-look~="changes"` on the view's container, as the editor sets it
+   from the perspective shown, as doctor shows them. Never with the text's
+   own colour, a strike or an underline, which are the text's, its marks'
+   and its syntax's: a change is a ring round its words, red where they go,
+   yellow where they're replaced, green where they're new, brown where
+   they're moved, at both ends, dashed where only their look changes,
+   ghosted, at half strength, where they're inside another proposal's
+   removal, so apply only if it's rejected; and a line in a frame says what
+   it becomes in its gutter, its label in the same colours, never with a
+   band across its text. A ring is a text underlay's path, behind the text,
+   one shape over every span, row and line its words are on, each change's
+   data on it: `data-change`, its kind, `data-side`, `data-source`, and
+   `data-within` when it's inside another's removal; a proposal has no ring
+   of its own, only its changes', which its group, `data-source`, says are
+   its. A host can use this, or put its own in its place. */
 
-[data-perspective="changes"] :is(.underlay_htmlView, .seam_htmlView)[data-change] {
+[data-look~="changes"] :is(.underlay_htmlView, .seam_htmlView)[data-change] {
   stroke: var(--edge);
   stroke-width: 1px;
   stroke-linejoin: round;
@@ -25,20 +26,20 @@
    small wedge at the point its text left, filled in its colour: over the
    row, its tip down on the point, or on the frame's bar, its tip toward the
    text. Pointed at, its edge drawn heavier, as a ring's, so it grows */
-[data-perspective="changes"] .underlay_htmlView[data-notch][data-change] {
+[data-look~="changes"] .underlay_htmlView[data-notch][data-change] {
   fill: var(--edge);
 }
 
-[data-perspective="changes"] :is(.area_htmlView, .underlay_htmlView, .seam_htmlView, .lap_htmlView)[data-change="removed"] {
+[data-look~="changes"] :is(.area_htmlView, .underlay_htmlView, .seam_htmlView, .lap_htmlView)[data-change="removed"] {
   --edge: var(--view-removed-edge, light-dark(#e51400, #f14c4c));
 }
 
-[data-perspective="changes"] :is(.area_htmlView, .underlay_htmlView, .seam_htmlView, .lap_htmlView)[data-change^="replaced"],
-[data-perspective="changes"] :is(.area_htmlView, .underlay_htmlView, .seam_htmlView, .lap_htmlView)[data-change="restyled"] {
+[data-look~="changes"] :is(.area_htmlView, .underlay_htmlView, .seam_htmlView, .lap_htmlView)[data-change^="replaced"],
+[data-look~="changes"] :is(.area_htmlView, .underlay_htmlView, .seam_htmlView, .lap_htmlView)[data-change="restyled"] {
   --edge: var(--view-changed-edge, light-dark(#bf8803, #cca700));
 }
 
-[data-perspective="changes"] :is(.area_htmlView, .underlay_htmlView, .seam_htmlView, .lap_htmlView)[data-change="inserted"] {
+[data-look~="changes"] :is(.area_htmlView, .underlay_htmlView, .seam_htmlView, .lap_htmlView)[data-change="inserted"] {
   --edge: var(--view-inserted-edge, light-dark(#388a34, #89d185));
 }
 
@@ -48,23 +49,23 @@
    that makes; in the light, a lighter tan, as that's too dark there, near
    the text's ink and syntax's browns; at both its ends; what it changes on
    the way, rings of their own inside it */
-[data-perspective="changes"] :is(.area_htmlView, .underlay_htmlView, .seam_htmlView, .lap_htmlView)[data-change="moved"] {
+[data-look~="changes"] :is(.area_htmlView, .underlay_htmlView, .seam_htmlView, .lap_htmlView)[data-change="moved"] {
   --edge: var(--view-moved-edge, light-dark(#a2733f, #977254));
 }
 
 /* only its look: dashed; replaced and restyled both: dashed, but less */
-[data-perspective="changes"] :is(.underlay_htmlView, .seam_htmlView)[data-change="restyled"] {
+[data-look~="changes"] :is(.underlay_htmlView, .seam_htmlView)[data-change="restyled"] {
   stroke-dasharray: 3 2;
 }
 
-[data-perspective="changes"] :is(.underlay_htmlView, .seam_htmlView)[data-change="replacedRestyled"] {
+[data-look~="changes"] :is(.underlay_htmlView, .seam_htmlView)[data-change="replacedRestyled"] {
   stroke-dasharray: 6 2;
 }
 
 /* inside another proposal's removal, `data-within` its source: it applies
    only if that's rejected, so it's there, but latent, a solid ring at half
    strength, whatever its kind's dash would be */
-[data-perspective="changes"] :is(.underlay_htmlView, .seam_htmlView)[data-within] {
+[data-look~="changes"] :is(.underlay_htmlView, .seam_htmlView)[data-within] {
   stroke-dasharray: none;
   stroke-opacity: 0.5;
 }
@@ -74,7 +75,7 @@
    which aren't its ends: dashed, so its two parts read as one; the view
    fits the dashes to each side, a dash at each end, flush with the outer
    edges of the ring's top and bottom */
-[data-perspective="changes"] .seam_htmlView[data-change] {
+[data-look~="changes"] .seam_htmlView[data-change] {
   stroke-dasharray: 2 2;
 }
 
@@ -84,22 +85,22 @@
    as proposed, green + where it's put in, yellow ~ where it's changed,
    brown → where it's moved in. Every line, changed or not, on its section's
    one band; the rings say which words. */
-[data-perspective="changes"] .line_htmlView[data-marker="removed"] .label_htmlView {
+[data-look~="changes"] .line_htmlView[data-marker="removed"] .label_htmlView {
   color: var(--view-removed-label, light-dark(#ad0707, #c74e39));
 }
 
-[data-perspective="changes"] .line_htmlView[data-marker="changed"] .label_htmlView {
+[data-look~="changes"] .line_htmlView[data-marker="changed"] .label_htmlView {
   color: var(--view-changed-label, light-dark(#9a6700, #cca700));
 }
 
-[data-perspective="changes"] .line_htmlView[data-marker="inserted"] .label_htmlView {
+[data-look~="changes"] .line_htmlView[data-marker="inserted"] .label_htmlView {
   color: var(--view-inserted-label, light-dark(#388a34, #89d185));
 }
 
 /* a moved line: its number where it leaves, its → where it lands, and the
    note on its first line going to its other end, in the move's brown */
-[data-perspective="changes"] .line_htmlView[data-marker="moved"] .label_htmlView,
-[data-perspective="changes"] .line_htmlView[data-marker="moved"] .note_htmlView {
+[data-look~="changes"] .line_htmlView[data-marker="moved"] .label_htmlView,
+[data-look~="changes"] .line_htmlView[data-marker="moved"] .note_htmlView {
   color: var(--view-moved-label, light-dark(#a2733f, #977254));
 }
 
@@ -108,20 +109,20 @@
    seen to be on its way, not yet to decide; still where motion's asked to
    be reduced. Its state is its item's, `data-state` on its groups and its
    words */
-[data-perspective="changes"] .group_htmlView[data-state="REVISING"] > :is(.underlay_htmlView, .seam_htmlView)[data-change] {
+[data-look~="changes"] .group_htmlView[data-state="REVISING"] > :is(.underlay_htmlView, .seam_htmlView)[data-change] {
   stroke-opacity: 0.45;
 }
 
-[data-perspective="changes"] .text_htmlView [data-state="REVISING"][data-side="after"] {
+[data-look~="changes"] .text_htmlView [data-state="REVISING"][data-side="after"] {
   opacity: 0.55;
 }
 
 @media (prefers-reduced-motion: no-preference) {
-  [data-perspective="changes"] .group_htmlView[data-state="REVISING"]:not([data-pointed]) > :is(.underlay_htmlView, .seam_htmlView)[data-change] {
+  [data-look~="changes"] .group_htmlView[data-state="REVISING"]:not([data-pointed]) > :is(.underlay_htmlView, .seam_htmlView)[data-change] {
     animation: breathe_htmlView 2.4s ease-in-out infinite;
   }
 
-  [data-perspective="changes"] .text_htmlView [data-state="REVISING"][data-side="after"] {
+  [data-look~="changes"] .text_htmlView [data-state="REVISING"][data-side="after"] {
     animation: revise_htmlView 2.4s ease-in-out infinite;
   }
 }
@@ -149,20 +150,20 @@
    edges and up its first side, never its cut sides, drawn on the view's
    pieces of it, each its share of the lap and where on the lap it starts,
    --phase_htmlView. Still, where motion's asked to be reduced. */
-[data-perspective="changes"] .group_htmlView[data-pointed] > :is(.underlay_htmlView, .seam_htmlView)[data-change] {
+[data-look~="changes"] .group_htmlView[data-pointed] > :is(.underlay_htmlView, .seam_htmlView)[data-change] {
   stroke-width: 2px;
 }
 
-[data-perspective="changes"] .group_htmlView[data-pointed] > :is(.underlay_htmlView, .seam_htmlView)[data-pointed][data-change] {
+[data-look~="changes"] .group_htmlView[data-pointed] > :is(.underlay_htmlView, .seam_htmlView)[data-pointed][data-change] {
   stroke-width: 3px;
 }
 
 @media (prefers-reduced-motion: no-preference) {
-  [data-perspective="changes"] .group_htmlView[data-pointed] > :is(.underlay_htmlView, .seam_htmlView)[data-change] {
+  [data-look~="changes"] .group_htmlView[data-pointed] > :is(.underlay_htmlView, .seam_htmlView)[data-change] {
     animation: breathe_htmlView 2.4s ease-in-out infinite;
   }
 
-  [data-perspective="changes"] .lap_htmlView[data-pointed][data-change] {
+  [data-look~="changes"] .lap_htmlView[data-pointed][data-change] {
     --time_lap_htmlView: clamp(2s, calc(var(--lap_htmlView, 125) * 16ms), 6s);
     stroke: var(--edge);
     stroke-width: 6px;
@@ -176,7 +177,7 @@
   /* round the lines as proposed clockwise, as their ring's drawn, forwards;
      round the lines as they are, counterclockwise, backwards, as they're
      hatched */
-  [data-perspective="changes"] .lap_htmlView[data-pointed][data-change][data-side="before"] {
+  [data-look~="changes"] .lap_htmlView[data-pointed][data-change][data-side="before"] {
     animation-direction: reverse;
     animation-delay: calc(-1 * var(--phase_htmlView, 0) * var(--time_lap_htmlView));
   }
@@ -200,11 +201,11 @@
    stroke round each glyph, not a bolder weight, which may be wider, as a
    sign from another font is, so no label moves. Still: the motion is the
    rings'. */
-[data-perspective="changes"] .gutter_htmlView[data-pointed] .label_htmlView {
+[data-look~="changes"] .gutter_htmlView[data-pointed] .label_htmlView {
   -webkit-text-stroke: 0.05em currentColor;
 }
 
-[data-perspective="changes"] .gutter_htmlView[data-pointed="place"] .label_htmlView {
+[data-look~="changes"] .gutter_htmlView[data-pointed="place"] .label_htmlView {
   -webkit-text-stroke: 0.1em currentColor;
 }
 
@@ -212,7 +213,7 @@
    or the keyboard on one of its actions, so it's seen whose they are: on
    the proposed lines' own ground, their tint on the view's, as the lines
    it proposes are, the whole row, its gutter too */
-[data-perspective="changes"] .item_htmlView:is([data-pointed], :has(:focus-visible)) {
+[data-look~="changes"] .item_htmlView:is([data-pointed], :has(:focus-visible)) {
   background:
     linear-gradient(var(--view-proposed, color-mix(in srgb, CanvasText 4%, transparent)), var(--view-proposed, color-mix(in srgb, CanvasText 4%, transparent))),
     var(--view-ground, Canvas);
@@ -221,7 +222,7 @@
 /* where a note pointed at goes, a move's other end, `data-targeted` on its
    rings: heavier, as a pointed proposal's are, so it shows, from either
    end, which change is its counterpart */
-[data-perspective="changes"] :is(.underlay_htmlView, .seam_htmlView)[data-targeted][data-change] {
+[data-look~="changes"] :is(.underlay_htmlView, .seam_htmlView)[data-targeted][data-change] {
   stroke-width: 2px;
 }
 
@@ -243,7 +244,7 @@
    side stepping in and out with their ends, but never by less than half
    an em: less than a character, so lines ending in one column, but for
    room made in one, share an end. */
-[data-perspective="changes"] {
+[data-look~="changes"] {
   --view-underlay-inset-block: calc(1em / 14);
   --view-underlay-inset-inline: calc(-3em / 14);
   --view-underlay-clear-inline: calc(3em / 14);
@@ -255,7 +256,7 @@
    on its punctuation, the room the view works out it lacks made, the text
    after it moved along, so it's as any other end: the ring as far past its
    word's ink, and as clear of the character's */
-[data-perspective="changes"] .text_htmlView * {
+[data-look~="changes"] .text_htmlView * {
   padding-inline-start: var(--view-room-inline-start);
   padding-inline-end: var(--view-room-inline-end);
 }

@@ -19,6 +19,10 @@ interface _Opened_Example_ {
   page: Page
   // what the example has reported so far, as the playground logs it
   logged: () => Promise<Array<_Entry_Log_>>
+  // every error the page reports, in order, from the moment it was opened:
+  // what it throws, and what the browser reports to it, as a resize
+  // observer's loop
+  errors: Array<string>
   close: () => Promise<void>
 }
 
@@ -31,10 +35,14 @@ async function openExample(name: string): Promise<_Opened_Example_> {
   const server = servePlayground(0, "testing")
   const browser = await chromium.launch({ executablePath })
   const page = await browser.newPage()
+  const errors: Array<string> = []
+  await page.exposeFunction("reportError_Page", (message: string) => errors.push(message))
+  await page.addInitScript(() => window.addEventListener("error", (event) => (window as unknown as { reportError_Page: (message: string) => void }).reportError_Page(event.message)))
   await page.goto(`http://localhost:${server.port}/?example=${encodeURIComponent(name)}`)
   return {
     page,
     logged: () => page.evaluate(() => window.logged),
+    errors,
     close: async () => {
       await browser.close()
       await server.stop(true)

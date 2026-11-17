@@ -138,6 +138,29 @@ stylesheet's, from the data; what one does, a link followed, is a command,
 with the mark's data, which the host acts on: a page opened, a node gone to.
 Doctor's links were marks too, never syntax: its lines hold only characters.
 
+Both are built. A text's stored marks, `marks`, lie beside its lines, each a
+range and its data, `_Mark_Text_`, the data the host's, names and values the
+model never reads: one mark's the same as another only where their data is,
+and two the same that overlap or touch are one, so a text's marks are one
+way only. Through an edit, each is kept on its characters: cut where text's
+taken out, or put in, as what's typed inside a bold word is bold only where
+the edit says so, its own text carrying marks of its own, as a change's
+does, and outside a mark at its edges; one whose characters are all taken
+out is gone. What undoes an edit gives the marks back exactly as they were,
+two made one by an edit two again. A change's text has marks as the
+document's has; a refusal says when one's outside it. Derived marks are a
+language module's, as syntax is: the playground's Markdown module,
+`module_Markdown`, says a heading's #s, the asterisks round emphasis, a code
+span's backticks are markers, inside the heading, the emphasis or the code
+they mark, every kind a segment's inside its `data-syntax`, and the
+playground's stylesheet shows what they mark as they mark it, the markers
+faint and kept as they're written, doctor's hybrid; a Markdown document
+holds no stored marks, and a proposal making words bold puts in asterisks.
+So which marks a text has, and how they look, is the host's and its
+modules', the context's: rich text stored, Markdown read, and a host like
+doctor, whose source is JSON projected as Markdown-like lines, free to do
+either or both.
+
 Still open: whether regions are only read from the text, as Markdown's are
 by parsing it, or can also be held by the model, as a host marking a part of
 a document would.
@@ -174,10 +197,21 @@ interface _Model_TextEditor_ {
 }
 
 // a text, the document's or what a change proposes: one line at least,
-// each proven to hold no line break. Marks, an overlay, join it beside its
-// lines when a host needs them
+// each proven to hold no line break; and its marks, an overlay, as few as
+// they can be, none two the same that overlap or touch
 interface _Text_Model_ {
   lines: _NonEmpty_<_Text_Line_NonTerminated_>
+  marks: Array<_Mark_Text_>
+}
+
+// a range of a text and the data marking it, the host's, never read
+interface _Mark_Text_ {
+  range: _Range_Text_
+  data: _Data_Mark_
+}
+
+interface _Data_Mark_ {
+  [name: string]: string
 }
 
 // what one source proposes: its changes, in the document's order, none
@@ -281,9 +315,10 @@ another's removal, one carried in a move, three sources on one line.
   function. What changed within it is never written down: it's derived,
   by `comparisonOf__Texts`, doctor's `compareTexts` brought over, the text
   cut into words, runs of spaces and other characters, the two compared
-  word by word: removed, inserted, replaced; restyled once texts have
-  marks. How fine is a region's kind's, once there are regions: words for
-  prose, tokens for code. So the two never disagree, an agent's slip shows
+  word by word: which are kept and which changed, no more. What a change
+  means, words removed, inserted, replaced or restyled, is a reading's,
+  the host's to choose, below. How fine is a region's kind's, once there
+  are regions: words for prose, tokens for code. So the two never disagree, an agent's slip shows
   as a change, and what a round changed is the same comparison, of two
   rounds. Cutting changes down to the words that differ was the other way:
   a smaller model, but a function the agent sent as one would go back to
@@ -389,8 +424,7 @@ another's removal, one carried in a move, three sources on one line.
   parser `parseTexts_Line`, `REGEXP_LINEBREAK`, `_NonEmpty_` and
   `mapped__NonEmpty`, as the model can't depend on the view; the view model
   imports them from it.
-- **not yet:** marks, an overlay, joining `_Text_Model_` beside its lines
-  when a host needs them, doctor first; regions; moves found by the
+- **not yet:** regions; moves found by the
   comparison, and moves that split; your edits made proposals; changes
   from different sources overlapping, besides nesting.
 
@@ -420,11 +454,11 @@ Its functions, each tested without a screen:
   line's words matched with another line's, `return` replaced by `const`
   where a line was put in above. Past 2,000 differing words, taken as one
   replacement; past 2,500 lines to pair, lines unpaired. Every character's
-  in one run, kept, removed, inserted or replaced, so a change inside
-  another's span can be carried through it exactly; what's drawn leaves out
-  spaces at a change's ends, as doctor does, which is the projection's.
-- `comparisonOf__Change`: a replacement's runs, what it takes out where it
-  is in the document, what it puts in where it is in its text.
+  in one run, `KEPT` or `CHANGED`, so a change inside another's span can
+  be carried through it exactly, a kept word carrying what's inside it
+  whatever its marks; marks aren't compared, as what a difference in them
+  means is a reading's. What's drawn leaves out spaces at a change's ends,
+  as doctor does, which is the projection's.
 - `piecesWith__Sources`: the document, or a range of it, as it would be with
   some sources' changes applied, as pieces, each the document's text, saying
   where in the document it's from, wherever a move puts it, or a change's,
@@ -445,13 +479,14 @@ together where they share a line, never back to back, the host's ranges
 joining the frames they share a line with. Each frame's lines as they are,
 numbered, its lines as proposed, from the pieces, signed, each line's syntax
 the language module's, as proposed in the document the proposals would
-leave; the rings, each a run of a change, removed or replaced on the lines
-as they are, inserted or replaced on those proposed, its two sides one
-place, `data-place`, numbered through the frames by source; and its list,
-each item's places counted. The rings' words, `data-change`, `data-side`,
-`data-source`, `data-place`, are the editor's now, as only it works them
-out; the playground's own, in `playground/looks.ts`, stay till its
-hand-drawn cases go. A frame's text runs through the line break after its
+leave; the rings, each a box the reading makes of a change, on the lines
+as they are where it covers something there, on those proposed where it
+covers something there, its two sides one place, `data-place`, numbered
+through the frames by source; and its list, each item's places counted. A
+ring's `data-change` is the reading's word for its box; `data-side`,
+`data-source`, `data-place` are the editor's, as only it works them out; the playground's own, in `playground/looks.ts`, are for Everything,
+the view's own scene, its view model written by hand, as what it tests is
+the view. A frame's text runs through the line break after its
 last line, unless it's the document's last, so taking out its lines whole
 leaves it none, and its lines as proposed are none. A change inside
 another's span is the other's fallback where the other takes its words out
@@ -516,14 +551,22 @@ words taken out were, where the hand-drawn cases' stand-in put it before,
 counting only the text left unchanged; and two whose removals begin with the
 line break after a line with words in it frame that line by a host's range,
 as they were drawn. The example's revision of isRetryable, sent whole once,
-is two changes now, as a move inside another's change waits. Still drawn by
-hand, as a text has no marks yet: the two cases whose words are restyled,
-the prose scene with proposals, and Everything, which the browser tests
-draw, with the playground's stand-in for the projection,
-`playground/lines.ts`, kept for them alone. The host projects for now,
-`playground/projected.ts`, handing the editor the view model, as it did; the
-editor takes the model itself when it edits it, marks in the model by then,
-and the stand-in and the last hand-drawn view models go.
+is two changes now, as a move inside another's change waits. With marks in
+the model, the last three were drawn from it too, each as it was drawn by
+hand: the two cases whose words are restyled, and the prose scene with
+proposals, a stored mark drawn as its data on the words it's over, the
+document's on the lines as they are, a change's on the lines as proposed,
+where its text lands. The playground's stand-in for the projection went with
+them; what's left of `playground/lines.ts` writes a view model's lines by
+hand, for the scenes with no proposals, and for Everything, the view's own
+scene, which the browser tests draw, written by hand as it tests the view,
+boxes no change makes among it. A Markdown example, `?example=markdown`, is
+drawn from the start from a document and its changes: the JavaScript
+example's module's README, ten proposals keeping it in step with the
+module's, kept as a snapshot once it was looked over. The editor projects
+now, given the model, as the examples give it; the changes document's cases
+and the gallery's scenes, which show what's drawn, are view models, made
+with `playground/projected.ts`, drawn by the viewer as they're given.
 
 Where an agent writes the changes, as doctor's does, it writes them as
 agents write edits reliably: the text as it is, quoted exactly, and what it
@@ -623,10 +666,10 @@ streak across word and dots, the dots stepping one, two, three, the arc at
 another pace, was three motions at two paces, too busy. Still where motion's
 reduced, the three dots all there. `viewModelOf__Blocks` puts each
 proposal's state, its item's, on its groups and its words, `data-state`, for
-a perspective to show, and lists decided items, accepted, rejected or
+a look to show, and lists decided items, accepted, rejected or
 withdrawn, after the rest, their titles and words the same as any other's,
 whatever their state, told apart by their icons, their status words and
-their place. The "changes" perspective fades a revising one's rings and the
+their place. The "changes" look fades a revising one's rings and the
 words it proposes, breathing, as doctor's revised lines pulsed, still where
 motion's asked to be reduced. An accepted one's words are the document's, so
 there's nothing left to ring, and nothing marks the lines they're on: a
@@ -653,15 +696,12 @@ beside them, read-only. So:
   its two sides, what it was and what it becomes, are one place: its rings
   carry it, `data-place`, the same on both, so pointing at one side points
   at the other too. The projection says it, knowing what each change was
-  and became; the playground's stand-in works it out: a proposal's sides,
-  replaced with replaced, moved with moved, the same words first, so a
-  swap's two sides find each other, then in order; what's only taken out
-  or put in, or inside another's removal, a place of its own.
+  and became: each box the reading makes of a change a place, both its
+  sides, numbered through the frames by source; a move's, the move.
 - what's moved shows at both its ends: within a line, both in it; within
   what's shown together, linked in the margin; out to somewhere else, a mark
   where it leaves, "moved", and where it lands, "from line 12", each going
-  to the other, as doctor's do. Drawn so far, for whole lines, the
-  playground standing in for the projection: a change of its own kind,
+  to the other, as doctor's do. Drawn: a change of its own kind,
   `moved`, its two ends its two sides, "before" where it leaves, "after"
   where it lands, ringed brown, as doctor's moves are, neither lost nor new
   but both, in the dark doctor's own, its red and green mixed, darkened, in
@@ -694,8 +734,8 @@ beside them, read-only. So:
   leaves on the line as it is, where it lands on the line as proposed, so it
   needs no notes; what doesn't move stays as it was, the `||` between two
   operands swapped unringed; the line's changed in place, its gutter yellow
-  and `~`, its rings saying which words moved. So far declared, as the
-  stand-in has no comparison to derive them. Not yet: the link in the margin
+  and `~`, its rings saying which words moved. Declared, a host's
+  `MOVE`, as the comparison finds no moves yet. Not yet: the link in the margin
   between two ends shown together, and a move split in pieces.
 
 **every proposal shown at once:** all of them, each change styled as what it
@@ -738,13 +778,17 @@ the document or its changes changing:
   `MODULE_PLAINTEXT`, marking nothing, passed as any other is, nothing
   falling back to it. The playground's JavaScript tokenizer,
   `module_JavaScript` in `playground/syntax.ts`, stands in for a real
-  one, its example, `?example=javascript`, drawn with it.
+  one, its example, `?example=javascript`, drawn with it; and its
+  Markdown, `module_Markdown`, its example `?example=markdown`, whose
+  marks are its syntax, handing a fence's lines that say they're js to the
+  JavaScript module, its state carried inside its own: modules compose as
+  a host composes them, the editor driving only the outer one.
 - **drawn two ways:** an overlay's runs are on the text, or under it.
   - **on the text:** a run is only data on the segments it covers, each a
     flat span: no element is a run, so no run stays whole, and none is
     ranked over another; overlapping runs are no matter. What reads as
     continuous across spans, colour, background, underline, strike, a
-    perspective draws from the data. What has edges, a box, a ring, round
+    look draws from the data. What has edges, a box, a ring, round
     corners, would break at every span, so it's drawn under the text. A
     span has room for one role, so what a change means isn't told by the
     text's markup: the proposals' list, and a line's description, say it.
@@ -765,13 +809,13 @@ the document or its changes changing:
     everything behind its text, in one order: search's matches, then the
     proposals' changes, then the selection, on top. In the run, its own
     stacking context, the svg's over its lines' backgrounds, as a band a
-    perspective might give a line, and under their text: the svg at
+    look might give a line, and under their text: the svg at
     `z-index: 0`, the text at 1; a section's background is under all of it.
     Each underlay is one `<path>`, tracing every row it covers, wrapped or
     across lines, as one shape, so a fill or an edge goes round all of it,
     with no lines between its rows; and SVG's paint gives changes more than
     colour to be told apart by, a stroke following the shape, dashed, a
-    pattern's fill. A shape has room round its words as a perspective says,
+    pattern's fill. A shape has room round its words as a look says,
     read from the run's svg when it's measured: short of its rows' top and
     bottom by `--view-underlay-inset-block`, as the room between lines is
     all there is above and below; and past its words' ends by
@@ -783,7 +827,7 @@ the document or its changes changing:
     them; and one inside another's stretch, worked out from their positions,
     inside it, further from its rows' top and bottom by
     `--view-underlay-nest` for each ring it's inside, twice the block inset
-    given none, the "changes" perspective's 3px at 14px; and where it starts
+    given none, the "changes" look's 3px at 14px; and where it starts
     or ends with its container, it keeps its own reach past its words, its
     container reaching the nest further, the room made at that end for both,
     so a nested ring is the nest inside its container on every side they
@@ -796,7 +840,7 @@ the document or its changes changing:
     both rings' reach and the gap between them, less the space their glyphs
     leave, measured; it gives that to the element at that edge, the span
     ending or starting there, as `--view-room-inline-end` or `-start`,
-    clearing what it gave before, each time it measures; and a perspective
+    clearing what it gave before, each time it measures; and a look
     makes the room, padding it, the text after it moved along, or doesn't;
     the view then measures what it made, as it measures any space. Where a
     change's end isn't also an element's, in the middle of a span, it can't
@@ -811,7 +855,7 @@ the document or its changes changing:
     The lengths are in any unit; the view's stylesheet resolves them on the
     run's svg, into registered lengths, where the font is the view's, so a
     length in ems is its font's, and the view reads them as pixels. The
-    "changes" perspective makes every end the same: past its word's ink,
+    "changes" look makes every end the same: past its word's ink,
     into a space or into room made, as an end that differs by what's beside
     it reads as better or worse; at a 14px font, 3px past, 3px clear of its
     neighbour's, 1px short of the rows above and below, settled on by
@@ -831,7 +875,7 @@ the document or its changes changing:
     `CURRENT_LINES` and after in `PROPOSAL_LINES`, or the selection, which
     follows the document's order, through a frame's `CURRENT_LINES` and
     past its proposed lines and list, is a group in each run it passes
-    through, each carrying its data, `data-source`, so a perspective styles
+    through, each carrying its data, `data-source`, so a look styles
     it as one.
   - **a proposal's changes, and nothing for the proposal as a whole:** a
     proposal is a group, `<g data-source>`, in each of its frame's text
@@ -839,7 +883,7 @@ the document or its changes changing:
     changes, `data-change`, its kind, without the spaces at its ends, so
     its ring is round its words alone: flat, granular changes, each still
     its proposal's. A change is drawn there, a ring round its words in the
-    "changes" perspective, as doctor's are, never on the spans: a span keeps
+    "changes" look, as doctor's are, never on the spans: a span keeps
     only what's the text's own, its marks and its syntax. No path is drawn
     for all a proposal covers, from its first change to its last, or over
     the whole of what an agent sent, a function whole, say, of which a
@@ -869,7 +913,7 @@ the document or its changes changing:
     out with their ends: each row's ends are its character cells', but the
     change's own start and end, which are its ink's, so lines ending in one
     column end at one place, and no step is a sliver of a glyph's margin;
-    and, as a perspective says, `--view-underlay-step`, rows with nothing
+    and, as a look says, `--view-underlay-step`, rows with nothing
     past them whose ends are nearer than a step share one, the further out,
     as where room made in a line moves its end on by less than a character.
     The outline holds no point twice and none on the way along a side. A row
@@ -885,14 +929,14 @@ the document or its changes changing:
     on the next, it's in pieces, still one path, each open at the cut: the
     sides there, the first piece's right and the next's left, aren't its
     ends, so they're drawn apart, a path each after it, `seam_htmlView`,
-    carrying its data, for a perspective to draw as it will, so the pieces
-    read as one; the "changes" perspective dashes them, as its ring,
+    carrying its data, for a look to draw as it will, so the pieces
+    read as one; the "changes" look dashes them, as its ring,
     otherwise. Native dashing starts at a path's start and stops wherever
     its length runs out, so a side's dashes sat differently each time; the
     view reaches each side half its stroke past the ring's top and bottom,
     which end at their lines' middles, so its end dashes are flush with
     their outer edges, the corner square, and fits its dash pattern to it,
-    as the perspective gives it, setting its `pathLength` so it holds a
+    as the look gives it, setting its `pathLength` so it holds a
     whole number of the pattern and its first dash again: a dash at each
     end, the rest even between. The measuring walks the view model's runs,
     `runs`, and finds each one's lines and svg by its id, drawn as
@@ -902,17 +946,25 @@ the document or its changes changing:
 - **in the DOM, data, not style:** what a run is, is `data-*` attributes on
   the spans it covers, each overlay's under names of its own: the changes'
   `data-change`, its kind, `data-side`, `data-source`; marks' `data-marks`.
-  The editor ships no look for any of them: its own stylesheet is layout,
-  rows, gutters, frames, where text underlays go; without a perspective, a
-  change looks like the text around it.
-- **a perspective** is how the overlays look, and which show: an attribute
-  on the view's container, `data-perspective`, and stylesheets keyed on it
-  and on the runs' data, so switching is one attribute set, the browser
-  restyling all of it, nothing drawn again, but the text underlays measured
-  again, as a perspective can move the text, making room: the view watches
-  its container's attributes, as it watches its size. The editor offers one,
-  "changes", doctor's look, in `source/perspectives/changes.css`, which a
-  host uses or puts its own in place of: a ring round a change's words, red
+  The editor's own stylesheet is layout, rows, gutters, frames, where text
+  underlays go; without a look, a change looks like the text around it.
+- **a perspective** is a way to read the proposals: a reading, what each
+  change means, and the looks it's shown in, named, `_Perspective_TextEditor_`.
+  A host lists the perspectives it offers, the first shown first, and
+  shows another with `show(perspective)`, the editor drawing the proposals
+  again with its reading and setting its looks.
+- **a look** is a stylesheet, keyed on the looks the perspective shown
+  names, `data-look` on the view's container, a word each, as a stylesheet
+  finds with `~=`, and on the runs' data; a look's module imports its
+  stylesheet, so a perspective that names it brings it, nothing for a host
+  to remember. Two perspectives can share a look, as the Markdown example's
+  two share the editor's, reading the same changes two ways in the same
+  colours. Setting the attribute restyles all of it, the browser's doing,
+  the text underlays measured again, as a look can move the text, making
+  room: the view watches its container's attributes, as it watches its
+  size. The editor offers one, "changes", `LOOK_CHANGES`, doctor's look,
+  in `source/looks/changes.css`, which a perspective names or names its
+  own in its place: a ring round a change's words, red
   where they go, yellow where they're replaced, green where they're new,
   dashed where only their look changes; a line in a frame saying what it
   becomes in its gutter, its label in the same colours, a number red taken
@@ -923,8 +975,52 @@ the document or its changes changing:
   syntax's, which show through every change. One could mute every change but
   replacements and split those by what kind of replacement each is, from a
   `data-detail`; which is on, and how it's turned on, is the host's. A
-  perspective needing other elements, not only another look, is drawn again
-  from the overlays by another mapping: rarer, and later.
+  look needing other elements, not only other styles, is drawn again from
+  the overlays by another mapping: rarer, and later.
+- **a reading** is what a change means, the host's to choose, as a
+  look is how it looks: no kind of change is the editor's own. The
+  model's comparison says only which characters are kept and which
+  changed; a reading, `_Module_Reading_`, given a replacement's text as it
+  was and as it becomes, marks and all, and that comparison, gives its
+  boxes, each what it covers on either side and its word, which a ring and
+  its words carry as `data-change`, and gives a move its word. A
+  look can only style what the boxes' words tell apart, and never
+  regroup them: where one box goes round `*5*` and `**5**` and another
+  reading's two go round the asterisks put in, the boxes differ, not the
+  look. The editor ships one, `MODULE_READING_TEXT`, in
+  `source/readings/text.ts`, reading a change as text, as doctor does: a
+  box for each run that changed, removed, inserted or replaced, replaced
+  and restyled where the words put in are marked otherwise, and for words
+  kept whose marks differ, restyled; a move, moved. A host passes it, or
+  its own, as it passes a language module, nothing falling back to it.
+  The projection keeps only a box's shape, worked out from what it covers,
+  taken out, put in or both, for what's structural: which side has a ring,
+  and a line's gutter saying it's taken out or put in whole. The
+  playground's Markdown reading, `module_Reading_Markdown` in
+  `playground/readings.ts`, reads a change as what it means: its words
+  compared, the Markdown module's markers aside, words kept whose marks
+  change restyled, one box round them and every marker round them, `*5*`
+  and `**5**`; words put in, taken out or replaced boxed with the markers
+  that change with them; and what differs between its boxes, a change to
+  the syntax alone, as `*x*` to `_x_`, boxed as text, so what's outside
+  its boxes reads the same on both sides, as a property test holds it to.
+  It reads each text out of the lines round it, so a change inside a fence
+  of code is read as Markdown too. To come: several readings drawn at once,
+  showing another only an attribute set, as a look is, however different
+  their boxes; for now, showing another projects again.
+- **a setup** is what a host puts together for the editor,
+  `_Setup_TextEditor_`, a slot for each concern, each filled once: its
+  components, `componentMap`; its modules of input, `modules`; its language
+  module; and its perspectives. Nothing in it is the editor's unless the
+  host names it, as `PERSPECTIVE_CHANGES`, the editor's text reading in its
+  changes look, nothing falls back to anything, and nothing's overridden:
+  there's no setup to start from and change, so what's in effect is what's
+  written. What ships with the editor are pieces, to put in the slots, and
+  pieces that only work together ship as one, a perspective its reading and
+  its looks; a pack for a kind of document, as the playground's Markdown is,
+  is pieces too, its language module and its perspective. The host's
+  content is apart from it: `new _TextEditor_({ containerElement, setup,
+  model_TextEditor, proposals, ranges_Frame })`.
 
 **frames:** a range of the document's lines, taken out of the flow and shown
 in place of themselves, with their possible future; or a point between two
@@ -1090,17 +1186,14 @@ run through many:
   `POINT`, a position in a line; `BOUNDARY`, before a line, a boundary
   between lines, as a line's start and the gap before it are the same
   position in the text; and the view draws each kind by looking it up, never
-  by a switch. The playground's stand-in works out each removal's notch from
-  the text both sides keep unchanged, the notch right after as much of it as
-  comes before the removal as it is; the projection will know it from what
-  it took out. Still to build: one notch where several removals fall on one
+  by a switch. The projection knows each removal's notch from what it took
+  out: the empty piece it leaves, where its words were. Still to build: one notch where several removals fall on one
   point; words moved along where a ring would meet a notch; a notch inside
   what a move carries; a notch's hover saying what was taken out there.
   Every case is in the playground's Changes document.
 
 Where a place is, which frame it's in, and so what an item says, is the view
-model's; for now the playground's `blocksWith__Frames`, as the projection
-will. The gallery's "proposals-thread" scene shows it alone; the JavaScript
+model's, the projection's. The gallery's "proposals-thread" scene shows it alone; the JavaScript
 example, `?example=javascript`, among every other case so far. Every case of
 how a change is drawn, enumerated, each alone, is the playground's Changes
 document, `?document=changes`: a case drawn by the editor from a view model
@@ -1124,7 +1217,7 @@ the grey of its lines as proposed, backwards, \, what was, stripes two to a
 line running on from line to line, every one, changed or not, so they read
 as one, what's being replaced, set apart from the document around them and
 never taken for a band, each saying what it becomes in its gutter, as a
-perspective says; its lines as proposed beneath them on a band of grey near
+look says; its lines as proposed beneath them on a band of grey near
 the document's own ground, but not it; its list on the same band a shade
 darker, as doctor's actions are, so the three read apart, what was, what
 would be, and what to decide; each item's title and why on the left, its
@@ -1260,9 +1353,16 @@ host's; then draws the text underlays, and the observer draws them again
 whenever the container's size changes. The view model's types and parsers
 are `source/ViewModel_TextEditor.ts`.
 
-The editor is a class too, `_TextEditor_`, in `source/TextEditor.ts`, a
-first one, with only what pointing needs. It holds the view, its modules,
-and its state: the view model it's given, the proposal pointed at,
+The editor is a class too, `_TextEditor_`, in `source/TextEditor.ts`: given
+its container, its setup and its content, the model, the proposals and the
+ranges to frame, it projects the model, with the perspective shown, and
+hands the view model to its viewer, and again, `show(perspective)`, when
+another's shown, setting its looks. The viewer, `_Viewer_TextEditor_`, in
+`source/Viewer_TextEditor.ts`, is what the reader does with what's drawn,
+given a view model, as the changes document's cases and the gallery's
+scenes are, and the browser tests' made by hand; `show(viewModel)` draws
+another, keeping what's pointed at, folded and drafted. It holds the view,
+its modules, and its state: the view model it's given, the proposal pointed at,
 `source_Pointed`, and of it the place, one of its changes, both its sides,
 `place_Pointed`, by the `data-place` its rings carry, and the note, by its
 target, `target_Pointed`. On its container, one listener for each kind of
@@ -1279,7 +1379,7 @@ place's rings `data-pointed` too, on both sides, and the gutters of the
 lines its changes are on, a gutter's `pointed`, `"proposal"`, or `"place"`
 where its place is, drawn `data-pointed` on the gutter, and the underlays a
 pointed note goes to, its proposal's on its side, a move's other end,
-`data-targeted`; the perspective says how they look: the proposal's rings
+`data-targeted`; the look says how they look: the proposal's rings
 heavier, breathing faintly together while it's pointed at, its place's
 heavier again, a faint light running round them, both sides in step,
 clockwise round the lines as proposed, forwards, as their rings are drawn,

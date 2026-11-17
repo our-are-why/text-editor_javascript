@@ -1,4 +1,4 @@
-import type { _Adapter_Event_ } from "./TextEditor.ts"
+import type { _Adapter_Event_ } from "./Viewer_TextEditor.ts"
 import type { _Id_Item_ } from "./ViewModel_TextEditor.ts"
 
 export {

@@ -1,5 +1,6 @@
 import type { _Scene_ } from "../scene.ts"
 import { retry, proposed_retry, proposals_retry } from "../examples/javascript.ts"
+import { MODULE_READING_TEXT } from "../../source/readings/text.ts"
 import { projectedOf } from "../projected.ts"
 import { module_JavaScript } from "../syntax.ts"
 
@@ -27,7 +28,9 @@ const proposalsThread: _Scene_ = {
   invariants: [],
   viewModel_TextEditor: projectedOf({
     multilineText: retry,
+    marks: [],
     module_Language: module_JavaScript,
+    module_Reading: MODULE_READING_TEXT,
     proposed: proposed_retry.filter((changes_Host) => sources_Thread.includes(changes_Host.source)),
     proposals: proposals_retry.filter((proposal_Host) => sources_Thread.includes(proposal_Host.source)),
     ranges_Frame: [{ first: 13, last: 27 }, { first: 31, last: 34 }]

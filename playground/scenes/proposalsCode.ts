@@ -2,6 +2,7 @@ import type { _Scene_ } from "../scene.ts"
 import { MODULE_PLAINTEXT } from "../../source/ViewModel_TextEditor.ts"
 import { parseTexts_Line } from "../../source/Model_TextEditor.ts"
 import { actions_Review } from "../items.ts"
+import { MODULE_READING_TEXT } from "../../source/readings/text.ts"
 import { projectedOf } from "../projected.ts"
 import { readingTime } from "./code.ts"
 
@@ -28,11 +29,13 @@ const proposalsCode: _Scene_ = {
   invariants: [],
   viewModel_TextEditor: projectedOf({
     multilineText: readingTime,
+    marks: [],
     module_Language: MODULE_PLAINTEXT,
+    module_Reading: MODULE_READING_TEXT,
     proposed: [
-      { source: "faster", changes: [{ kind: "REPLACE", range: { from: { line: 11, offset: offset_230 }, to: { line: 11, offset: offset_230 + 3 } }, multilineText: "250" }] },
-      { source: "check", changes: [{ kind: "REPLACE", range: { from: { line: 12, offset: 0 }, to: { line: 15, offset: 0 } }, multilineText: "" }] },
-      { source: "minutes", changes: [{ kind: "REPLACE", range: { from: { line: 15, offset: 0 }, to: { line: 15, offset: (texts_readingTime[15] ?? "").length } }, multilineText: "  const minutes = countWords(text) / wordsPerMinute;\n  return Math.max(1, Math.round(minutes));" }] }
+      { source: "faster", changes: [{ kind: "REPLACE", range: { from: { line: 11, offset: offset_230 }, to: { line: 11, offset: offset_230 + 3 } }, multilineText: "250", marks: [] }] },
+      { source: "check", changes: [{ kind: "REPLACE", range: { from: { line: 12, offset: 0 }, to: { line: 15, offset: 0 } }, multilineText: "", marks: [] }] },
+      { source: "minutes", changes: [{ kind: "REPLACE", range: { from: { line: 15, offset: 0 }, to: { line: 15, offset: (texts_readingTime[15] ?? "").length } }, multilineText: "  const minutes = countWords(text) / wordsPerMinute;\n  return Math.max(1, Math.round(minutes));", marks: [] }] }
     ],
     proposals: [
       { source: "faster", title: "A faster reader: 250 words a minute", state: "OPEN", status: "", rationale: "Adults read prose at about 250 words a minute; 230 makes every estimate a little long.", request: "", actions: actions_Review, attributes: {} },

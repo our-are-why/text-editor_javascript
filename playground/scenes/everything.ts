@@ -132,7 +132,7 @@ const invariants_Everything: Array<_Invariant_Scene_> = [
       ["a long line of words", "a run with nowhere to break"].filter((label) => rowsOf(lineElementOf(containerElement, label)) <= 1),
   },
   {
-    name: "a text underlay is drawn behind exactly its stretch of text, as one shape over every row it's on, on one line or across several, reaching past it no further than a perspective lets it",
+    name: "a text underlay is drawn behind exactly its stretch of text, as one shape over every row it's on, on one line or across several, reaching past it no further than a look lets it",
     concerns: [...new Set(groups_Everything.flatMap((group) => group.underlays.flatMap((underlay_Text) => underlay_Text.kind !== "STRETCH" ? [] : cases_Everything.slice(underlay_Text.from.line, underlay_Text.to.line + 1).map(({ label }) => label))))],
     failing: (containerElement) => [
       ...new Set(
@@ -245,7 +245,7 @@ function rowsOf__Stretch(
 
 // whether a path is exactly a stretch's shape: one shape, holding each row
 // of the stretch from its first character to its last, short of them by
-// any inset a perspective gives it, and reaching no further past them than
+// any inset a look gives it, and reaching no further past them than
 // it lets it, to within a pixel
 function shapeMatches(
   pathElement: SVGPathElement,

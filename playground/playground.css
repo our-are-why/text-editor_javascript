@@ -345,6 +345,32 @@ main.document {
   color: var(--ground);
 }
 
+/* an example's buttons for its perspectives, over its editor, the one
+   shown pressed, as the document's filters are */
+.perspectives {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin: 0 0 0.75rem;
+}
+
+.perspectives button {
+  padding: 0.3rem 0.8rem;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: none;
+  color: var(--ink);
+  font: inherit;
+  font-size: 0.88rem;
+  cursor: pointer;
+}
+
+.perspectives button[aria-pressed="true"] {
+  border-color: var(--ink);
+  background: var(--ink);
+  color: var(--ground);
+}
+
 .cases > .about {
   margin-bottom: 0.5rem;
 }
@@ -584,4 +610,43 @@ main.document {
 
 .htmlView_editor [data-syntax="property"] {
   color: light-dark(#953800, #ffa657);
+}
+
+/* the playground's Markdown, as a host might show it, its marks being its
+   syntax: the syntax kept as it's written, faint, and what it marks shown
+   as it marks it, a heading's words and strong words bold, emphasised
+   ones italic, code the colour of a string, a link's words a link's; no
+   background behind code, which would cover a change's ring. A segment's
+   data-syntax holds every kind it's inside, so each is matched as a word */
+.htmlView_editor [data-syntax~="heading"] {
+  font-weight: 600;
+  color: light-dark(#0550ae, #79c0ff);
+}
+
+.htmlView_editor [data-syntax~="strong"] {
+  font-weight: 600;
+}
+
+.htmlView_editor [data-syntax~="emphasis"] {
+  font-style: italic;
+}
+
+.htmlView_editor [data-syntax~="code"] {
+  color: light-dark(#0a3069, #a5d6ff);
+}
+
+.htmlView_editor [data-syntax~="link"] {
+  color: var(--view-link, LinkText);
+  text-decoration: underline;
+}
+
+.htmlView_editor [data-syntax~="url"],
+.htmlView_editor [data-syntax~="quote"] {
+  color: light-dark(#57606a, #8b949e);
+}
+
+.htmlView_editor [data-syntax~="marker"] {
+  color: light-dark(#8c959f, #6e7681);
+  font-weight: normal;
+  font-style: normal;
 }

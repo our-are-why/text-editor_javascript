@@ -3,6 +3,8 @@ export {
   type _Text_Model_,
   type _NonEmpty_,
   type _Text_Line_NonTerminated_,
+  type _Mark_Text_,
+  type _Data_Mark_,
   type _Changes_Source_,
   type _Change_,
   type __BASE_Change_,
@@ -44,10 +46,14 @@ export {
   type _CHANGE_Piece_Applied_,
   type _Move_Piece_,
   landedOf__Move,
-  comparisonOf__Change,
+  textIn__Range,
+  shiftedBy__Position,
   comparisonOf__Texts,
   type _Run_Comparison_,
-  type _Kind_Run_
+  type _Kind_Run_,
+  keysOf__Text,
+  indexOf__Position,
+  positionOf__Index
 }
 
 interface _Model_TextEditor_ {
@@ -57,6 +63,7 @@ interface _Model_TextEditor_ {
 
 interface _Text_Model_ {
   lines: _NonEmpty_<_Text_Line_NonTerminated_>
+  marks: Array<_Mark_Text_>
 }
 
 type _NonEmpty_<Item> = [
@@ -67,6 +74,15 @@ type _NonEmpty_<Item> = [
 type _Text_Line_NonTerminated_ = string & { [proof__Text_Line_NonTerminated]: true }
 
 declare const proof__Text_Line_NonTerminated: unique symbol
+
+interface _Mark_Text_ {
+  range: _Range_Text_
+  data: _Data_Mark_
+}
+
+interface _Data_Mark_ {
+  [name: string]: string
+}
 
 interface _Changes_Source_ {
   source: string
@@ -100,16 +116,26 @@ interface _MOVE_Change_ extends __BASE_Change_<"MOVE"> {
 
 interface _Api___parseModel_TextEditor_ {
   multilineText: string
+  marks: Array<_Mark_Text_>
   proposed: Array<_Changes_Host_>
 }
 
 function parseModel_TextEditor({
   multilineText,
+  marks,
   proposed
 }: _Api___parseModel_TextEditor_): _Result_Parse_ {
   const document: _Text_Model_ = {
-    lines: parseTexts_Line(multilineText)
+    lines: parseTexts_Line(multilineText),
+    marks: normalizedOf__Marks(marks)
   }
+  const [
+    reason_Document
+  ] = reasonsOf__Marks({
+    text_Model: document,
+    marks
+  })
+  if (reason_Document !== undefined) throw new Error(`the document's ${reason_Document}`)
   const changes_Proposed = proposed.flatMap((changes_Host) => changesOf__Host(changes_Host))
   const [
     refusal_First,
@@ -152,6 +178,7 @@ interface __BASE_Change_Host_<Kind extends string> {
 
 interface _REPLACE_Change_Host_ extends __BASE_Change_Host_<"REPLACE"> {
   multilineText: string
+  marks: Array<_Mark_Text_>
 }
 
 interface _MOVE_Change_Host_ extends __BASE_Change_Host_<"MOVE"> {
@@ -192,6 +219,97 @@ function parseTexts_Line(
 
 const REGEXP_LINEBREAK = /\r\n|[\n\r\v\f\u0085\u2028\u2029]/
 
+function normalizedOf__Marks(
+  marks: Array<_Mark_Text_>
+): Array<_Mark_Text_> {
+  return [
+    ...Map.groupBy(
+      marks.filter((mark) => orderOf__Positions({
+        position: mark.range.from,
+        position_Other: mark.range.to
+      }) < 0),
+      (mark) => keyOf__Data(mark.data)
+    ).values()
+  ]
+    .flatMap((marks_Alike) => marks_Alike
+      .toSorted((
+        mark_One,
+        mark_Other
+      ) => orderOf__Ranges({
+        range: mark_One.range,
+        range_Other: mark_Other.range
+      }))
+      .reduce(
+        (
+          marks_Merged: Array<_Mark_Text_>,
+          mark
+        ) => {
+          const mark_Last = marks_Merged.at(-1)
+          return mark_Last !== undefined && orderOf__Positions({
+            position: mark.range.from,
+            position_Other: mark_Last.range.to
+          }) <= 0
+            ? [
+              ...marks_Merged.slice(
+                0,
+                -1
+              ),
+              {
+                range: {
+                  from: mark_Last.range.from,
+                  to: orderOf__Positions({
+                    position: mark.range.to,
+                    position_Other: mark_Last.range.to
+                  }) > 0 ? mark.range.to : mark_Last.range.to
+                },
+                data: mark_Last.data
+              }
+            ]
+            : [
+              ...marks_Merged,
+              mark
+            ]
+        },
+        []
+      ))
+    .toSorted((
+      mark_One,
+      mark_Other
+    ) => orderOf__Ranges({
+      range: mark_One.range,
+      range_Other: mark_Other.range
+    }) || keyOf__Data(mark_One.data).localeCompare(keyOf__Data(mark_Other.data)))
+}
+
+function keyOf__Data(
+  data: _Data_Mark_
+): string {
+  return JSON.stringify(Object.entries(data).toSorted(([
+    name_One
+  ], [
+    name_Other
+  ]) => name_One.localeCompare(name_Other)))
+}
+
+interface _Api___reasonsOf__Marks_ {
+  text_Model: _Text_Model_
+  marks: Array<_Mark_Text_>
+}
+
+function reasonsOf__Marks({
+  text_Model,
+  marks
+}: _Api___reasonsOf__Marks_): Array<string> {
+  return marks.flatMap((mark) => isInside__Range({
+    text_Model,
+    range: mark.range
+  })
+    ? []
+    : [
+      `mark at ${labelOf__Range(mark.range)} isn't inside its text, or ends before it starts`
+    ])
+}
+
 function changesOf__Host(
   changes_Host: _Changes_Host_
 ): Array<_Changes_Source_> {
@@ -228,7 +346,8 @@ function changeOf__Host(
       kind: "REPLACE",
       range: change_Host.range,
       next: {
-        lines: parseTexts_Line(change_Host.multilineText)
+        lines: parseTexts_Line(change_Host.multilineText),
+        marks: normalizedOf__Marks(change_Host.marks)
       }
     }
     : {
@@ -316,7 +435,10 @@ function reasonsOf__Change({
     text_Model: document,
     range: change.range
   })) return [`its change at ${labelOf__Range(change.range)} isn't inside the document, or ends before it starts`]
-  if (change.kind === "REPLACE") return []
+  if (change.kind === "REPLACE") return reasonsOf__Marks({
+    text_Model: change.next,
+    marks: change.next.marks
+  }).map((reason) => `its change at ${labelOf__Range(change.range)} has a ${reason}`)
   if (orderOf__Positions({
     position: change.range.from,
     position_Other: change.range.to
@@ -802,8 +924,87 @@ function replacedIn__Text({
       : [
         line_First,
         ...lines_Rest
-      ]
+      ],
+    marks: normalizedOf__Marks([
+      ...marksAround__Step({
+        marks: text_Model.marks,
+        range,
+        next
+      }),
+      ...next.marks.map((mark) => ({
+        range: {
+          from: shiftedBy__Position({
+            position: mark.range.from,
+            origin: range.from
+          }),
+          to: shiftedBy__Position({
+            position: mark.range.to,
+            origin: range.from
+          })
+        },
+        data: mark.data
+      }))
+    ])
   }
+}
+
+interface _Api___marksAround__Step_ {
+  marks: Array<_Mark_Text_>
+  range: _Range_Text_
+  next: _Text_Model_
+}
+
+function marksAround__Step({
+  marks,
+  range,
+  next
+}: _Api___marksAround__Step_): Array<_Mark_Text_> {
+  return marks.flatMap((mark) => [
+    ...(orderOf__Positions({
+      position: mark.range.from,
+      position_Other: range.from
+    }) < 0
+      ? [
+        {
+          range: {
+            from: mark.range.from,
+            to: orderOf__Positions({
+              position: mark.range.to,
+              position_Other: range.from
+            }) < 0 ? mark.range.to : range.from
+          },
+          data: mark.data
+        }
+      ]
+      : []),
+    ...(orderOf__Positions({
+      position: mark.range.to,
+      position_Other: range.to
+    }) > 0
+      ? [
+        {
+          range: {
+            from: carried__Position({
+              position: orderOf__Positions({
+                position: mark.range.from,
+                position_Other: range.to
+              }) > 0 ? mark.range.from : range.to,
+              range,
+              next,
+              bias: "AFTER"
+            }),
+            to: carried__Position({
+              position: mark.range.to,
+              range,
+              next,
+              bias: "AFTER"
+            })
+          },
+          data: mark.data
+        }
+      ]
+      : [])
+  ])
 }
 
 interface _Api___lineOf__Text_ {
@@ -1034,6 +1235,22 @@ function textIn__Range({
     text_Model,
     index: range.from.line
   })
+  const marks = marksIn__Range({
+    marks: text_Model.marks,
+    range
+  }).map((mark) => ({
+    range: {
+      from: relativeTo__Position({
+        position: mark.range.from,
+        origin: range.from
+      }),
+      to: relativeTo__Position({
+        position: mark.range.to,
+        origin: range.from
+      })
+    },
+    data: mark.data
+  }))
   return range.from.line === range.to.line
     ? {
       lines: [
@@ -1042,9 +1259,11 @@ function textIn__Range({
           from: range.from.offset,
           to: range.to.offset
         })
-      ]
+      ],
+      marks
     }
     : {
+      marks,
       lines: [
         sliceOf__Text_Line({
           text: line_From,
@@ -1064,6 +1283,61 @@ function textIn__Range({
           to: range.to.offset
         })
       ]
+    }
+}
+
+interface _Api___marksIn__Range_ {
+  marks: Array<_Mark_Text_>
+  range: _Range_Text_
+}
+
+function marksIn__Range({
+  marks,
+  range
+}: _Api___marksIn__Range_): Array<_Mark_Text_> {
+  return marks.flatMap((mark) => {
+    const from = orderOf__Positions({
+      position: mark.range.from,
+      position_Other: range.from
+    }) > 0 ? mark.range.from : range.from
+    const to = orderOf__Positions({
+      position: mark.range.to,
+      position_Other: range.to
+    }) < 0 ? mark.range.to : range.to
+    return orderOf__Positions({
+      position: from,
+      position_Other: to
+    }) < 0
+      ? [
+        {
+          range: {
+            from,
+            to
+          },
+          data: mark.data
+        }
+      ]
+      : []
+  })
+}
+
+interface _Api___relativeTo__Position_ {
+  position: _Position_Text_
+  origin: _Position_Text_
+}
+
+function relativeTo__Position({
+  position,
+  origin
+}: _Api___relativeTo__Position_): _Position_Text_ {
+  return position.line === origin.line
+    ? {
+      line: 0,
+      offset: position.offset - origin.offset
+    }
+    : {
+      line: position.line - origin.line,
+      offset: position.offset
     }
 }
 
@@ -1245,24 +1519,60 @@ function textWith__Sources({
   model_TextEditor,
   sources
 }: _Api___textWith__Sources_): _Text_Model_ {
-  return {
-    lines: parseTexts_Line(piecesWith__Sources({
-      model_TextEditor,
-      sources,
-      range: {
+  const pieces = piecesWith__Sources({
+    model_TextEditor,
+    sources,
+    range: {
+      from: {
+        line: 0,
+        offset: 0
+      },
+      to: endOf__Next({
         from: {
           line: 0,
           offset: 0
         },
-        to: endOf__Next({
-          from: {
-            line: 0,
-            offset: 0
-          },
-          next: model_TextEditor.document
+        next: model_TextEditor.document
+      })
+    }
+  })
+  const marks: Array<_Mark_Text_> = []
+  let position_Piece: _Position_Text_ = {
+    line: 0,
+    offset: 0
+  }
+  for (const piece_Applied of pieces) {
+    const origin = position_Piece
+    marks.push(...piece_Applied.marks.map((mark) => ({
+      range: {
+        from: shiftedBy__Position({
+          position: relativeTo__Position({
+            position: mark.range.from,
+            origin: piece_Applied.range.from
+          }),
+          origin
+        }),
+        to: shiftedBy__Position({
+          position: relativeTo__Position({
+            position: mark.range.to,
+            origin: piece_Applied.range.from
+          }),
+          origin
         })
+      },
+      data: mark.data
+    })))
+    position_Piece = endOf__Next({
+      from: position_Piece,
+      next: {
+        lines: parseTexts_Line(piece_Applied.text),
+        marks: []
       }
-    }).map((piece_Applied) => piece_Applied.text).join(""))
+    })
+  }
+  return {
+    lines: parseTexts_Line(pieces.map((piece_Applied) => piece_Applied.text).join("")),
+    marks: normalizedOf__Marks(marks)
   }
 }
 
@@ -1278,6 +1588,7 @@ interface __BASE_Piece_Applied_<Kind extends string> {
   kind: Kind
   text: string
   range: _Range_Text_
+  marks: Array<_Mark_Text_>
   move: _Move_Piece_ | null
 }
 
@@ -1532,22 +1843,27 @@ function pieceOf__Document({
   from,
   to
 }: _Api___pieceOf__Document_): _Piece_Applied_ {
+  const range = {
+    from: positionOf__Index({
+      text_Model,
+      index: from
+    }),
+    to: positionOf__Index({
+      text_Model,
+      index: to
+    })
+  }
   return {
     kind: "DOCUMENT",
     text: codePoints.slice(
       from,
       to
     ).join(""),
-    range: {
-      from: positionOf__Index({
-        text_Model,
-        index: from
-      }),
-      to: positionOf__Index({
-        text_Model,
-        index: to
-      })
-    },
+    range,
+    marks: marksIn__Range({
+      marks: text_Model.marks,
+      range
+    }),
     move: null
   }
 }
@@ -1751,13 +2067,8 @@ function outputOf__Change_Flat({
   const pieceOf = (
     piece_From: number,
     piece_To: number
-  ): _Piece_Applied_ => ({
-    kind: "CHANGE",
-    text: codePoints_Next.slice(
-      piece_From,
-      piece_To
-    ).join(""),
-    range: {
+  ): _Piece_Applied_ => {
+    const range = {
       from: positionOf__Index({
         text_Model: change.next,
         index: piece_From
@@ -1766,11 +2077,23 @@ function outputOf__Change_Flat({
         text_Model: change.next,
         index: piece_To
       })
-    },
-    source: change_Flat.source,
-    index: change_Flat.index,
-    move: null
-  })
+    }
+    return {
+      kind: "CHANGE",
+      text: codePoints_Next.slice(
+        piece_From,
+        piece_To
+      ).join(""),
+      range,
+      marks: marksIn__Range({
+        marks: change.next.marks,
+        range
+      }),
+      source: change_Flat.source,
+      index: change_Flat.index,
+      move: null
+    }
+  }
   const pieces = spliced({
     length: codePoints_Next.length,
     pieceOf,
@@ -1807,37 +2130,6 @@ function outputOf__Change_Flat({
     : pieces
 }
 
-interface _Api___comparisonOf__Change_ {
-  model_TextEditor: _Model_TextEditor_
-  change: _REPLACE_Change_
-}
-
-function comparisonOf__Change({
-  model_TextEditor,
-  change
-}: _Api___comparisonOf__Change_): Array<_Run_Comparison_> {
-  return comparisonOf__Texts({
-    text_Before: textIn__Range({
-      text_Model: model_TextEditor.document,
-      range: change.range
-    }),
-    text_After: change.next
-  }).map((run_Comparison) => ({
-    kind: run_Comparison.kind,
-    range_Before: {
-      from: shiftedBy__Position({
-        position: run_Comparison.range_Before.from,
-        origin: change.range.from
-      }),
-      to: shiftedBy__Position({
-        position: run_Comparison.range_Before.to,
-        origin: change.range.from
-      })
-    },
-    range_After: run_Comparison.range_After
-  }))
-}
-
 interface _Api___shiftedBy__Position_ {
   position: _Position_Text_
   origin: _Position_Text_
@@ -1871,7 +2163,7 @@ interface _Run_Flat_ {
   to_After: number
 }
 
-type _Kind_Run_ = "KEPT" | "REMOVED" | "INSERTED" | "REPLACED"
+type _Kind_Run_ = "KEPT" | "CHANGED"
 
 function runsBetween__Flat({
   text_Before,
@@ -1900,19 +2192,14 @@ function runsOf__Lengths(
         length_Run
       ) => {
         const length_Last = lengths_Run.at(-1)
-        return length_Last !== undefined && (length_Last.kind === "KEPT") === (length_Run.kind === "KEPT")
+        return length_Last !== undefined && length_Last.kind === length_Run.kind
           ? [
             ...lengths_Run.slice(
               0,
               -1
             ),
             {
-              kind: length_Run.kind === "KEPT"
-                ? "KEPT"
-                : kindOf__Lengths({
-                  length_Before: length_Last.length_Before + length_Run.length_Before,
-                  length_After: length_Last.length_After + length_Run.length_After
-                }),
+              kind: length_Run.kind,
               length_Before: length_Last.length_Before + length_Run.length_Before,
               length_After: length_Last.length_After + length_Run.length_After
             }
@@ -1945,22 +2232,6 @@ interface _Length_Run_ {
   kind: _Kind_Run_
   length_Before: number
   length_After: number
-}
-
-interface _Api___kindOf__Lengths_ {
-  length_Before: number
-  length_After: number
-}
-
-function kindOf__Lengths({
-  length_Before,
-  length_After
-}: _Api___kindOf__Lengths_): _Kind_Run_ {
-  return length_Before === 0
-    ? "INSERTED"
-    : length_After === 0
-      ? "REMOVED"
-      : "REPLACED"
 }
 
 interface _Api___opsOf__Lines_ {
@@ -2328,10 +2599,7 @@ function lengthsOf__Op({
     {
       kind: length_Break_Before === 1 && length_Break_After === 1
         ? "KEPT"
-        : kindOf__Lengths({
-          length_Before: length_Break_Before,
-          length_After: length_Break_After
-        }),
+        : "CHANGED",
       length_Before: length_Break_Before,
       length_After: length_Break_After
     },
@@ -2371,7 +2639,7 @@ const LENGTHSMAP__KIND_OP: _LengthsMap__Kind_Op_ = {
     text_Before
   }) => [
     {
-      kind: "REMOVED",
+      kind: "CHANGED",
       length_Before: countOf__CodePoints(text_Before),
       length_After: 0
     }
@@ -2380,7 +2648,7 @@ const LENGTHSMAP__KIND_OP: _LengthsMap__Kind_Op_ = {
     text_After
   }) => [
     {
-      kind: "INSERTED",
+      kind: "CHANGED",
       length_Before: 0,
       length_After: countOf__CodePoints(text_After)
     }
@@ -2455,10 +2723,7 @@ function runsOf__Tokens({
       to_After: from_After
     })
     runs.push({
-      kind: kindOf__Lengths({
-        length_Before: difference.to - difference.from,
-        length_After: difference.inserted.length
-      }),
+      kind: "CHANGED",
       from_Before: difference.from,
       to_Before: difference.to,
       from_After,
@@ -2681,4 +2946,25 @@ function comparisonOf__Texts({
       })
     }
   }))
+}
+
+function keysOf__Text(
+  text_Model: _Text_Model_
+): Array<string> {
+  const keys: Array<Array<string>> = Array.from(
+    flatOf__Text(text_Model),
+    () => []
+  )
+  for (const mark of text_Model.marks) {
+    const from = indexOf__Position({
+      text_Model,
+      position: mark.range.from
+    })
+    const to = indexOf__Position({
+      text_Model,
+      position: mark.range.to
+    })
+    for (let index = from; index < to; index = index + 1) keys[index]?.push(keyOf__Data(mark.data))
+  }
+  return keys.map((keys_Each) => keys_Each.toSorted().join(" "))
 }

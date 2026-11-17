@@ -1,6 +1,7 @@
 import type { _Scene_ } from "../scene.ts"
-import { viewModelOf__Blocks, MODULE_PLAINTEXT } from "../../source/ViewModel_TextEditor.ts"
+import { viewModelOf__Blocks } from "../../source/ViewModel_TextEditor.ts"
 import { blocksOf__Text } from "../lines.ts"
+import { module_Markdown } from "../syntax.ts"
 
 export {
   fieldNotes,
@@ -36,10 +37,10 @@ See [the guide](https://example.com/guide) for more, and *please* say if anythin
 const markdown: _Scene_ = {
   name: "markdown",
   title: "Markdown",
-  look: "Markdown's source, as text: headings, a fenced block of code, a list, a quote, a link and a table, each shown as the characters it's written in, since no module gives any part of it a kind yet.",
+  look: "Markdown's source, as text: headings, a fenced block of code, a list, a quote, a link and a table, each shown as the characters it's written in, its syntax worked out by the playground's Markdown module and styled by its stylesheet: the syntax faint, headings and strong words bold, emphasis italic, code and links coloured; the shell in the fence, which the module has no language for, code as a whole.",
   size: "tile",
   variables: {},
   labels: [],
   invariants: [],
-  viewModel_TextEditor: viewModelOf__Blocks(blocksOf__Text(fieldNotes, MODULE_PLAINTEXT)),
+  viewModel_TextEditor: viewModelOf__Blocks(blocksOf__Text(fieldNotes, module_Markdown)),
 }

@@ -1,9 +1,9 @@
-import "../source/perspectives/changes.css"
 import { examples } from "./examples/index.ts"
 import { documents } from "./documents/index.ts"
 import { scenes } from "./scenes/index.ts"
 import { COMPONENTMAP__VIEW_TEXTEDITOR } from "../source/View_TextEditor.tsx"
-import { _TextEditor_ } from "../source/TextEditor.ts"
+import { _Viewer_TextEditor_ } from "../source/Viewer_TextEditor.ts"
+import { LOOK_CHANGES } from "../source/looks/changes.ts"
 import { MODULE_MOUSE } from "../source/modules/mouse.ts"
 import type { _Entry_Log_, _Example_ } from "./example.ts"
 import type { _Case_Document_, _Document_, _Status_Case_ } from "./document.ts"
@@ -153,8 +153,8 @@ function showDocument(shown_Document: _Document_): void {
 }
 
 // a case: its number and title, linking to itself, and its status; the
-// editor drawing what it's given, in the "changes" perspective, with the
-// mouse, as the gallery's scenes are, or, for a case with nothing yet to
+// viewer drawing what it's given, in the "changes" look, with the mouse,
+// as the gallery's scenes are, or, for a case with nothing yet to
 // draw, a note saying so; then what it shows, and what's open about it
 function drawCase(
   each: _Case_Document_,
@@ -173,8 +173,8 @@ function drawCase(
     article.append(make("p", "undrawn", "Nothing to draw of it yet."))
   } else {
     const containerElement = document.createElement("div")
-    containerElement.dataset["perspective"] = "changes"
-    new _TextEditor_({
+    containerElement.dataset["look"] = LOOK_CHANGES.name
+    new _Viewer_TextEditor_({
       containerElement,
       componentMap: COMPONENTMAP__VIEW_TEXTEDITOR,
       modules: [MODULE_MOUSE],
@@ -222,12 +222,12 @@ function drawScene(
   const caption = document.createElement("figcaption")
   caption.append(title, make("span", "look", scene.look))
 
-  // the editor, in the "changes" perspective, which the playground, as host,
-  // has on for every scene, with the mouse, so pointing at a proposal
-  // shows it
+  // the viewer, drawing what it's given in the "changes" look, which the
+  // playground, as host, has on for every scene, with the mouse, so
+  // pointing at a proposal shows it
   const containerElement = document.createElement("div")
-  containerElement.dataset["perspective"] = "changes"
-  new _TextEditor_({
+  containerElement.dataset["look"] = LOOK_CHANGES.name
+  new _Viewer_TextEditor_({
     containerElement,
     componentMap: COMPONENTMAP__VIEW_TEXTEDITOR,
     modules: [MODULE_MOUSE],

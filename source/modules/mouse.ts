@@ -1,4 +1,4 @@
-import type { _Module_TextEditor_ } from "../TextEditor.ts"
+import type { _Module_TextEditor_ } from "../Viewer_TextEditor.ts"
 
 export {
   MODULE_MOUSE

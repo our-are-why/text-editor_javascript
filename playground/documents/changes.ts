@@ -1,11 +1,11 @@
 import type { _Document_, _Section_Document_ } from "../document.ts"
-import { viewModelOf__Blocks, MODULE_PLAINTEXT, type _ViewModel_TextEditor_, type _Module_Language_, type _FRAME_Block__ViewModel_, type _Range_Lines_, type _Line_Run_, type _Item_Proposals_, type _Part_Frame_, type _Attributes_Element_ } from "../../source/ViewModel_TextEditor.ts"
-import { type _NonEmpty_, type _Changes_Host_, type _Change_Host_ } from "../../source/Model_TextEditor.ts"
+import { MODULE_PLAINTEXT } from "../../source/ViewModel_TextEditor.ts"
+import type { _Change_Host_ } from "../../source/Model_TextEditor.ts"
 import type { _Proposal_Host_ } from "../../source/Projection_TextEditor.ts"
+import { MODULE_READING_TEXT } from "../../source/readings/text.ts"
 import { projectedOf } from "../projected.ts"
-import { blocksWith__Frames, lineOf, type _Move_Proposal_, type _Marked_Piece_ } from "../lines.ts"
 import { actions_Review } from "../items.ts"
-import { attributesOf__Change, attributesOf__Marks, type _Side_Change_, type _Kind_Change_ } from "../looks.ts"
+import { attributesOf__Marks } from "../looks.ts"
 import { module_JavaScript } from "../syntax.ts"
 
 export {
@@ -15,9 +15,7 @@ export {
 // every case of how the view draws a change, each drawn by the editor from
 // a few lines of code and the changes proposed for them, as an agent would
 // write them, and what the playground, as host, says of each proposal, the
-// projection working out the rest, so a case shows one thing; but the two
-// whose words are restyled, drawn from a view model written by hand, as a
-// text has no marks yet
+// projection working out the rest, so a case shows one thing
 
 // what a ring says: its colour, what the change does; its dash, whether
 // only the look changes; its strength, whether it applies only if another
@@ -39,7 +37,9 @@ const kinds: _Section_Document_ = {
       },
       viewModel_TextEditor: projectedOf({
         multilineText: "const ATTEMPTS = 5;\nconst DELAY_MS = 100; // in milliseconds",
+        marks: [],
         module_Language: module_JavaScript,
+        module_Reading: MODULE_READING_TEXT,
         proposed: [
           { source: "unit", changes: [replacing([1, 0], [1, 40], "const DELAY_MS = 100;")] }
         ],
@@ -58,7 +58,9 @@ const kinds: _Section_Document_ = {
       open: null,
       viewModel_TextEditor: projectedOf({
         multilineText: "for (let n = 1; n <= attempts; n++) {\n  if (n === attempts) break;\n}",
+        marks: [],
         module_Language: module_JavaScript,
+        module_Reading: MODULE_READING_TEXT,
         proposed: [
           { source: "aborted", changes: [replacing([1, 20], [1, 20], " || signal?.aborted")] }
         ],
@@ -77,7 +79,9 @@ const kinds: _Section_Document_ = {
       open: null,
       viewModel_TextEditor: projectedOf({
         multilineText: "export function backoff(n) {\n  return DELAY_MS * 2 ** (n - 1);\n}",
+        marks: [],
         module_Language: module_JavaScript,
+        module_Reading: MODULE_READING_TEXT,
         proposed: [
           { source: "round", changes: [replacing([0, 0], [1, 33], "export function backoff(round) {\n  return DELAY_MS * 2 ** (round - 1);")] }
         ],
@@ -94,17 +98,18 @@ const kinds: _Section_Document_ = {
       size: "wide",
       drawn: "Dashed yellow on both sides: the words are the same, and only their look changes, here to bold.",
       open: null,
-      viewModel_TextEditor: drawnOf({
+      viewModel_TextEditor: projectedOf({
         multilineText: "The delay doubles each round, and never grows past thirty seconds.",
+        marks: [],
         module_Language: MODULE_PLAINTEXT,
-        frames: [frameOf({
-          id: "bold",
-          range: { first: 1, last: 1 },
-          current: [lineOf("The delay doubles each round, and ", ringed("never", "before", "restyled", "bold"), " grows past thirty seconds.")],
-          proposed: [lineOf("The delay doubles each round, and ", { text: "never", attributes: { ...attributesOf__Change({ side: "after", kind: "restyled", source: "bold" }), ...attributesOf__Marks("bold") } }, " grows past thirty seconds.")],
-          items: [itemOf({ source: "bold", title: "Stress the cap", rationale: "It's the promise the caller relies on." })]
-        })],
-        moves: []
+        module_Reading: MODULE_READING_TEXT,
+        proposed: [
+          { source: "bold", changes: [restyling([0, 34], [0, 39], "never", attributesOf__Marks("bold"))] }
+        ],
+        proposals: [
+          proposalOf({ source: "bold", title: "Stress the cap", rationale: "It's the promise the caller relies on." })
+        ],
+        ranges_Frame: []
       })
     },
     {
@@ -114,17 +119,18 @@ const kinds: _Section_Document_ = {
       size: "wide",
       drawn: "Dashed yellow, its dashes longer than a restyle's: the words change, and their look too.",
       open: null,
-      viewModel_TextEditor: drawnOf({
+      viewModel_TextEditor: projectedOf({
         multilineText: "Between attempts it waits a second at most.",
+        marks: [],
         module_Language: MODULE_PLAINTEXT,
-        frames: [frameOf({
-          id: "wait",
-          range: { first: 1, last: 1 },
-          current: [lineOf("Between attempts it waits ", ringed("a second", "before", "replacedRestyled", "wait"), " at most.")],
-          proposed: [lineOf("Between attempts it waits ", { text: "two seconds", attributes: { ...attributesOf__Change({ side: "after", kind: "replacedRestyled", source: "wait" }), ...attributesOf__Marks("bold") } }, " at most.")],
-          items: [itemOf({ source: "wait", title: "Say the longer wait, and stress it", rationale: "The cap went up to two seconds." })]
-        })],
-        moves: []
+        module_Reading: MODULE_READING_TEXT,
+        proposed: [
+          { source: "wait", changes: [restyling([0, 26], [0, 34], "two seconds", attributesOf__Marks("bold"))] }
+        ],
+        proposals: [
+          proposalOf({ source: "wait", title: "Say the longer wait, and stress it", rationale: "The cap went up to two seconds." })
+        ],
+        ranges_Frame: []
       })
     },
     {
@@ -136,7 +142,9 @@ const kinds: _Section_Document_ = {
       open: null,
       viewModel_TextEditor: projectedOf({
         multilineText: "function isRetryable(error) {\n  if (error instanceof TypeError) return true;\n  const status = error?.response?.status ?? 0;\n  return status === 429 || status >= 500;\n}",
+        marks: [],
         module_Language: module_JavaScript,
+        module_Reading: MODULE_READING_TEXT,
         proposed: [
           { source: "status", changes: [moving([2, 0], [3, 0], [1, 0])] }
         ],
@@ -155,7 +163,9 @@ const kinds: _Section_Document_ = {
       open: null,
       viewModel_TextEditor: projectedOf({
         multilineText: "  if (n === attempts) break;\n  onRetry?.(error, n);",
+        marks: [],
         module_Language: module_JavaScript,
+        module_Reading: MODULE_READING_TEXT,
         proposed: [
           { source: "hook", changes: [replacing([0, 28], [1, 22], "")] },
           { source: "round", changes: [replacing([0, 6], [0, 7], "round"), replacing([1, 19], [1, 20], "round")] }
@@ -176,7 +186,9 @@ const kinds: _Section_Document_ = {
       open: null,
       viewModel_TextEditor: projectedOf({
         multilineText: "const DELAY_MS = 100;\nfunction sleep(ms) {}",
+        marks: [],
         module_Language: module_JavaScript,
+        module_Reading: MODULE_READING_TEXT,
         proposed: [
           { source: "sleep", changes: [moving([0, 21], [1, 21], [0, 0])] },
           { source: "delay", changes: [replacing([1, 15], [1, 17], "delayMs")] }
@@ -207,7 +219,9 @@ const shape: _Section_Document_ = {
       open: null,
       viewModel_TextEditor: projectedOf({
         multilineText: "  const delay = DELAY_MS * 2;",
+        marks: [],
         module_Language: module_JavaScript,
+        module_Reading: MODULE_READING_TEXT,
         proposed: [
           { source: "base", changes: [replacing([0, 0], [0, 29], "  const delay = BASE_MS * 2;")] }
         ],
@@ -226,7 +240,9 @@ const shape: _Section_Document_ = {
       open: null,
       viewModel_TextEditor: projectedOf({
         multilineText: "    await sleep(backoff(n), signal);",
+        marks: [],
         module_Language: module_JavaScript,
+        module_Reading: MODULE_READING_TEXT,
         proposed: [
           { source: "round", changes: [replacing([0, 0], [0, 36], "    await sleep(backoff(round), signal);")] }
         ],
@@ -245,7 +261,9 @@ const shape: _Section_Document_ = {
       open: null,
       viewModel_TextEditor: projectedOf({
         multilineText: "  signal?.throwIfAborted();",
+        marks: [],
         module_Language: module_JavaScript,
+        module_Reading: MODULE_READING_TEXT,
         proposed: [
           { source: "abort", changes: [replacing([0, 2], [0, 8], "abortSignal")] },
           { source: "chain", changes: [replacing([0, 8], [0, 9], "")] }
@@ -266,7 +284,9 @@ const shape: _Section_Document_ = {
       open: null,
       viewModel_TextEditor: projectedOf({
         multilineText: "const MIN_MS = 100;\nconst MAX_MS = 30_000;",
+        marks: [],
         module_Language: module_JavaScript,
+        module_Reading: MODULE_READING_TEXT,
         proposed: [
           { source: "bounds", changes: [replacing([0, 0], [1, 22], "const FLOOR_MS = 100;\nconst CEILING_MS = 30_000;")] }
         ],
@@ -285,7 +305,9 @@ const shape: _Section_Document_ = {
       open: null,
       viewModel_TextEditor: projectedOf({
         multilineText: "export function backoff(n) {\n  const delay = DELAY_MS * 2 ** (n - 1);\n  return delay + Math.random() * (delay / 2);\n}",
+        marks: [],
         module_Language: module_JavaScript,
+        module_Reading: MODULE_READING_TEXT,
         proposed: [
           { source: "jitter", changes: [replacing([1, 0], [2, 45], "  return withJitter(n);")] }
         ],
@@ -304,7 +326,9 @@ const shape: _Section_Document_ = {
       open: null,
       viewModel_TextEditor: projectedOf({
         multilineText: " * @param {{ attempts?: number, onRetry?: (error: unknown, n: number) => void }} [options]",
+        marks: [],
         module_Language: module_JavaScript,
+        module_Reading: MODULE_READING_TEXT,
         proposed: [
           { source: "hook", changes: [replacing([0, 0], [0, 90], " * @param {{ attempts?: number }} [options]")] }
         ],
@@ -323,7 +347,9 @@ const shape: _Section_Document_ = {
       open: null,
       viewModel_TextEditor: projectedOf({
         multilineText: "    if (n === attempts || !isRetryable(error)) break;",
+        marks: [],
         module_Language: module_JavaScript,
+        module_Reading: MODULE_READING_TEXT,
         proposed: [
           { source: "order", changes: [moving([0, 8], [0, 22], [0, 45]), moving([0, 26], [0, 45], [0, 8])] },
           { source: "round", changes: [replacing([0, 8], [0, 9], "round")] }
@@ -344,7 +370,9 @@ const shape: _Section_Document_ = {
       open: null,
       viewModel_TextEditor: projectedOf({
         multilineText: "export function backoff(n) {}",
+        marks: [],
         module_Language: module_JavaScript,
+        module_Reading: MODULE_READING_TEXT,
         proposed: [
           { source: "private", changes: [replacing([0, 0], [0, 29], "function backoff(n) {}")] }
         ],
@@ -372,7 +400,9 @@ const moves: _Section_Document_ = {
       open: null,
       viewModel_TextEditor: projectedOf({
         multilineText: "const DELAY_MS = 100;\n\nexport function retry(attempt) {}\n\nfunction sleep(ms) {}",
+        marks: [],
         module_Language: module_JavaScript,
+        module_Reading: MODULE_READING_TEXT,
         proposed: [
           { source: "sleep", changes: [moving([2, 33], [4, 21], [1, 0])] }
         ],
@@ -391,7 +421,9 @@ const moves: _Section_Document_ = {
       open: null,
       viewModel_TextEditor: projectedOf({
         multilineText: "    if (n === attempts || !isRetryable(error)) break;",
+        marks: [],
         module_Language: module_JavaScript,
+        module_Reading: MODULE_READING_TEXT,
         proposed: [
           { source: "order", changes: [moving([0, 8], [0, 22], [0, 45]), moving([0, 26], [0, 45], [0, 8])] }
         ],
@@ -419,7 +451,9 @@ const lines: _Section_Document_ = {
       open: null,
       viewModel_TextEditor: projectedOf({
         multilineText: "  if (n === attempts) break;\n  onRetry?.(error, n);\n  await sleep(backoff(n));",
+        marks: [],
         module_Language: module_JavaScript,
+        module_Reading: MODULE_READING_TEXT,
         proposed: [
           { source: "hook", changes: [replacing([1, 0], [2, 0], "")] }
         ],
@@ -438,7 +472,9 @@ const lines: _Section_Document_ = {
       open: null,
       viewModel_TextEditor: projectedOf({
         multilineText: "  const delay = DELAY_MS * 2 ** (n - 1);\n  return delay;",
+        marks: [],
         module_Language: module_JavaScript,
+        module_Reading: MODULE_READING_TEXT,
         proposed: [
           { source: "cap", changes: [replacing([1, 0], [1, 15], "  const capped = Math.min(delay, 30_000);\n  return capped;")] }
         ],
@@ -457,7 +493,9 @@ const lines: _Section_Document_ = {
       open: null,
       viewModel_TextEditor: projectedOf({
         multilineText: "const ATTEMPTS = 5;\n\n\nconst DELAY_MS = 100;",
+        marks: [],
         module_Language: module_JavaScript,
+        module_Reading: MODULE_READING_TEXT,
         proposed: [
           { source: "gap", changes: [replacing([1, 0], [2, 0], "")] }
         ],
@@ -476,7 +514,9 @@ const lines: _Section_Document_ = {
       open: null,
       viewModel_TextEditor: projectedOf({
         multilineText: "export function backoff(n) {\n  if (n < 1) {\n    throw new RangeError(\"n starts at 1\");\n  }\n  return DELAY_MS * 2 ** (n - 1);\n}",
+        marks: [],
         module_Language: module_JavaScript,
+        module_Reading: MODULE_READING_TEXT,
         proposed: [
           { source: "check", changes: [replacing([1, 0], [4, 0], "")] }
         ],
@@ -504,7 +544,9 @@ const threads: _Section_Document_ = {
       open: null,
       viewModel_TextEditor: projectedOf({
         multilineText: "export function backoff(n) {\n  return DELAY_MS * 2 ** (n - 1);\n}\n\nfor (let n = 1; n <= attempts; n++) {}",
+        marks: [],
         module_Language: module_JavaScript,
+        module_Reading: MODULE_READING_TEXT,
         proposed: [
           { source: "round", changes: [replacing([0, 0], [1, 33], "export function backoff(round) {\n  return DELAY_MS * 2 ** (round - 1);"), replacing([4, 0], [4, 38], "for (let round = 1; round <= attempts; round++) {}")] }
         ],
@@ -532,7 +574,9 @@ const pointing: _Section_Document_ = {
       open: null,
       viewModel_TextEditor: projectedOf({
         multilineText: "export function backoff(n) {\n  const delay = DELAY_MS * 2 ** (n - 1);\n  return delay + Math.random() * (delay / 2);\n}",
+        marks: [],
         module_Language: module_JavaScript,
+        module_Reading: MODULE_READING_TEXT,
         proposed: [
           { source: "round", changes: [replacing([0, 0], [1, 40], "export function backoff(round) {\n  const delay = DELAY_MS * 2 ** (round - 1);")] },
           { source: "cap", changes: [replacing([2, 0], [2, 45], "  const capped = Math.min(delay, 30_000);\n  return capped + Math.random() * (capped / 2);")] }
@@ -562,7 +606,9 @@ const folding: _Section_Document_ = {
       open: null,
       viewModel_TextEditor: projectedOf({
         multilineText: "export function backoff(n) {\n  const delay = DELAY_MS * 2 ** (n - 1);\n  return delay;\n}",
+        marks: [],
         module_Language: module_JavaScript,
+        module_Reading: MODULE_READING_TEXT,
         proposed: [
           { source: "round", changes: [replacing([0, 0], [1, 40], "export function backoff(round) {\n  const delay = DELAY_MS * 2 ** (round - 1);")] },
           { source: "cap", changes: [replacing([2, 0], [2, 15], "  const capped = Math.min(delay, 30_000);\n  return capped;")] }
@@ -583,7 +629,9 @@ const folding: _Section_Document_ = {
       open: null,
       viewModel_TextEditor: projectedOf({
         multilineText: "// Retries a flaky async call, backing off each time,\n// until it succeeds, or the caller gives up on it.\n\nconst ATTEMPTS = 5;",
+        marks: [],
         module_Language: module_JavaScript,
+        module_Reading: MODULE_READING_TEXT,
         proposed: [
           { source: "header", changes: [replacing([0, 0], [2, 0], "")] }
         ],
@@ -613,7 +661,9 @@ const marks: _Section_Document_ = {
       open: null,
       viewModel_TextEditor: projectedOf({
         multilineText: "    await sleep(backoff(n), signal);",
+        marks: [],
         module_Language: module_JavaScript,
+        module_Reading: MODULE_READING_TEXT,
         proposed: [
           { source: "signal", changes: [replacing([0, 0], [0, 36], "    await sleep(backoff(n));")] }
         ],
@@ -632,7 +682,9 @@ const marks: _Section_Document_ = {
       open: null,
       viewModel_TextEditor: projectedOf({
         multilineText: "  if (n === attempts) break;\n  onRetry?.(error, n);\n  await sleep(backoff(n));",
+        marks: [],
         module_Language: module_JavaScript,
+        module_Reading: MODULE_READING_TEXT,
         proposed: [
           { source: "hook", changes: [replacing([1, 0], [2, 0], "")] }
         ],
@@ -651,7 +703,9 @@ const marks: _Section_Document_ = {
       open: null,
       viewModel_TextEditor: projectedOf({
         multilineText: "function retry(attempt, options, legacy) {}",
+        marks: [],
         module_Language: module_JavaScript,
+        module_Reading: MODULE_READING_TEXT,
         proposed: [
           { source: "options", changes: [replacing([0, 22], [0, 31], "")] },
           { source: "legacy", changes: [replacing([0, 31], [0, 39], "")] }
@@ -672,7 +726,9 @@ const marks: _Section_Document_ = {
       open: null,
       viewModel_TextEditor: projectedOf({
         multilineText: "  signal?.throwIfAborted();",
+        marks: [],
         module_Language: module_JavaScript,
+        module_Reading: MODULE_READING_TEXT,
         proposed: [
           { source: "abort", changes: [replacing([0, 2], [0, 8], "abortSignal")] },
           { source: "chain", changes: [replacing([0, 8], [0, 9], "")] }
@@ -693,7 +749,9 @@ const marks: _Section_Document_ = {
       open: null,
       viewModel_TextEditor: projectedOf({
         multilineText: "const DELAY_MS = 100;\nfunction sleep(ms, signal) {}",
+        marks: [],
         module_Language: module_JavaScript,
+        module_Reading: MODULE_READING_TEXT,
         proposed: [
           { source: "sleep", changes: [moving([0, 21], [1, 29], [0, 0])] },
           { source: "signal", changes: [replacing([1, 17], [1, 25], "")] }
@@ -714,7 +772,9 @@ const marks: _Section_Document_ = {
       open: null,
       viewModel_TextEditor: projectedOf({
         multilineText: "// Retries a flaky async call, backing off each time,\n// until it succeeds, or the caller gives up on it.\n\nconst ATTEMPTS = 5;",
+        marks: [],
         module_Language: module_JavaScript,
+        module_Reading: MODULE_READING_TEXT,
         proposed: [
           { source: "header", changes: [replacing([0, 0], [2, 0], "")] }
         ],
@@ -733,7 +793,9 @@ const marks: _Section_Document_ = {
       open: null,
       viewModel_TextEditor: projectedOf({
         multilineText: "function sleep(ms) {}\n\nexport { sleep };",
+        marks: [],
         module_Language: module_JavaScript,
+        module_Reading: MODULE_READING_TEXT,
         proposed: [
           { source: "exports", changes: [replacing([0, 21], [2, 17], "")] }
         ],
@@ -764,7 +826,9 @@ const marks: _Section_Document_ = {
       },
       viewModel_TextEditor: projectedOf({
         multilineText: "    signal?.throwIfAborted();",
+        marks: [],
         module_Language: module_JavaScript,
+        module_Reading: MODULE_READING_TEXT,
         proposed: [
           { source: "indent", changes: [replacing([0, 0], [0, 2], "")] }
         ],
@@ -786,7 +850,9 @@ const marks: _Section_Document_ = {
       },
       viewModel_TextEditor: projectedOf({
         multilineText: "// 100ms, 200ms, 400ms, and so on,\n// up to half as long again",
+        marks: [],
         module_Language: module_JavaScript,
+        module_Reading: MODULE_READING_TEXT,
         proposed: [
           { source: "words", changes: [replacing([0, 0], [1, 3], "")] }
         ],
@@ -805,7 +871,9 @@ const marks: _Section_Document_ = {
       open: null,
       viewModel_TextEditor: projectedOf({
         multilineText: "// backoff\nexport function backoff(n) {}",
+        marks: [],
         module_Language: module_JavaScript,
+        module_Reading: MODULE_READING_TEXT,
         proposed: [
           { source: "comment", changes: [replacing([0, 0], [1, 0], "")] },
           { source: "private", changes: [replacing([1, 0], [1, 7], "")] }
@@ -823,32 +891,8 @@ const marks: _Section_Document_ = {
 const changes: _Document_ = {
   name: "changes",
   title: "Changes",
-  about: "Every case of how the view draws a change, enumerated: the rings round words, and the marks planned for where words are taken out. Each case is drawn by the editor, in the changes perspective, from a few lines and the changes proposed for them, as an agent would write them, the editor working out what to draw; but two, whose words are restyled, from a view model written by hand, as a text has no marks yet; under it, what it shows, and what's still to decide. Normal cases are the usual; edge cases, where something presses on the usual; planned ones, settled but not built, drawn as the view draws them now. Point at changes and items, and fold frames, as the cases say.",
+  about: "Every case of how the view draws a change, enumerated: the rings round words, and the marks planned for where words are taken out. Each case is drawn by the editor, in the changes look, from a few lines and the changes proposed for them, as an agent would write them, the editor working out what to draw; under it, what it shows, and what's still to decide. Normal cases are the usual; edge cases, where something presses on the usual; planned ones, settled but not built, drawn as the view draws them now. Point at changes and items, and fold frames, as the cases say.",
   sections: [kinds, shape, moves, lines, threads, pointing, folding, marks],
-}
-
-interface _Api___drawnOf_<State> {
-  multilineText: string
-  module_Language: _Module_Language_<State>
-  frames: Array<_FRAME_Block__ViewModel_>
-  moves: Array<_Move_Proposal_>
-}
-
-// a case's view model: its lines, the frames over them, and the moves
-// between them, as the playground's stand-in for the projection works them
-// out, each line's syntax the language module's
-function drawnOf<State>({
-  multilineText,
-  module_Language,
-  frames,
-  moves
-}: _Api___drawnOf_<State>): _ViewModel_TextEditor_ {
-  return viewModelOf__Blocks(blocksWith__Frames({
-    multilineText,
-    module_Language,
-    frames,
-    moves
-  }))
 }
 
 // a span of a case's lines, from a line and a character in it to another,
@@ -858,7 +902,18 @@ function replacing(
   to: [number, number],
   multilineText: string
 ): _Change_Host_ {
-  return { kind: "REPLACE", range: { from: { line: from[0], offset: from[1] }, to: { line: to[0], offset: to[1] } }, multilineText }
+  return { kind: "REPLACE", range: { from: { line: from[0], offset: from[1] }, to: { line: to[0], offset: to[1] } }, multilineText, marks: [] }
+}
+
+// a span of a case's lines and what it becomes, a line's words, marked whole
+// with a mark of the playground's, as host, its data
+function restyling(
+  from: [number, number],
+  to: [number, number],
+  multilineText: string,
+  data: Record<string, string>
+): _Change_Host_ {
+  return { kind: "REPLACE", range: { from: { line: from[0], offset: from[1] }, to: { line: to[0], offset: to[1] } }, multilineText, marks: [{ range: { from: { line: 0, offset: 0 }, to: { line: 0, offset: [...multilineText].length } }, data }] }
 }
 
 // a span of a case's lines taken from where it is and put at another place
@@ -884,59 +939,4 @@ function proposalOf({
   rationale
 }: _Api___proposalOf_): _Proposal_Host_ {
   return { source, title, state: "OPEN", status: "", rationale, request: "", actions: actions_Review, attributes: {} }
-}
-
-interface _Api___frameOf_ {
-  id: string
-  range: _Range_Lines_
-  current: Array<_Line_Run_>
-  proposed: Array<_Line_Run_>
-  items: _NonEmpty_<_Item_Proposals_>
-}
-
-// a frame over a case's lines, its runs' ids from its own: its lines as
-// they are, unless it's a point between lines, where nothing is; its lines
-// as proposed, none where every line's taken out; and its list
-function frameOf({
-  id,
-  range,
-  current,
-  proposed,
-  items
-}: _Api___frameOf_): _FRAME_Block__ViewModel_ {
-  const part_Proposed: _Part_Frame_ = { kind: "PROPOSAL_LINES", run: { id: `${id}-proposed`, lines: proposed, groups: [] } }
-  const part_List: _Part_Frame_ = { kind: "PROPOSAL_LIST", items }
-  return {
-    kind: "FRAME",
-    range,
-    parts: current.length === 0
-      ? [part_Proposed, part_List]
-      : [{ kind: "CURRENT_LINES", run: { id: `${id}-current`, lines: current, groups: [] } }, part_Proposed, part_List],
-  }
-}
-
-// a stretch a proposal changes, written as a scene writes it
-function ringed(
-  text: string,
-  side: _Side_Change_,
-  kind: _Kind_Change_,
-  source: string
-): _Marked_Piece_ {
-  return { text, attributes: attributesOf__Change({ side, kind, source }) }
-}
-
-interface _Api___itemOf_ {
-  source: string
-  title: string
-  rationale: string
-}
-
-// a proposal's item, as the playground, as host, lists it, with its review
-// actions
-function itemOf({
-  source,
-  title,
-  rationale
-}: _Api___itemOf_): _Item_Proposals_ {
-  return { source, title, state: "OPEN", status: "", places: { kind: "NONE" }, rationale, request: "", actions: actions_Review, isDrafting: false, neighbors: { range_Previous: null, range_Next: null }, attributes: {} }
 }

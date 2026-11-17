@@ -1,12 +1,17 @@
 import { expect, test } from "bun:test"
 import { parseModel_TextEditor, type _Changes_Host_, type _Change_Host_, type _Model_TextEditor_ } from "../source/Model_TextEditor.ts"
 import { viewModelOf__Model, type _Proposal_Host_ } from "../source/Projection_TextEditor.ts"
+import { MODULE_READING_TEXT } from "../source/readings/text.ts"
 import { MODULE_PLAINTEXT, type _Range_Lines_, type _ViewModel_TextEditor_, type _Line_Run_, type _Underlay_Text_, type _Run_Lines_ } from "../source/ViewModel_TextEditor.ts"
 import { actions_Review } from "../playground/items.ts"
-import { viewModel_retry } from "../playground/examples/javascript.ts"
+import { model_retry, proposals_retry, ranges_retry, setup_retry } from "../playground/examples/javascript.ts"
+import { model_readme, proposals_readme, ranges_readme, setup_readme } from "../playground/examples/markdown.ts"
+import { perspective_Markdown } from "../playground/readings.ts"
+import { PERSPECTIVE_CHANGES } from "../source/perspectives/changes.ts"
 import { changes } from "../playground/documents/changes.ts"
 import { proposalsCode } from "../playground/scenes/proposalsCode.ts"
 import { proposalsThread } from "../playground/scenes/proposalsThread.ts"
+import { proposalsProse } from "../playground/scenes/proposalsProse.ts"
 
 // a model from a document and its changes as a host writes them, the test
 // failing, with why, if it's refused
@@ -14,7 +19,7 @@ function modelOf(
   multilineText: string,
   proposed: Array<_Changes_Host_>
 ): _Model_TextEditor_ {
-  const result = parseModel_TextEditor({ multilineText, proposed })
+  const result = parseModel_TextEditor({ multilineText, marks: [], proposed })
   if (result.kind === "REFUSED") throw new Error(result.refusals.map((refusal) => `${refusal.source}: ${refusal.reason}`).join("\n"))
   return result.model_TextEditor
 }
@@ -28,7 +33,7 @@ function linesOf(
   next: string
 ): _Change_Host_ {
   const lines = multilineText.split("\n")
-  return { kind: "REPLACE", range: { from: { line: first, offset: 0 }, to: { line: last, offset: (lines[last] ?? "").length } }, multilineText: next }
+  return { kind: "REPLACE", range: { from: { line: first, offset: 0 }, to: { line: last, offset: (lines[last] ?? "").length } }, multilineText: next, marks: [] }
 }
 
 // what the playground, as host, says of a proposal
@@ -47,7 +52,7 @@ function spanOf(
   to: [number, number],
   next: string
 ): _Change_Host_ {
-  return { kind: "REPLACE", range: { from: { line: from[0], offset: from[1] }, to: { line: to[0], offset: to[1] } }, multilineText: next }
+  return { kind: "REPLACE", range: { from: { line: from[0], offset: from[1] }, to: { line: to[0], offset: to[1] } }, multilineText: next, marks: [] }
 }
 
 // a view model as text, for its snapshot: every field of it, a line of text
@@ -77,6 +82,9 @@ function drawnAs(
     const entries = Object.entries(attributes).toSorted(([one], [other]) => one.localeCompare(other))
     return entries.length === 0 ? "" : `{${entries.map(([name, value]) => `${name}=${name === "data-place" ? placeOf(attributes["data-source"] ?? "", value) : value}`).join(" ")}}`
   }
+  // an item as JSON, its fields in order of their names, as the order a
+  // host writes them in is no part of what it says
+  const sortedOf = (item: object) => JSON.stringify(item, (_, value: unknown) => value !== null && typeof value === "object" && !Array.isArray(value) ? Object.fromEntries(Object.entries(value).toSorted(([one], [other]) => one.localeCompare(other))) : value)
   const lineOf = (line: _Line_Run_) => {
     known(line, ["gutter", "note", "segments"], "line")
     known(line.gutter, ["label", "marker", "pointed"], "gutter")
@@ -123,7 +131,7 @@ function drawnAs(
       return [
         `FRAME ${block.range.first}-${block.range.last}`,
         ...block.parts.flatMap((part) => part.kind === "PROPOSAL_LIST"
-          ? [`  PROPOSAL_LIST`, ...part.items.map((item) => `    ${JSON.stringify(item)}`)]
+          ? [`  PROPOSAL_LIST`, ...part.items.map((item) => `    ${sortedOf(item)}`)]
           : runOf(part.kind, part.run))
       ]
     })
@@ -144,7 +152,8 @@ test("frames are the lines changes touch, run together only where they share a l
     model_TextEditor: modelOf(text, proposed),
     proposals: [proposalOf("one", "One", ""), proposalOf("other", "Other", "")],
     ranges_Frame,
-    module_Language: MODULE_PLAINTEXT
+    module_Language: MODULE_PLAINTEXT,
+    module_Reading: MODULE_READING_TEXT
   }).blocks.flatMap((block) => block.kind === "FRAME" ? [`${block.range.first}-${block.range.last}`] : [])
   const backToBack: Array<_Changes_Host_> = [{ source: "one", changes: [linesOf(text, 1, 1, "B")] }, { source: "other", changes: [linesOf(text, 2, 2, "C")] }]
   expect(framesOf(backToBack, [])).toEqual(["2-2", "3-3"])
@@ -163,7 +172,8 @@ test("a change inside another's span, where the other keeps its words, is no con
     ]),
     proposals: [proposalOf("loop", "Return, don't break", ""), round],
     ranges_Frame: [],
-    module_Language: MODULE_PLAINTEXT
+    module_Language: MODULE_PLAINTEXT,
+    module_Reading: MODULE_READING_TEXT
   })
   const frame = viewModel.blocks.find((block) => block.kind === "FRAME")
   const parts = frame?.kind === "FRAME" ? frame.parts : []
@@ -173,15 +183,54 @@ test("a change inside another's span, where the other keeps its words, is no con
   expect(list?.kind === "PROPOSAL_LIST" ? list.items.map((item) => `${item.source} ${item.places.kind}`) : []).toEqual(["loop NONE", "round NONE"])
 })
 
+test("a change inside words another restyles is no condition of it either, as the other keeps them: on the lines as proposed it's in the other's text, and the other's ring goes round what's left of them", () => {
+  const line = "one two three"
+  const viewModel = viewModelOf__Model({
+    model_TextEditor: modelOf(line, [
+      { source: "bold", changes: [{ kind: "REPLACE", range: { from: { line: 0, offset: 0 }, to: { line: 0, offset: 13 } }, multilineText: line, marks: [{ range: { from: { line: 0, offset: 4 }, to: { line: 0, offset: 13 } }, data: { "data-marks": "bold" } }] }] },
+      { source: "digit", changes: [spanOf([0, 4], [0, 7], "2")] }
+    ]),
+    proposals: [proposalOf("bold", "Stress the last two", ""), proposalOf("digit", "Write two as a digit", "")],
+    ranges_Frame: [],
+    module_Language: MODULE_PLAINTEXT,
+    module_Reading: MODULE_READING_TEXT
+  })
+  const frame = viewModel.blocks.find((block) => block.kind === "FRAME")
+  const parts = frame?.kind === "FRAME" ? frame.parts : []
+  const proposed = parts.find((part) => part.kind === "PROPOSAL_LINES")
+  const list = parts.find((part) => part.kind === "PROPOSAL_LIST")
+  expect(proposed?.kind === "PROPOSAL_LINES" ? proposed.run.lines.map((each) => each.segments.map((segment) => `${segment.attributes["data-source"] ?? "-"}:${segment.text}`).join("|")) : []).toEqual(["-:one |digit:2|bold: three"])
+  expect(list?.kind === "PROPOSAL_LIST" ? list.items.map((item) => `${item.source} ${item.places.kind}`) : []).toEqual(["bold NONE", "digit NONE"])
+})
+
 // what the editor draws of the JavaScript example, and of each of the
 // changes document's cases: each what was drawn by hand before the editor
 // drew it, kept when it was, but for a removal's notch right after a
 // replacement's ring, which the hand-drawn cases' stand-in for the
 // projection put before the ring, counting only the text left unchanged,
 // and which is after it, where the words taken out were
+// each example as the editor draws it, put together as the example puts it:
+// the JavaScript one in its one perspective, the editor's changes; the
+// Markdown one in that, and read as Markdown
+const viewModel_retry = viewModelOf__Model({ model_TextEditor: model_retry, proposals: proposals_retry, ranges_Frame: ranges_retry, module_Language: setup_retry.module_Language, module_Reading: setup_retry.perspectives[0].module_Reading })
+const viewModel_readme = viewModelOf__Model({ model_TextEditor: model_readme, proposals: proposals_readme, ranges_Frame: ranges_readme, module_Language: setup_readme.module_Language, module_Reading: PERSPECTIVE_CHANGES.module_Reading })
+const viewModel_readme_Markdown = viewModelOf__Model({ model_TextEditor: model_readme, proposals: proposals_readme, ranges_Frame: ranges_readme, module_Language: setup_readme.module_Language, module_Reading: perspective_Markdown.module_Reading })
+
 test("the JavaScript example draws as it was drawn by hand", () => {
   expect(viewModel_retry.runs).toEqual(runsIn(viewModel_retry))
   expect(drawnAs(viewModel_retry)).toMatchSnapshot()
+})
+
+// what the editor draws of the Markdown example, drawn by the editor from the
+// first, so kept as it was when it was looked over
+test("the Markdown example draws as it did when it was looked over", () => {
+  expect(viewModel_readme.runs).toEqual(runsIn(viewModel_readme))
+  expect(drawnAs(viewModel_readme)).toMatchSnapshot()
+})
+
+test("the Markdown example, its changes read as Markdown, draws as it did when it was looked over", () => {
+  expect(viewModel_readme_Markdown.runs).toEqual(runsIn(viewModel_readme_Markdown))
+  expect(drawnAs(viewModel_readme_Markdown)).toMatchSnapshot()
 })
 
 for (const each of changes.sections.flatMap((section) => section.cases)) {
@@ -193,7 +242,7 @@ for (const each of changes.sections.flatMap((section) => section.cases)) {
   })
 }
 
-for (const scene of [proposalsCode, proposalsThread]) {
+for (const scene of [proposalsCode, proposalsThread, proposalsProse]) {
   test(`the scene ${scene.name} draws as it was drawn by hand`, () => {
     expect(scene.viewModel_TextEditor.runs).toEqual(runsIn(scene.viewModel_TextEditor))
     expect(drawnAs(scene.viewModel_TextEditor)).toMatchSnapshot()

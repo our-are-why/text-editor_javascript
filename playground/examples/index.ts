@@ -1,9 +1,10 @@
 import type { _Example_ } from "../example.ts"
 import { javascript } from "./javascript.ts"
+import { markdown } from "./markdown.ts"
 
 export {
   examples
 }
 
 // every example, in the order the playground lists them
-const examples: Array<_Example_> = [javascript]
+const examples: Array<_Example_> = [javascript, markdown]

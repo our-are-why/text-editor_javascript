@@ -1,5 +1,5 @@
 /* the fixture's page, as a host's: its colour scheme declared, as a host
-   declares one, so the perspective's colours, light-dark(), resolve, as the
+   declares one, so the look's colours, light-dark(), resolve, as the
    bundler draws them from the scheme a page declares */
 :root {
   color-scheme: light dark;

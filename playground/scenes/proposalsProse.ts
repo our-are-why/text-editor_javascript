@@ -1,8 +1,10 @@
 import type { _Scene_ } from "../scene.ts"
-import { viewModelOf__Blocks, MODULE_PLAINTEXT } from "../../source/ViewModel_TextEditor.ts"
+import { MODULE_PLAINTEXT } from "../../source/ViewModel_TextEditor.ts"
+import type { _Range_Text_ } from "../../source/Model_TextEditor.ts"
 import { actions_Review } from "../items.ts"
-import { blocksWith__Frames, lineOf } from "../lines.ts"
-import { attributesOf__Change, attributesOf__Marks } from "../looks.ts"
+import { attributesOf__Marks } from "../looks.ts"
+import { MODULE_READING_TEXT } from "../../source/readings/text.ts"
+import { projectedOf } from "../projected.ts"
 import { movingTheWorkshop } from "./plainText.ts"
 
 export {
@@ -13,6 +15,18 @@ export {
 // at once, each a source of its own, to be decided apart: the line as it
 // is, what's changed in it marked, then the line as the proposals would
 // leave it, then their list, as doctor lays them out
+// the line the proposals change, line 22, as they quote it
+const line_Changed = movingTheWorkshop.split("\n")[21] ?? ""
+
+// the words a proposal quotes on the line it changes
+function quoted(
+  quote: string
+): _Range_Text_ {
+  const offset = line_Changed.indexOf(quote)
+  if (offset === -1) throw new Error(`no "${quote}" on line 22`)
+  return { from: { line: 21, offset }, to: { line: 21, offset: offset + quote.length } }
+}
+
 const proposalsProse: _Scene_ = {
   name: "proposals-prose",
   title: "Proposals in a line of prose",
@@ -21,106 +35,23 @@ const proposalsProse: _Scene_ = {
   variables: {},
   labels: [],
   invariants: [],
-  viewModel_TextEditor: viewModelOf__Blocks(blocksWith__Frames({
+  viewModel_TextEditor: projectedOf({
     multilineText: movingTheWorkshop,
+    marks: [],
     module_Language: MODULE_PLAINTEXT,
-    frames: [{
-      kind: "FRAME",
-      range: { first: 22, last: 22 },
-      parts: [
-        {
-          kind: "CURRENT_LINES",
-          run: { id: "current", lines: [
-            lineOf(
-              "The one thing that ",
-              { text: "can't slip", attributes: attributesOf__Change({ side: "before", kind: "restyled", source: "bold" }) },
-              " is the electrician",
-              { text: ", because without the three-phase supply the lathe can't run", attributes: attributesOf__Change({ side: "before", kind: "removed", source: "reason" }) },
-              ", and without the lathe ",
-              { text: "half", attributes: attributesOf__Change({ side: "before", kind: "replaced", source: "most" }) },
-              " the orders on the board can't be ",
-              { text: "finished", attributes: attributesOf__Change({ side: "before", kind: "replaced", source: "most" }) },
-              "; everything else can move ",
-              { text: "a week", attributes: attributesOf__Change({ side: "before", kind: "replacedRestyled", source: "weeks" }) },
-              " either way without anyone noticing."
-            ),
-          ], groups: [] },
-        },
-        {
-          kind: "PROPOSAL_LINES",
-          run: { id: "proposed", lines: [
-            lineOf(
-              "The one thing that ",
-              { text: "can't slip", attributes: { ...attributesOf__Change({ side: "after", kind: "restyled", source: "bold" }), ...attributesOf__Marks("bold") } },
-              " is the electrician, and without the lathe ",
-              { text: "most of", attributes: attributesOf__Change({ side: "after", kind: "replaced", source: "most" }) },
-              " the orders on the board can't be ",
-              { text: "sent out", attributes: attributesOf__Change({ side: "after", kind: "replaced", source: "most" }) },
-              "; everything else can move ",
-              { text: "two weeks", attributes: { ...attributesOf__Change({ side: "after", kind: "replacedRestyled", source: "weeks" }), ...attributesOf__Marks("bold") } },
-              " either way without anyone noticing."
-            ),
-          ], groups: [] },
-        },
-        {
-          kind: "PROPOSAL_LIST",
-          items: [
-            {
-              source: "bold",
-              title: "Make “can't slip” bold",
-              state: "OPEN",
-              status: "",
-              rationale: "It's the one thing in the note that can't move, so it should be the first thing anyone skimming it sees.",
-              request: "",
-              actions: actions_Review,
-              isDrafting: false,
-              neighbors: { range_Previous: null, range_Next: null },
-              attributes: {},
-          places: { kind: "NONE" },
-            },
-            {
-              source: "reason",
-              title: "Take out why it can't slip",
-              state: "OPEN",
-              status: "",
-              rationale: "The lathe and its supply are already in the list of what goes first; saying it again here only lengthens the sentence.",
-              request: "",
-              actions: actions_Review,
-              isDrafting: false,
-              neighbors: { range_Previous: null, range_Next: null },
-              attributes: {},
-          places: { kind: "NONE" },
-            },
-            {
-              source: "most",
-              title: "Most of the orders sent out, not half finished",
-              state: "OPEN",
-              status: "",
-              rationale: "The lathe holds up most of the orders, not half, and what's held up is getting them to customers, not finishing them.",
-              request: "",
-              actions: actions_Review,
-              isDrafting: false,
-              neighbors: { range_Previous: null, range_Next: null },
-              attributes: {},
-          places: { kind: "NONE" },
-            },
-            {
-              source: "weeks",
-              title: "Two weeks, in bold",
-              state: "OPEN",
-              status: "",
-              rationale: "There's two weeks of slack, not one, and it's the number people will plan around.",
-              request: "",
-              actions: actions_Review,
-              isDrafting: false,
-              neighbors: { range_Previous: null, range_Next: null },
-              attributes: {},
-          places: { kind: "NONE" },
-            },
-          ],
-        },
-      ],
-    }],
-    moves: [],
-  })),
+    module_Reading: MODULE_READING_TEXT,
+    proposed: [
+      { source: "bold", changes: [{ kind: "REPLACE", range: quoted("can't slip"), multilineText: "can't slip", marks: [{ range: { from: { line: 0, offset: 0 }, to: { line: 0, offset: 10 } }, data: attributesOf__Marks("bold") }] }] },
+      { source: "reason", changes: [{ kind: "REPLACE", range: quoted(", because without the three-phase supply the lathe can't run"), multilineText: "", marks: [] }] },
+      { source: "most", changes: [{ kind: "REPLACE", range: quoted("half"), multilineText: "most of", marks: [] }, { kind: "REPLACE", range: quoted("finished"), multilineText: "sent out", marks: [] }] },
+      { source: "weeks", changes: [{ kind: "REPLACE", range: quoted("a week"), multilineText: "two weeks", marks: [{ range: { from: { line: 0, offset: 0 }, to: { line: 0, offset: 9 } }, data: attributesOf__Marks("bold") }] }] }
+    ],
+    proposals: [
+      { source: "bold", title: "Make “can't slip” bold", state: "OPEN", status: "", rationale: "It's the one thing in the note that can't move, so it should be the first thing anyone skimming it sees.", request: "", actions: actions_Review, attributes: {} },
+      { source: "reason", title: "Take out why it can't slip", state: "OPEN", status: "", rationale: "The lathe and its supply are already in the list of what goes first; saying it again here only lengthens the sentence.", request: "", actions: actions_Review, attributes: {} },
+      { source: "most", title: "Most of the orders sent out, not half finished", state: "OPEN", status: "", rationale: "The lathe holds up most of the orders, not half, and what's held up is getting them to customers, not finishing them.", request: "", actions: actions_Review, attributes: {} },
+      { source: "weeks", title: "Two weeks, in bold", state: "OPEN", status: "", rationale: "There's two weeks of slack, not one, and it's the number people will plan around.", request: "", actions: actions_Review, attributes: {} }
+    ],
+    ranges_Frame: []
+  }),
 }

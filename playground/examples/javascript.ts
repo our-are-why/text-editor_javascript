@@ -1,18 +1,22 @@
 import type { _Example_ } from "../example.ts"
 import { COMPONENTMAP__VIEW_TEXTEDITOR } from "../../source/View_TextEditor.tsx"
-import { _TextEditor_ } from "../../source/TextEditor.ts"
+import { _TextEditor_, type _Setup_TextEditor_ } from "../../source/TextEditor.ts"
 import { MODULE_MOUSE } from "../../source/modules/mouse.ts"
 import { parseTexts_Line, type _Range_Text_, type _Changes_Host_, type _Change_Host_ } from "../../source/Model_TextEditor.ts"
 import type { _Proposal_Host_ } from "../../source/Projection_TextEditor.ts"
-import { projectedOf } from "../projected.ts"
+import type { _Range_Lines_ } from "../../source/ViewModel_TextEditor.ts"
+import { PERSPECTIVE_CHANGES } from "../../source/perspectives/changes.ts"
+import { modelOf } from "../projected.ts"
 import { actions_Review, actions_Reopen, actions_Dismiss } from "../items.ts"
-import { module_JavaScript } from "../syntax.ts"
+import { module_JavaScript, type _State_JavaScript_ } from "../syntax.ts"
 
 export {
   retry,
   proposed_retry,
   proposals_retry,
-  viewModel_retry,
+  model_retry,
+  ranges_retry,
+  setup_retry,
   javascript
 }
 
@@ -108,7 +112,7 @@ function replacing(
   range: _Range_Text_,
   multilineText: string
 ): _Change_Host_ {
-  return { kind: "REPLACE", range, multilineText }
+  return { kind: "REPLACE", range, multilineText, marks: [] }
 }
 
 const condition = quoteOf(21, "n === attempts", 0)
@@ -340,35 +344,44 @@ const proposals_retry: Array<_Proposal_Host_> = [
   proposal_Retry501,
 ]
 
-// the module, as the editor draws it, in seven frames: the lines each
-// proposal's changes touch, and the three functions' lines, retry, backoff
-// and isRetryable, which the playground, as host, frames whole, as a frame
-// a function each reads
-const viewModel_retry = projectedOf({
+// the module and the changes proposed for it, as the editor holds them
+const model_retry = modelOf({
   multilineText: retry,
-  module_Language: module_JavaScript,
-  proposed: proposed_retry,
-  proposals: proposals_retry,
-  ranges_Frame: [{ first: 13, last: 27 }, { first: 31, last: 34 }, { first: 36, last: 40 }]
+  marks: [],
+  proposed: proposed_retry
 })
+
+// the lines the playground, as host, frames whole, beyond what the changes
+// touch, as a frame a function each reads: retry, backoff and isRetryable,
+// so the editor draws seven frames
+const ranges_retry: Array<_Range_Lines_> = [{ first: 13, last: 27 }, { first: 31, last: 34 }, { first: 36, last: 40 }]
+
+// what the playground, as host, puts together for the editor, each piece
+// named once: the editor's own components, the mouse, the playground's
+// JavaScript, and the editor's changes perspective, its text reading in its
+// changes look
+const setup_retry: _Setup_TextEditor_<_State_JavaScript_> = {
+  componentMap: COMPONENTMAP__VIEW_TEXTEDITOR,
+  modules: [MODULE_MOUSE],
+  module_Language: module_JavaScript,
+  perspectives: [PERSPECTIVE_CHANGES]
+}
 
 const javascript: _Example_ = {
   name: "javascript",
   title: "JavaScript",
   about: "A JavaScript module, drawn whole by the view on a page of its own, as code is: numbered from 1, its indents kept as they're written, its syntax coloured, a language module's, the playground's JavaScript tokenizer, the colours the playground's, as a host's theme. Seven frames, eleven proposals through them, each case so far once. The opening comment, taken out whole, leaves nothing proposed. The doc comment's options lose onRetry, inside the line. In retry: every error kept, three lines far apart changed; words put into a line, so as it is, it shows nowhere; the onRetry call taken out whole; and the loop's condition's operands swapped within its line, the error asked about first: two moves inside a line, each ringed on the line as it is and as proposed, the || between them as it was, the round's rename carried in one. In backoff: a line put in, with replacements under it. Through three frames, a thread: the counter n renamed round, in nine places, each frame listing it with how many are there, its arrows going to its item in the frame before and the frame after; two of them, in the doc comment and the onRetry call, inside the onRetry removal, ringed faint, applying only if it's rejected. In isRetryable, framed whole: a comment's last words and the middle of its return changed; and its status worked out a line earlier, a move with both its ends in the frame. Another move takes sleep from the module's end up beside the constants, the blank line before it going with it, its two ends in two frames; its ms named delayMs is a proposal of its own, ringed inside it at both ends, applying wherever sleep ends up. Each end has a note beside its first line: press it to go to the other end. Where it leaves, the note says only \"moved\", as the line it goes to would mean little, and needn't hold once other proposals are decided; where it lands, where it's from. A move is ringed brown, as doctor's are, numbered brown where it leaves and signed → where it lands, what other proposals change in it ringed inside it. Point at a change, or an item, to see its proposal: its rings heavier, its items lit, in every frame it's in. Press an open proposal's Revise to write what should change, under its words: Submit or Cancel, or ⌘ or Ctrl with Enter, or Escape, closes it; nothing's sent yet. Its proposals are in every state: most open; Cap the delay at 30 seconds has a revision requested, what you asked under it, Reopen its one action; Retry a request that timed out is being revised, its rings and the words it proposes faded, breathing, its dots brightening in turn, nothing to do with it yet; and, below the open ones in their lists, three decided: Name the base delay DELAY_MS accepted, its words the document's, and Retry a 501 too rejected and Log each retry withdrawn, nothing of either in the lines proposed, the withdrawn one's only action to dismiss it.",
-  // the editor, in the "changes" perspective, drawing the module into the
-  // stage, its syntax JavaScript's, as the projection draws it from the
-  // changes above, with the mouse, so
-  // pointing at a proposal shows it; nothing to report
+  // the editor, put together as above, drawing the module and its
+  // proposals into the stage; nothing to report
   mount: (root) => {
     const containerElement = document.createElement("div")
-    containerElement.dataset["perspective"] = "changes"
     root.append(containerElement)
     new _TextEditor_({
       containerElement,
-      componentMap: COMPONENTMAP__VIEW_TEXTEDITOR,
-      modules: [MODULE_MOUSE],
-      viewModel_TextEditor: viewModel_retry
+      setup: setup_retry,
+      model_TextEditor: model_retry,
+      proposals: proposals_retry,
+      ranges_Frame: ranges_retry
     })
   },
 }

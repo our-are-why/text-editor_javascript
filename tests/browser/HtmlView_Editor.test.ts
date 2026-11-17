@@ -176,7 +176,7 @@ describe("beside it: what can't live in one document", () => {
       const [segment] = line.segments
       if (segment === undefined) throw new Error("the line has no segment")
       const change = { "data-change": "replaced", "data-side": "before", "data-source": "most" }
-      new window._TextEditor_({
+      new window._Viewer_TextEditor_({
         containerElement,
         componentMap: window.COMPONENTMAP__VIEW_TEXTEDITOR,
         modules: [window.MODULE_MOUSE],
@@ -244,7 +244,7 @@ describe("beside it: what can't live in one document", () => {
       containerElement.id = "pointing-rows"
       containerElement.style.width = "40rem"
       containerElement.style.setProperty("--view-font-size", "14px")
-      containerElement.dataset["perspective"] = "changes"
+      containerElement.dataset["look"] = "changes"
       document.body.prepend(containerElement)
       const [first, middle, last] = window.parseLines_ViewModel({ multilineText: "alpha beta gamma\ndelta epsilon\nzeta eta theta", module_Language: window.MODULE_PLAINTEXT })
       const [segment] = first?.segments ?? []
@@ -253,7 +253,7 @@ describe("beside it: what can't live in one document", () => {
       // lines 1 to 3 taken out, delta renamed inside it, by another proposal
       const removed = { "data-change": "removed", "data-side": "before", "data-source": "drop" }
       const renamed = { "data-change": "replaced", "data-side": "before", "data-source": "rename", "data-within": "drop" }
-      new window._TextEditor_({
+      new window._Viewer_TextEditor_({
         containerElement,
         componentMap: window.COMPONENTMAP__VIEW_TEXTEDITOR,
         modules: [window.MODULE_MOUSE],
@@ -321,7 +321,7 @@ describe("beside it: what can't live in one document", () => {
   test("each state's item has its icon beside it, its status word after its title, the two in the proposals' indigo, decided by you, or their plum, a revision requested or under way, or a grey, withdrawn by the agent, never the item's words', an open one's other actions on their grey, their words the colour of the state each leads to, neutral once it's not, so colour keeps its meaning in the rings, or in a host's colour for its state, if it gives one; an open one no icon; a revising one's dots, the view's, waving as its icon goes round, its word still, the dots all there and still where motion's asked to be reduced; its title the same whatever its state", async () => {
     const inksOf = () => opened.page.evaluate(async () => {
       const containerElement = document.createElement("div")
-      containerElement.dataset["perspective"] = "changes"
+      containerElement.dataset["look"] = "changes"
       containerElement.style.setProperty("--view-state-rejected", "rgb(1, 2, 3)")
       document.body.append(containerElement)
       const itemOf = (state: "OPEN" | "REQUESTED" | "REVISING" | "ACCEPTED" | "REJECTED" | "WITHDRAWN") => ({ source: state, title: state, state, status: state === "OPEN" ? "" : state, places: { kind: "NONE" as const }, rationale: "", request: "", actions: [], isDrafting: false, neighbors: { range_Previous: null, range_Next: null }, attributes: {} })
@@ -449,7 +449,7 @@ describe("beside it: what can't live in one document", () => {
     await opened.page.evaluate(() => {
       const containerElement = document.createElement("div")
       containerElement.id = "revising"
-      containerElement.dataset["perspective"] = "changes"
+      containerElement.dataset["look"] = "changes"
       document.body.prepend(containerElement)
       new window._View_TextEditor_({
         containerElement,
@@ -507,13 +507,13 @@ describe("beside it: what can't live in one document", () => {
       const containerElement = document.createElement("div")
       containerElement.id = "lit"
       containerElement.style.width = "48rem"
-      containerElement.dataset["perspective"] = "changes"
+      containerElement.dataset["look"] = "changes"
       document.body.prepend(containerElement)
       const review = [
         { command: "accept", label: "Accept", stateAfter: "ACCEPTED" as const },
         { command: "reject", label: "Reject", stateAfter: "REJECTED" as const }
       ]
-      new window._TextEditor_({
+      new window._Viewer_TextEditor_({
         containerElement,
         componentMap: window.COMPONENTMAP__VIEW_TEXTEDITOR,
         modules: [window.MODULE_MOUSE],
@@ -629,7 +629,7 @@ describe("beside it: what can't live in one document", () => {
       const containerElement = document.createElement("div")
       containerElement.id = "drafting"
       containerElement.style.width = "48rem"
-      containerElement.dataset["perspective"] = "changes"
+      containerElement.dataset["look"] = "changes"
       document.body.prepend(containerElement)
       const review = [
         { command: "accept", label: "Accept", stateAfter: "ACCEPTED" as const },
@@ -638,7 +638,7 @@ describe("beside it: what can't live in one document", () => {
       ]
       const itemOf = (source: string) => ({ source, title: source, state: "OPEN" as const, status: "", places: { kind: "NONE" as const }, rationale: "Why.", request: "", actions: review, isDrafting: false, neighbors: { range_Previous: null, range_Next: null }, attributes: {} })
       const lines = window.parseLines_ViewModel({ multilineText: "one", module_Language: window.MODULE_PLAINTEXT })
-      new window._TextEditor_({
+      new window._Viewer_TextEditor_({
         containerElement,
         componentMap: window.COMPONENTMAP__VIEW_TEXTEDITOR,
         modules: [window.MODULE_MOUSE],
@@ -788,9 +788,9 @@ describe("beside it: what can't live in one document", () => {
       const containerElement = document.createElement("div")
       containerElement.id = "bare"
       containerElement.style.width = "48rem"
-      containerElement.dataset["perspective"] = "changes"
+      containerElement.dataset["look"] = "changes"
       document.body.prepend(containerElement)
-      new window._TextEditor_({
+      new window._Viewer_TextEditor_({
         containerElement,
         componentMap: window.COMPONENTMAP__VIEW_TEXTEDITOR,
         modules: [],
@@ -839,7 +839,7 @@ describe("beside it: what can't live in one document", () => {
     const laid = (width: string) => opened.page.evaluate((width) => {
       const containerElement = document.createElement("div")
       containerElement.style.width = width
-      containerElement.dataset["perspective"] = "changes"
+      containerElement.dataset["look"] = "changes"
       document.body.prepend(containerElement)
       new window._View_TextEditor_({
         containerElement,
@@ -879,13 +879,13 @@ describe("beside it: what can't live in one document", () => {
       const containerElement = document.createElement("div")
       containerElement.id = "visiting"
       containerElement.style.width = "48rem"
-      containerElement.dataset["perspective"] = "changes"
+      containerElement.dataset["look"] = "changes"
       document.body.prepend(containerElement)
       const lineOf = (text: string) => window.parseLines_ViewModel({ multilineText: text, module_Language: window.MODULE_PLAINTEXT })
       const itemOf = (source: string, count_Here: number) => ({ source, title: source, state: "OPEN" as const, status: "", places: { kind: "COUNT" as const, count_Here, count_All: 4, conditions: [] }, rationale: "Why.", request: "", actions: [], isDrafting: false, neighbors: { range_Previous: null, range_Next: null }, attributes: {} })
       // lines enough between the frames that going from one to the next scrolls
       const between = (id: string) => ({ kind: "LINES" as const, run: { id, lines: lineOf(Array.from({ length: 40 }, (_, index) => `line ${index}`).join("\n")), groups: [] } })
-      new window._TextEditor_({
+      new window._Viewer_TextEditor_({
         containerElement,
         componentMap: window.COMPONENTMAP__VIEW_TEXTEDITOR,
         modules: [window.MODULE_MOUSE],
@@ -965,7 +965,7 @@ describe("beside it: what can't live in one document", () => {
     const placed = (width: string) => opened.page.evaluate((width) => {
       const containerElement = document.createElement("div")
       containerElement.style.width = width
-      containerElement.dataset["perspective"] = "changes"
+      containerElement.dataset["look"] = "changes"
       document.body.prepend(containerElement)
       const review = [
         { command: "accept", label: "Accept", stateAfter: "ACCEPTED" as const },
@@ -1167,13 +1167,13 @@ describe("beside it: what can't live in one document", () => {
       const containerElement = document.createElement("div")
       containerElement.id = "kept"
       containerElement.style.width = "48rem"
-      containerElement.dataset["perspective"] = "changes"
+      containerElement.dataset["look"] = "changes"
       document.body.prepend(containerElement)
       const review = [
         { command: "accept", label: "Accept", stateAfter: "ACCEPTED" as const },
         { command: "reject", label: "Reject", stateAfter: "REJECTED" as const }
       ]
-      new window._TextEditor_({
+      new window._Viewer_TextEditor_({
         containerElement,
         componentMap: window.COMPONENTMAP__VIEW_TEXTEDITOR,
         modules: [window.MODULE_MOUSE],
@@ -1310,7 +1310,7 @@ describe("beside it: what can't live in one document", () => {
     })
   })
 
-  test("with room a perspective gives them, underlays reach past their words' ink into spaces and the row's ends, never into another character, staying clear of its ink, and never meet: rows over one another twice the block inset apart, as are rings beside each other, touching or a space apart; one inside another's stretch further in; one alone its full reach", async () => {
+  test("with room a look gives them, underlays reach past their words' ink into spaces and the row's ends, never into another character, staying clear of its ink, and never meet: rows over one another twice the block inset apart, as are rings beside each other, touching or a space apart; one inside another's stretch further in; one alone its full reach", async () => {
     const gaps = await opened.page.evaluate(() => {
       const containerElement = document.createElement("div")
       containerElement.style.width = "40rem"
@@ -1373,7 +1373,7 @@ describe("beside it: what can't live in one document", () => {
     expect(gaps).toEqual({ aboveBelow: 2, touching: 2, spaced: 2, insideTop: 2, insideBottom: 2, loneReach: { left: 6, right: 6 }, closedClear: { left: 1, right: 1 } })
   })
 
-  test("a ring inside another's stretch is as much further from its rows' top and bottom as a perspective says, its nest, its path that far from its container's; given none, twice the block inset; and where it starts with its container, pressed on by a character, it keeps its own reach past its words, its container reaching its nest further, room made for both", async () => {
+  test("a ring inside another's stretch is as much further from its rows' top and bottom as a look says, its nest, its path that far from its container's; given none, twice the block inset; and where it starts with its container, pressed on by a character, it keeps its own reach past its words, its container reaching its nest further, room made for both", async () => {
     const gaps = await opened.page.evaluate(async () => {
       const gapOf = async (variables: string) => {
         const containerElement = document.createElement("div")
@@ -1404,7 +1404,7 @@ describe("beside it: what can't live in one document", () => {
       const pressedOf = async () => {
         const containerElement = document.createElement("div")
         containerElement.setAttribute("style", "width: 40rem; --view-font-size: 14px")
-        containerElement.dataset["perspective"] = "changes"
+        containerElement.dataset["look"] = "changes"
         document.body.append(containerElement)
         const [line] = window.parseLines_ViewModel({ multilineText: "if (round === max) go", module_Language: window.MODULE_PLAINTEXT })
         const [segment] = line?.segments ?? []
@@ -1441,7 +1441,7 @@ describe("beside it: what can't live in one document", () => {
     expect(gaps).toEqual({ given: [3, 3], none: [2, 2], pressed: { gaps: [3, 3, 3], clearOfWord: true } })
   })
 
-  test("switching the perspective on, after drawing, measures the underlays again; with it on, a change pressed on by punctuation has room made, its ring reaching past its word's ink the same on both sides", async () => {
+  test("switching the look on, after drawing, measures the underlays again; with it on, a change pressed on by punctuation has room made, its ring reaching past its word's ink the same on both sides", async () => {
     const widths = await opened.page.evaluate(async () => {
       const containerElement = document.createElement("div")
       containerElement.style.width = "40rem"
@@ -1493,19 +1493,19 @@ describe("beside it: what can't live in one document", () => {
       const frames = () => new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)))
       await frames()
       const before = reachOf()
-      containerElement.dataset["perspective"] = "changes"
+      containerElement.dataset["look"] = "changes"
       await frames()
       return { before, after: reachOf() }
     })
     expect(widths).toEqual({ before: { left: 0, right: 0 }, after: { left: 3, right: 3 } })
   })
 
-  test("with the perspective on, a change's end pressed on by another character has just the room it lacks, whatever the glyphs leave between them: its ring as far past its ink, and as clear of the other's, as at any end; two changes touching, of two proposals, their rings as far apart as any two; an end beside a space, none; all of it the font's, twice as much at twice the size", async () => {
+  test("with the look on, a change's end pressed on by another character has just the room it lacks, whatever the glyphs leave between them: its ring as far past its ink, and as clear of the other's, as at any end; two changes touching, of two proposals, their rings as far apart as any two; an end beside a space, none; all of it the font's, twice as much at twice the size", async () => {
     const endsAt = (fontSize: number) => opened.page.evaluate(async (fontSize) => {
       const containerElement = document.createElement("div")
       containerElement.style.width = "40rem"
       containerElement.style.setProperty("--view-font-size", `${fontSize}px`)
-      containerElement.dataset["perspective"] = "changes"
+      containerElement.dataset["look"] = "changes"
       document.body.append(containerElement)
       const textOf = (text: string) => {
         const [segment] = window.parseLines_ViewModel({ multilineText: text, module_Language: window.MODULE_PLAINTEXT })[0].segments
@@ -1607,7 +1607,7 @@ describe("beside it: what can't live in one document", () => {
       const containerElement = document.createElement("div")
       containerElement.style.width = "20rem"
       containerElement.style.setProperty("--view-font-size", "14px")
-      containerElement.dataset["perspective"] = "changes"
+      containerElement.dataset["look"] = "changes"
       document.body.append(containerElement)
       const view = new window._View_TextEditor_({
         containerElement,
@@ -1639,7 +1639,7 @@ describe("beside it: what can't live in one document", () => {
       draw([stretch(0, 25, 1, 3), stretch(2, wrap - 5, 2, wrap + 4), stretch(2, 5, 2, wrap + 9)])
       await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)))
       const numbersOf = (element: Element | undefined) => (element?.getAttribute("d") ?? "").match(/-?[\d.]+/g)?.map(Number) ?? []
-      // a seam's dashes, as the perspective gives them, fitted: a whole
+      // a seam's dashes, as the look gives them, fitted: a whole
       // number of the pattern, and its first dash again, so a dash at each
       // end, each dash scaled no more than a third from its own length
       const isFitted = (seamElement: Element) => {
@@ -1829,7 +1829,7 @@ describe("beside it: what can't live in one document", () => {
       const containerElement = document.createElement("div")
       containerElement.id = "jumping"
       containerElement.style.width = "40rem"
-      containerElement.dataset["perspective"] = "changes"
+      containerElement.dataset["look"] = "changes"
       document.body.prepend(containerElement)
       // a long document, its first line moving to its end, ninety lines on
       const texts = ["moving", ...Array.from({ length: 90 }, (_, index) => `line ${index + 2}`), "moving"]
@@ -1840,7 +1840,7 @@ describe("beside it: what can't live in one document", () => {
         note: index === 0 ? { label: "moved", target: { source: "move", side: "after" } } : { label: "from line 1", target: { source: "move", side: "before" } },
         segments: line.segments.map((segment) => ({ ...segment, attributes: moved(index === 0 ? "before" : "after") }))
       } : line)
-      new window._TextEditor_({
+      new window._Viewer_TextEditor_({
         containerElement,
         componentMap: window.COMPONENTMAP__VIEW_TEXTEDITOR,
         modules: [window.MODULE_MOUSE],
@@ -1872,7 +1872,7 @@ describe("beside it: what can't live in one document", () => {
     await opened.page.setViewportSize({ width: 1280, height: 720 })
   })
 
-  test("pointing at a move's note marks its other end, data-targeted on its rings, which the perspective draws heavier, from either end; its own end it leaves as it is; and pointing away marks none", async () => {
+  test("pointing at a move's note marks its other end, data-targeted on its rings, which the look draws heavier, from either end; its own end it leaves as it is; and pointing away marks none", async () => {
     // the pointer away from where the test before left it, over its first
     // note, where this one's is drawn: the browser may send a move of its own
     // as what's under a resting pointer changes
@@ -1881,7 +1881,7 @@ describe("beside it: what can't live in one document", () => {
       const containerElement = document.createElement("div")
       containerElement.id = "targeting"
       containerElement.style.width = "40rem"
-      containerElement.dataset["perspective"] = "changes"
+      containerElement.dataset["look"] = "changes"
       document.body.prepend(containerElement)
       const lines = window.parseLines_ViewModel({ multilineText: "moving\nstaying\nmoving", module_Language: window.MODULE_PLAINTEXT })
       const moved = (side: string) => ({ "data-change": "moved", "data-side": side, "data-source": "move" })
@@ -1890,7 +1890,7 @@ describe("beside it: what can't live in one document", () => {
         note: index === 0 ? { label: "moved", target: { source: "move", side: "after" } } : { label: "from line 1", target: { source: "move", side: "before" } },
         segments: line.segments.map((segment) => ({ ...segment, attributes: moved(index === 0 ? "before" : "after") }))
       })
-      new window._TextEditor_({
+      new window._Viewer_TextEditor_({
         containerElement,
         componentMap: window.COMPONENTMAP__VIEW_TEXTEDITOR,
         modules: [window.MODULE_MOUSE],
@@ -1934,7 +1934,7 @@ describe("beside it: what can't live in one document", () => {
       const containerElement = document.createElement("div")
       containerElement.id = "folding"
       containerElement.style.width = "40rem"
-      containerElement.dataset["perspective"] = "changes"
+      containerElement.dataset["look"] = "changes"
       document.body.prepend(containerElement)
       // two proposals on its first line, one on its second too, their
       // changes pressed on by brackets and a comma, so the view makes room
@@ -1956,7 +1956,7 @@ describe("beside it: what can't live in one document", () => {
           { attributes: { "data-source": "more" }, underlays: [{ kind: "STRETCH" as const, from: { line: 0, offset: 7 }, to: { line: 0, offset: 10 }, attributes: change(side, "more", "two") }] }
         ]
       })
-      new window._TextEditor_({
+      new window._Viewer_TextEditor_({
         containerElement,
         componentMap: window.COMPONENTMAP__VIEW_TEXTEDITOR,
         modules: [window.MODULE_MOUSE],
@@ -2031,7 +2031,7 @@ describe("beside it: what can't live in one document", () => {
       const containerElement = document.createElement("div")
       containerElement.id = "peeking"
       containerElement.style.width = "40rem"
-      containerElement.dataset["perspective"] = "changes"
+      containerElement.dataset["look"] = "changes"
       document.body.prepend(containerElement)
       const [one, three, again] = window.parseLines_ViewModel({ multilineText: "f(one, two)\ng(three)\nh(two)", module_Language: window.MODULE_PLAINTEXT })
       const [segment] = one?.segments ?? []
@@ -2050,7 +2050,7 @@ describe("beside it: what can't live in one document", () => {
           { attributes: { "data-source": "more" }, underlays: [{ kind: "STRETCH" as const, from: { line: 0, offset: 7 }, to: { line: 0, offset: 10 }, attributes: change(side, "more", "two") }] }
         ]
       })
-      new window._TextEditor_({
+      new window._Viewer_TextEditor_({
         containerElement,
         componentMap: window.COMPONENTMAP__VIEW_TEXTEDITOR,
         modules: [window.MODULE_MOUSE],
@@ -2136,13 +2136,13 @@ describe("beside it: what can't live in one document", () => {
       const containerElement = document.createElement("div")
       containerElement.id = "notches"
       containerElement.style.width = "40rem"
-      containerElement.dataset["perspective"] = "changes"
+      containerElement.dataset["look"] = "changes"
       document.body.prepend(containerElement)
       const [sleep, retry, done] = window.parseLines_ViewModel({ multilineText: "await sleep(n, signal);\nonRetry(n);\ndone();", module_Language: window.MODULE_PLAINTEXT })
       const [slept] = window.parseLines_ViewModel({ multilineText: "await sleep(n);", module_Language: window.MODULE_PLAINTEXT })
       if (sleep === undefined || retry === undefined || done === undefined || slept === undefined) throw new Error("the lines weren't parsed")
       const out = (side: string, place: string) => ({ "data-change": "removed", "data-side": side, "data-source": "out", "data-place": place })
-      new window._TextEditor_({
+      new window._Viewer_TextEditor_({
         containerElement,
         componentMap: window.COMPONENTMAP__VIEW_TEXTEDITOR,
         modules: [window.MODULE_MOUSE],
@@ -2243,7 +2243,7 @@ describe("beside it: what can't live in one document", () => {
       const containerElement = document.createElement("div")
       containerElement.id = "states"
       containerElement.style.width = "40rem"
-      containerElement.dataset["perspective"] = "changes"
+      containerElement.dataset["look"] = "changes"
       document.body.prepend(containerElement)
       const [asIs, kept] = window.parseLines_ViewModel({ multilineText: "if (status === 429) go(delay);\nreturn DELAY_MS;", module_Language: window.MODULE_PLAINTEXT })
       const [segment] = asIs?.segments ?? []
@@ -2262,7 +2262,7 @@ describe("beside it: what can't live in one document", () => {
         { attributes: { "data-source": "rename" }, underlays: [{ kind: "STRETCH" as const, from: { line: 0, offset: 23 }, to: { line: 0, offset: side === "before" ? 28 : 27 }, attributes: change(side, "rename") }] }
       ]
       const item = (source: string, state: "OPEN" | "REVISING" | "ACCEPTED", status: string) => ({ source, title: source, state, status, places: { kind: "NONE" as const }, rationale: "", request: "", actions: [], isDrafting: false, neighbors: { range_Previous: null, range_Next: null }, attributes: {} })
-      new window._TextEditor_({
+      new window._Viewer_TextEditor_({
         containerElement,
         componentMap: window.COMPONENTMAP__VIEW_TEXTEDITOR,
         modules: [window.MODULE_MOUSE],
@@ -2309,7 +2309,7 @@ describe("beside it: what can't live in one document", () => {
       const containerElement = document.createElement("div")
       containerElement.id = "placing"
       containerElement.style.width = "40rem"
-      containerElement.dataset["perspective"] = "changes"
+      containerElement.dataset["look"] = "changes"
       document.body.prepend(containerElement)
       // alphabet becomes alphabetical, its two sides' rings of different
       // lengths
@@ -2327,7 +2327,7 @@ describe("beside it: what can't live in one document", () => {
           { attributes: { "data-source": "other" }, underlays: [{ kind: "STRETCH" as const, from: { line: 0, offset: at + 6 }, to: { line: 0, offset: at + 11 }, attributes: change(side, "other", "1") }] }
         ]
       }
-      new window._TextEditor_({
+      new window._Viewer_TextEditor_({
         containerElement,
         componentMap: window.COMPONENTMAP__VIEW_TEXTEDITOR,
         modules: [window.MODULE_MOUSE],
@@ -2438,7 +2438,7 @@ describe("beside it: what can't live in one document", () => {
       const containerElement = document.createElement("div")
       containerElement.id = "lapping"
       containerElement.style.width = "16rem"
-      containerElement.dataset["perspective"] = "changes"
+      containerElement.dataset["look"] = "changes"
       document.body.prepend(containerElement)
       const [line] = window.parseLines_ViewModel({ multilineText: "go: a stretch of words long enough to wrap the row it starts on", module_Language: window.MODULE_PLAINTEXT })
       if (line === undefined) throw new Error("the line wasn't parsed")
@@ -2464,7 +2464,7 @@ describe("beside it: what can't live in one document", () => {
       if (index_Wrap === 0) throw new Error("the line didn't wrap")
       containerElement.replaceChildren()
       const change = { "data-change": "replaced", "data-side": "before", "data-source": "long", "data-place": "1" }
-      new window._TextEditor_({
+      new window._Viewer_TextEditor_({
         containerElement,
         componentMap: window.COMPONENTMAP__VIEW_TEXTEDITOR,
         modules: [window.MODULE_MOUSE],
@@ -2527,7 +2527,7 @@ describe("beside it: what can't live in one document", () => {
       const containerElement = document.createElement("div")
       containerElement.style.width = "40rem"
       containerElement.style.setProperty("--view-font-size", "14px")
-      containerElement.dataset["perspective"] = "changes"
+      containerElement.dataset["look"] = "changes"
       document.body.append(containerElement)
       const lines = window.parseLines_ViewModel({ multilineText: "go {\n  a line much longer than the first one\n  run(a, b);\n  run(a, c);\n}", module_Language: window.MODULE_PLAINTEXT })
       const [first, long, plain, pressed, last] = lines
