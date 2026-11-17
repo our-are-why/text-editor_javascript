@@ -325,8 +325,10 @@ another's removal, one carried in a move, three sources on one line.
   the host in pieces, and what's typed on the lines as proposed between two
   of its words would be no one's.
 - **every character's in one text:** the document's, or what one change
-  proposes, `_Id_Text_`; the caret's in one, a selection's kept in one, and
-  a step edits one. On a frame's lines as proposed, a character's in the
+  proposes, `_Id_Text_`; the caret's in one, each end of a selection's in
+  one, what's drawn between them in one section selected whatever texts it
+  crosses, and a step edits one, so what's typed over a selection that crosses texts is
+  narrowed or refused, as editing decides, not the selection. On a frame's lines as proposed, a character's in the
   innermost change whose text holds it, or, where none does, the document's,
   shown there as it is. Typing in a change's text edits the proposal, kept
   inside it, its next round written by you, as doctor's edited round is.
@@ -1592,6 +1594,59 @@ apply     transaction → state        drawn on the next frame
   without a screen; the adapters, where the browser's input arrives, in
   Chromium, with its own input, trusted, as `tests/browser/` does; and a log
   of commands replays a bug.
+
+Built so far, the first of editing, the caret and the selection, nothing
+typed yet:
+
+- **where each character's from:** every line drawn says where its text is
+  from, `origins`, each stretch of it a text's, the document's or a
+  change's, `_Id_Text_`, from a line and a character in it, and where in the
+  line it's drawn, in the line's own units, UTF-16, the model's counted in
+  code points. A frame's lines as proposed have theirs from the model's
+  pieces, a change's own words its text's, what a move carries the
+  document's, where it is; every other line's the document's. So a drawn
+  place is a place in a text, `placeIn__Line`, at a boundary the
+  character after it's, and a place in a text is where it's drawn in a run,
+  `positionIn__Run`, a stretch with characters before an empty one.
+- **the selection's the viewer's:** its two ends, its anchor and its head,
+  each on its own a place in the model, in a text, with the run it's shown
+  in, as the document's text is shown twice in a frame, as it is and as
+  proposed; what's drawn between them, in the order it's drawn, is
+  selected, in the section the anchor's in, a run: a frame's lines as they
+  are, or as proposed, or the document's lines between frames; across its
+  lines and the texts they show; leaving it, the head stops at its edge.
+  Kept to one text at first, a selection stopped where its text did, at
+  boundaries no one sees, in the middle of a line of code a proposal
+  changes: selecting is of what's shown, keeping to one text editing's.
+  Then let go of every bound, it ran out of a frame's section into the
+  next, which isn't valid: a frame's two sections are two views of the
+  same lines, and what's selected is of one. At a boundary between two
+  texts, an end extending keeps to the anchor's. The view model says where it's drawn,
+  `selection`, the view drawing it after it draws, measured from the text
+  one node at a time, in a layer of each run it covers, a box along each
+  row, joined across the room rings make, and a sliver past a line's end
+  for its line break; the caret at its head, before the text, blinking
+  while the editor's focused, brought into view each time the keyboard
+  moves it. The browser's own selection is off, the editor's element
+  focusable.
+- **its commands:** `PLACE`, a click, or a shift-click extending;
+  `DRAG`, the button held; `RELEASE`; and `MOVE` and `EXTEND`, by a
+  character, a grapheme, by `Intl.Segmenter`, a word, to its end or its
+  start, a line's edge, or a line, the row above or below at the caret's x,
+  the layout asked, `positionAt` and `caretOf`, whatever run's there, the
+  column it started at kept through shorter lines till it moves otherwise;
+  a character or an edge on, at a line's end, goes to the next line, and at
+  a run's, to the next run, a word on past blank lines to the next word.
+  Extending moves the head alone, wherever it goes. The mouse's module
+  places and drags,
+  `MODULE_MOUSE`; the keyboard's moves, `MODULE_KEYBOARD`, the arrows,
+  Home and End, Alt or Ctrl a word, Meta an edge, Shift extending. Lowering's
+  tested on a grid, a fake of the layout, as above; the view's answers in
+  Chromium, in the Markdown example.
+- **not yet:** typing, EditContext, and the clipboard, which the browser's
+  selection being off takes away till they come; a double click selecting
+  a word, a triple a line; a wrapped line's own rows' ends for Home and End;
+  dragging past the editor's edge, and scrolling as it goes.
 
 ## observers
 

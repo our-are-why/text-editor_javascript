@@ -56,7 +56,10 @@ function spanOf(
 }
 
 // a view model as text, for its snapshot: every field of it, a line of text
-// for each line drawn, its rings after its lines, its list after its runs.
+// for each line drawn, and under it where its text is from, each stretch of
+// it the document's or a change's, from a line and a character in it, and
+// where it's drawn in the line; its rings after its lines, its list after
+// its runs.
 // Run ids, and each proposal's places, are numbered as they come, as what a
 // scene calls them is no part of what's drawn. A field it doesn't know is a
 // mistake in it, and throws, so nothing's left out unseen
@@ -86,12 +89,17 @@ function drawnAs(
   // host writes them in is no part of what it says
   const sortedOf = (item: object) => JSON.stringify(item, (_, value: unknown) => value !== null && typeof value === "object" && !Array.isArray(value) ? Object.fromEntries(Object.entries(value).toSorted(([one], [other]) => one.localeCompare(other))) : value)
   const lineOf = (line: _Line_Run_) => {
-    known(line, ["gutter", "note", "segments"], "line")
+    known(line, ["gutter", "note", "segments", "origins"], "line")
+    for (const origin of line.origins) known(origin, ["from", "to", "id_Text", "position"], "origin")
     known(line.gutter, ["label", "marker", "pointed"], "gutter")
     if (line.note !== null) known(line.note, ["label", "target"], "note")
     for (const segment of line.segments) known(segment, ["text", "attributes"], "segment")
     const note = line.note === null ? "" : ` (${line.note.label} → ${line.note.target.source} ${line.note.target.side})`
-    return `    ${JSON.stringify(line.gutter.label)} ${line.gutter.marker} ${line.gutter.pointed}${note}: ${line.segments.map((segment) => `${JSON.stringify(segment.text)}${attributesOf(segment.attributes)}`).join(" ")}`
+    const origins = line.origins.map((origin) => `${origin.id_Text.kind === "DOCUMENT" ? "document" : `${origin.id_Text.source}#${origin.id_Text.index}`} ${origin.position.line}:${origin.position.offset} [${origin.from},${origin.to})`).join(" | ")
+    return [
+      `    ${JSON.stringify(line.gutter.label)} ${line.gutter.marker} ${line.gutter.pointed}${note}: ${line.segments.map((segment) => `${JSON.stringify(segment.text)}${attributesOf(segment.attributes)}`).join(" ")}`,
+      `      ⟵ ${origins}`
+    ]
   }
   const underlayOf = (underlay: _Underlay_Text_) => {
     const attributes = attributesOf(underlay.attributes)
@@ -111,11 +119,12 @@ function drawnAs(
     for (const group of run.groups) known(group, ["attributes", "underlays"], "group")
     return [
       `  ${kind} ${idOf(run.id)}`,
-      ...run.lines.map(lineOf),
+      ...run.lines.flatMap(lineOf),
       ...run.groups.flatMap((group) => [`    ring ${attributesOf(group.attributes)}`, ...group.underlays.map(underlayOf)])
     ]
   }
-  known(viewModel, ["charCount_Max__Label_Gutter", "blocks", "runs"], "view model")
+  known(viewModel, ["charCount_Max__Label_Gutter", "blocks", "runs", "selection"], "view model")
+  if (viewModel.selection !== null) throw new Error("the projection draws no selection; the viewer does, from its state")
   return [
     `label width ${viewModel.charCount_Max__Label_Gutter}`,
     ...viewModel.blocks.flatMap((block) => {

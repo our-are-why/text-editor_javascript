@@ -1,10 +1,11 @@
-import { type _Attributes_Element_, type _Line_Run_, type _Segment_Line_, type _Block_ViewModel_, parseLines_ViewModel, type _Module_Language_, type _Group_Underlay_, type _STRETCH_Underlay_Text_, type _Position_Run_ } from "../source/ViewModel_TextEditor.ts"
+import { type _Attributes_Element_, type _Line_Run_, type _Segment_Line_, type _Origin_Line_, type _Block_ViewModel_, parseLines_ViewModel, type _Module_Language_, type _Group_Underlay_, type _STRETCH_Underlay_Text_, type _Position_Run_ } from "../source/ViewModel_TextEditor.ts"
 import { parseTexts_Line } from "../source/Model_TextEditor.ts"
 
 export {
   type _Piece_Line_,
   type _Marked_Piece_,
   lineOf,
+  originsOf__Document,
   blocksOf__Text,
   blocksOf__Lines,
   textElementsIn,
@@ -22,20 +23,33 @@ interface _Marked_Piece_ {
 
 // a line written piece by piece, a segment each. Each piece's text is parsed
 // as a line's, so one holding a line break is a mistake in the scene, and
-// throws; an empty one is left out, as an empty line has no segments
+// throws; an empty one is left out, as an empty line has no segments. Its
+// text is the document's, from the start of its first line, till the scene
+// says which line it is
 function lineOf(
   ...pieces: Array<_Piece_Line_>
 ): _Line_Run_ {
+  const segments = pieces.flatMap((piece): Array<_Segment_Line_> => {
+    const { text, attributes } = typeof piece === "string" ? { text: piece, attributes: {} } : piece
+    const [text_line, ...more] = parseTexts_Line(text)
+    if (more.length > 0) throw new Error(`a segment can't hold a line break: ${JSON.stringify(text)}`)
+    return text_line === "" ? [] : [{ text: text_line, attributes }]
+  })
   return {
     gutter: { label: "", marker: "none", pointed: "none" },
     note: null,
-    segments: pieces.flatMap((piece): Array<_Segment_Line_> => {
-      const { text, attributes } = typeof piece === "string" ? { text: piece, attributes: {} } : piece
-      const [text_line, ...more] = parseTexts_Line(text)
-      if (more.length > 0) throw new Error(`a segment can't hold a line break: ${JSON.stringify(text)}`)
-      return text_line === "" ? [] : [{ text: text_line, attributes }]
-    }),
+    segments,
+    origins: originsOf__Document(segments.map((segment) => segment.text).join(""), 0),
   }
+}
+
+// where a line of the document's text is from: the document, the line it is,
+// from its start
+function originsOf__Document(
+  text: string,
+  line: number
+): Array<_Origin_Line_> {
+  return [{ from: 0, to: text.length, id_Text: { kind: "DOCUMENT" }, position: { line, offset: 0 } }]
 }
 
 // a document's text, its lines numbered from 1, as one run, "document", with

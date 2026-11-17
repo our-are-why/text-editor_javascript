@@ -40,7 +40,9 @@ import type {
   _Underlay_Text_,
   __BASE_Underlay_Text_,
   _STRETCH_Underlay_Text_,
-  _Position_Run_
+  _Position_Run_,
+  _Selection_Drawn_,
+  _Position_Drawn_
 } from "./ViewModel_TextEditor.ts"
 
 export {
@@ -57,6 +59,7 @@ export {
   type _Api___Section_Frame__Html_,
   type _Point_Screen_,
   type _Layout_View_,
+  type _Caret_Screen_,
   type _Focus_Draft_,
   type _Visit_Item_
 }
@@ -65,6 +68,7 @@ class _View_TextEditor_ {
   containerElement: HTMLElement
   componentMap: _ComponentMap__View_TextEditor_
   run$: Array<_Run_Lines_>
+  selection: _Selection_Drawn_ | null
   ink$_Glyph: Map<string, _Ink_Glyph_>
   resizeObserver_containerElement: ResizeObserver
   mutationObserver_containerElement: MutationObserver
@@ -76,22 +80,11 @@ class _View_TextEditor_ {
     this.containerElement = containerElement
     this.componentMap = componentMap
     this.run$ = []
+    this.selection = null
     this.ink$_Glyph = new Map()
-    this.resizeObserver_containerElement = new ResizeObserver(
-      () => drawTextUnderlay$__View_TextEditor({
-        containerElement_View: this.containerElement,
-        run$_View: this.run$,
-        ink$_Glyph_View: this.ink$_Glyph
-      })
-    )
+    this.resizeObserver_containerElement = new ResizeObserver(() => this.measure())
     this.resizeObserver_containerElement.observe(this.containerElement)
-    this.mutationObserver_containerElement = new MutationObserver(
-      () => drawTextUnderlay$__View_TextEditor({
-        containerElement_View: this.containerElement,
-        run$_View: this.run$,
-        ink$_Glyph_View: this.ink$_Glyph
-      })
-    )
+    this.mutationObserver_containerElement = new MutationObserver(() => this.measure())
     this.mutationObserver_containerElement.observe(
       this.containerElement,
       {
@@ -109,10 +102,37 @@ class _View_TextEditor_ {
       viewModel_TextEditor
     })
     this.run$ = viewModel_TextEditor.runs
+    this.selection = viewModel_TextEditor.selection
+    this.measure()
+  }
+
+  measure(): void {
     drawTextUnderlay$__View_TextEditor({
       containerElement_View: this.containerElement,
       run$_View: this.run$,
       ink$_Glyph_View: this.ink$_Glyph
+    })
+    drawSelection__View_TextEditor({
+      containerElement_View: this.containerElement,
+      selection_View: this.selection
+    })
+  }
+
+  positionAt(
+    point_Screen: _Point_Screen_
+  ): _Position_Drawn_ | null {
+    return positionAt__View_TextEditor({
+      containerElement_View: this.containerElement,
+      point_Screen
+    })
+  }
+
+  caretOf(
+    position_Drawn: _Position_Drawn_
+  ): _Caret_Screen_ | null {
+    return caretOf__View_TextEditor({
+      containerElement_View: this.containerElement,
+      position_Drawn
     })
   }
 
@@ -170,6 +190,12 @@ class _View_TextEditor_ {
     })
   }
 
+  revealCaret(): void {
+    this.containerElement.querySelector(".caret_htmlView")?.scrollIntoView({
+      block: "nearest"
+    })
+  }
+
   visit(
     visit_Item: _Visit_Item_
   ): void {
@@ -219,6 +245,7 @@ function TextEditor_Html({
   return (
     <div
       class="htmlView_editor"
+      tabindex="0"
       style={`--labelWidth_htmlView: ${viewModel_TextEditor.charCount_Max__Label_Gutter}ch`}
     >
       {viewModel_TextEditor.blocks.map((block_ViewModel) => (
@@ -286,6 +313,10 @@ function Run_Line$__Html({
     >
       <svg
         class="underlays_htmlView"
+        aria-hidden="true"
+      />
+      <div
+        class="selection_htmlView"
         aria-hidden="true"
       />
       {run_Line$.lines.map((line_Run) => <Component_Line line_Run={line_Run} />)}
@@ -1825,6 +1856,7 @@ interface _Api___caretOf__Offset_ {
 interface _Caret_Text_ {
   x: number
   top: number
+  bottom: number
 }
 
 function caretOf__Offset({
@@ -1843,9 +1875,11 @@ function caretOf__Offset({
   if (placed_Text === undefined) {
     const rect = divElement_text.getBoundingClientRect()
     const style = getComputedStyle(divElement_text)
+    const top = rect.top + (parseFloat(style.lineHeight) - parseFloat(style.fontSize)) / 2
     return {
       x: rect.left + parseFloat(style.paddingLeft),
-      top: rect.top + (parseFloat(style.lineHeight) - parseFloat(style.fontSize)) / 2
+      top,
+      bottom: top + parseFloat(style.fontSize)
     }
   }
   const range = document.createRange()
@@ -1860,7 +1894,8 @@ function caretOf__Offset({
   const rect = range.getClientRects()[0] ?? range.getBoundingClientRect()
   return {
     x: index === offset ? rect.left : rect.right,
-    top: rect.top
+    top: rect.top,
+    bottom: rect.bottom
   }
 }
 
@@ -2467,6 +2502,15 @@ interface _Layout_View_ {
   placeAt: (point_Screen: _Point_Screen_) => string | null
   targetAt: (point_Screen: _Point_Screen_) => _Target_Note_ | null
   foldAt: (point_Screen: _Point_Screen_) => _Range_Lines_ | null
+  positionAt: (point_Screen: _Point_Screen_) => _Position_Drawn_ | null
+  caretOf: (position_Drawn: _Position_Drawn_) => _Caret_Screen_ | null
+}
+
+interface _Caret_Screen_ {
+  x: number
+  top: number
+  bottom: number
+  height_Row: number
 }
 
 interface _Api___reveal__View_TextEditor_ {
@@ -2782,6 +2826,276 @@ function foldAt__View_TextEditor({
       last
     }
     : null
+}
+
+interface _Api___drawSelection__View_TextEditor_ {
+  containerElement_View: HTMLElement
+  selection_View: _Selection_Drawn_ | null
+}
+
+function drawSelection__View_TextEditor({
+  containerElement_View,
+  selection_View
+}: _Api___drawSelection__View_TextEditor_): void {
+  for (const element_Layer of containerElement_View.querySelectorAll(".selection_htmlView")) element_Layer.replaceChildren()
+  if (selection_View === null) return
+  const element$_Run = [...containerElement_View.querySelectorAll(".run_htmlView")]
+  const index_Anchor = element$_Run.findIndex((element_Run) => element_Run.getAttribute("data-run") === selection_View.anchor.id_Run)
+  const index_Head = element$_Run.findIndex((element_Run) => element_Run.getAttribute("data-run") === selection_View.head.id_Run)
+  if (index_Anchor === -1 || index_Head === -1) return
+  const isHeadFirst = index_Head < index_Anchor || (index_Head === index_Anchor && (selection_View.head.position.line < selection_View.anchor.position.line || (selection_View.head.position.line === selection_View.anchor.position.line && selection_View.head.position.offset < selection_View.anchor.position.offset)))
+  const start = isHeadFirst ? selection_View.head.position : selection_View.anchor.position
+  const end = isHeadFirst ? selection_View.anchor.position : selection_View.head.position
+  const index_Start = Math.min(
+    index_Anchor,
+    index_Head
+  )
+  const index_End = Math.max(
+    index_Anchor,
+    index_Head
+  )
+  for (let index = index_Start; index <= index_End; index = index + 1) {
+    const element_Run = element$_Run[index]
+    const element_Layer = element_Run?.querySelector(":scope > .selection_htmlView")
+    if (element_Run === undefined || element_Layer === null || element_Layer === undefined) continue
+    const rect_Run = element_Run.getBoundingClientRect()
+    const divElement$_text = [...element_Run.querySelectorAll(":scope > .line_htmlView > .text_htmlView")]
+    const line_First = index === index_Start ? start.line : 0
+    const line_Last = index === index_End ? end.line : divElement$_text.length - 1
+    const element$_Drawn: Array<Element> = []
+    for (let line = line_First; line <= line_Last; line = line + 1) {
+      const divElement_text = divElement$_text[line]
+      if (!(divElement_text instanceof HTMLElement)) continue
+      const placed$_Text = placedOf__Text$(text$Of__Element(divElement_text).filter((text) => text.parentElement?.closest(".note_htmlView") === null))
+      const length = placed$_Text.reduce(
+        (
+          sum,
+          placed_Text
+        ) => sum + placed_Text.text.length,
+        0
+      )
+      const isLast = index === index_End && line === line_Last
+      const style_text = getComputedStyle(divElement_text)
+      const rowOf = (rect: DOMRect) => rowOf__Rect({
+        rect,
+        top_Text: divElement_text.getBoundingClientRect().top + parseFloat(style_text.paddingTop) + parseFloat(style_text.borderTopWidth),
+        height_Row: parseFloat(style_text.lineHeight)
+      })
+      for (const rect of rowsOf__Rects(rectsOf__Offsets({
+        placed$_Text,
+        from: index === index_Start && line === line_First ? start.offset : 0,
+        to: isLast ? end.offset : length
+      }))) {
+        element$_Drawn.push(elementOf__Rect({
+          className: "selected_htmlView",
+          rect: rowOf(rect),
+          rect_Run
+        }))
+      }
+      if (!isLast) {
+        const caret_Text = caretOf__Offset({
+          divElement_text,
+          offset: length
+        })
+        element$_Drawn.push(elementOf__Rect({
+          className: "selected_htmlView",
+          rect: rowOf(new DOMRect(
+            caret_Text.x,
+            caret_Text.top,
+            parseFloat(style_text.fontSize) / 2,
+            caret_Text.bottom - caret_Text.top
+          )),
+          rect_Run
+        }))
+      }
+    }
+    const divElement_head = index === index_Head ? divElement$_text[selection_View.head.position.line] : undefined
+    if (divElement_head instanceof HTMLElement) {
+      const caret_Text = caretOf__Offset({
+        divElement_text: divElement_head,
+        offset: selection_View.head.position.offset
+      })
+      element$_Drawn.push(elementOf__Rect({
+        className: "caret_htmlView",
+        rect: new DOMRect(
+          caret_Text.x,
+          caret_Text.top,
+          0,
+          caret_Text.bottom - caret_Text.top
+        ),
+        rect_Run
+      }))
+    }
+    element_Layer.replaceChildren(...element$_Drawn)
+  }
+}
+
+interface _Api___rectsOf__Offsets_ {
+  placed$_Text: Array<_Placed_Text_>
+  from: number
+  to: number
+}
+
+function rectsOf__Offsets({
+  placed$_Text,
+  from,
+  to
+}: _Api___rectsOf__Offsets_): Array<DOMRect> {
+  return placed$_Text.flatMap((placed_Text) => {
+    const start = Math.max(
+      from,
+      placed_Text.start
+    ) - placed_Text.start
+    const end = Math.min(
+      to,
+      placed_Text.start + placed_Text.text.length
+    ) - placed_Text.start
+    if (start >= end) return []
+    const range = document.createRange()
+    range.setStart(
+      placed_Text.text,
+      start
+    )
+    range.setEnd(
+      placed_Text.text,
+      end
+    )
+    return [...range.getClientRects()]
+  })
+}
+
+function rowsOf__Rects(
+  rects: Array<DOMRect>
+): Array<DOMRect> {
+  const rows: Array<DOMRect> = []
+  for (const rect of rects) {
+    const row = rows.find((row_Each) => Math.min(row_Each.bottom, rect.bottom) - Math.max(row_Each.top, rect.top) > Math.min(row_Each.height, rect.height) / 2)
+    if (row === undefined) rows.push(DOMRect.fromRect(rect))
+    else {
+      const left = Math.min(row.left, rect.left)
+      const top = Math.min(row.top, rect.top)
+      row.width = Math.max(row.right, rect.right) - left
+      row.height = Math.max(row.bottom, rect.bottom) - top
+      row.x = left
+      row.y = top
+    }
+  }
+  return rows
+}
+
+interface _Api___rowOf__Rect_ {
+  rect: DOMRect
+  top_Text: number
+  height_Row: number
+}
+
+function rowOf__Rect({
+  rect,
+  top_Text,
+  height_Row
+}: _Api___rowOf__Rect_): DOMRect {
+  if (Number.isNaN(height_Row) || height_Row <= 0) return rect
+  const top = top_Text + Math.floor((rect.top + rect.height / 2 - top_Text) / height_Row) * height_Row
+  return new DOMRect(
+    rect.left,
+    top,
+    rect.width,
+    height_Row
+  )
+}
+
+interface _Api___elementOf__Rect_ {
+  className: string
+  rect: DOMRect
+  rect_Run: DOMRect
+}
+
+function elementOf__Rect({
+  className,
+  rect,
+  rect_Run
+}: _Api___elementOf__Rect_): Element {
+  const element = document.createElement("div")
+  element.className = className
+  element.style.left = `${rect.left - rect_Run.left}px`
+  element.style.top = `${rect.top - rect_Run.top}px`
+  element.style.width = `${rect.width}px`
+  element.style.height = `${rect.height}px`
+  return element
+}
+
+interface _Api___positionAt__View_TextEditor_ {
+  containerElement_View: HTMLElement
+  point_Screen: _Point_Screen_
+}
+
+function positionAt__View_TextEditor({
+  containerElement_View,
+  point_Screen
+}: _Api___positionAt__View_TextEditor_): _Position_Drawn_ | null {
+  const divElement_text = [...containerElement_View.querySelectorAll(".run_htmlView > .line_htmlView > .text_htmlView")].find((element) => {
+    const rect = element.getBoundingClientRect()
+    return rect.height > 0 && rect.top <= point_Screen.y && point_Screen.y < rect.bottom
+  })
+  const element_Line = divElement_text?.parentElement
+  const element_Run = element_Line?.parentElement
+  const id_Run = element_Run?.getAttribute("data-run")
+  if (!(divElement_text instanceof HTMLElement) || element_Line === null || element_Line === undefined || element_Run === null || element_Run === undefined || id_Run === null || id_Run === undefined) return null
+  const rect = divElement_text.getBoundingClientRect()
+  const caretPosition = document.caretPositionFromPoint(
+    Math.min(
+      Math.max(
+        point_Screen.x,
+        rect.left
+      ),
+      rect.right - 1
+    ),
+    point_Screen.y
+  )
+  const placed$_Text = placedOf__Text$(text$Of__Element(divElement_text).filter((text) => text.parentElement?.closest(".note_htmlView") === null))
+  const placed_Text = placed$_Text.find((placed_Each) => placed_Each.text === caretPosition?.offsetNode)
+  const length = placed$_Text.reduce(
+    (
+      sum,
+      placed_Each
+    ) => sum + placed_Each.text.length,
+    0
+  )
+  return {
+    id_Run,
+    position: {
+      line: [...element_Run.querySelectorAll(":scope > .line_htmlView")].indexOf(element_Line),
+      offset: placed_Text === undefined
+        ? point_Screen.x <= rect.left + parseFloat(getComputedStyle(divElement_text).paddingLeft) ? 0 : length
+        : placed_Text.start + (caretPosition?.offset ?? 0)
+    }
+  }
+}
+
+interface _Api___caretOf__View_TextEditor_ {
+  containerElement_View: HTMLElement
+  position_Drawn: _Position_Drawn_
+}
+
+function caretOf__View_TextEditor({
+  containerElement_View,
+  position_Drawn
+}: _Api___caretOf__View_TextEditor_): _Caret_Screen_ | null {
+  const divElement_text = containerElement_View
+    .querySelector(`.run_htmlView[data-run="${CSS.escape(position_Drawn.id_Run)}"]`)
+    ?.querySelectorAll(":scope > .line_htmlView > .text_htmlView")[position_Drawn.position.line]
+  if (!(divElement_text instanceof HTMLElement)) return null
+  const caret_Text = caretOf__Offset({
+    divElement_text,
+    offset: position_Drawn.position.offset
+  })
+  const height_Row = parseFloat(getComputedStyle(divElement_text).lineHeight)
+  return {
+    x: caret_Text.x,
+    top: caret_Text.top,
+    bottom: caret_Text.bottom,
+    height_Row: Number.isNaN(height_Row) ? caret_Text.bottom - caret_Text.top : height_Row
+  }
 }
 
 interface _ComponentMap__View_TextEditor_ {

@@ -1,5 +1,7 @@
 import {
   type _Text_Line_NonTerminated_,
+  type _Id_Text_,
+  type _Position_Text_,
   type _NonEmpty_,
   mapped__NonEmpty,
   parseTexts_Line
@@ -18,6 +20,7 @@ export {
   type _Note_Line_,
   type _Target_Note_,
   type _Segment_Line_,
+  type _Origin_Line_,
   type _Attributes_Element_,
   type _Stretch_Line_,
   type _Module_Language_,
@@ -58,6 +61,19 @@ export {
   foldedAt__ViewModel,
   draftingAt__ViewModel,
   type _Id_Item_,
+  selectedAt__ViewModel,
+  type _Selection_TextEditor_,
+  type _End_Selection_,
+  type _Selection_Drawn_,
+  type _Place_Text_,
+  type _Position_Drawn_,
+  drawnOf__End,
+  orderOf__Positions_Drawn,
+  positionIn__Run,
+  placeIn__Line,
+  textOf__Line,
+  isSame__Id_Text,
+  orderOf__Positions_Run,
   parseLines_ViewModel,
   MODULE_PLAINTEXT
 }
@@ -66,6 +82,7 @@ interface _ViewModel_TextEditor_ {
   charCount_Max__Label_Gutter: number
   blocks: Array<_Block_ViewModel_>
   runs: Array<_Run_Lines_>
+  selection: _Selection_Drawn_ | null
 }
 
 type _Block_ViewModel_ = _LINES_Block__ViewModel_ | _FRAME_Block__ViewModel_ | _FOLDED_Block__ViewModel_
@@ -88,6 +105,7 @@ interface _Line_Run_ {
   gutter: _Gutter_Line_
   note: _Note_Line_ | null
   segments: Array<_Segment_Line_>
+  origins: Array<_Origin_Line_>
 }
 
 interface _Gutter_Line_ {
@@ -123,6 +141,13 @@ interface _Stretch_Line_ {
   from: number
   to: number
   attributes: _Attributes_Element_
+}
+
+interface _Origin_Line_ {
+  from: number
+  to: number
+  id_Text: _Id_Text_
+  position: _Position_Text_
 }
 
 interface _Group_Underlay_ {
@@ -260,7 +285,8 @@ function viewModelOf__Blocks(
       ...runs_ViewModel.flatMap((run_Lines) => run_Lines.lines).map((line_Run) => line_Run.gutter.label.length)
     ),
     blocks: block$_Stated,
-    runs: runs_ViewModel
+    runs: runs_ViewModel,
+    selection: null
   }
 }
 
@@ -768,6 +794,235 @@ function pointedIn__Part({
     }
 }
 
+interface _Selection_TextEditor_ {
+  anchor: _End_Selection_
+  head: _End_Selection_
+}
+
+interface _End_Selection_ {
+  id_Run: string
+  id_Text: _Id_Text_
+  position: _Position_Text_
+}
+
+interface _Api___selectedAt__ViewModel_ {
+  viewModel_TextEditor: _ViewModel_TextEditor_
+  selection_TextEditor: _Selection_TextEditor_ | null
+}
+
+function selectedAt__ViewModel({
+  viewModel_TextEditor,
+  selection_TextEditor
+}: _Api___selectedAt__ViewModel_): _ViewModel_TextEditor_ {
+  if (selection_TextEditor === null) return viewModel_TextEditor
+  const anchor = drawnOf__End({
+    viewModel_TextEditor,
+    end_Selection: selection_TextEditor.anchor
+  })
+  const head = drawnOf__End({
+    viewModel_TextEditor,
+    end_Selection: selection_TextEditor.head
+  })
+  return anchor === null || head === null
+    ? viewModel_TextEditor
+    : {
+      ...viewModel_TextEditor,
+      selection: {
+        anchor,
+        head
+      }
+    }
+}
+
+interface _Selection_Drawn_ {
+  anchor: _Position_Drawn_
+  head: _Position_Drawn_
+}
+
+interface _Api___drawnOf__End_ {
+  viewModel_TextEditor: _ViewModel_TextEditor_
+  end_Selection: _End_Selection_
+}
+
+function drawnOf__End({
+  viewModel_TextEditor,
+  end_Selection
+}: _Api___drawnOf__End_): _Position_Drawn_ | null {
+  const runs_Shown = [
+    ...viewModel_TextEditor.runs.filter((run_Lines) => run_Lines.id === end_Selection.id_Run),
+    ...viewModel_TextEditor.runs.filter((run_Lines) => run_Lines.id !== end_Selection.id_Run)
+  ]
+  for (const run_Lines of runs_Shown) {
+    const position = positionIn__Run({
+      run_Lines,
+      place_Text: {
+        id_Text: end_Selection.id_Text,
+        position: end_Selection.position
+      }
+    })
+    if (position !== null) {
+      return {
+        id_Run: run_Lines.id,
+        position
+      }
+    }
+  }
+  return null
+}
+
+interface _Api___positionIn__Run_ {
+  run_Lines: _Run_Lines_
+  place_Text: _Place_Text_
+}
+
+interface _Place_Text_ {
+  id_Text: _Id_Text_
+  position: _Position_Text_
+}
+
+function positionIn__Run({
+  run_Lines,
+  place_Text
+}: _Api___positionIn__Run_): _Position_Run_ | null {
+  const positions = run_Lines.lines.flatMap((
+    line_Run,
+    line
+  ) => line_Run.origins.flatMap((origin_Line) => {
+    const offset = offsetIn__Origin({
+      origin_Line,
+      text: textOf__Line(line_Run),
+      place_Text
+    })
+    return offset === null
+      ? []
+      : [
+        {
+          position: {
+            line,
+            offset
+          },
+          isEmpty: origin_Line.from === origin_Line.to
+        }
+      ]
+  }))
+  return (positions.find((position) => !position.isEmpty) ?? positions[0])?.position ?? null
+}
+
+interface _Api___offsetIn__Origin_ {
+  origin_Line: _Origin_Line_
+  text: string
+  place_Text: _Place_Text_
+}
+
+function offsetIn__Origin({
+  origin_Line,
+  text,
+  place_Text
+}: _Api___offsetIn__Origin_): number | null {
+  if (!isSame__Id_Text({
+    id_Text: origin_Line.id_Text,
+    id_Text_Other: place_Text.id_Text
+  }) || origin_Line.position.line !== place_Text.position.line) return null
+  const codePoints = Array.from(text.slice(
+    origin_Line.from,
+    origin_Line.to
+  ))
+  const count = place_Text.position.offset - origin_Line.position.offset
+  return count < 0 || count > codePoints.length
+    ? null
+    : origin_Line.from + codePoints.slice(
+      0,
+      count
+    ).join("").length
+}
+
+interface _Api___isSame__Id_Text_ {
+  id_Text: _Id_Text_
+  id_Text_Other: _Id_Text_
+}
+
+function isSame__Id_Text({
+  id_Text,
+  id_Text_Other
+}: _Api___isSame__Id_Text_): boolean {
+  return id_Text.kind === "DOCUMENT"
+    ? id_Text_Other.kind === "DOCUMENT"
+    : id_Text_Other.kind === "CHANGE" && id_Text.source === id_Text_Other.source && id_Text.index === id_Text_Other.index
+}
+
+function textOf__Line(
+  line_Run: _Line_Run_
+): string {
+  return line_Run.segments.map((segment_Line) => segment_Line.text).join("")
+}
+
+interface _Api___placeIn__Line_ {
+  line_Run: _Line_Run_
+  offset: number
+  id_Text: _Id_Text_ | null
+}
+
+function placeIn__Line({
+  line_Run,
+  offset,
+  id_Text
+}: _Api___placeIn__Line_): _Place_Text_ | null {
+  const origins_Offset = line_Run.origins.filter((origin_Line) => origin_Line.from <= offset && offset <= origin_Line.to && (id_Text === null || isSame__Id_Text({
+    id_Text: origin_Line.id_Text,
+    id_Text_Other: id_Text
+  })))
+  const origin_Line = origins_Offset.find((origin_Each) => origin_Each.from <= offset && offset < origin_Each.to)
+    ?? origins_Offset.find((origin_Each) => origin_Each.from < origin_Each.to)
+    ?? origins_Offset[0]
+  return origin_Line === undefined
+    ? null
+    : {
+      id_Text: origin_Line.id_Text,
+      position: {
+        line: origin_Line.position.line,
+        offset: origin_Line.position.offset + Array.from(textOf__Line(line_Run).slice(
+          origin_Line.from,
+          offset
+        )).length
+      }
+    }
+}
+
+interface _Position_Drawn_ {
+  id_Run: string
+  position: _Position_Run_
+}
+
+interface _Api___orderOf__Positions_Drawn_ {
+  viewModel_TextEditor: _ViewModel_TextEditor_
+  position_Drawn: _Position_Drawn_
+  position_Drawn_Other: _Position_Drawn_
+}
+
+function orderOf__Positions_Drawn({
+  viewModel_TextEditor,
+  position_Drawn,
+  position_Drawn_Other
+}: _Api___orderOf__Positions_Drawn_): number {
+  const indexOf = (id_Run: string) => viewModel_TextEditor.runs.findIndex((run_Lines) => run_Lines.id === id_Run)
+  return indexOf(position_Drawn.id_Run) - indexOf(position_Drawn_Other.id_Run) || orderOf__Positions_Run({
+    position: position_Drawn.position,
+    position_Other: position_Drawn_Other.position
+  })
+}
+
+interface _Api___orderOf__Positions_Run_ {
+  position: _Position_Run_
+  position_Other: _Position_Run_
+}
+
+function orderOf__Positions_Run({
+  position,
+  position_Other
+}: _Api___orderOf__Positions_Run_): number {
+  return position.line - position_Other.line || position.offset - position_Other.offset
+}
+
 interface _Api___parseLines_ViewModel_<State> {
   multilineText: string
   module_Language: _Module_Language_<State>
@@ -848,7 +1103,20 @@ function lineOf__Text({
     segments: segmentsOf__Stretches({
       text,
       stretches
-    })
+    }),
+    origins: [
+      {
+        from: 0,
+        to: text.length,
+        id_Text: {
+          kind: "DOCUMENT"
+        },
+        position: {
+          line: number - 1,
+          offset: 0
+        }
+      }
+    ]
   }
 }
 

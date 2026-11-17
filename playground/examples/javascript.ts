@@ -2,6 +2,7 @@ import type { _Example_ } from "../example.ts"
 import { COMPONENTMAP__VIEW_TEXTEDITOR } from "../../source/View_TextEditor.tsx"
 import { _TextEditor_, type _Setup_TextEditor_ } from "../../source/TextEditor.ts"
 import { MODULE_MOUSE } from "../../source/modules/mouse.ts"
+import { MODULE_KEYBOARD } from "../../source/modules/keyboard.ts"
 import { parseTexts_Line, type _Range_Text_, type _Changes_Host_, type _Change_Host_ } from "../../source/Model_TextEditor.ts"
 import type { _Proposal_Host_ } from "../../source/Projection_TextEditor.ts"
 import type { _Range_Lines_ } from "../../source/ViewModel_TextEditor.ts"
@@ -362,7 +363,7 @@ const ranges_retry: Array<_Range_Lines_> = [{ first: 13, last: 27 }, { first: 31
 // changes look
 const setup_retry: _Setup_TextEditor_<_State_JavaScript_> = {
   componentMap: COMPONENTMAP__VIEW_TEXTEDITOR,
-  modules: [MODULE_MOUSE],
+  modules: [MODULE_MOUSE, MODULE_KEYBOARD],
   module_Language: module_JavaScript,
   perspectives: [PERSPECTIVE_CHANGES]
 }

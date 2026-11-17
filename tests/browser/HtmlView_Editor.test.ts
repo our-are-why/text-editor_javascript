@@ -2703,7 +2703,7 @@ async function drawnOf(
     new window._View_TextEditor_({
       containerElement,
       componentMap: window.COMPONENTMAP__VIEW_TEXTEDITOR
-    }).draw(window.viewModelOf__Blocks([{ kind: "LINES", run: { id: "line", lines: [{ gutter: { label: "", marker: "none", pointed: "none" }, note: null, segments: segments_Line }], groups: [] } }]))
+    }).draw(window.viewModelOf__Blocks([{ kind: "LINES", run: { id: "line", lines: [{ gutter: { label: "", marker: "none", pointed: "none" }, note: null, segments: segments_Line, origins: [] }], groups: [] } }]))
     const textElement = containerElement.querySelector(".text_htmlView")
     if (textElement === null) throw new Error("the line's text wasn't drawn")
     return [...textElement.childNodes].map((node) => ({

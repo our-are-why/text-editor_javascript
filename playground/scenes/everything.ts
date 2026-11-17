@@ -1,7 +1,7 @@
 import type { _Invariant_Scene_, _Scene_ } from "../scene.ts"
 import { viewModelOf__Blocks } from "../../source/ViewModel_TextEditor.ts"
 import type { _Line_Run_, _Group_Underlay_, _STRETCH_Underlay_Text_ } from "../../source/ViewModel_TextEditor.ts"
-import { groupsOf__Lines, lineOf, textElementsIn } from "../lines.ts"
+import { groupsOf__Lines, lineOf, originsOf__Document, textElementsIn } from "../lines.ts"
 import { attributesOf__Link, attributesOf__Change, attributesOf__Marks } from "../looks.ts"
 
 export {
@@ -172,6 +172,7 @@ const everything: _Scene_ = {
       lines: cases_Everything.map(({ line }, index): _Line_Run_ => ({
         ...line,
         gutter: { label: String(index + 1), marker: "none", pointed: "none" },
+        origins: originsOf__Document(textOf(line), index),
       })),
       groups: groups_Everything,
     },

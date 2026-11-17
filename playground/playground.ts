@@ -5,6 +5,7 @@ import { COMPONENTMAP__VIEW_TEXTEDITOR } from "../source/View_TextEditor.tsx"
 import { _Viewer_TextEditor_ } from "../source/Viewer_TextEditor.ts"
 import { LOOK_CHANGES } from "../source/looks/changes.ts"
 import { MODULE_MOUSE } from "../source/modules/mouse.ts"
+import { MODULE_KEYBOARD } from "../source/modules/keyboard.ts"
 import type { _Entry_Log_, _Example_ } from "./example.ts"
 import type { _Case_Document_, _Document_, _Status_Case_ } from "./document.ts"
 import type { _Invariant_Scene_, _Scene_ } from "./scene.ts"
@@ -177,7 +178,7 @@ function drawCase(
     new _Viewer_TextEditor_({
       containerElement,
       componentMap: COMPONENTMAP__VIEW_TEXTEDITOR,
-      modules: [MODULE_MOUSE],
+      modules: [MODULE_MOUSE, MODULE_KEYBOARD],
       viewModel_TextEditor: each.viewModel_TextEditor
     })
     const drawn = make("div", "drawn")
@@ -230,7 +231,7 @@ function drawScene(
   new _Viewer_TextEditor_({
     containerElement,
     componentMap: COMPONENTMAP__VIEW_TEXTEDITOR,
-    modules: [MODULE_MOUSE],
+    modules: [MODULE_MOUSE, MODULE_KEYBOARD],
     viewModel_TextEditor: scene.viewModel_TextEditor
   })
   const overlay = make("div", "overlay")

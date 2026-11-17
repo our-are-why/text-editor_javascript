@@ -804,3 +804,58 @@
 .htmlView_editor .item_htmlView[data-drafting] .action_htmlView[data-draft="DISCARD"] {
   color: var(--view-action-ink, light-dark(#3b3b3b, #cccccc));
 }
+
+/* the editor's own selection and caret, the browser's left alone: the
+   text's own selection off, the editor focusable, its focus said by its
+   caret, not an outline. Both are drawn after the view draws, measured
+   from the text, in a layer of the run they're in: the selection behind
+   the text, a box for each row it covers, and a sliver past a line's end
+   for the line break it takes in; the caret, at its head, before the text,
+   blinking while the editor's focused, where motion's not reduced, and
+   hidden while it isn't focused, the selection then greyed */
+.htmlView_editor:focus {
+  outline: none;
+}
+
+.htmlView_editor .line_htmlView {
+  user-select: none;
+}
+
+.htmlView_editor .selection_htmlView {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.htmlView_editor .selected_htmlView {
+  position: absolute;
+  z-index: 0;
+  background: var(--view-selection, color-mix(in srgb, Highlight 35%, transparent));
+}
+
+.htmlView_editor:not(:focus) .selected_htmlView {
+  background: var(--view-selection-unfocused, color-mix(in srgb, GrayText 25%, transparent));
+}
+
+.htmlView_editor .caret_htmlView {
+  position: absolute;
+  z-index: 2;
+  border-left: 1.5px solid var(--view-caret, currentColor);
+  translate: -0.75px 0;
+}
+
+.htmlView_editor:not(:focus) .caret_htmlView {
+  visibility: hidden;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .htmlView_editor:focus .caret_htmlView {
+    animation: blink_htmlView 1.1s step-end infinite;
+  }
+}
+
+@keyframes blink_htmlView {
+  50% {
+    opacity: 0;
+  }
+}

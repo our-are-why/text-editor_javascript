@@ -3,6 +3,7 @@ import {
   type _Change_,
   type _MOVE_Change_,
   type _Text_Model_,
+  type _Id_Text_,
   type _Run_Comparison_,
   type _Range_Text_,
   type _Position_Text_,
@@ -33,6 +34,7 @@ import {
   type _Marker_Gutter_,
   type _Stretch_Line_,
   type _Segment_Line_,
+  type _Origin_Line_,
   type _STRETCH_Underlay_Text_,
   type _Group_Underlay_,
   type _Position_Run_,
@@ -175,7 +177,8 @@ function markedOf__Lines({
             ...stretchesOf__Segments(line.segments),
             ...stretches_Mark
           ]
-        })
+        }),
+        origins: line.origins
       }
   })
 }
@@ -827,6 +830,10 @@ function drawnOf__Frame<State>({
         frame_Model.first,
         frame_Model.last + 1
       ),
+      origins_Lines: lines_Document.slice(
+        frame_Model.first,
+        frame_Model.last + 1
+      ).map((line_Run) => line_Run.origins),
       notes_Placed: notesLeaving__Frame({
         model_TextEditor,
         frame_Model,
@@ -993,6 +1000,7 @@ interface _Api___runOf__Side_ {
   texts: Array<string>
   ranges_Change: Array<_Range_Change_>
   lines_Syntax: Array<_Line_Run_>
+  origins_Lines: Array<Array<_Origin_Line_>>
   notes_Placed: Array<_Placed_Note_>
   underlays_Notch: Array<_Underlay_Text_>
 }
@@ -1007,6 +1015,7 @@ function runOf__Side({
   texts,
   ranges_Change,
   lines_Syntax,
+  origins_Lines,
   notes_Placed,
   underlays_Notch
 }: _Api___runOf__Side_): _Run_Lines_ {
@@ -1058,7 +1067,8 @@ function runOf__Side({
             })),
             ...stretchesOf__Segments(lines_Syntax[index]?.segments ?? [])
           ]
-        })
+        }),
+        origins: origins_Lines[index] ?? []
       }
     }),
     groups: groupsWith__Notches({
@@ -1677,6 +1687,11 @@ function proposedOf__Frame<State>({
         texts,
         marks: marks_Proposed
       }),
+      origins_Lines: originsOf__Pieces({
+        pieces_Placed,
+        isBreak_Leading,
+        texts
+      }),
       notes_Placed: notesLanding__Frame({
         model_TextEditor,
         frame_Model,
@@ -1702,6 +1717,56 @@ function proposedOf__Frame<State>({
 interface _Placed_Piece_ {
   piece_Applied: _Piece_Applied_
   position: _Position_Text_
+}
+
+interface _Api___originsOf__Pieces_ {
+  pieces_Placed: Array<_Placed_Piece_>
+  isBreak_Leading: boolean
+  texts: Array<string>
+}
+
+function originsOf__Pieces({
+  pieces_Placed,
+  isBreak_Leading,
+  texts
+}: _Api___originsOf__Pieces_): Array<Array<_Origin_Line_>> {
+  const origins_Lines = texts.map((): Array<_Origin_Line_> => [])
+  for (const piece_Placed of pieces_Placed) {
+    const piece_Applied = piece_Placed.piece_Applied
+    const id_Text: _Id_Text_ = piece_Applied.kind === "CHANGE"
+      ? {
+        kind: "CHANGE",
+        source: piece_Applied.source,
+        index: piece_Applied.index
+      }
+      : {
+        kind: "DOCUMENT"
+      }
+    piece_Applied.text.split("\n").forEach((
+      text_Piece,
+      index
+    ) => {
+      const line = piece_Placed.position.line + index - (isBreak_Leading ? 1 : 0)
+      const text = texts[line]
+      if (text === undefined) return
+      const from = unitsOf__CodePoints({
+        text,
+        count: index === 0 ? piece_Placed.position.offset : 0
+      })
+      origins_Lines[line]?.push({
+        from,
+        to: from + text_Piece.length,
+        id_Text,
+        position: index === 0
+          ? piece_Applied.range.from
+          : {
+            line: piece_Applied.range.from.line + index,
+            offset: 0
+          }
+      })
+    })
+  }
+  return origins_Lines
 }
 
 function placedOf__Pieces(
