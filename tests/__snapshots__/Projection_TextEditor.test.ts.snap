@@ -497,8 +497,8 @@ FRAME 39-43
     ring {data-source=cap data-state=REQUESTED}
       STRETCH 2:53-2:85 {data-change=replaced data-place=1 data-side=after data-source=cap}
   PROPOSAL_LIST
-    {"actions":[{"command":"reopen","label":"Reopen","stateAfter":"OPEN"}],"attributes":{},"isDrafting":false,"neighbors":{"range_Next":null,"range_Previous":null},"places":{"kind":"NONE"},"rationale":"With the module's cap, a long outage never goes quiet for longer than half a minute; the README should say so.","request":"make the cap an option, 30 seconds unless the caller gives another.","source":"cap","state":"REQUESTED","status":"Revision requested","title":"Cap the delay at 30 seconds"}
     {"actions":[{"command":"reopen","label":"Reopen","stateAfter":"OPEN"}],"attributes":{},"isDrafting":false,"neighbors":{"range_Next":null,"range_Previous":null},"places":{"kind":"NONE"},"rationale":"It's the name a caller finds in the module, and would search for.","request":"","source":"base","state":"ACCEPTED","status":"Accepted","title":"Name the base delay DELAY_MS"}
+    {"actions":[{"command":"reopen","label":"Reopen","stateAfter":"OPEN"}],"attributes":{},"isDrafting":false,"neighbors":{"range_Next":null,"range_Previous":null},"places":{"kind":"NONE"},"rationale":"With the module's cap, a long outage never goes quiet for longer than half a minute; the README should say so.","request":"make the cap an option, 30 seconds unless the caller gives another.","source":"cap","state":"REQUESTED","status":"Revision requested","title":"Cap the delay at 30 seconds"}
     {"actions":[{"command":"dismiss","label":"Dismiss","stateAfter":null}],"attributes":{},"isDrafting":false,"neighbors":{"range_Next":null,"range_Previous":null},"places":{"kind":"NONE"},"rationale":"The guides moved under /guides.","request":"","source":"link","state":"WITHDRAWN","status":"Withdrawn","title":"Link the guide where it's moved"}"
 `;
 
@@ -697,8 +697,8 @@ FRAME 39-43
     ring {data-source=cap data-state=REQUESTED}
       STRETCH 2:53-2:85 {data-change=replaced data-place=1 data-side=after data-source=cap}
   PROPOSAL_LIST
-    {"actions":[{"command":"reopen","label":"Reopen","stateAfter":"OPEN"}],"attributes":{},"isDrafting":false,"neighbors":{"range_Next":null,"range_Previous":null},"places":{"kind":"NONE"},"rationale":"With the module's cap, a long outage never goes quiet for longer than half a minute; the README should say so.","request":"make the cap an option, 30 seconds unless the caller gives another.","source":"cap","state":"REQUESTED","status":"Revision requested","title":"Cap the delay at 30 seconds"}
     {"actions":[{"command":"reopen","label":"Reopen","stateAfter":"OPEN"}],"attributes":{},"isDrafting":false,"neighbors":{"range_Next":null,"range_Previous":null},"places":{"kind":"NONE"},"rationale":"It's the name a caller finds in the module, and would search for.","request":"","source":"base","state":"ACCEPTED","status":"Accepted","title":"Name the base delay DELAY_MS"}
+    {"actions":[{"command":"reopen","label":"Reopen","stateAfter":"OPEN"}],"attributes":{},"isDrafting":false,"neighbors":{"range_Next":null,"range_Previous":null},"places":{"kind":"NONE"},"rationale":"With the module's cap, a long outage never goes quiet for longer than half a minute; the README should say so.","request":"make the cap an option, 30 seconds unless the caller gives another.","source":"cap","state":"REQUESTED","status":"Revision requested","title":"Cap the delay at 30 seconds"}
     {"actions":[{"command":"dismiss","label":"Dismiss","stateAfter":null}],"attributes":{},"isDrafting":false,"neighbors":{"range_Next":null,"range_Previous":null},"places":{"kind":"NONE"},"rationale":"The guides moved under /guides.","request":"","source":"link","state":"WITHDRAWN","status":"Withdrawn","title":"Link the guide where it's moved"}"
 `;
 

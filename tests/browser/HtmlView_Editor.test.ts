@@ -1020,7 +1020,7 @@ describe("beside it: what can't live in one document", () => {
     expect(await placed("12rem")).toEqual({ under: true, beside: false, right: true, wrapped: true })
   })
 
-  test("each proposal's item shows its title, its state after it, a muted word, where it is, why it's proposed, what was asked of it, and its actions, each a button carrying its command, each of those only when it says something; its state as data; decided ones listed after the rest; only an open one's first action the main one", async () => {
+  test("each proposal's item shows its title, its state after it, a muted word, where it is, why it's proposed, what was asked of it, and its actions, each a button carrying its command, each of those only when it says something; its state as data; each where the host lists it, whatever its state; only an open one's first action the main one", async () => {
     const items = await opened.page.evaluate(() => {
       const containerElement = document.createElement("div")
       document.body.append(containerElement)
@@ -1062,10 +1062,10 @@ describe("beside it: what can't live in one document", () => {
       })
     })
     expect(items).toEqual([
+      { source: "taken", state: "ACCEPTED", shown: ["heading_htmlView", "rationale_htmlView", "actions_htmlView"], heading: "Taken already · Accepted", places: [], references: [], rationale: "It was right.", request: [], actions: ["button reopen: Reopen"], main: false },
       { source: "most", state: "OPEN", shown: ["heading_htmlView", "places_htmlView", "rationale_htmlView", "actions_htmlView"], heading: "Most of the orders", places: ["2 of 5 changes here", "1 of them only if Cut the lathe is rejected", "1 of them moved with Shift it down"], references: ["lathe normal", "shift normal"], rationale: "Most of them need the lathe.", request: [], actions: ["button accept: Accept", "button reject: Reject"], main: true },
       { source: "all", state: "OPEN", shown: ["heading_htmlView", "actions_htmlView"], heading: "All of them", places: [], references: [], rationale: "", request: [], actions: ["button accept: Take it"], main: true },
-      { source: "capped", state: "REQUESTED", shown: ["heading_htmlView", "request_htmlView", "actions_htmlView"], heading: "Cap it · Revision requested", places: [], references: [], rationale: "", request: ["You asked", "make it an option."], actions: ["button reopen: Reopen"], main: false },
-      { source: "taken", state: "ACCEPTED", shown: ["heading_htmlView", "rationale_htmlView", "actions_htmlView"], heading: "Taken already · Accepted", places: [], references: [], rationale: "It was right.", request: [], actions: ["button reopen: Reopen"], main: false }
+      { source: "capped", state: "REQUESTED", shown: ["heading_htmlView", "request_htmlView", "actions_htmlView"], heading: "Cap it · Revision requested", places: [], references: [], rationale: "", request: ["You asked", "make it an option."], actions: ["button reopen: Reopen"], main: false }
     ])
   })
 

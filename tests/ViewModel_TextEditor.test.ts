@@ -245,7 +245,7 @@ test("each item you're drafting notes in, of one proposal in one frame, says so,
   expect(draftingAt__ViewModel({ viewModel_TextEditor: viewModel, items_Drafted: [] })).toBe(viewModel)
 })
 
-test("a proposal's state, its item's, is on its groups and on its words, each run's, for a perspective to show; its item listed after the rest once it's decided, accepted, rejected or withdrawn, the others in their order", () => {
+test("a proposal's state, its item's, is on its groups and on its words, each run's, for a perspective to show; its item where the host lists it, whatever its state, so deciding it never moves it", () => {
   const [line] = parseLines_ViewModel({ multilineText: "one two", module_Language: MODULE_PLAINTEXT })
   const [segment] = line?.segments ?? []
   if (line === undefined || segment === undefined) throw new Error("the line wasn't parsed")
@@ -263,5 +263,5 @@ test("a proposal's state, its item's, is on its groups and on its words, each ru
   expect(run?.groups.map((group) => group.attributes)).toEqual([{ "data-source": "revised", "data-state": "REVISING" }, { "data-source": "open", "data-state": "OPEN" }])
   expect(run?.lines[0]?.segments.map((segment) => segment.attributes)).toEqual([{ "data-source": "revised", "data-state": "REVISING" }, {}, { "data-source": "open", "data-state": "OPEN" }])
   const list = viewModel.blocks[0]?.kind === "FRAME" ? viewModel.blocks[0].parts.find((part) => part.kind === "PROPOSAL_LIST") : undefined
-  expect(list?.kind === "PROPOSAL_LIST" ? list.items.map((item) => item.source) : []).toEqual(["revised", "open", "requested", "accepted", "rejected", "withdrawn"])
+  expect(list?.kind === "PROPOSAL_LIST" ? list.items.map((item) => item.source) : []).toEqual(["accepted", "revised", "rejected", "open", "withdrawn", "requested"])
 })

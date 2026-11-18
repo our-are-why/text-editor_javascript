@@ -381,10 +381,7 @@ function statedOf__Blocks(
       parts: mapped__NonEmpty({
         items: block_ViewModel.parts,
         map: (part_Frame): _Part_Frame_ => part_Frame.kind === "PROPOSAL_LIST"
-          ? {
-            ...part_Frame,
-            items: decidedLast__Items(part_Frame.items)
-          }
+          ? part_Frame
           : {
             ...part_Frame,
             run: statedIn__Run({
@@ -428,37 +425,6 @@ function statedIn__Run({
       attributes: stated(group_Underlay.attributes)
     }))
   }
-}
-
-function decidedLast__Items(
-  items_Proposals: _NonEmpty_<_Item_Proposals_>
-): _NonEmpty_<_Item_Proposals_> {
-  const [
-    first,
-    ...rest
-  ] = items_Proposals.toSorted((
-    item_Proposals,
-    item_Proposals_other
-  ) => Number(ISDECIDEDMAP__STATE_PROPOSAL[item_Proposals.state]) - Number(ISDECIDEDMAP__STATE_PROPOSAL[item_Proposals_other.state]))
-  return first === undefined
-    ? items_Proposals
-    : [
-      first,
-      ...rest
-    ]
-}
-
-type _IsDecidedMap__State_Proposal_ = {
-  [State in _State_Proposal_]: boolean
-}
-
-const ISDECIDEDMAP__STATE_PROPOSAL: _IsDecidedMap__State_Proposal_ = {
-  OPEN: false,
-  REQUESTED: false,
-  REVISING: false,
-  ACCEPTED: true,
-  REJECTED: true,
-  WITHDRAWN: true
 }
 
 function runsOf__Blocks(

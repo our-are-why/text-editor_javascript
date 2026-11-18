@@ -710,10 +710,10 @@ streak across word and dots, the dots stepping one, two, three, the arc at
 another pace, was three motions at two paces, too busy. Still where motion's
 reduced, the three dots all there. `viewModelOf__Blocks` puts each
 proposal's state, its item's, on its groups and its words, `data-state`, for
-a look to show, and lists decided items, accepted, rejected or
-withdrawn, after the rest, their titles and words the same as any other's,
-whatever their state, told apart by their icons, their status words and
-their place. The "changes" look fades a revising one's rings and the
+a look to show, and keeps each item where the host lists it, whatever
+its state, so deciding one never moves it, as moving it once did, decided
+ones after the rest; their titles and words the same as any other's,
+whatever their state, told apart by their icons and their status words. The "changes" look fades a revising one's rings and the
 words it proposes, breathing, as doctor's revised lines pulsed, still where
 motion's asked to be reduced. An accepted one the host's applied has its
 words the document's, so there's nothing left to ring, and nothing marks the lines they're on: a
