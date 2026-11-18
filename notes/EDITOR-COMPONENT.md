@@ -1450,6 +1450,114 @@ the folds and the rest rebuild the view model from its blocks. The
 playground's host names its task per example, working while a round's
 under way, with Stop then, putting what's running back in the queue.
 
+**the editor as a panel, decided 2026-11-18:** the view's a column, as an
+app's window is: its header, always there, its document, and its footer,
+always there too, the document, `document_htmlView`, taking whatever height
+the host gives the view and scrolling in it, the page never scrolling, so
+the header and footer are always in sight; given no height, by a host that
+lets it grow, it's as tall as the document, the page scrolling, the header
+and footer kept in sight, sticky, as it does. The footer's an empty bar for
+now, `Footer_TextEditor__Html`, the component map's `footer`, there before
+what goes in it so nothing's undone to fit it in later: where the agent is,
+as doctor's footer says, kept apart from the task. A host that draws cases,
+not documents being worked on, as the playground's gallery and documents
+do, composes a map with neither, its own components for them giving
+nothing. The playground's examples are apps: the editor the window's
+height, beside what each is about and what it's reported; the browser
+tests open them in a laptop's window, 1440 by 900, the size they're laid
+out for.
+
+**the task, decided 2026-11-18:** doctor's model, as a start: every request
+lives within a task, and a task can cut across documents; the host drives
+it, as it does its proposals, and tells the editor of it, `task`,
+`_Task_Host_`, or `null`: its id, its name, where it stands,
+`_State_Task_`, a draft, the agent working on it, your turn, done, or
+canceled, what the agent says of it, its summary, its requests aimed at
+this document, and its actions, each a command asked of the host. A
+task's own requests, on no proposal, about what's selected or the whole
+document, `_Request_Task_`, each its status, queued, running or
+addressed, and the proposals that answer it, `sources_Answering`: once
+addressed it's still listed, "addressed · 2 proposals", or "addressed ·
+nothing to change", as doctor's were, so what got answered, and what the
+agent missed, is seen request by request; a proposal's own requests, for
+its revision, still go once answered. A request's line says how it's
+going, the view model's words, `progress`, and offers Start and Remove
+only where they do something. The header draws the task's mark before its
+name, by where it stands, as doctor's did, a dotted ring, a spinner
+turning, a dot in the revision's plum, a check, a cross; its state in
+words there for what reads the page aloud, not shown beside it, so the
+mark's not said twice; nothing spins beside the count of what's in
+progress while the mark says the agent's at work. The playground's host
+names a task per example and what it's about; the agent's at work on it
+while a round's under way, Stop offered then, and otherwise it's your turn.
+
+**the task's card, decided 2026-11-18:** the task's mark and name, at the
+header's start, a button, open its card under it, as doctor's did, while
+the pointer's on them or the keyboard's on them or in the card, by the
+stylesheet alone, no state to keep: hidden, not gone, so the keyboard goes
+on into it, and lingering a moment once the pointer's left, so it can
+cross to the card and keep it; Escape in it sends the keyboard back to the
+text, `CLOSE_CARD`, and it closes. In it: the task's name and where it
+stands, in words; what the agent says of it; this document's proposals
+counted by where each stands, "9 to review · 1 revising · 2 accepted",
+the header's `breakdown`; the task's requests here, listed as a
+proposal's are, each with its own Start and Remove, the band under the
+header gone; and the host's actions for the task, Stop among them, moved
+there from the header, which keeps Request a change and Start. Request a
+change docks its form under the header, flush with it, the editor's
+width, as doctor's did, a form with no point, `point_Screen: null`, a
+right-click's still floating where it was asked.
+
+**the card in doctor's two parts, decided 2026-11-18:** the card's a task's,
+then a document's, as doctor's was, a faint rule between, as a task cuts
+across documents. The task's part: its name, then its id, `id`, in the
+editor's font, then where it stands, a floating dot after each but the
+last, so a heading that wraps never starts a line with one; what the agent says of it; why it was canceled,
+if it was, `reason`; its proposals across every document it touches, how
+far they've got and how many stand where, the host's counting,
+`counts_Proposals`, as only it knows the other documents; the requests
+aimed at it as a whole; and Add a request, for the task, and the host's
+actions for it. The document's part: its proposals, the editor's counting;
+what the agent says of this document, `summary_Document`; the requests
+aimed here; and the host's actions for it, `actions_Document`, as
+doctor's "accept proposals (3)". A figure under a small label, as doctor's
+were; no times yet, a clock to keep them true left for later. A request's
+aim's a kind, `_Aim_Request_`: the task, this document, or some words of
+it, a task's request listed in its part, the others in the document's; the
+two ways to ask kept apart, as they're different things: Request a change,
+in the header, aimed at this document, and Add a request, in the card,
+aimed at the task, each docking its form under the header, `OPEN_REQUEST`
+with its target, the card hidden while one's there. Our requests keep
+their Start and Remove, as ours is a queue started at any scope, where
+doctor's was a task started whole, from drafting, a mode we do without.
+Not yet: requests folded under their count, which needs the view to keep
+whether they're open, as it draws its markup afresh.
+
+**the card, calmer, and the task's figures against the document's, decided
+2026-11-18:** the card took doctor's look: tighter, its figures side by
+side, each under a small muted label, in the text's own ink, not bold, how
+many stand where only when one's hovered; what the agent says cut at three
+lines, the whole when hovered; its actions links, in the proposals'
+indigo, not buttons; its requests without the plum rule and heading a
+proposal's list has. The task's figures and the document's are framed
+against each other, the editor comparing the host's count across the
+task, `counts_Proposals`, with its own of this document: every one of the
+task's proposals here, they'd say the same twice, so there's one,
+"Proposals: 3 of 11 decided", and the document's part has none; the task
+across other documents, the task's part says "Task proposals: 5 of 20
+decided" and how many files it touches, `count_Documents`, the host's, and
+the document's frames this one as the task's share, each a count of so
+many, "Proposals here: 14 of 20", "Decided: 3 of 14", `_Figure_Card_`, each its label, its
+value and, hovered, its breakdown. The document's part's drawn only when
+it has something to say. The playground's JavaScript task reaches the
+README too, two files, a few proposals there; its Markdown one's all here. The header's task
+is laid out as an item is: its name starting where the text does, its
+mark in the gutter beside it, where a proposal's icon is beside its item,
+in a box an icon's size, each state's shape drawn in it; the text's inset
+worked out once, on the view, in the lines' font, `--textInset_htmlView`,
+so the header, the items and a docked form start their words at the same
+point, where the header, in the interface's font, had been a pixel out.
+
 **the document's own requests, decided 2026-11-18:** a request for a change
 on no proposal, about what's selected or the whole document, is queued as
 a proposal's is, not sent at once: every form offers Add and Start, the

@@ -1,7 +1,7 @@
 import { examples } from "./examples/index.ts"
 import { documents } from "./documents/index.ts"
 import { scenes } from "./scenes/index.ts"
-import { COMPONENTMAP__VIEW_TEXTEDITOR } from "../source/View_TextEditor.tsx"
+import { COMPONENTMAP__VIEW_TEXTEDITOR, type _ComponentMap__View_TextEditor_ } from "../source/View_TextEditor.tsx"
 import { _Viewer_TextEditor_ } from "../source/Viewer_TextEditor.ts"
 import { LOOK_CHANGES } from "../source/looks/changes.ts"
 import { MODULE_MOUSE } from "../source/modules/mouse.ts"
@@ -13,7 +13,7 @@ import type { _Invariant_Scene_, _Scene_ } from "./scene.ts"
 
 // the playground's page: the examples and documents listed beside the one
 // asked for, an example (?example=<name>) shown with what it reports logged
-// under it, a document (?document=<name>) with every case it enumerates
+// beside it, a document (?document=<name>) with every case it enumerates
 // drawn; or, with neither asked for, the gallery of every scene
 
 const asked = new URLSearchParams(location.search).get("example")
@@ -22,6 +22,15 @@ const asked_Document = new URLSearchParams(location.search).get("document")
 const shown_Document = documents.find((each) => each.name === asked_Document)
 
 window.logged = []
+
+// the view as the scenes and a document's cases are drawn: its own
+// components, but no header or footer, which say how a document's work
+// stands, not how a case is drawn
+const componentMap_Scene: _ComponentMap__View_TextEditor_ = {
+  ...COMPONENTMAP__VIEW_TEXTEDITOR,
+  header: () => null,
+  footer: () => null
+}
 
 const nav = document.createElement("nav")
 const home = make("a", "home", "playground")
@@ -55,10 +64,14 @@ else if (asked !== null) main.append(make("h1", "", "No such example"), make("p"
 else if (asked_Document !== null) main.append(make("h1", "", "No such document"), make("p", "about", `There's no document called "${asked_Document}".`))
 else gallery()
 
-// the example, its title and what to try over it, and what it reports under
+// the example, as an app: the editor the window's height, its document
+// scrolling in it, and beside it the example's title, what to try, and what
+// it reports
 function show(example: _Example_): void {
   document.title = `${example.title} · playground`
+  main.className = "example"
   const stage = make("section", "stage")
+  const side = make("aside", "side")
   const log = make("section", "log")
   const header = document.createElement("header")
   const clear = make("button", "", "Clear")
@@ -66,7 +79,8 @@ function show(example: _Example_): void {
   header.append(make("h2", "", "Reported"), clear)
   const entries = document.createElement("ol")
   log.append(header, entries)
-  main.append(make("h1", "", example.title), make("p", "about", example.about), stage, log)
+  side.append(make("h1", "", example.title), make("p", "about", example.about), log)
+  main.append(stage, side)
 
   clear.addEventListener("click", () => {
     window.logged = []
@@ -178,7 +192,7 @@ function drawCase(
     containerElement.dataset["look"] = LOOK_CHANGES.name
     new _Viewer_TextEditor_({
       containerElement,
-      componentMap: COMPONENTMAP__VIEW_TEXTEDITOR,
+      componentMap: componentMap_Scene,
       modules: [MODULE_MOUSE, MODULE_KEYBOARD],
       module_Words: MODULE_WORDS_TEXT,
       viewModel_TextEditor: each.viewModel_TextEditor,
@@ -234,7 +248,7 @@ function drawScene(
   containerElement.dataset["look"] = LOOK_CHANGES.name
   new _Viewer_TextEditor_({
     containerElement,
-    componentMap: COMPONENTMAP__VIEW_TEXTEDITOR,
+    componentMap: componentMap_Scene,
     modules: [MODULE_MOUSE, MODULE_KEYBOARD],
     module_Words: MODULE_WORDS_TEXT,
     viewModel_TextEditor: scene.viewModel_TextEditor,

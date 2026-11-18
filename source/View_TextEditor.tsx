@@ -46,6 +46,9 @@ import type {
   _Position_Drawn_,
   _Point_Screen_,
   _Header_ViewModel_,
+  _Task_Header_,
+  _Figure_Card_,
+  _Action_Task_,
   _Menu_ViewModel_,
   _Form_Request_,
   _State_Proposal_
@@ -272,6 +275,7 @@ function TextEditor_Html({
   viewModel_TextEditor
 }: _Api___TextEditor_Html_): JSX.Element {
   const Component_Header = componentMap_View.header
+  const Component_Footer = componentMap_View.footer
   const Component_Menu = componentMap_View.menu
   const Component_Request = componentMap_View.request
   return (
@@ -286,16 +290,19 @@ function TextEditor_Html({
         aria-multiline="true"
         aria-label="Text"
       />
-      {viewModel_TextEditor.header !== null && <Component_Header header_ViewModel={viewModel_TextEditor.header} />}
-      {viewModel_TextEditor.header !== null && viewModel_TextEditor.header.requests.length > 0 && <Request$_Document__Html request$_Document={viewModel_TextEditor.header.requests} />}
-      {viewModel_TextEditor.blocks.map((block_ViewModel) => (
-        <Block_TextEditor__Html
-          componentMap_View={componentMap_View}
-          block_ViewModel={block_ViewModel}
-        />
-      ))}
+      <Component_Header header_ViewModel={viewModel_TextEditor.header} />
+      {viewModel_TextEditor.request !== null && viewModel_TextEditor.request.point_Screen === null && <Component_Request form_Request={viewModel_TextEditor.request} />}
+      <div class="document_htmlView">
+        {viewModel_TextEditor.blocks.map((block_ViewModel) => (
+          <Block_TextEditor__Html
+            componentMap_View={componentMap_View}
+            block_ViewModel={block_ViewModel}
+          />
+        ))}
+      </div>
+      <Component_Footer />
       {viewModel_TextEditor.menu !== null && <Component_Menu menu_ViewModel={viewModel_TextEditor.menu} />}
-      {viewModel_TextEditor.request !== null && <Component_Request form_Request={viewModel_TextEditor.request} />}
+      {viewModel_TextEditor.request !== null && viewModel_TextEditor.request.point_Screen !== null && <Component_Request form_Request={viewModel_TextEditor.request} />}
     </div>
   )
 }
@@ -309,19 +316,13 @@ function Header_TextEditor__Html({
 }: _Api___Header_TextEditor__Html_): JSX.Element {
   return (
     <div class="header_htmlView">
+      {header_ViewModel.task !== null && (
+        <Task_Header__Html
+          task_Header={header_ViewModel.task}
+          request$_Document={header_ViewModel.requests}
+        />
+      )}
       <p class="status_Header_htmlView">
-        {header_ViewModel.task !== null && (
-          <span class="task_Header_htmlView">
-            {header_ViewModel.task.isBusy && (
-              <span
-                class="spinner_htmlView"
-                aria-hidden="true"
-              />
-            )}
-            <span class="label_Task_htmlView">{header_ViewModel.task.label}</span>
-            {header_ViewModel.task.status !== "" && <span class="status_Task_htmlView">{header_ViewModel.task.status}</span>}
-          </span>
-        )}
         {header_ViewModel.parts.map((part_Header) => (
           <span
             class="part_Header_htmlView"
@@ -338,15 +339,6 @@ function Header_TextEditor__Html({
         ))}
       </p>
       <div class="actions_Header_htmlView">
-        {header_ViewModel.task?.actions.map((action_Task) => (
-          <button
-            type="button"
-            class="action_htmlView"
-            data-task={action_Task.command}
-          >
-            {action_Task.label}
-          </button>
-        ))}
         <button
           type="button"
           class="action_htmlView"
@@ -370,24 +362,163 @@ function Header_TextEditor__Html({
   )
 }
 
-interface _Api___Request$_Document__Html_ {
+interface _Api___Task_Header__Html_ {
+  task_Header: _Task_Header_
   request$_Document: Array<_Request_Item_>
 }
 
-function Request$_Document__Html({
+function Task_Header__Html({
+  task_Header,
   request$_Document
-}: _Api___Request$_Document__Html_): JSX.Element {
+}: _Api___Task_Header__Html_): JSX.Element {
   return (
-    <section
-      class="requests_Document_htmlView"
-      aria-label="This document's requests"
+    <div
+      class="task_Header_htmlView"
+      data-state={task_Header.state}
     >
-      <Request$__Html
-        request$={request$_Document}
-        isStartable={false}
-      />
-    </section>
+      <button
+        type="button"
+        class="trigger_Task_htmlView"
+        aria-haspopup="dialog"
+      >
+        <span
+          class="mark_Task_htmlView"
+          aria-hidden="true"
+        />
+        <span class="name_Task_htmlView">{task_Header.name}</span>
+        <span class="state_Task_htmlView">{task_Header.label_State}</span>
+      </button>
+      <div
+        class="card_Task_htmlView"
+        role="dialog"
+        aria-label={task_Header.name}
+      >
+        <section class="part_Card_htmlView">
+          <p class="head_Card_htmlView">
+            <span class="name_Card_htmlView">{task_Header.name}</span>
+            <span class="id_Card_htmlView">{task_Header.id}</span>
+            <span class="state_Card_htmlView">{task_Header.label_State}</span>
+          </p>
+          {task_Header.summary !== "" && (
+            <p
+              class="summary_Card_htmlView"
+              title={task_Header.summary}
+            >
+              {task_Header.summary}
+            </p>
+          )}
+          {task_Header.reason !== "" && <p class="reason_Card_htmlView">{`Why: ${task_Header.reason}`}</p>}
+          <Figure$_Card__Html figure$={task_Header.figures} />
+          {task_Header.requests.length > 0 && (
+            <Request$__Html
+              request$={task_Header.requests}
+              isStartable={false}
+            />
+          )}
+          <Actions_Card__Html
+            label="Task"
+            action$={task_Header.actions}
+            ask="TASK"
+          />
+        </section>
+        {(task_Header.figures_Document.length > 0 || task_Header.summary_Document !== "" || request$_Document.length > 0 || task_Header.actions_Document.length > 0) && (
+          <section class="part_Card_htmlView">
+            <p class="heading_Card_htmlView">This document</p>
+            <Figure$_Card__Html figure$={task_Header.figures_Document} />
+            {task_Header.summary_Document !== "" && (
+              <p
+                class="summary_Card_htmlView"
+                title={task_Header.summary_Document}
+              >
+                {task_Header.summary_Document}
+              </p>
+            )}
+            {request$_Document.length > 0 && (
+              <Request$__Html
+                request$={request$_Document}
+                isStartable={false}
+              />
+            )}
+            <Actions_Card__Html
+              label="Document"
+              action$={task_Header.actions_Document}
+              ask={null}
+            />
+          </section>
+        )}
+      </div>
+    </div>
   )
+}
+
+interface _Api___Figure$_Card__Html_ {
+  figure$: Array<_Figure_Card_>
+}
+
+function Figure$_Card__Html({
+  figure$
+}: _Api___Figure$_Card__Html_): _Node_Jsx_ {
+  return figure$.length === 0
+    ? null
+    : (
+      <div class="figures_Card_htmlView">
+        {figure$.map((figure_Card) => (
+          <p
+            class="figure_Card_htmlView"
+            title={figure_Card.more === "" ? undefined : figure_Card.more}
+          >
+            <span class="label_Card_htmlView">{figure_Card.label}</span>
+            <span class="value_Card_htmlView">{figure_Card.value}</span>
+          </p>
+        ))}
+      </div>
+    )
+}
+
+interface _Api___Actions_Card__Html_ {
+  label: string
+  action$: Array<_Action_Task_>
+  ask: "TASK" | null
+}
+
+function Actions_Card__Html({
+  label,
+  action$,
+  ask
+}: _Api___Actions_Card__Html_): _Node_Jsx_ {
+  return action$.length === 0 && ask === null
+    ? null
+    : (
+      <div
+        class="actions_Card_htmlView"
+        role="group"
+        aria-label={`${label} actions`}
+      >
+        {ask !== null && (
+          <button
+            type="button"
+            class="action_htmlView"
+            data-ask={ask}
+            aria-haspopup="dialog"
+          >
+            Add a request
+          </button>
+        )}
+        {action$.map((action_Task) => (
+          <button
+            type="button"
+            class="action_htmlView"
+            data-task={action_Task.command}
+          >
+            {action_Task.label}
+          </button>
+        ))}
+      </div>
+    )
+}
+
+function Footer_TextEditor__Html(): JSX.Element {
+  return <div class="footer_htmlView" />
 }
 
 interface _Api___Menu_TextEditor__Html_ {
@@ -436,9 +567,10 @@ function Request_TextEditor__Html({
       class="asking_htmlView"
       role="dialog"
       aria-label={form_Request.label}
-      style={`left: ${form_Request.point_Screen.x}px; top: ${form_Request.point_Screen.y}px`}
-      data-x={String(form_Request.point_Screen.x)}
-      data-y={String(form_Request.point_Screen.y)}
+      style={form_Request.point_Screen === null ? undefined : `left: ${form_Request.point_Screen.x}px; top: ${form_Request.point_Screen.y}px`}
+      data-x={form_Request.point_Screen === null ? undefined : String(form_Request.point_Screen.x)}
+      data-y={form_Request.point_Screen === null ? undefined : String(form_Request.point_Screen.y)}
+      data-docked={form_Request.point_Screen === null ? "" : undefined}
     >
       <p class="label_Asking_htmlView">{form_Request.label}</p>
       {form_Request.quote !== null && <p class="quote_Asking_htmlView">{form_Request.quote}</p>}
@@ -1196,13 +1328,10 @@ function Request$__Html({
       <p class="label_Request_htmlView">Requests</p>
       <ol class="list_Request_htmlView">
         {request$.map((request_Item) => (
-          <li
-            class="said_htmlView"
-            data-running={request_Item.isRunning ? "" : undefined}
-          >
+          <li class="said_htmlView">
             {request_Item.quote !== null && <q class="quote_Said_htmlView">{request_Item.quote}</q>}
             <span class="notes_Said_htmlView">{request_Item.notes}</span>
-            {request_Item.isRunning && <span class="progress_Said_htmlView">in progress</span>}
+            {request_Item.progress !== null && <span class="progress_Said_htmlView">{request_Item.progress}</span>}
             {request_Item.isStartable && (
               <button
                 type="button"
@@ -1213,7 +1342,7 @@ function Request$__Html({
                 Start
               </button>
             )}
-            {!request_Item.isRunning && (
+            {request_Item.isRemovable && (
               <button
                 type="button"
                 class="remove_htmlView"
@@ -3438,6 +3567,7 @@ interface _ComponentMap__View_TextEditor_ {
   condition: _ComponentMap_Condition_
   line: (api_Line: _Api___Line_Run__Html_) => _Node_Jsx_
   header: (api_Header: _Api___Header_TextEditor__Html_) => _Node_Jsx_
+  footer: () => _Node_Jsx_
   menu: (api_Menu: _Api___Menu_TextEditor__Html_) => _Node_Jsx_
   request: (api_Request: _Api___Request_TextEditor__Html_) => _Node_Jsx_
 }
@@ -3480,6 +3610,7 @@ const COMPONENTMAP__VIEW_TEXTEDITOR: _ComponentMap__View_TextEditor_ = {
   },
   line: Line_Run__Html,
   header: Header_TextEditor__Html,
+  footer: Footer_TextEditor__Html,
   menu: Menu_TextEditor__Html,
   request: Request_TextEditor__Html
 }

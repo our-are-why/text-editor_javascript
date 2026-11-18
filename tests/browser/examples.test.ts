@@ -494,15 +494,32 @@ const headerShown = () => opened_JavaScript.page.evaluate(async () => {
   await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)))
   const header = document.querySelector(".htmlView_editor > .header_htmlView")
   return {
-    task: [...header?.querySelectorAll(".task_Header_htmlView > :not(.spinner_htmlView)") ?? []].map((element) => element.textContent),
+    task: [header?.querySelector(".name_Task_htmlView")?.textContent ?? null, header?.querySelector(".task_Header_htmlView")?.getAttribute("data-state") ?? null, header?.querySelector(".state_Task_htmlView")?.textContent ?? null],
     parts: [...header?.querySelectorAll(".part_Header_htmlView") ?? []].map((element) => element.textContent),
     spinners: header?.querySelectorAll(".spinner_htmlView").length ?? 0,
     actions: [...header?.querySelectorAll(".actions_Header_htmlView > button") ?? []].map((element) => element.textContent),
+    card: [...header?.querySelectorAll(".card_Task_htmlView > .part_Card_htmlView:first-child .actions_Card_htmlView > button") ?? []].map((element) => element.textContent),
     isSticky: header === null ? false : getComputedStyle(header).position === "sticky"
   }
 })
 const header_Working = await headerShown()
-await opened_JavaScript.page.locator(".header_htmlView .action_htmlView[data-task=\"stop\"]").click()
+const cardOf_Task = () => opened_JavaScript.page.evaluate(async () => {
+  await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)))
+  const card = document.querySelector(".header_htmlView .card_Task_htmlView")
+  return {
+    isShown: card === null ? false : getComputedStyle(card).visibility === "visible",
+    head: card?.querySelector(".head_Card_htmlView")?.textContent ?? null,
+    summary: card?.querySelector(".summary_Card_htmlView")?.textContent ?? null,
+    id: card?.querySelector(".id_Card_htmlView")?.textContent ?? null,
+    figures: [...card?.querySelectorAll(".part_Card_htmlView") ?? []].map((part) => [...part.querySelectorAll(".figure_Card_htmlView")].map((element) => `${element.querySelector(".label_Card_htmlView")?.textContent}: ${element.querySelector(".value_Card_htmlView")?.textContent}${element.getAttribute("title") === null ? "" : ` (${element.getAttribute("title")})`}`)),
+    note: card?.querySelector(".part_Card_htmlView + .part_Card_htmlView .summary_Card_htmlView")?.textContent ?? null,
+    actions_Document: [...card?.querySelectorAll(".part_Card_htmlView + .part_Card_htmlView .actions_Card_htmlView > button") ?? []].map((element) => element.textContent)
+  }
+})
+const card_Resting = await cardOf_Task()
+await opened_JavaScript.page.hover(".trigger_Task_htmlView")
+const card_Hovered = await cardOf_Task()
+await opened_JavaScript.page.locator(".card_Task_htmlView .action_htmlView[data-task=\"stop\"]").click()
 const header_Stopped = await headerShown()
 await opened_JavaScript.page.locator(".header_htmlView .start_htmlView").click()
 const header_Started = await headerShown()
@@ -594,11 +611,13 @@ test("a proposal's action pressed is asked of the host, which sends back what it
   expect(opened_JavaScript.errors).toEqual([])
 })
 
-test("the header over the document stays put as it scrolls, saying the host's task, how many proposals are decided, how many requests queued and in progress, a spinner only on the task while it's working; the host's own actions on its right, Stop putting what's running back in the queue; the header's Start setting every proposal's queued requests going at once, each proposal's round its own; nothing asked, it says only what's decided, nothing to start", () => {
-  expect(header_Working).toEqual({ task: ["Tidy the retry loop", "working"], parts: ["3 of 14 decided", "1 request queued", "1 in progress"], spinners: 1, actions: ["Stop", "Request a change", "Start"], isSticky: true })
-  expect(header_Stopped).toEqual({ task: ["Tidy the retry loop"], parts: ["3 of 14 decided", "2 requests queued"], spinners: 0, actions: ["Request a change", "Start"], isSticky: true })
-  expect(header_Started).toEqual({ task: ["Tidy the retry loop", "working"], parts: ["3 of 14 decided", "2 in progress"], spinners: 1, actions: ["Stop", "Request a change"], isSticky: true })
-  expect(header_Done).toEqual({ task: ["Tidy the retry loop"], parts: ["3 of 14 decided"], spinners: 0, actions: ["Request a change"], isSticky: true })
+test("the header over the document stays put as it scrolls, saying the host's task, its mark where it stands, the agent at work or your turn, its state in words for what reads it aloud, how many proposals are decided, how many requests queued and in progress, nothing spinning beside the count while the task's mark says the agent's at work; its card hidden until the task's hovered, in two parts, the task's, its id, its name and where it stands, what the agent says of it, its proposals across the files it touches, and how many files, Add a request for the task as a whole, and the host's actions for it, and this document's, its proposals framed as the task's share, how many are here and how many of those decided, each figure's breakdown when hovered, what the agent says of it, and the host's actions for it, Stop putting what's running back in the queue; the header's Start setting every proposal's queued requests going at once, each proposal's round its own; nothing asked, it says only what's decided, nothing to start", () => {
+  expect(header_Working).toEqual({ task: ["Tidy the retry loop", "WORKING", "the agent's working on it"], parts: ["3 of 14 decided", "1 request queued", "1 in progress"], spinners: 0, actions: ["Request a change", "Start"], card: ["Add a request", "Stop"], isSticky: true })
+  expect(card_Resting.isShown).toBe(false)
+  expect(card_Hovered).toEqual({ isShown: true, head: "Tidy the retry loopretry-tidythe agent's working on it", summary: "Keeps every error, names the attempt counter round, caps the delay, and stops once the caller aborts; drops the onRetry hook and the opening comment.", id: "retry-tidy", figures: [["Task proposals: 5 of 20 decided (12 to review · 1 revision requested · 2 revising · 4 accepted · 1 rejected)", "Files: 2"], ["Proposals here: 14 of 20 (9 to review · 1 revision requested · 1 revising · 2 accepted · 1 rejected)", "Decided: 3 of 14"]], note: "In retry.js: the loop's errors, its counter's name, its delays and its abort, and two things it no longer needs.", actions_Document: ["Accept the ones waiting here (8)"] })
+  expect(header_Stopped).toEqual({ task: ["Tidy the retry loop", "YOUR_TURN", "waiting on you"], parts: ["3 of 14 decided", "2 requests queued"], spinners: 0, actions: ["Request a change", "Start"], card: ["Add a request"], isSticky: true })
+  expect(header_Started).toEqual({ task: ["Tidy the retry loop", "WORKING", "the agent's working on it"], parts: ["3 of 14 decided", "2 in progress"], spinners: 0, actions: ["Request a change"], card: ["Add a request", "Stop"], isSticky: true })
+  expect(header_Done).toEqual({ task: ["Tidy the retry loop", "YOUR_TURN", "waiting on you"], parts: ["3 of 14 decided"], spinners: 0, actions: ["Request a change"], card: ["Add a request"], isSticky: true })
   expect(logged_Stopped).toEqual([{ task: "stop" }, { revising: "hook, timeout", requests: 2 }, { revised: "hook, timeout" }])
   expect(opened_JavaScript.errors).toEqual([])
 })
@@ -675,14 +694,18 @@ await opened_JavaScript.page.evaluate(() => new Promise((resolve) => requestAnim
 await opened_JavaScript.page.keyboard.type("Say why the delay doubles.")
 await opened_JavaScript.page.keyboard.press("Control+Enter")
 const asked_Menu = (await opened_JavaScript.logged()).filter((entry) => "requested" in entry || entry["words"] !== undefined && entry["words"] !== null)
-// then the document's own requests: the one just added, on no proposal,
-// listed under the header; Request a change, in the header, opening the
+// then the task's own requests: the one just added, on no proposal,
+// listed in the task's card; Request a change, in the header, opening the
 // form for the whole document under it, Start there adding one and
-// starting it, in progress, the other still queued; then it done with, and
-// the other removed, nothing left listed
+// starting it, in progress, the other still queued; then it addressed,
+// with nothing to change, there being no agent, still listed, and the
+// other removed
 const requestsOf_Document = () => opened_JavaScript.page.evaluate(async () => {
   await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)))
-  return [...document.querySelectorAll(".requests_Document_htmlView .said_htmlView")].map((element) => `${element.querySelector(".notes_Said_htmlView")?.textContent}${element.querySelector(".progress_Said_htmlView") === null ? "" : " (in progress)"}`)
+  return [...document.querySelectorAll(".card_Task_htmlView .said_htmlView")].map((element) => {
+    const progress = element.querySelector(".progress_Said_htmlView")?.textContent
+    return `${element.querySelector(".notes_Said_htmlView")?.textContent}${progress === undefined ? "" : ` (${progress})`}`
+  })
 })
 const requests_Added = await requestsOf_Document()
 await opened_JavaScript.page.locator(".header_htmlView [data-ask=\"DOCUMENT\"]").click()
@@ -700,9 +723,10 @@ const form_Header = await opened_JavaScript.page.evaluate(async () => {
 await opened_JavaScript.page.keyboard.type("Name the module's exports.")
 await opened_JavaScript.page.locator(".asking_htmlView [data-request=\"START\"]").click()
 const requests_Started = await requestsOf_Document()
-await opened_JavaScript.page.waitForFunction(() => document.querySelector(".requests_Document_htmlView .progress_Said_htmlView") === null)
+await opened_JavaScript.page.waitForFunction(() => ![...document.querySelectorAll(".card_Task_htmlView .progress_Said_htmlView")].some((element) => element.textContent === "in progress"))
 const requests_Done = await requestsOf_Document()
-await opened_JavaScript.page.locator(".requests_Document_htmlView .remove_htmlView").first().click()
+await opened_JavaScript.page.hover(".trigger_Task_htmlView")
+await opened_JavaScript.page.locator(".card_Task_htmlView .remove_htmlView").first().click()
 const requests_Removed = await requestsOf_Document()
 
 test("a right-click on a proposal's selected words offers a note on them, or on the whole proposal, the first focused; chosen, a form, what it's on quoted, the keyboard in it; added, the host's told, which queues a revision of the proposal, the words quoted before what you asked, and underlined, dotted, where they're proposed; on the document's words, nothing selected, a request for a change to the document, Escape closing it, the menu key opening it again at the caret", () => {
@@ -722,11 +746,57 @@ test("a right-click on a proposal's selected words offers a note on them, or on 
   expect(opened_JavaScript.errors).toEqual([])
 })
 
-test("a request on no proposal, the document's own, queued and listed under the header; Request a change, in the header, a form for the whole document under it, the keyboard in it, Add and Start; started there, added and in progress at once, the rest still queued; done with, gone from the list; removed, gone", () => {
+test("a request on no proposal, the task's own, queued and listed in the task's card; Request a change, in the header, a form for the whole document under it, the keyboard in it, Add and Start; started there, added and in progress at once, the rest still queued; addressed, still listed, saying by how many proposals, here none, nothing to remove; a queued one removed, gone", () => {
   expect(requests_Added).toEqual(["Say why the delay doubles."])
   expect(form_Header).toEqual({ label: "Request a change to this document", actions: ["Add", "Start", "Cancel"], isFocused: true, isUnder: true })
   expect(requests_Started).toEqual(["Say why the delay doubles.", "Name the module's exports. (in progress)"])
-  expect(requests_Done).toEqual(["Say why the delay doubles."])
-  expect(requests_Removed).toEqual([])
+  expect(requests_Done).toEqual(["Say why the delay doubles.", "Name the module's exports. (addressed · nothing to change)"])
+  expect(requests_Removed).toEqual(["Name the module's exports. (addressed · nothing to change)"])
   expect(opened_JavaScript.errors).toEqual([])
 })
+
+// last, on the JavaScript example, the task's card: Add a request, in its
+// task part, a form for the task as a whole, docked under the header, the
+// card hidden while it's there; added, listed in the card's task part, not
+// its document's; then, in its document part, the host's own action,
+// accepting the proposals waiting on nothing but you, taken at once
+const partsOf_Card = () => opened_JavaScript.page.evaluate(async () => {
+  await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)))
+  const parts = [...document.querySelectorAll(".card_Task_htmlView > .part_Card_htmlView")]
+  return parts.map((part) => [...part.querySelectorAll(".notes_Said_htmlView")].map((element) => element.textContent))
+})
+await opened_JavaScript.page.hover(".trigger_Task_htmlView")
+await opened_JavaScript.page.locator(".card_Task_htmlView [data-ask=\"TASK\"]").click()
+const form_Task = await opened_JavaScript.page.evaluate(async () => {
+  await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)))
+  const card = document.querySelector(".card_Task_htmlView")
+  return {
+    label: document.querySelector(".asking_htmlView[data-docked] > .label_Asking_htmlView")?.textContent ?? null,
+    isCardHidden: card === null ? false : getComputedStyle(card).visibility === "hidden"
+  }
+})
+await opened_JavaScript.page.keyboard.type("Keep the README in step.")
+await opened_JavaScript.page.keyboard.press("Control+Enter")
+const parts_Added = await partsOf_Card()
+const waiting_Before = await opened_JavaScript.page.evaluate(() => document.querySelectorAll(".item_htmlView[data-state=\"ACCEPTED\"]").length)
+await opened_JavaScript.page.hover(".trigger_Task_htmlView")
+await opened_JavaScript.page.locator(".card_Task_htmlView [data-task=\"accept-here\"]").click()
+const waiting_After = await opened_JavaScript.page.evaluate(async () => {
+  await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)))
+  return {
+    accepted: document.querySelectorAll(".item_htmlView[data-state=\"ACCEPTED\"]").length,
+    offered: document.querySelectorAll(".card_Task_htmlView [data-task=\"accept-here\"]").length
+  }
+})
+const logged_Card = (await opened_JavaScript.logged()).slice(-2)
+
+test("the task's card: Add a request, a form for the task as a whole, docked under the header, the card hidden while it's there; added, listed in the card's task part, not its document's; the host's action for the document there, the proposals waiting on nothing but you accepted at once, nothing left waiting to offer it for", () => {
+  expect(form_Task).toEqual({ label: "Add a request to the task", isCardHidden: true })
+  expect(parts_Added[0]).toEqual(["Keep the README in step."])
+  expect(parts_Added[1]).not.toContain("Keep the README in step.")
+  expect(waiting_After.accepted).toBeGreaterThan(waiting_Before)
+  expect(waiting_After.offered).toBe(0)
+  expect(logged_Card).toEqual([{ requested: "Keep the README in step.", aimed: null }, { task: "accept-here" }])
+  expect(opened_JavaScript.errors).toEqual([])
+})
+

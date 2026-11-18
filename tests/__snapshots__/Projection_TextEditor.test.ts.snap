@@ -227,7 +227,7 @@ FRAME 31-34
       STRETCH 3:35-3:41 {data-change=replaced data-place=2 data-side=after data-source=cap}
   PROPOSAL_LIST
     {"actions":[{"command":"accept","label":"Accept","stateAfter":"ACCEPTED"},{"command":"reject","label":"Reject","stateAfter":"REJECTED"},{"command":"revise","label":"Revise","stateAfter":"REQUESTED"}],"attributes":{},"confirming":null,"isDrafting":false,"isRunning":false,"isStartable":false,"neighbors":{"range_Next":null,"range_Previous":{"first":13,"last":27}},"places":{"conditions":[],"count_All":9,"count_Here":2,"kind":"COUNT"},"rationale":"n says nothing; round says what it counts, in retry and in backoff alike, and in the doc comment that names it.","requests":[],"source":"round","stale":null,"state":"OPEN","status":"","title":"Call the attempt counter round"}
-    {"actions":[{"command":"accept","label":"Accept","stateAfter":"ACCEPTED"},{"command":"reject","label":"Reject","stateAfter":"REJECTED"},{"command":"revise","label":"Revise","stateAfter":"REQUESTED"}],"attributes":{},"confirming":null,"isDrafting":false,"isRunning":false,"isStartable":true,"neighbors":{"range_Next":null,"range_Previous":null},"places":{"kind":"NONE"},"rationale":"A caller passing many attempts waits minutes by the tenth; capped, a long outage never goes quiet for longer than half a minute.","requests":[{"id":"cap-0","isRunning":false,"isStartable":true,"notes":"make the cap an option, 30 seconds unless the caller gives another.","quote":null}],"source":"cap","stale":null,"state":"REQUESTED","status":"Revision requested","title":"Cap the delay at 30 seconds"}
+    {"actions":[{"command":"accept","label":"Accept","stateAfter":"ACCEPTED"},{"command":"reject","label":"Reject","stateAfter":"REJECTED"},{"command":"revise","label":"Revise","stateAfter":"REQUESTED"}],"attributes":{},"confirming":null,"isDrafting":false,"isRunning":false,"isStartable":true,"neighbors":{"range_Next":null,"range_Previous":null},"places":{"kind":"NONE"},"rationale":"A caller passing many attempts waits minutes by the tenth; capped, a long outage never goes quiet for longer than half a minute.","requests":[{"id":"cap-0","isRemovable":true,"isStartable":true,"notes":"make the cap an option, 30 seconds unless the caller gives another.","progress":null,"quote":null}],"source":"cap","stale":null,"state":"REQUESTED","status":"Revision requested","title":"Cap the delay at 30 seconds"}
     {"actions":[{"command":"reopen","label":"Reopen","stateAfter":"OPEN"}],"attributes":{},"confirming":null,"isDrafting":false,"isRunning":false,"isStartable":false,"neighbors":{"range_Next":null,"range_Previous":null},"places":{"kind":"NONE"},"rationale":"BASE said nothing of what it's the base of, or in what unit.","requests":[],"source":"base","stale":null,"state":"ACCEPTED","status":"Accepted","title":"Name the base delay DELAY_MS"}
   LINES run 14
     "35" none none: 
@@ -265,7 +265,7 @@ FRAME 36-40
       STRETCH 2:70-2:87 {data-change=replaced data-place=1 data-side=after data-source=timeout}
       STRETCH 3:9-3:26 {data-change=inserted data-place=2 data-side=after data-source=timeout}
   PROPOSAL_LIST
-    {"actions":[{"command":"accept","label":"Accept","stateAfter":"ACCEPTED"},{"command":"reject","label":"Reject","stateAfter":"REJECTED"},{"command":"revise","label":"Revise","stateAfter":"REQUESTED"}],"attributes":{},"confirming":null,"isDrafting":false,"isRunning":true,"isStartable":false,"neighbors":{"range_Next":null,"range_Previous":null},"places":{"kind":"NONE"},"rationale":"A 408 means the server stopped waiting for the request, not that the request failed: sent again, it usually goes through.","requests":[{"id":"timeout-0","isRunning":true,"isStartable":false,"notes":"only when the request is safe to send twice, a GET or a PUT.","quote":null}],"source":"timeout","stale":null,"state":"REVISING","status":"Revising","title":"Retry a request that timed out"}
+    {"actions":[{"command":"accept","label":"Accept","stateAfter":"ACCEPTED"},{"command":"reject","label":"Reject","stateAfter":"REJECTED"},{"command":"revise","label":"Revise","stateAfter":"REQUESTED"}],"attributes":{},"confirming":null,"isDrafting":false,"isRunning":true,"isStartable":false,"neighbors":{"range_Next":null,"range_Previous":null},"places":{"kind":"NONE"},"rationale":"A 408 means the server stopped waiting for the request, not that the request failed: sent again, it usually goes through.","requests":[{"id":"timeout-0","isRemovable":false,"isStartable":false,"notes":"only when the request is safe to send twice, a GET or a PUT.","progress":"in progress","quote":null}],"source":"timeout","stale":null,"state":"REVISING","status":"Revising","title":"Retry a request that timed out"}
     {"actions":[{"command":"accept","label":"Accept","stateAfter":"ACCEPTED"},{"command":"reject","label":"Reject","stateAfter":"REJECTED"},{"command":"revise","label":"Revise","stateAfter":"REQUESTED"}],"attributes":{},"confirming":null,"isDrafting":false,"isRunning":false,"isStartable":false,"neighbors":{"range_Next":null,"range_Previous":null},"places":{"kind":"MOVE","range":{"first":38,"last":38},"way":"UP"},"rationale":"With the status read before either check, isRetryable reads top to bottom as its answers: the network failing, then the server's codes.","requests":[],"source":"status","stale":null,"state":"OPEN","status":"","title":"Work out the status first"}
     {"actions":[{"command":"reopen","label":"Reopen","stateAfter":"OPEN"}],"attributes":{},"confirming":null,"isDrafting":false,"isRunning":false,"isStartable":false,"neighbors":{"range_Next":null,"range_Previous":null},"places":{"kind":"NONE"},"rationale":"A 501 from a proxy can clear once the server behind it is back; sent again, it sometimes goes through.","requests":[],"source":"retry501","stale":null,"state":"REJECTED","status":"Rejected","title":"Retry a 501 too"}
 FRAME 41-50
@@ -399,7 +399,7 @@ FRAME 21-20
       STRETCH 6:0-6:27 {data-carried=order data-change=inserted data-place=1 data-side=after data-source=timeout}
   PROPOSAL_LIST
     {"actions":[{"command":"accept","label":"Accept","stateAfter":"ACCEPTED"},{"command":"reject","label":"Reject","stateAfter":"REJECTED"},{"command":"revise","label":"Revise","stateAfter":"REQUESTED"}],"attributes":{},"confirming":null,"isDrafting":false,"isRunning":false,"isStartable":false,"neighbors":{"range_Next":{"first":27,"last":36},"range_Previous":null},"places":{"kind":"MOVE","range":{"first":27,"last":36},"way":"UP"},"rationale":"Whether a call's retried at all is the first thing a caller asks; the options only tune how.","requests":[],"source":"order","stale":null,"state":"OPEN","status":"","title":"Say what it retries before its options"}
-    {"actions":[{"command":"accept","label":"Accept","stateAfter":"ACCEPTED"},{"command":"reject","label":"Reject","stateAfter":"REJECTED"},{"command":"revise","label":"Revise","stateAfter":"REQUESTED"}],"attributes":{},"confirming":null,"isDrafting":false,"isRunning":true,"isStartable":false,"neighbors":{"range_Next":{"first":27,"last":36},"range_Previous":null},"places":{"conditions":[{"count":1,"kind":"CARRIED","source":"order","title":"Say what it retries before its options"}],"count_All":1,"count_Here":1,"kind":"COUNT"},"rationale":"A 408 means the server stopped waiting for the request, not that the request failed: sent again, it usually goes through.","requests":[{"id":"timeout-0","isRunning":true,"isStartable":false,"notes":"only when the request is safe to send twice, a GET or a PUT.","quote":null}],"source":"timeout","stale":null,"state":"REVISING","status":"Revising","title":"Retry a request that timed out"}
+    {"actions":[{"command":"accept","label":"Accept","stateAfter":"ACCEPTED"},{"command":"reject","label":"Reject","stateAfter":"REJECTED"},{"command":"revise","label":"Revise","stateAfter":"REQUESTED"}],"attributes":{},"confirming":null,"isDrafting":false,"isRunning":true,"isStartable":false,"neighbors":{"range_Next":{"first":27,"last":36},"range_Previous":null},"places":{"conditions":[{"count":1,"kind":"CARRIED","source":"order","title":"Say what it retries before its options"}],"count_All":1,"count_Here":1,"kind":"COUNT"},"rationale":"A 408 means the server stopped waiting for the request, not that the request failed: sent again, it usually goes through.","requests":[{"id":"timeout-0","isRemovable":false,"isStartable":false,"notes":"only when the request is safe to send twice, a GET or a PUT.","progress":"in progress","quote":null}],"source":"timeout","stale":null,"state":"REVISING","status":"Revising","title":"Retry a request that timed out"}
     {"actions":[{"command":"reopen","label":"Reopen","stateAfter":"OPEN"}],"attributes":{},"confirming":null,"isDrafting":false,"isRunning":false,"isStartable":false,"neighbors":{"range_Next":{"first":27,"last":36},"range_Previous":null},"places":{"kind":"NONE"},"rationale":"Some servers send a 501 for a method they'll support after a deploy; tried again a minute later, it works.","requests":[],"source":"retry501","stale":null,"state":"REJECTED","status":"Rejected","title":"Retry a 501 too"}
   LINES run 9
     "21" none none: "##"{data-syntax=heading marker} " Options"{data-syntax=heading}
@@ -464,7 +464,7 @@ FRAME 27-36
   PROPOSAL_LINES run 14
   PROPOSAL_LIST
     {"actions":[{"command":"accept","label":"Accept","stateAfter":"ACCEPTED"},{"command":"reject","label":"Reject","stateAfter":"REJECTED"},{"command":"revise","label":"Revise","stateAfter":"REQUESTED"}],"attributes":{},"confirming":null,"isDrafting":false,"isRunning":false,"isStartable":false,"neighbors":{"range_Next":null,"range_Previous":{"first":21,"last":20}},"places":{"kind":"MOVE","range":{"first":27,"last":36},"way":"UP"},"rationale":"Whether a call's retried at all is the first thing a caller asks; the options only tune how.","requests":[],"source":"order","stale":null,"state":"OPEN","status":"","title":"Say what it retries before its options"}
-    {"actions":[{"command":"accept","label":"Accept","stateAfter":"ACCEPTED"},{"command":"reject","label":"Reject","stateAfter":"REJECTED"},{"command":"revise","label":"Revise","stateAfter":"REQUESTED"}],"attributes":{},"confirming":null,"isDrafting":false,"isRunning":true,"isStartable":false,"neighbors":{"range_Next":null,"range_Previous":{"first":21,"last":20}},"places":{"conditions":[],"count_All":1,"count_Here":0,"kind":"COUNT"},"rationale":"A 408 means the server stopped waiting for the request, not that the request failed: sent again, it usually goes through.","requests":[{"id":"timeout-0","isRunning":true,"isStartable":false,"notes":"only when the request is safe to send twice, a GET or a PUT.","quote":null}],"source":"timeout","stale":null,"state":"REVISING","status":"Revising","title":"Retry a request that timed out"}
+    {"actions":[{"command":"accept","label":"Accept","stateAfter":"ACCEPTED"},{"command":"reject","label":"Reject","stateAfter":"REJECTED"},{"command":"revise","label":"Revise","stateAfter":"REQUESTED"}],"attributes":{},"confirming":null,"isDrafting":false,"isRunning":true,"isStartable":false,"neighbors":{"range_Next":null,"range_Previous":{"first":21,"last":20}},"places":{"conditions":[],"count_All":1,"count_Here":0,"kind":"COUNT"},"rationale":"A 408 means the server stopped waiting for the request, not that the request failed: sent again, it usually goes through.","requests":[{"id":"timeout-0","isRemovable":false,"isStartable":false,"notes":"only when the request is safe to send twice, a GET or a PUT.","progress":"in progress","quote":null}],"source":"timeout","stale":null,"state":"REVISING","status":"Revising","title":"Retry a request that timed out"}
     {"actions":[{"command":"reopen","label":"Reopen","stateAfter":"OPEN"}],"attributes":{},"confirming":null,"isDrafting":false,"isRunning":false,"isStartable":false,"neighbors":{"range_Next":null,"range_Previous":{"first":21,"last":20}},"places":{"kind":"NONE"},"rationale":"Some servers send a 501 for a method they'll support after a deploy; tried again a minute later, it works.","requests":[],"source":"retry501","stale":null,"state":"REJECTED","status":"Rejected","title":"Retry a 501 too"}
   LINES run 15
     "37" none none: "##"{data-syntax=heading marker} " How long it waits"{data-syntax=heading}
@@ -500,7 +500,7 @@ FRAME 39-43
       STRETCH 2:53-2:85 {data-change=replaced data-place=1 data-side=after data-source=cap}
   PROPOSAL_LIST
     {"actions":[{"command":"reopen","label":"Reopen","stateAfter":"OPEN"}],"attributes":{},"confirming":null,"isDrafting":false,"isRunning":false,"isStartable":false,"neighbors":{"range_Next":null,"range_Previous":null},"places":{"kind":"NONE"},"rationale":"It's the name a caller finds in the module, and would search for.","requests":[],"source":"base","stale":null,"state":"ACCEPTED","status":"Accepted","title":"Name the base delay DELAY_MS"}
-    {"actions":[{"command":"accept","label":"Accept","stateAfter":"ACCEPTED"},{"command":"reject","label":"Reject","stateAfter":"REJECTED"},{"command":"revise","label":"Revise","stateAfter":"REQUESTED"}],"attributes":{},"confirming":null,"isDrafting":false,"isRunning":false,"isStartable":true,"neighbors":{"range_Next":null,"range_Previous":null},"places":{"kind":"NONE"},"rationale":"With the module's cap, a long outage never goes quiet for longer than half a minute; the README should say so.","requests":[{"id":"cap-0","isRunning":false,"isStartable":true,"notes":"make the cap an option, 30 seconds unless the caller gives another.","quote":null}],"source":"cap","stale":null,"state":"REQUESTED","status":"Revision requested","title":"Cap the delay at 30 seconds"}
+    {"actions":[{"command":"accept","label":"Accept","stateAfter":"ACCEPTED"},{"command":"reject","label":"Reject","stateAfter":"REJECTED"},{"command":"revise","label":"Revise","stateAfter":"REQUESTED"}],"attributes":{},"confirming":null,"isDrafting":false,"isRunning":false,"isStartable":true,"neighbors":{"range_Next":null,"range_Previous":null},"places":{"kind":"NONE"},"rationale":"With the module's cap, a long outage never goes quiet for longer than half a minute; the README should say so.","requests":[{"id":"cap-0","isRemovable":true,"isStartable":true,"notes":"make the cap an option, 30 seconds unless the caller gives another.","progress":null,"quote":null}],"source":"cap","stale":null,"state":"REQUESTED","status":"Revision requested","title":"Cap the delay at 30 seconds"}
     {"actions":[{"command":"dismiss","label":"Dismiss","stateAfter":null}],"attributes":{},"confirming":null,"isDrafting":false,"isRunning":false,"isStartable":false,"neighbors":{"range_Next":null,"range_Previous":null},"places":{"kind":"NONE"},"rationale":"The guides moved under /guides.","requests":[],"source":"link","stale":null,"state":"WITHDRAWN","status":"Withdrawn","title":"Link the guide where it's moved"}"
 `;
 
@@ -599,7 +599,7 @@ FRAME 21-20
       STRETCH 6:0-6:27 {data-carried=order data-change=inserted data-place=1 data-side=after data-source=timeout}
   PROPOSAL_LIST
     {"actions":[{"command":"accept","label":"Accept","stateAfter":"ACCEPTED"},{"command":"reject","label":"Reject","stateAfter":"REJECTED"},{"command":"revise","label":"Revise","stateAfter":"REQUESTED"}],"attributes":{},"confirming":null,"isDrafting":false,"isRunning":false,"isStartable":false,"neighbors":{"range_Next":{"first":27,"last":36},"range_Previous":null},"places":{"kind":"MOVE","range":{"first":27,"last":36},"way":"UP"},"rationale":"Whether a call's retried at all is the first thing a caller asks; the options only tune how.","requests":[],"source":"order","stale":null,"state":"OPEN","status":"","title":"Say what it retries before its options"}
-    {"actions":[{"command":"accept","label":"Accept","stateAfter":"ACCEPTED"},{"command":"reject","label":"Reject","stateAfter":"REJECTED"},{"command":"revise","label":"Revise","stateAfter":"REQUESTED"}],"attributes":{},"confirming":null,"isDrafting":false,"isRunning":true,"isStartable":false,"neighbors":{"range_Next":{"first":27,"last":36},"range_Previous":null},"places":{"conditions":[{"count":1,"kind":"CARRIED","source":"order","title":"Say what it retries before its options"}],"count_All":1,"count_Here":1,"kind":"COUNT"},"rationale":"A 408 means the server stopped waiting for the request, not that the request failed: sent again, it usually goes through.","requests":[{"id":"timeout-0","isRunning":true,"isStartable":false,"notes":"only when the request is safe to send twice, a GET or a PUT.","quote":null}],"source":"timeout","stale":null,"state":"REVISING","status":"Revising","title":"Retry a request that timed out"}
+    {"actions":[{"command":"accept","label":"Accept","stateAfter":"ACCEPTED"},{"command":"reject","label":"Reject","stateAfter":"REJECTED"},{"command":"revise","label":"Revise","stateAfter":"REQUESTED"}],"attributes":{},"confirming":null,"isDrafting":false,"isRunning":true,"isStartable":false,"neighbors":{"range_Next":{"first":27,"last":36},"range_Previous":null},"places":{"conditions":[{"count":1,"kind":"CARRIED","source":"order","title":"Say what it retries before its options"}],"count_All":1,"count_Here":1,"kind":"COUNT"},"rationale":"A 408 means the server stopped waiting for the request, not that the request failed: sent again, it usually goes through.","requests":[{"id":"timeout-0","isRemovable":false,"isStartable":false,"notes":"only when the request is safe to send twice, a GET or a PUT.","progress":"in progress","quote":null}],"source":"timeout","stale":null,"state":"REVISING","status":"Revising","title":"Retry a request that timed out"}
     {"actions":[{"command":"reopen","label":"Reopen","stateAfter":"OPEN"}],"attributes":{},"confirming":null,"isDrafting":false,"isRunning":false,"isStartable":false,"neighbors":{"range_Next":{"first":27,"last":36},"range_Previous":null},"places":{"kind":"NONE"},"rationale":"Some servers send a 501 for a method they'll support after a deploy; tried again a minute later, it works.","requests":[],"source":"retry501","stale":null,"state":"REJECTED","status":"Rejected","title":"Retry a 501 too"}
   LINES run 9
     "21" none none: "##"{data-syntax=heading marker} " Options"{data-syntax=heading}
@@ -665,7 +665,7 @@ FRAME 27-36
   PROPOSAL_LINES run 14
   PROPOSAL_LIST
     {"actions":[{"command":"accept","label":"Accept","stateAfter":"ACCEPTED"},{"command":"reject","label":"Reject","stateAfter":"REJECTED"},{"command":"revise","label":"Revise","stateAfter":"REQUESTED"}],"attributes":{},"confirming":null,"isDrafting":false,"isRunning":false,"isStartable":false,"neighbors":{"range_Next":null,"range_Previous":{"first":21,"last":20}},"places":{"kind":"MOVE","range":{"first":27,"last":36},"way":"UP"},"rationale":"Whether a call's retried at all is the first thing a caller asks; the options only tune how.","requests":[],"source":"order","stale":null,"state":"OPEN","status":"","title":"Say what it retries before its options"}
-    {"actions":[{"command":"accept","label":"Accept","stateAfter":"ACCEPTED"},{"command":"reject","label":"Reject","stateAfter":"REJECTED"},{"command":"revise","label":"Revise","stateAfter":"REQUESTED"}],"attributes":{},"confirming":null,"isDrafting":false,"isRunning":true,"isStartable":false,"neighbors":{"range_Next":null,"range_Previous":{"first":21,"last":20}},"places":{"conditions":[],"count_All":1,"count_Here":0,"kind":"COUNT"},"rationale":"A 408 means the server stopped waiting for the request, not that the request failed: sent again, it usually goes through.","requests":[{"id":"timeout-0","isRunning":true,"isStartable":false,"notes":"only when the request is safe to send twice, a GET or a PUT.","quote":null}],"source":"timeout","stale":null,"state":"REVISING","status":"Revising","title":"Retry a request that timed out"}
+    {"actions":[{"command":"accept","label":"Accept","stateAfter":"ACCEPTED"},{"command":"reject","label":"Reject","stateAfter":"REJECTED"},{"command":"revise","label":"Revise","stateAfter":"REQUESTED"}],"attributes":{},"confirming":null,"isDrafting":false,"isRunning":true,"isStartable":false,"neighbors":{"range_Next":null,"range_Previous":{"first":21,"last":20}},"places":{"conditions":[],"count_All":1,"count_Here":0,"kind":"COUNT"},"rationale":"A 408 means the server stopped waiting for the request, not that the request failed: sent again, it usually goes through.","requests":[{"id":"timeout-0","isRemovable":false,"isStartable":false,"notes":"only when the request is safe to send twice, a GET or a PUT.","progress":"in progress","quote":null}],"source":"timeout","stale":null,"state":"REVISING","status":"Revising","title":"Retry a request that timed out"}
     {"actions":[{"command":"reopen","label":"Reopen","stateAfter":"OPEN"}],"attributes":{},"confirming":null,"isDrafting":false,"isRunning":false,"isStartable":false,"neighbors":{"range_Next":null,"range_Previous":{"first":21,"last":20}},"places":{"kind":"NONE"},"rationale":"Some servers send a 501 for a method they'll support after a deploy; tried again a minute later, it works.","requests":[],"source":"retry501","stale":null,"state":"REJECTED","status":"Rejected","title":"Retry a 501 too"}
   LINES run 15
     "37" none none: "##"{data-syntax=heading marker} " How long it waits"{data-syntax=heading}
@@ -701,13 +701,13 @@ FRAME 39-43
       STRETCH 2:53-2:85 {data-change=replaced data-place=1 data-side=after data-source=cap}
   PROPOSAL_LIST
     {"actions":[{"command":"reopen","label":"Reopen","stateAfter":"OPEN"}],"attributes":{},"confirming":null,"isDrafting":false,"isRunning":false,"isStartable":false,"neighbors":{"range_Next":null,"range_Previous":null},"places":{"kind":"NONE"},"rationale":"It's the name a caller finds in the module, and would search for.","requests":[],"source":"base","stale":null,"state":"ACCEPTED","status":"Accepted","title":"Name the base delay DELAY_MS"}
-    {"actions":[{"command":"accept","label":"Accept","stateAfter":"ACCEPTED"},{"command":"reject","label":"Reject","stateAfter":"REJECTED"},{"command":"revise","label":"Revise","stateAfter":"REQUESTED"}],"attributes":{},"confirming":null,"isDrafting":false,"isRunning":false,"isStartable":true,"neighbors":{"range_Next":null,"range_Previous":null},"places":{"kind":"NONE"},"rationale":"With the module's cap, a long outage never goes quiet for longer than half a minute; the README should say so.","requests":[{"id":"cap-0","isRunning":false,"isStartable":true,"notes":"make the cap an option, 30 seconds unless the caller gives another.","quote":null}],"source":"cap","stale":null,"state":"REQUESTED","status":"Revision requested","title":"Cap the delay at 30 seconds"}
+    {"actions":[{"command":"accept","label":"Accept","stateAfter":"ACCEPTED"},{"command":"reject","label":"Reject","stateAfter":"REJECTED"},{"command":"revise","label":"Revise","stateAfter":"REQUESTED"}],"attributes":{},"confirming":null,"isDrafting":false,"isRunning":false,"isStartable":true,"neighbors":{"range_Next":null,"range_Previous":null},"places":{"kind":"NONE"},"rationale":"With the module's cap, a long outage never goes quiet for longer than half a minute; the README should say so.","requests":[{"id":"cap-0","isRemovable":true,"isStartable":true,"notes":"make the cap an option, 30 seconds unless the caller gives another.","progress":null,"quote":null}],"source":"cap","stale":null,"state":"REQUESTED","status":"Revision requested","title":"Cap the delay at 30 seconds"}
     {"actions":[{"command":"dismiss","label":"Dismiss","stateAfter":null}],"attributes":{},"confirming":null,"isDrafting":false,"isRunning":false,"isStartable":false,"neighbors":{"range_Next":null,"range_Previous":null},"places":{"kind":"NONE"},"rationale":"The guides moved under /guides.","requests":[],"source":"link","stale":null,"state":"WITHDRAWN","status":"Withdrawn","title":"Link the guide where it's moved"}"
 `;
 
 exports[`the changes document's kinds-removed draws as it was drawn by hand 1`] = `
 "label width 1
-header none
+header {"isStartable":false,"parts":[{"isBusy":false,"text":"0 of 1 decided"}],"requests":[],"task":null}
   LINES run 1
     "1" none none: "const"{data-syntax=keyword} " ATTEMPTS = " "5"{data-syntax=number} ";"
       ⟵ document 0:0 [0,19)
@@ -728,7 +728,7 @@ FRAME 2-2
 
 exports[`the changes document's kinds-inserted draws as it was drawn by hand 1`] = `
 "label width 1
-header none
+header {"isStartable":false,"parts":[{"isBusy":false,"text":"0 of 1 decided"}],"requests":[],"task":null}
   LINES run 1
     "1" none none: "for"{data-syntax=keyword} " (" "let"{data-syntax=keyword} " n = " "1"{data-syntax=number} "; n <= attempts; n++) {"
       ⟵ document 0:0 [0,37)
@@ -750,7 +750,7 @@ FRAME 2-2
 
 exports[`the changes document's kinds-replaced draws as it was drawn by hand 1`] = `
 "label width 1
-header none
+header {"isStartable":false,"parts":[{"isBusy":false,"text":"0 of 1 decided"}],"requests":[],"task":null}
 FRAME 1-2
   CURRENT_LINES run 1
     "1" changed none: "export"{data-syntax=keyword} " " "function"{data-syntax=keyword} " " "backoff"{data-syntax=function} "(" "n"{data-change=replaced data-side=before data-source=round data-state=OPEN} ") {"
@@ -777,7 +777,7 @@ FRAME 1-2
 
 exports[`the changes document's kinds-restyled draws as it was drawn by hand 1`] = `
 "label width 1
-header none
+header {"isStartable":false,"parts":[{"isBusy":false,"text":"0 of 1 decided"}],"requests":[],"task":null}
 FRAME 1-1
   CURRENT_LINES run 1
     "1" changed none: "The delay doubles each round, and " "never"{data-change=restyled data-side=before data-source=bold data-state=OPEN} " grows past thirty seconds."
@@ -795,7 +795,7 @@ FRAME 1-1
 
 exports[`the changes document's kinds-replaced-restyled draws as it was drawn by hand 1`] = `
 "label width 1
-header none
+header {"isStartable":false,"parts":[{"isBusy":false,"text":"0 of 1 decided"}],"requests":[],"task":null}
 FRAME 1-1
   CURRENT_LINES run 1
     "1" changed none: "Between attempts it waits " "a second"{data-change=replacedRestyled data-side=before data-source=wait data-state=OPEN} " at most."
@@ -813,7 +813,7 @@ FRAME 1-1
 
 exports[`the changes document's kinds-moved draws as it was drawn by hand 1`] = `
 "label width 1
-header none
+header {"isStartable":false,"parts":[{"isBusy":false,"text":"0 of 1 decided"}],"requests":[],"task":null}
   LINES run 1
     "1" none none: "function"{data-syntax=keyword} " " "isRetryable"{data-syntax=function} "(error) {"
       ⟵ document 0:0 [0,29)
@@ -843,7 +843,7 @@ FRAME 2-3
 
 exports[`the changes document's kinds-latent draws as it was drawn by hand 1`] = `
 "label width 1
-header none
+header {"isStartable":false,"parts":[{"isBusy":false,"text":"0 of 2 decided"}],"requests":[],"task":null}
 FRAME 1-2
   CURRENT_LINES run 1
     "1" changed none: "  " "if"{data-syntax=keyword} " (" "n"{data-change=replaced data-side=before data-source=round data-state=OPEN} " === attempts) " "break"{data-syntax=keyword} ";"
@@ -869,7 +869,7 @@ FRAME 1-2
 
 exports[`the changes document's kinds-carried draws as it was drawn by hand 1`] = `
 "label width 1
-header none
+header {"isStartable":false,"parts":[{"isBusy":false,"text":"0 of 2 decided"}],"requests":[],"task":null}
 FRAME 1-2
   CURRENT_LINES run 1
     "1" none none: "const"{data-syntax=keyword} " DELAY_MS = " "100"{data-syntax=number} ";"
@@ -896,7 +896,7 @@ FRAME 1-2
 
 exports[`the changes document's shape-free draws as it was drawn by hand 1`] = `
 "label width 1
-header none
+header {"isStartable":false,"parts":[{"isBusy":false,"text":"0 of 1 decided"}],"requests":[],"task":null}
 FRAME 1-1
   CURRENT_LINES run 1
     "1" changed none: "  " "const"{data-syntax=keyword} " delay = " "DELAY_MS"{data-change=replaced data-side=before data-source=base data-state=OPEN} " * " "2"{data-syntax=number} ";"
@@ -914,7 +914,7 @@ FRAME 1-1
 
 exports[`the changes document's shape-pressed draws as it was drawn by hand 1`] = `
 "label width 1
-header none
+header {"isStartable":false,"parts":[{"isBusy":false,"text":"0 of 1 decided"}],"requests":[],"task":null}
 FRAME 1-1
   CURRENT_LINES run 1
     "1" changed none: "    " "await"{data-syntax=keyword} " " "sleep"{data-syntax=function} "(" "backoff"{data-syntax=function} "(" "n"{data-change=replaced data-side=before data-source=round data-state=OPEN} "), signal);"
@@ -932,7 +932,7 @@ FRAME 1-1
 
 exports[`the changes document's shape-side-by-side draws as it was drawn by hand 1`] = `
 "label width 1
-header none
+header {"isStartable":false,"parts":[{"isBusy":false,"text":"0 of 2 decided"}],"requests":[],"task":null}
 FRAME 1-1
   CURRENT_LINES run 1
     "1" changed none: "  " "signal"{data-change=replaced data-side=before data-source=abort data-state=OPEN} "?"{data-change=removed data-side=before data-source=chain data-state=OPEN} "." "throwIfAborted"{data-syntax=function} "();"
@@ -955,7 +955,7 @@ FRAME 1-1
 
 exports[`the changes document's shape-stacked draws as it was drawn by hand 1`] = `
 "label width 1
-header none
+header {"isStartable":false,"parts":[{"isBusy":false,"text":"0 of 1 decided"}],"requests":[],"task":null}
 FRAME 1-2
   CURRENT_LINES run 1
     "1" changed none: "const"{data-syntax=keyword} " " "MIN_MS"{data-change=replaced data-side=before data-source=bounds data-state=OPEN} " = " "100"{data-syntax=number} ";"
@@ -979,7 +979,7 @@ FRAME 1-2
 
 exports[`the changes document's shape-lines draws as it was drawn by hand 1`] = `
 "label width 1
-header none
+header {"isStartable":false,"parts":[{"isBusy":false,"text":"0 of 1 decided"}],"requests":[],"task":null}
   LINES run 1
     "1" none none: "export"{data-syntax=keyword} " " "function"{data-syntax=keyword} " " "backoff"{data-syntax=function} "(n) {"
       ⟵ document 0:0 [0,28)
@@ -1005,7 +1005,7 @@ FRAME 2-3
 
 exports[`the changes document's shape-wrapped draws as it was drawn by hand 1`] = `
 "label width 1
-header none
+header {"isStartable":false,"parts":[{"isBusy":false,"text":"0 of 1 decided"}],"requests":[],"task":null}
 FRAME 1-1
   CURRENT_LINES run 1
     "1" changed none: " * @param {{ attempts?: number" ", onRetry?: (error: unknown, n: number) => "{data-change=removed data-side=before data-source=hook data-state=OPEN} "void"{data-change=removed data-side=before data-source=hook data-state=OPEN data-syntax=keyword} " }} [options]"
@@ -1023,7 +1023,7 @@ FRAME 1-1
 
 exports[`the changes document's shape-nested draws as it was drawn by hand 1`] = `
 "label width 1
-header none
+header {"isStartable":false,"parts":[{"isBusy":false,"text":"0 of 2 decided"}],"requests":[],"task":null}
 FRAME 1-1
   CURRENT_LINES run 1
     "1" changed none: "    " "if"{data-syntax=keyword} " (" "n"{data-change=moved data-edit-change=replaced data-edit-source=round data-side=before data-source=order data-state=OPEN} " === attempts"{data-change=moved data-side=before data-source=order data-state=OPEN} " || " "!"{data-change=moved data-side=before data-source=order data-state=OPEN} "isRetryable"{data-change=moved data-side=before data-source=order data-state=OPEN data-syntax=function} "(error)"{data-change=moved data-side=before data-source=order data-state=OPEN} ") " "break"{data-syntax=keyword} ";"
@@ -1048,7 +1048,7 @@ FRAME 1-1
 
 exports[`the changes document's shape-start draws as it was drawn by hand 1`] = `
 "label width 1
-header none
+header {"isStartable":false,"parts":[{"isBusy":false,"text":"0 of 1 decided"}],"requests":[],"task":null}
 FRAME 1-1
   CURRENT_LINES run 1
     "1" changed none: "export"{data-change=removed data-side=before data-source=private data-state=OPEN data-syntax=keyword} " "{data-change=removed data-side=before data-source=private data-state=OPEN} "function"{data-syntax=keyword} " " "backoff"{data-syntax=function} "(n) {}"
@@ -1066,7 +1066,7 @@ FRAME 1-1
 
 exports[`the changes document's moves-frames draws as it was drawn by hand 1`] = `
 "label width 1
-header none
+header {"isStartable":false,"parts":[{"isBusy":false,"text":"0 of 1 decided"}],"requests":[],"task":null}
   LINES run 1
     "1" none none: "const"{data-syntax=keyword} " DELAY_MS = " "100"{data-syntax=number} ";"
       ⟵ document 0:0 [0,21)
@@ -1100,7 +1100,7 @@ FRAME 4-5
 
 exports[`the changes document's moves-line draws as it was drawn by hand 1`] = `
 "label width 1
-header none
+header {"isStartable":false,"parts":[{"isBusy":false,"text":"0 of 1 decided"}],"requests":[],"task":null}
 FRAME 1-1
   CURRENT_LINES run 1
     "1" changed none: "    " "if"{data-syntax=keyword} " (" "n === attempts"{data-change=moved data-side=before data-source=order data-state=OPEN} " || " "!"{data-change=moved data-side=before data-source=order data-state=OPEN} "isRetryable"{data-change=moved data-side=before data-source=order data-state=OPEN data-syntax=function} "(error)"{data-change=moved data-side=before data-source=order data-state=OPEN} ") " "break"{data-syntax=keyword} ";"
@@ -1120,7 +1120,7 @@ FRAME 1-1
 
 exports[`the changes document's lines-removed draws as it was drawn by hand 1`] = `
 "label width 1
-header none
+header {"isStartable":false,"parts":[{"isBusy":false,"text":"0 of 1 decided"}],"requests":[],"task":null}
 FRAME 1-3
   CURRENT_LINES run 1
     "1" none none: "  " "if"{data-syntax=keyword} " (n === attempts) " "break"{data-syntax=keyword} ";"
@@ -1144,7 +1144,7 @@ FRAME 1-3
 
 exports[`the changes document's lines-inserted draws as it was drawn by hand 1`] = `
 "label width 1
-header none
+header {"isStartable":false,"parts":[{"isBusy":false,"text":"0 of 1 decided"}],"requests":[],"task":null}
 FRAME 1-2
   CURRENT_LINES run 1
     "1" none none: "  " "const"{data-syntax=keyword} " delay = DELAY_MS * " "2"{data-syntax=number} " ** (n - " "1"{data-syntax=number} ");"
@@ -1169,7 +1169,7 @@ FRAME 1-2
 
 exports[`the changes document's lines-blank draws as it was drawn by hand 1`] = `
 "label width 1
-header none
+header {"isStartable":false,"parts":[{"isBusy":false,"text":"0 of 1 decided"}],"requests":[],"task":null}
   LINES run 1
     "1" none none: "const"{data-syntax=keyword} " ATTEMPTS = " "5"{data-syntax=number} ";"
       ⟵ document 0:0 [0,19)
@@ -1191,7 +1191,7 @@ FRAME 2-3
 
 exports[`the changes document's lines-all draws as it was drawn by hand 1`] = `
 "label width 1
-header none
+header {"isStartable":false,"parts":[{"isBusy":false,"text":"0 of 1 decided"}],"requests":[],"task":null}
   LINES run 1
     "1" none none: "export"{data-syntax=keyword} " " "function"{data-syntax=keyword} " " "backoff"{data-syntax=function} "(n) {"
       ⟵ document 0:0 [0,28)
@@ -1217,7 +1217,7 @@ FRAME 2-4
 
 exports[`the changes document's threads-frames draws as it was drawn by hand 1`] = `
 "label width 1
-header none
+header {"isStartable":false,"parts":[{"isBusy":false,"text":"0 of 1 decided"}],"requests":[],"task":null}
 FRAME 1-2
   CURRENT_LINES run 1
     "1" changed none: "export"{data-syntax=keyword} " " "function"{data-syntax=keyword} " " "backoff"{data-syntax=function} "(" "n"{data-change=replaced data-side=before data-source=round data-state=OPEN} ") {"
@@ -1263,7 +1263,7 @@ FRAME 5-5
 
 exports[`the changes document's pointing-proposal draws as it was drawn by hand 1`] = `
 "label width 1
-header none
+header {"isStartable":false,"parts":[{"isBusy":false,"text":"0 of 2 decided"}],"requests":[],"task":null}
 FRAME 1-3
   CURRENT_LINES run 1
     "1" changed none: "export"{data-syntax=keyword} " " "function"{data-syntax=keyword} " " "backoff"{data-syntax=function} "(" "n"{data-change=replaced data-side=before data-source=round data-state=OPEN} ") {"
@@ -1304,7 +1304,7 @@ FRAME 1-3
 
 exports[`the changes document's folding-peek draws as it was drawn by hand 1`] = `
 "label width 1
-header none
+header {"isStartable":false,"parts":[{"isBusy":false,"text":"0 of 2 decided"}],"requests":[],"task":null}
 FRAME 1-3
   CURRENT_LINES run 1
     "1" changed none: "export"{data-syntax=keyword} " " "function"{data-syntax=keyword} " " "backoff"{data-syntax=function} "(" "n"{data-change=replaced data-side=before data-source=round data-state=OPEN} ") {"
@@ -1343,7 +1343,7 @@ FRAME 1-3
 
 exports[`the changes document's folding-removals draws as it was drawn by hand 1`] = `
 "label width 1
-header none
+header {"isStartable":false,"parts":[{"isBusy":false,"text":"0 of 1 decided"}],"requests":[],"task":null}
 FRAME 1-2
   CURRENT_LINES run 1
     "1" removed none: "// Retries a flaky async call, backing off each time,"{data-change=removed data-side=before data-source=header data-state=OPEN data-syntax=comment}
@@ -1364,7 +1364,7 @@ FRAME 1-2
 
 exports[`the changes document's marks-notch draws as it was drawn by hand 1`] = `
 "label width 1
-header none
+header {"isStartable":false,"parts":[{"isBusy":false,"text":"0 of 1 decided"}],"requests":[],"task":null}
 FRAME 1-1
   CURRENT_LINES run 1
     "1" changed none: "    " "await"{data-syntax=keyword} " " "sleep"{data-syntax=function} "(" "backoff"{data-syntax=function} "(n)" ", signal"{data-change=removed data-side=before data-source=signal data-state=OPEN} ");"
@@ -1382,7 +1382,7 @@ FRAME 1-1
 
 exports[`the changes document's marks-lines draws as it was drawn by hand 1`] = `
 "label width 1
-header none
+header {"isStartable":false,"parts":[{"isBusy":false,"text":"0 of 1 decided"}],"requests":[],"task":null}
 FRAME 1-3
   CURRENT_LINES run 1
     "1" none none: "  " "if"{data-syntax=keyword} " (n === attempts) " "break"{data-syntax=keyword} ";"
@@ -1406,7 +1406,7 @@ FRAME 1-3
 
 exports[`the changes document's marks-one-point draws as it was drawn by hand 1`] = `
 "label width 1
-header none
+header {"isStartable":false,"parts":[{"isBusy":false,"text":"0 of 2 decided"}],"requests":[],"task":null}
 FRAME 1-1
   CURRENT_LINES run 1
     "1" changed none: "function"{data-syntax=keyword} " " "retry"{data-syntax=function} "(attempt" ", options"{data-change=removed data-side=before data-source=options data-state=OPEN} ", legacy"{data-change=removed data-side=before data-source=legacy data-state=OPEN} ") {}"
@@ -1429,7 +1429,7 @@ FRAME 1-1
 
 exports[`the changes document's marks-beside-ring draws as it was drawn by hand 1`] = `
 "label width 1
-header none
+header {"isStartable":false,"parts":[{"isBusy":false,"text":"0 of 2 decided"}],"requests":[],"task":null}
 FRAME 1-1
   CURRENT_LINES run 1
     "1" changed none: "  " "signal"{data-change=replaced data-side=before data-source=abort data-state=OPEN} "?"{data-change=removed data-side=before data-source=chain data-state=OPEN} "." "throwIfAborted"{data-syntax=function} "();"
@@ -1452,7 +1452,7 @@ FRAME 1-1
 
 exports[`the changes document's marks-in-move draws as it was drawn by hand 1`] = `
 "label width 1
-header none
+header {"isStartable":false,"parts":[{"isBusy":false,"text":"0 of 2 decided"}],"requests":[],"task":null}
 FRAME 1-2
   CURRENT_LINES run 1
     "1" none none: "const"{data-syntax=keyword} " DELAY_MS = " "100"{data-syntax=number} ";"
@@ -1477,7 +1477,7 @@ FRAME 1-2
 
 exports[`the changes document's marks-strip draws as it was drawn by hand 1`] = `
 "label width 1
-header none
+header {"isStartable":false,"parts":[{"isBusy":false,"text":"0 of 1 decided"}],"requests":[],"task":null}
 FRAME 1-2
   CURRENT_LINES run 1
     "1" removed none: "// Retries a flaky async call, backing off each time,"{data-change=removed data-side=before data-source=header data-state=OPEN data-syntax=comment}
@@ -1498,7 +1498,7 @@ FRAME 1-2
 
 exports[`the changes document's marks-end draws as it was drawn by hand 1`] = `
 "label width 1
-header none
+header {"isStartable":false,"parts":[{"isBusy":false,"text":"0 of 1 decided"}],"requests":[],"task":null}
 FRAME 1-3
   CURRENT_LINES run 1
     "1" none none: "function"{data-syntax=keyword} " " "sleep"{data-syntax=function} "(ms) {}"
@@ -1520,7 +1520,7 @@ FRAME 1-3
 
 exports[`the changes document's marks-whitespace draws as it was drawn by hand 1`] = `
 "label width 1
-header none
+header {"isStartable":false,"parts":[{"isBusy":false,"text":"0 of 1 decided"}],"requests":[],"task":null}
 FRAME 1-1
   CURRENT_LINES run 1
     "1" changed none: "  "{data-change=removed data-side=before data-source=indent data-state=OPEN} "  signal?." "throwIfAborted"{data-syntax=function} "();"
@@ -1538,7 +1538,7 @@ FRAME 1-1
 
 exports[`the changes document's marks-start-to-middle draws as it was drawn by hand 1`] = `
 "label width 1
-header none
+header {"isStartable":false,"parts":[{"isBusy":false,"text":"0 of 1 decided"}],"requests":[],"task":null}
 FRAME 1-2
   CURRENT_LINES run 1
     "1" removed none: "// 100ms, 200ms, 400ms, and so on,"{data-change=removed data-side=before data-source=words data-state=OPEN data-syntax=comment}
@@ -1558,7 +1558,7 @@ FRAME 1-2
 
 exports[`the changes document's marks-between-lines draws as it was drawn by hand 1`] = `
 "label width 1
-header none
+header {"isStartable":false,"parts":[{"isBusy":false,"text":"0 of 2 decided"}],"requests":[],"task":null}
 FRAME 1-2
   CURRENT_LINES run 1
     "1" removed none: "// backoff"{data-change=removed data-side=before data-source=comment data-state=OPEN data-syntax=comment}
@@ -1583,7 +1583,7 @@ FRAME 1-2
 
 exports[`the scene proposals-code draws as it was drawn by hand 1`] = `
 "label width 2
-header none
+header {"isStartable":false,"parts":[{"isBusy":false,"text":"0 of 3 decided"}],"requests":[],"task":null}
   LINES run 1
     "1" none none: "// counts the words in a text, as a person reading it would"
       ⟵ document 0:0 [0,59)
@@ -1678,7 +1678,7 @@ FRAME 11-17
 
 exports[`the scene proposals-thread draws as it was drawn by hand 1`] = `
 "label width 2
-header none
+header {"isStartable":false,"parts":[{"isBusy":false,"text":"0 of 2 decided"}],"requests":[],"task":null}
   LINES run 1
     "1" none none: "// Retries a flaky async call, backing off further each time, until it"{data-syntax=comment}
       ⟵ document 0:0 [0,70)
@@ -1875,7 +1875,7 @@ FRAME 31-34
 
 exports[`the scene proposals-prose draws as it was drawn by hand 1`] = `
 "label width 2
-header none
+header {"isStartable":false,"parts":[{"isBusy":false,"text":"0 of 4 decided"}],"requests":[],"task":null}
   LINES run 1
     "1" none none: "Moving the workshop"
       ⟵ document 0:0 [0,19)

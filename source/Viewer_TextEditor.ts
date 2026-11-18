@@ -39,6 +39,9 @@ import {
   type _Item_Menu_,
   type _Target_Request_,
   type __BASE_Target_Request_,
+  type _DOCUMENT_Target_Request_,
+  type _TASK_Target_Request_,
+  type _Aim_Request_,
   type _Selected_Text_,
   type _Piece_Text_,
   type _Form_Request_
@@ -78,6 +81,7 @@ export {
   type _CHOOSE_MENU__Command_,
   type _CLOSE_MENU__Command_,
   type _OPEN_REQUEST__Command_,
+  type _CLOSE_CARD__Command_,
   type _SEND_REQUEST__Command_,
   type _CLOSE_REQUEST__Command_,
   type _DISCARD_Command_,
@@ -435,7 +439,7 @@ interface _ACTION_Asked_Host_ extends __BASE_Asked_Host_<"ACTION"> {
 }
 
 interface _REQUEST_Asked_Host_ extends __BASE_Asked_Host_<"REQUEST"> {
-  selected: _Selected_Text_ | null
+  aim: _Aim_Request_
   notes: string
   isStarting: boolean
 }
@@ -497,7 +501,7 @@ interface _Adapter_Event_ {
   commandOf__Event: (event: Event) => _Command_TextEditor_ | null
 }
 
-type _Command_TextEditor_ = _POINT_Command_ | _JUMP_Command_ | _FOLD_Command_ | _DRAFT_Command_ | _ACT_Command_ | _CONFIRM_Command_ | _REMOVE_Command_ | _START_Command_ | _TASK_Command_ | _RERUN_Command_ | _SEND_Command_ | _OPEN_MENU__Command_ | _STEP_MENU__Command_ | _CHOOSE_MENU__Command_ | _CLOSE_MENU__Command_ | _OPEN_REQUEST__Command_ | _SEND_REQUEST__Command_ | _CLOSE_REQUEST__Command_ | _DISCARD_Command_ | _VISIT_Command_ | _PLACE_Command_ | _DRAG_Command_ | _RELEASE_Command_ | _MOVE_Command_ | _EXTEND_Command_ | _INSERT_Command_ | _REPLACE_Command_ | _DELETE_Command_ | _UNDO_Command_ | _REDO_Command_ | _COPY_Command_ | _CUT_Command_ | _PASTE_Command_
+type _Command_TextEditor_ = _POINT_Command_ | _JUMP_Command_ | _FOLD_Command_ | _DRAFT_Command_ | _ACT_Command_ | _CONFIRM_Command_ | _REMOVE_Command_ | _START_Command_ | _TASK_Command_ | _RERUN_Command_ | _SEND_Command_ | _OPEN_MENU__Command_ | _STEP_MENU__Command_ | _CHOOSE_MENU__Command_ | _CLOSE_MENU__Command_ | _OPEN_REQUEST__Command_ | _CLOSE_CARD__Command_ | _SEND_REQUEST__Command_ | _CLOSE_REQUEST__Command_ | _DISCARD_Command_ | _VISIT_Command_ | _PLACE_Command_ | _DRAG_Command_ | _RELEASE_Command_ | _MOVE_Command_ | _EXTEND_Command_ | _INSERT_Command_ | _REPLACE_Command_ | _DELETE_Command_ | _UNDO_Command_ | _REDO_Command_ | _COPY_Command_ | _CUT_Command_ | _PASTE_Command_
 
 interface __BASE_Command_<Kind extends string> {
   kind: Kind
@@ -568,8 +572,10 @@ interface _CHOOSE_MENU__Command_ extends __BASE_Command_<"CHOOSE_MENU"> {
 interface _CLOSE_MENU__Command_ extends __BASE_Command_<"CLOSE_MENU"> {}
 
 interface _OPEN_REQUEST__Command_ extends __BASE_Command_<"OPEN_REQUEST"> {
-  point_Screen: _Point_Screen_
+  target: _DOCUMENT_Target_Request_ | _TASK_Target_Request_
 }
+
+interface _CLOSE_CARD__Command_ extends __BASE_Command_<"CLOSE_CARD"> {}
 
 interface _SEND_REQUEST__Command_ extends __BASE_Command_<"SEND_REQUEST"> {
   notes: string
@@ -1147,15 +1153,31 @@ function OPEN_REQUEST_stateAfter__Command({
     ...state,
     menu: null,
     request: {
-      point_Screen: command.point_Screen,
-      label: "Request a change to this document",
+      point_Screen: null,
+      label: LABELMAP__KIND_TARGET[command.target.kind],
       quote: null,
       isStartable: true,
-      target: {
-        kind: "DOCUMENT"
-      }
+      target: command.target
     },
     focus_Asking: "REQUEST"
+  }
+}
+
+type _LabelMap__Kind_Target_ = {
+  [Kind in (_DOCUMENT_Target_Request_ | _TASK_Target_Request_)["kind"]]: string
+}
+
+const LABELMAP__KIND_TARGET: _LabelMap__Kind_Target_ = {
+  DOCUMENT: "Request a change to this document",
+  TASK: "Add a request to the task"
+}
+
+function CLOSE_CARD_stateAfter__Command({
+  state
+}: _Api___stateAfter__Command_<"CLOSE_CARD">): _State__Viewer_TextEditor_ {
+  return {
+    ...state,
+    isFocusing_Input: true
   }
 }
 
@@ -1249,7 +1271,10 @@ const ASKEDMAP__KIND_TARGET: _AskedMap__Kind_Target_ = {
     isStarting
   }) => ({
     kind: "REQUEST",
-    selected: target.selected,
+    aim: {
+      kind: "SELECTION",
+      selected: target.selected
+    },
     notes,
     isStarting
   }),
@@ -1258,7 +1283,20 @@ const ASKEDMAP__KIND_TARGET: _AskedMap__Kind_Target_ = {
     isStarting
   }) => ({
     kind: "REQUEST",
-    selected: null,
+    aim: {
+      kind: "DOCUMENT"
+    },
+    notes,
+    isStarting
+  }),
+  TASK: ({
+    notes,
+    isStarting
+  }) => ({
+    kind: "REQUEST",
+    aim: {
+      kind: "TASK"
+    },
     notes,
     isStarting
   }),
@@ -2484,6 +2522,7 @@ const HANDLERMAP__TEXTEDITOR: _HandlerMap__TextEditor_ = {
   CHOOSE_MENU: CHOOSE_MENU_stateAfter__Command,
   CLOSE_MENU: CLOSE_MENU_stateAfter__Command,
   OPEN_REQUEST: OPEN_REQUEST_stateAfter__Command,
+  CLOSE_CARD: CLOSE_CARD_stateAfter__Command,
   SEND_REQUEST: SEND_REQUEST_stateAfter__Command,
   CLOSE_REQUEST: CLOSE_REQUEST_stateAfter__Command,
   DISCARD: DISCARD_stateAfter__Command,

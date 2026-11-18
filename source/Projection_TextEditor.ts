@@ -27,6 +27,11 @@ import {
   type _Status_Request_,
   type _Stale_Item_,
   type _Task_Header_,
+  type _Figure_Card_,
+  type _Aim_Request_,
+  type _Request_Item_,
+  type _State_Task_,
+  type _Action_Task_,
   type _Header_ViewModel_,
   type _Part_Header_,
   type _Action_Item_,
@@ -60,6 +65,9 @@ export {
   viewModelOf__Model,
   type _Proposal_Host_,
   type _Request_Host_,
+  type _Task_Host_,
+  type _Request_Task_,
+  type _Counts_Proposals_,
   type _Landed_Round_,
   type _Module_Reading_,
   type _Api___boxesOf__Replacement_,
@@ -70,9 +78,8 @@ export {
 interface _Api___viewModelOf__Model_<State> {
   model_TextEditor: _Model_TextEditor_
   proposals: Array<_Proposal_Host_>
-  requests_Document: Array<_Request_Host_>
+  task: _Task_Host_ | null
   rounds_Landed: Array<_Landed_Round_>
-  task_Header: _Task_Header_ | null
   ranges_Frame: Array<_Range_Lines_>
   module_Language: _Module_Language_<State>
   module_Reading: _Module_Reading_
@@ -81,9 +88,8 @@ interface _Api___viewModelOf__Model_<State> {
 function viewModelOf__Model<State>({
   model_TextEditor,
   proposals,
-  requests_Document,
+  task,
   rounds_Landed,
-  task_Header,
   ranges_Frame,
   module_Language,
   module_Reading
@@ -147,13 +153,12 @@ function viewModelOf__Model<State>({
           line_First: line_Next
         })
       ],
-      pieces: requests_Document.flatMap((request_Host) => request_Host.selected?.pieces ?? [])
+      pieces: (task?.requests ?? []).flatMap((request_Task) => request_Task.status !== "ADDRESSED" && request_Task.aim.kind === "SELECTION" ? request_Task.aim.selected.pieces : [])
     })),
     header: headerOf__Proposals({
       model_TextEditor,
       proposals,
-      requests_Document,
-      task_Header
+      task
     })
   }
 }
@@ -196,24 +201,24 @@ function requestedIn__Blocks({
 interface _Api___headerOf__Proposals_ {
   model_TextEditor: _Model_TextEditor_
   proposals: Array<_Proposal_Host_>
-  requests_Document: Array<_Request_Host_>
-  task_Header: _Task_Header_ | null
+  task: _Task_Host_ | null
 }
 
 function headerOf__Proposals({
   model_TextEditor,
   proposals,
-  requests_Document,
-  task_Header
-}: _Api___headerOf__Proposals_): _Header_ViewModel_ | null {
+  task
+}: _Api___headerOf__Proposals_): _Header_ViewModel_ {
+  const requests_Task = task?.requests ?? []
+  const requests_Here = requests_Task.filter((request_Task) => request_Task.aim.kind !== "TASK")
   const proposals_Here = proposals.filter((proposal_Host) => model_TextEditor.proposed.some((changes_Source) => changes_Source.source === proposal_Host.source && changes_Source.changes.length > 0))
   const count_Decided = proposals_Here.filter((proposal_Host) => proposal_Host.state !== "OPEN").length
-  const requests_Here = [
+  const requests_Counted = [
     ...proposals_Here.flatMap((proposal_Host) => proposal_Host.requests),
-    ...requests_Document
+    ...requests_Task
   ]
-  const count_Queued = requests_Here.filter((request_Host) => request_Host.status === "QUEUED").length
-  const count_Running = requests_Here.filter((request_Host) => request_Host.status === "RUNNING").length
+  const count_Queued = requests_Counted.filter((request_Host) => request_Host.status === "QUEUED").length
+  const count_Running = requests_Counted.filter((request_Host) => request_Host.status === "RUNNING").length
   const parts: Array<_Part_Header_> = [
     ...proposals_Here.length === 0
       ? []
@@ -236,24 +241,208 @@ function headerOf__Proposals({
       : [
         {
           text: `${count_Running} in progress`,
-          isBusy: task_Header === null || !task_Header.isBusy
+          isBusy: task === null || task.state !== "WORKING"
         }
       ]
   ]
-  return task_Header === null && requests_Here.length === 0
+  const states_Here = proposals_Here.map((proposal_Host): _State_Proposal_ => proposal_Host.state !== "OPEN"
+    ? proposal_Host.state
+    : proposal_Host.requests.some((request_Host) => request_Host.status === "RUNNING")
+      ? "REVISING"
+      : proposal_Host.requests.some((request_Host) => request_Host.status === "QUEUED")
+        ? "REQUESTED"
+        : "OPEN")
+  const counts_Here: _Counts_Proposals_ = {
+    OPEN: states_Here.filter((state) => state === "OPEN").length,
+    REQUESTED: states_Here.filter((state) => state === "REQUESTED").length,
+    REVISING: states_Here.filter((state) => state === "REVISING").length,
+    ACCEPTED: states_Here.filter((state) => state === "ACCEPTED").length,
+    REJECTED: states_Here.filter((state) => state === "REJECTED").length,
+    WITHDRAWN: states_Here.filter((state) => state === "WITHDRAWN").length
+  }
+  const figures = task === null
     ? null
-    : {
-      task: task_Header,
-      parts,
-      isStartable: requests_Document.some((request_Host) => request_Host.status === "QUEUED") || proposals_Here.some((proposal_Host) => proposal_Host.state === "OPEN" && proposal_Host.requests.some((request_Host) => request_Host.status === "QUEUED") && !proposal_Host.requests.some((request_Host) => request_Host.status === "RUNNING")),
-      requests: requests_Document.map((request_Host) => ({
-        id: request_Host.id,
-        notes: request_Host.notes,
-        quote: request_Host.selected?.text ?? null,
-        isRunning: request_Host.status === "RUNNING",
-        isStartable: request_Host.status === "QUEUED"
-      }))
+    : figuresOf__Counts({
+      counts_Task: task.counts_Proposals,
+      counts_Here,
+      count_Documents: task.count_Documents
+    })
+  return {
+    task: task === null || figures === null
+      ? null
+      : {
+        id: task.id,
+        name: task.name,
+        state: task.state,
+        label_State: LABELMAP__STATE_TASK[task.state],
+        summary: task.summary,
+        reason: task.reason,
+        figures: figures.task,
+        figures_Document: figures.document,
+        summary_Document: task.summary_Document,
+        requests: requests_Task.filter((request_Task) => request_Task.aim.kind === "TASK").map(itemOf__Request_Task),
+        actions: task.actions,
+        actions_Document: task.actions_Document
+      },
+    parts,
+    isStartable: requests_Task.some((request_Task) => request_Task.status === "QUEUED") || proposals_Here.some((proposal_Host) => proposal_Host.state === "OPEN" && proposal_Host.requests.some((request_Host) => request_Host.status === "QUEUED") && !proposal_Host.requests.some((request_Host) => request_Host.status === "RUNNING")),
+    requests: requests_Here.map(itemOf__Request_Task)
+  }
+}
+
+function itemOf__Request_Task(
+  request_Task: _Request_Task_
+): _Request_Item_ {
+  return {
+    id: request_Task.id,
+    notes: request_Task.notes,
+    quote: request_Task.aim.kind === "SELECTION" ? request_Task.aim.selected.text : null,
+    progress: request_Task.status === "ADDRESSED"
+      ? addressedOf__Request(request_Task)
+      : PROGRESSMAP__STATUS_REQUEST[request_Task.status],
+    isStartable: request_Task.status === "QUEUED",
+    isRemovable: request_Task.status === "QUEUED"
+  }
+}
+
+interface _Api___figuresOf__Counts_ {
+  counts_Task: _Counts_Proposals_
+  counts_Here: _Counts_Proposals_
+  count_Documents: number
+}
+
+interface _Figures_Card_ {
+  task: Array<_Figure_Card_>
+  document: Array<_Figure_Card_>
+}
+
+function figuresOf__Counts({
+  counts_Task,
+  counts_Here,
+  count_Documents
+}: _Api___figuresOf__Counts_): _Figures_Card_ {
+  const total_Task = totalOf__Counts(counts_Task)
+  const total_Here = totalOf__Counts(counts_Here)
+  const decided_Task = decidedOf__Counts(counts_Task)
+  const decided_Here = decidedOf__Counts(counts_Here)
+  if (total_Task === 0) {
+    return {
+      task: [],
+      document: []
     }
+  }
+  return STATES__PROPOSAL.every((state) => counts_Task[state] === counts_Here[state])
+    ? {
+      task: [
+        {
+          label: "Proposals",
+          value: `${decided_Task} of ${total_Task} decided`,
+          more: breakdownOf__Counts(counts_Task)
+        }
+      ],
+      document: []
+    }
+    : {
+      task: [
+        {
+          label: "Task proposals",
+          value: `${decided_Task} of ${total_Task} decided`,
+          more: breakdownOf__Counts(counts_Task)
+        },
+        {
+          label: "Files",
+          value: String(count_Documents),
+          more: ""
+        }
+      ],
+      document: total_Here === 0
+        ? [
+          {
+            label: "Proposals here",
+            value: `0 of ${total_Task}`,
+            more: ""
+          }
+        ]
+        : [
+          {
+            label: "Proposals here",
+            value: `${total_Here} of ${total_Task}`,
+            more: breakdownOf__Counts(counts_Here)
+          },
+          {
+            label: "Decided",
+            value: `${decided_Here} of ${total_Here}`,
+            more: ""
+          }
+        ]
+    }
+}
+
+function totalOf__Counts(
+  counts_Proposals: _Counts_Proposals_
+): number {
+  return STATES__PROPOSAL.reduce(
+    (sum, state) => sum + counts_Proposals[state],
+    0
+  )
+}
+
+function decidedOf__Counts(
+  counts_Proposals: _Counts_Proposals_
+): number {
+  return counts_Proposals.ACCEPTED + counts_Proposals.REJECTED + counts_Proposals.WITHDRAWN
+}
+
+function breakdownOf__Counts(
+  counts_Proposals: _Counts_Proposals_
+): string {
+  return STATES__PROPOSAL.flatMap((state) => counts_Proposals[state] === 0 ? [] : [`${counts_Proposals[state]} ${LABELMAP__STATE_PROPOSAL[state]}`]).join(" · ")
+}
+
+const STATES__PROPOSAL: Array<_State_Proposal_> = ["OPEN", "REQUESTED", "REVISING", "ACCEPTED", "REJECTED", "WITHDRAWN"]
+
+type _LabelMap__State_Proposal_ = {
+  [State in _State_Proposal_]: string
+}
+
+const LABELMAP__STATE_PROPOSAL: _LabelMap__State_Proposal_ = {
+  OPEN: "to review",
+  REQUESTED: "revision requested",
+  REVISING: "revising",
+  ACCEPTED: "accepted",
+  REJECTED: "rejected",
+  WITHDRAWN: "withdrawn"
+}
+
+type _LabelMap__State_Task_ = {
+  [State in _State_Task_]: string
+}
+
+const LABELMAP__STATE_TASK: _LabelMap__State_Task_ = {
+  DRAFT: "a draft, not started",
+  WORKING: "the agent's working on it",
+  YOUR_TURN: "waiting on you",
+  DONE: "done",
+  CANCELED: "canceled"
+}
+
+type _ProgressMap__Status_Request_ = {
+  [Status in _Status_Request_]: string | null
+}
+
+const PROGRESSMAP__STATUS_REQUEST: _ProgressMap__Status_Request_ = {
+  QUEUED: null,
+  RUNNING: "in progress",
+  ADDRESSED: "addressed"
+}
+
+function addressedOf__Request(
+  request_Task: _Request_Task_
+): string {
+  const count = request_Task.sources_Answering.length
+  return count === 0
+    ? "addressed · nothing to change"
+    : `addressed · ${count} ${count === 1 ? "proposal" : "proposals"}`
 }
 
 interface _Api___markedOf__Lines_ {
@@ -329,6 +518,32 @@ interface _Request_Host_ {
   notes: string
   selected: _Selected_Text_ | null
   status: _Status_Request_
+}
+
+interface _Task_Host_ {
+  id: string
+  name: string
+  state: _State_Task_
+  summary: string
+  reason: string
+  counts_Proposals: _Counts_Proposals_
+  count_Documents: number
+  summary_Document: string
+  requests: Array<_Request_Task_>
+  actions: Array<_Action_Task_>
+  actions_Document: Array<_Action_Task_>
+}
+
+type _Counts_Proposals_ = {
+  [State in _State_Proposal_]: number
+}
+
+interface _Request_Task_ {
+  id: string
+  notes: string
+  aim: _Aim_Request_
+  status: _Status_Request_
+  sources_Answering: Array<string>
 }
 
 interface _Landed_Round_ {
@@ -2365,8 +2580,9 @@ function frameOf__Drawn({
           id: request_Host.id,
           notes: request_Host.notes,
           quote: request_Host.selected?.text ?? null,
-          isRunning: request_Host.status === "RUNNING",
-          isStartable: isOpen && !isRunning && request_Host.status === "QUEUED"
+          progress: PROGRESSMAP__STATUS_REQUEST[request_Host.status],
+          isStartable: isOpen && !isRunning && request_Host.status === "QUEUED",
+          isRemovable: request_Host.status === "QUEUED"
         })),
         isRunning,
         isStartable: isOpen && !isRunning && isQueued,

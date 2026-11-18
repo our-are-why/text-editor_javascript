@@ -345,6 +345,7 @@ const markdown: _Example_ = {
     const switcher = document.createElement("div")
     switcher.className = "perspectives"
     const containerElement = document.createElement("div")
+    containerElement.className = "host"
     root.append(switcher, containerElement)
     const editor = hostedOf__Editor({
       containerElement,
@@ -352,7 +353,21 @@ const markdown: _Example_ = {
       model_TextEditor: model_readme,
       proposals: proposals_readme,
       rounds_Landed: [],
-      label_Task: "Bring the README up to date",
+      about_Task: {
+        id: "readme",
+        name: "Bring the README up to date",
+        summary: "Says what retry retries and how long it waits, with the module's cap and its options.",
+        summary_Document: "In the README: what's retried, the delays, and the options, moved before the example.",
+        counts_Elsewhere: {
+          OPEN: 0,
+          REQUESTED: 0,
+          REVISING: 0,
+          ACCEPTED: 0,
+          REJECTED: 0,
+          WITHDRAWN: 0
+        },
+        count_Documents: 1
+      },
       ranges_Frame: ranges_readme,
       log
     })

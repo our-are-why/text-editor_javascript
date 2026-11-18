@@ -410,6 +410,7 @@ const javascript: _Example_ = {
   // proposals into the stage; each edit reported as it's told
   mount: (root, log) => {
     const containerElement = document.createElement("div")
+    containerElement.className = "host"
     root.append(containerElement)
     hostedOf__Editor({
       containerElement,
@@ -417,7 +418,21 @@ const javascript: _Example_ = {
       model_TextEditor: model_retry,
       proposals: proposals_retry,
       rounds_Landed: rounds_retry,
-      label_Task: "Tidy the retry loop",
+      about_Task: {
+        id: "retry-tidy",
+        name: "Tidy the retry loop",
+        summary: "Keeps every error, names the attempt counter round, caps the delay, and stops once the caller aborts; drops the onRetry hook and the opening comment.",
+        summary_Document: "In retry.js: the loop's errors, its counter's name, its delays and its abort, and two things it no longer needs.",
+        counts_Elsewhere: {
+          OPEN: 3,
+          REQUESTED: 0,
+          REVISING: 1,
+          ACCEPTED: 2,
+          REJECTED: 0,
+          WITHDRAWN: 0
+        },
+        count_Documents: 2
+      },
       ranges_Frame: ranges_retry,
       log
     })

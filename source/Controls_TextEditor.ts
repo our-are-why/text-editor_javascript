@@ -337,18 +337,24 @@ const CONTROLS__TEXTEDITOR: Array<_Adapter_Event_> = [
   {
     event: "click",
     commandOf__Event: (event) => {
-      const element_Ask = event.target instanceof Element ? event.target.closest(".header_htmlView [data-ask='DOCUMENT']") : null
-      const rect = element_Ask?.getBoundingClientRect()
-      return rect === undefined
-        ? null
-        : {
+      const kind = event.target instanceof Element ? event.target.closest(".header_htmlView [data-ask]")?.getAttribute("data-ask") : null
+      return kind === "DOCUMENT" || kind === "TASK"
+        ? {
           kind: "OPEN_REQUEST",
-          point_Screen: {
-            x: rect.left,
-            y: rect.bottom + 4
+          target: {
+            kind
           }
         }
+        : null
     }
+  },
+  {
+    event: "keydown",
+    commandOf__Event: (event) => event instanceof KeyboardEvent && event.key === "Escape" && event.target instanceof Element && event.target.closest(".task_Header_htmlView") !== null
+      ? {
+        kind: "CLOSE_CARD"
+      }
+      : null
   },
   {
     event: "click",
@@ -493,7 +499,7 @@ interface _Asked_Request_ {
 function askedOf__Request({
   element
 }: _Api___askedOf__Request_): _Asked_Request_ | null {
-  if (element.closest(".requests_Document_htmlView") !== null) {
+  if (element.closest(".card_Task_htmlView") !== null) {
     return {
       source: null
     }

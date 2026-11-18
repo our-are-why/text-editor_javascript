@@ -24,9 +24,8 @@ if (result.kind === "REFUSED") throw new Error("refused")
 const viewModel = viewModelOf__Model({
   model_TextEditor: result.model_TextEditor,
   proposals: [{ source: "digit", title: "Write two as a digit", state: "OPEN", status: "", rationale: "", requests: [], actions: actions_Review, attributes: {} }],
-  requests_Document: [],
   rounds_Landed: [],
-  task_Header: null,
+  task: null,
   ranges_Frame: [],
   module_Language: MODULE_PLAINTEXT,
   module_Reading: MODULE_READING_TEXT
@@ -225,9 +224,8 @@ test("a selection all in one text, but not running on in it, as across a move's 
   const viewModel_Move = viewModelOf__Model({
     model_TextEditor: result_Move.model_TextEditor,
     proposals: [{ source: "swap", title: "Beta first", state: "OPEN", status: "", rationale: "", requests: [], actions: actions_Review, attributes: {} }],
-    requests_Document: [],
     rounds_Landed: [],
-    task_Header: null,
+    task: null,
     ranges_Frame: [],
     module_Language: MODULE_PLAINTEXT,
     module_Reading: MODULE_READING_TEXT
@@ -263,9 +261,8 @@ function viewModelWith(
   return viewModelOf__Model({
     model_TextEditor: result_Yours.model_TextEditor,
     proposals: [{ source: "yours", title: "Your edits", state: "OPEN", status: "", rationale: "", requests: [], actions: [], attributes: {} }],
-    requests_Document: [],
     rounds_Landed: [],
-    task_Header: null,
+    task: null,
     ranges_Frame: [],
     module_Language: MODULE_PLAINTEXT,
     module_Reading: MODULE_READING_TEXT
@@ -389,7 +386,7 @@ test("a right-click's menu offers what can be asked there: on a proposal's words
   expect(requested.request).toBe(null)
   expect(asked).toEqual([
     { kind: "ACTION", source: "digit", command: "revise", notes: "Spell it out.", selected: { pieces: [{ id_Text: digit_Text, range: { from: { line: 0, offset: 0 }, to: { line: 0, offset: 1 } } }], text: "2" } },
-    { kind: "REQUEST", selected: { pieces: [{ id_Text: { kind: "DOCUMENT" }, range: { from: { line: 0, offset: 0 }, to: { line: 0, offset: 3 } } }], text: "one" }, notes: "Say which one.", isStarting: false }
+    { kind: "REQUEST", aim: { kind: "SELECTION", selected: { pieces: [{ id_Text: { kind: "DOCUMENT" }, range: { from: { line: 0, offset: 0 }, to: { line: 0, offset: 3 } } }], text: "one" } }, notes: "Say which one.", isStarting: false }
   ])
 })
 
@@ -420,18 +417,17 @@ test("revisions queued: a revision's notes added, asked of the host, its draft c
     { kind: "ACTION", source: "digit", command: "revise", notes: "Spell it out.", selected: { pieces: [{ id_Text: digit_Text, range: { from: { line: 0, offset: 0 }, to: { line: 0, offset: 1 } } }], text: "2" } },
     { kind: "START", scope: { kind: "PROPOSAL", source: "digit" } },
     { kind: "START", scope: { kind: "PROPOSAL", source: "digit" } },
-    { kind: "REQUEST", selected: { pieces: [{ id_Text: { kind: "DOCUMENT" }, range: { from: { line: 0, offset: 0 }, to: { line: 0, offset: 3 } } }], text: "one" }, notes: "Say which one.", isStarting: true }
+    { kind: "REQUEST", aim: { kind: "SELECTION", selected: { pieces: [{ id_Text: { kind: "DOCUMENT" }, range: { from: { line: 0, offset: 0 }, to: { line: 0, offset: 3 } } }], text: "one" } }, notes: "Say which one.", isStarting: true }
   ])
 })
 
-test("an action that would drop revisions queued is asked first: pressed, nothing asked of the host, the item asking in its place, which action and how many it'd drop, the keyboard on Cancel; confirmed, asked; cancelled, nothing; one with nothing queued asked at once; a queued request removed, asked of the host by its id; Start, on one request, a proposal's or the document's, from the header, asked with that scope; a host's task action, from the header, asked as it is; Run again, on a round that landed after your edits, asked for its proposal; the document's own requests removed and started, on no proposal; Request a change, from the header, a form for the whole document; and one being revised, accepted, asks to stop its revision, dropping what's asked of it", () => {
+test("an action that would drop revisions queued is asked first: pressed, nothing asked of the host, the item asking in its place, which action and how many it'd drop, the keyboard on Cancel; confirmed, asked; cancelled, nothing; one with nothing queued asked at once; a queued request removed, asked of the host by its id; Start, on one request, a proposal's or the document's, from the header, asked with that scope; a host's task action, from the header, asked as it is; Run again, on a round that landed after your edits, asked for its proposal; the document's own requests removed and started, on no proposal; Request a change, from the header, a form for the whole document, docked under it, no point of its own; Add a request, from the task's card, one for the task as a whole, aimed at no document; Escape in the task's card, the keyboard back on the text; and one being revised, accepted, asks to stop its revision, dropping what's asked of it", () => {
   const id_Item = { source: "digit", range_Frame: { first: 1, last: 1 } }
   const viewModel_Queued = viewModelOf__Model({
     model_TextEditor: result.model_TextEditor,
     proposals: [{ source: "digit", title: "Write two as a digit", state: "OPEN", status: "", rationale: "", requests: [{ id: "say", notes: "Say it.", selected: null, status: "QUEUED" }, { id: "spell", notes: "Spell it.", selected: null, status: "QUEUED" }], actions: actions_Review, attributes: {} }],
-    requests_Document: [],
     rounds_Landed: [],
-    task_Header: null,
+    task: null,
     ranges_Frame: [],
     module_Language: MODULE_PLAINTEXT,
     module_Reading: MODULE_READING_TEXT
@@ -457,10 +453,14 @@ test("an action that would drop revisions queued is asked first: pressed, nothin
   expect(handled(state_Queued, { kind: "START", scope: { kind: "DOCUMENT" } })).toBe(state_Queued)
   expect(handled(state_Queued, { kind: "TASK", command: "stop" })).toBe(state_Queued)
   expect(handled(state_Queued, { kind: "RERUN", id_Item })).toBe(state_Queued)
+  expect(handled(state_Queued, { kind: "CLOSE_CARD" }).isFocusing_Input).toBe(true)
   expect(handled(state_Queued, { kind: "REMOVE", source: null, id: "all" })).toBe(state_Queued)
   expect(handled(state_Queued, { kind: "START", scope: { kind: "REQUEST", source: null, id: "all" } })).toBe(state_Queued)
-  const opened = handled(state_Queued, { kind: "OPEN_REQUEST", point_Screen: { x: 900, y: 40 } })
-  expect([opened.menu, opened.request, opened.focus_Asking]).toEqual([null, { point_Screen: { x: 900, y: 40 }, label: "Request a change to this document", quote: null, isStartable: true, target: { kind: "DOCUMENT" } }, "REQUEST"])
+  const opened = handled(state_Queued, { kind: "OPEN_REQUEST", target: { kind: "DOCUMENT" } })
+  expect([opened.menu, opened.request, opened.focus_Asking]).toEqual([null, { point_Screen: null, label: "Request a change to this document", quote: null, isStartable: true, target: { kind: "DOCUMENT" } }, "REQUEST"])
+  const opened_Task = handled(state_Queued, { kind: "OPEN_REQUEST", target: { kind: "TASK" } })
+  expect(opened_Task.request).toEqual({ point_Screen: null, label: "Add a request to the task", quote: null, isStartable: true, target: { kind: "TASK" } })
+  expect(handled(opened_Task, { kind: "SEND_REQUEST", notes: "Tidy it all.", isStarting: false }).request).toBe(null)
   expect(asked).toEqual([
     { kind: "ACTION", source: "digit", command: "accept", notes: null, selected: null },
     { kind: "ACTION", source: "digit", command: "reject", notes: null, selected: null },
@@ -471,14 +471,14 @@ test("an action that would drop revisions queued is asked first: pressed, nothin
     { kind: "TASK", command: "stop" },
     { kind: "RERUN", source: "digit" },
     { kind: "REMOVE", source: null, id: "all" },
-    { kind: "START", scope: { kind: "REQUEST", source: null, id: "all" } }
+    { kind: "START", scope: { kind: "REQUEST", source: null, id: "all" } },
+    { kind: "REQUEST", aim: { kind: "TASK" }, notes: "Tidy it all.", isStarting: false }
   ])
   const viewModel_Running = viewModelOf__Model({
     model_TextEditor: result.model_TextEditor,
     proposals: [{ source: "digit", title: "Write two as a digit", state: "OPEN", status: "", rationale: "", requests: [{ id: "say", notes: "Say it.", selected: null, status: "RUNNING" }, { id: "spell", notes: "Spell it.", selected: null, status: "QUEUED" }], actions: actions_Review, attributes: {} }],
-    requests_Document: [],
     rounds_Landed: [],
-    task_Header: null,
+    task: null,
     ranges_Frame: [],
     module_Language: MODULE_PLAINTEXT,
     module_Reading: MODULE_READING_TEXT

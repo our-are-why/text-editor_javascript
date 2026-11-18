@@ -68,7 +68,9 @@ export {
   draftingAt__ViewModel,
   confirmingAt__ViewModel,
   type _Header_ViewModel_,
+  type _Figure_Card_,
   type _Task_Header_,
+  type _State_Task_,
   type _Action_Task_,
   type _Part_Header_,
   type _Pending_Confirm_,
@@ -91,6 +93,12 @@ export {
   type __BASE_Target_Request_,
   type _SELECTION_Target_Request_,
   type _DOCUMENT_Target_Request_,
+  type _TASK_Target_Request_,
+  type _Aim_Request_,
+  type __BASE_Aim_Request_,
+  type _SELECTION_Aim_Request_,
+  type _DOCUMENT_Aim_Request_,
+  type _TASK_Aim_Request_,
   type _PROPOSAL_Target_Request_,
   type _Selected_Text_,
   type _Piece_Text_,
@@ -115,7 +123,7 @@ interface _ViewModel_TextEditor_ {
   selection: _Selection_Drawn_ | null
   menu: _Menu_ViewModel_ | null
   request: _Form_Request_ | null
-  header: _Header_ViewModel_ | null
+  header: _Header_ViewModel_
 }
 
 interface _Header_ViewModel_ {
@@ -125,12 +133,28 @@ interface _Header_ViewModel_ {
   requests: Array<_Request_Item_>
 }
 
-interface _Task_Header_ {
+interface _Figure_Card_ {
   label: string
-  status: string
-  isBusy: boolean
-  actions: Array<_Action_Task_>
+  value: string
+  more: string
 }
+
+interface _Task_Header_ {
+  id: string
+  name: string
+  state: _State_Task_
+  label_State: string
+  summary: string
+  reason: string
+  figures: Array<_Figure_Card_>
+  figures_Document: Array<_Figure_Card_>
+  summary_Document: string
+  requests: Array<_Request_Item_>
+  actions: Array<_Action_Task_>
+  actions_Document: Array<_Action_Task_>
+}
+
+type _State_Task_ = "DRAFT" | "WORKING" | "YOUR_TURN" | "DONE" | "CANCELED"
 
 interface _Action_Task_ {
   command: string
@@ -292,11 +316,12 @@ interface _Request_Item_ {
   id: string
   notes: string
   quote: string | null
-  isRunning: boolean
+  progress: string | null
   isStartable: boolean
+  isRemovable: boolean
 }
 
-type _Status_Request_ = "QUEUED" | "RUNNING"
+type _Status_Request_ = "QUEUED" | "RUNNING" | "ADDRESSED"
 
 interface _Stale_Item_ {
   label: string
@@ -373,8 +398,15 @@ function viewModelOf__Blocks(
     selection: null,
     menu: null,
     request: null,
-    header: null
+    header: HEADER_EMPTY
   }
+}
+
+const HEADER_EMPTY: _Header_ViewModel_ = {
+  task: null,
+  parts: [],
+  isStartable: false,
+  requests: []
 }
 
 function neighboredOf__Blocks(
@@ -983,7 +1015,7 @@ interface _Item_Menu_ {
   target: _Target_Request_
 }
 
-type _Target_Request_ = _SELECTION_Target_Request_ | _DOCUMENT_Target_Request_ | _PROPOSAL_Target_Request_
+type _Target_Request_ = _SELECTION_Target_Request_ | _DOCUMENT_Target_Request_ | _TASK_Target_Request_ | _PROPOSAL_Target_Request_
 
 interface __BASE_Target_Request_<Kind extends string> {
   kind: Kind
@@ -994,6 +1026,22 @@ interface _SELECTION_Target_Request_ extends __BASE_Target_Request_<"SELECTION">
 }
 
 interface _DOCUMENT_Target_Request_ extends __BASE_Target_Request_<"DOCUMENT"> {}
+
+interface _TASK_Target_Request_ extends __BASE_Target_Request_<"TASK"> {}
+
+type _Aim_Request_ = _SELECTION_Aim_Request_ | _DOCUMENT_Aim_Request_ | _TASK_Aim_Request_
+
+interface __BASE_Aim_Request_<Kind extends string> {
+  kind: Kind
+}
+
+interface _SELECTION_Aim_Request_ extends __BASE_Aim_Request_<"SELECTION"> {
+  selected: _Selected_Text_
+}
+
+interface _DOCUMENT_Aim_Request_ extends __BASE_Aim_Request_<"DOCUMENT"> {}
+
+interface _TASK_Aim_Request_ extends __BASE_Aim_Request_<"TASK"> {}
 
 interface _PROPOSAL_Target_Request_ extends __BASE_Target_Request_<"PROPOSAL"> {
   source: string
@@ -1012,7 +1060,7 @@ interface _Piece_Text_ {
 }
 
 interface _Form_Request_ {
-  point_Screen: _Point_Screen_
+  point_Screen: _Point_Screen_ | null
   label: string
   quote: string | null
   isStartable: boolean

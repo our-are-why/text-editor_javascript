@@ -7,6 +7,9 @@ import {
 } from "../source/Model_TextEditor.ts"
 import type {
   _Proposal_Host_,
+  _Task_Host_,
+  _Request_Task_,
+  _Counts_Proposals_,
   _Landed_Round_,
   _Request_Host_
 } from "../source/Projection_TextEditor.ts"
@@ -14,7 +17,8 @@ import type { _Scope_Start_ } from "../source/Viewer_TextEditor.ts"
 import type {
   _Range_Lines_,
   _Decision_Proposal_,
-  _Task_Header_
+  _State_Proposal_,
+  _State_Task_
 } from "../source/ViewModel_TextEditor.ts"
 import type { _Entry_Log_ } from "./example.ts"
 import { proposal_Yours, shownMap_State } from "./items.ts"
@@ -29,9 +33,18 @@ interface _Api___hostedOf__Editor_<State> {
   model_TextEditor: _Model_TextEditor_
   proposals: Array<_Proposal_Host_>
   rounds_Landed: Array<_Landed_Round_>
-  label_Task: string
+  about_Task: _About_Task_
   ranges_Frame: Array<_Range_Lines_>
   log: (entry: _Entry_Log_) => void
+}
+
+interface _About_Task_ {
+  id: string
+  name: string
+  summary: string
+  summary_Document: string
+  counts_Elsewhere: _Counts_Proposals_
+  count_Documents: number
 }
 
 interface _Base_Run_ {
@@ -75,30 +88,30 @@ function hostedOf__Editor<State>({
   model_TextEditor,
   proposals,
   rounds_Landed,
-  label_Task,
+  about_Task,
   ranges_Frame,
   log
 }: _Api___hostedOf__Editor_<State>): _TextEditor_<State> {
   let model_Host = model_TextEditor
   let proposals_Host = proposals
   let rounds_Host = rounds_Landed
-  let requests_Document: Array<_Request_Host_> = []
+  let requests_Task: Array<_Request_Task_> = []
   let count_Request = 0
   let version = 0
   let timers_Round: Array<ReturnType<typeof setTimeout>> = []
   const transactions_Logged: Array<_Logged_Transaction_> = []
   const bases_Source = new Map<string, _Base_Run_>()
   const taskOf = () => taskOf__Proposals({
+    model_TextEditor: model_Host,
     proposals: proposals_Host,
-    requests_Document,
-    label_Task
+    requests_Task,
+    about_Task
   })
   const updated = () => editor.update({
     model_TextEditor: model_Host,
     proposals: proposals_Host,
-    requests_Document,
-    rounds_Landed: rounds_Host,
-    task_Header: taskOf()
+    task: taskOf(),
+    rounds_Landed: rounds_Host
   })
   const landed = (source: string) => {
     const base = bases_Source.get(source)
@@ -146,7 +159,7 @@ function hostedOf__Editor<State>({
       : proposal_Host.requests
         .filter((request_Host) => request_Host.status === "QUEUED" && (scope.kind === "DOCUMENT" || (proposal_Host.source === scope.source && (scope.kind === "PROPOSAL" || request_Host.id === scope.id))))
         .map((request_Host) => request_Host.id))
-    const ids_Document = requests_Document
+    const ids_Document = requests_Task
       .filter((request_Host) => request_Host.status === "QUEUED" && (scope.kind === "DOCUMENT" || (scope.kind === "REQUEST" && scope.source === null && request_Host.id === scope.id)))
       .map((request_Host) => request_Host.id)
     const sources_Revising = proposals_Host
@@ -160,7 +173,7 @@ function hostedOf__Editor<State>({
       requests: ids_Started.length + ids_Document.length
     })
     if (ids_Started.length + ids_Document.length === 0) return
-    requests_Document = requests_Document.map((request_Host) => ids_Document.includes(request_Host.id)
+    requests_Task = requests_Task.map((request_Host) => ids_Document.includes(request_Host.id)
       ? {
         ...request_Host,
         status: "RUNNING"
@@ -191,7 +204,12 @@ function hostedOf__Editor<State>({
           ...proposal_Host,
           requests: proposal_Host.requests.filter((request_Host) => !ids_Started.includes(request_Host.id))
         }))
-        requests_Document = requests_Document.filter((request_Host) => !ids_Document.includes(request_Host.id))
+        requests_Task = requests_Task.map((request_Task) => ids_Document.includes(request_Task.id)
+          ? {
+            ...request_Task,
+            status: "ADDRESSED"
+          }
+          : request_Task)
         for (const source of sources_Revising) landed(source)
         log({
           revised: [
@@ -209,9 +227,8 @@ function hostedOf__Editor<State>({
     setup,
     model_TextEditor,
     proposals,
-    requests_Document,
+    task: taskOf(),
     rounds_Landed,
-    task_Header: taskOf(),
     source_Yours: proposal_Yours.source,
     ranges_Frame,
     observers: [
@@ -233,17 +250,18 @@ function hostedOf__Editor<State>({
           if (asked_Host.kind === "REQUEST") {
             log({
               requested: asked_Host.notes,
-              aimed: asked_Host.selected?.text ?? null
+              aimed: asked_Host.aim.kind === "SELECTION" ? asked_Host.aim.selected.text : null
             })
             count_Request += 1
             const id = `document-${count_Request}`
-            requests_Document = [
-              ...requests_Document,
+            requests_Task = [
+              ...requests_Task,
               {
                 id,
                 notes: asked_Host.notes,
-                selected: asked_Host.selected,
-                status: "QUEUED"
+                aim: asked_Host.aim,
+                status: "QUEUED",
+                sources_Answering: []
               }
             ]
             if (asked_Host.isStarting) {
@@ -253,6 +271,18 @@ function hostedOf__Editor<State>({
                 id
               })
             }
+          } else if (asked_Host.kind === "TASK" && asked_Host.command === "accept-here") {
+            log({
+              task: asked_Host.command
+            })
+            const sources_Waiting = waitingOf__Proposals(proposals_Host).map((proposal_Host) => proposal_Host.source)
+            proposals_Host = proposals_Host.map((proposal_Host) => sources_Waiting.includes(proposal_Host.source)
+              ? statedOf__Proposal({
+                proposal_Host,
+                state: "ACCEPTED"
+              })
+              : proposal_Host)
+            rounds_Host = rounds_Host.filter((round_Landed) => !sources_Waiting.includes(round_Landed.source))
           } else if (asked_Host.kind === "TASK") {
             log({
               task: asked_Host.command
@@ -266,10 +296,12 @@ function hostedOf__Editor<State>({
                 status: "QUEUED"
               }))
             }))
-            requests_Document = requests_Document.map((request_Host) => ({
-              ...request_Host,
-              status: "QUEUED"
-            }))
+            requests_Task = requests_Task.map((request_Task) => request_Task.status === "RUNNING"
+              ? {
+                ...request_Task,
+                status: "QUEUED"
+              }
+              : request_Task)
           } else if (asked_Host.kind === "START") {
             started(asked_Host.scope)
           } else if (asked_Host.kind === "RERUN") {
@@ -321,7 +353,7 @@ function hostedOf__Editor<State>({
                 requests: proposal_Host.requests.filter((request_Host) => request_Host.id !== asked_Remove.id)
               }
               : proposal_Host)
-            if (asked_Remove.source === null) requests_Document = requests_Document.filter((request_Host) => request_Host.id !== asked_Remove.id)
+            if (asked_Remove.source === null) requests_Task = requests_Task.filter((request_Host) => request_Host.id !== asked_Remove.id)
           } else {
             const asked_Action = asked_Host
             log({
@@ -397,27 +429,60 @@ function statedOf__Proposal({
 }
 
 interface _Api___taskOf__Proposals_ {
+  model_TextEditor: _Model_TextEditor_
   proposals: Array<_Proposal_Host_>
-  requests_Document: Array<_Request_Host_>
-  label_Task: string
+  requests_Task: Array<_Request_Task_>
+  about_Task: _About_Task_
 }
 
-// the task the playground says it's on, in the editor's header: its name,
-// working while a round's under way, its proposals' or the document's own,
-// Stop offered then
+// the task the playground's on, as the editor's told it: its id, its name,
+// what the agent says of it and of this document, the example's; the
+// agent's at work on it while a round of its proposals', or of its own
+// requests, is under way, Stop offered then, and otherwise it's your turn;
+// its proposals counted by where each stands, this document's and those
+// the example says it has elsewhere, in the documents it says it touches; its requests, aimed at it, the document or
+// some words, in progress or addressed, answered by no proposals, as
+// there's no agent to write any; and, of the document, the proposals
+// waiting on nothing but you accepted at once
 function taskOf__Proposals({
+  model_TextEditor,
   proposals,
-  requests_Document,
-  label_Task
-}: _Api___taskOf__Proposals_): _Task_Header_ {
+  requests_Task,
+  about_Task
+}: _Api___taskOf__Proposals_): _Task_Host_ {
+  const states = proposals
+    .filter((proposal_Host) => model_TextEditor.proposed.some((changes_Source) => changes_Source.source === proposal_Host.source))
+    .map((proposal_Host): _State_Proposal_ => proposal_Host.state !== "OPEN"
+      ? proposal_Host.state
+      : proposal_Host.requests.some((request_Host) => request_Host.status === "RUNNING")
+        ? "REVISING"
+        : proposal_Host.requests.some((request_Host) => request_Host.status === "QUEUED")
+          ? "REQUESTED"
+          : "OPEN")
+  const countOf = (state: _State_Proposal_) => states.filter((state_Each) => state_Each === state).length + about_Task.counts_Elsewhere[state]
+  const count_Waiting = waitingOf__Proposals(proposals).length
   const isBusy = [
     ...proposals.flatMap((proposal_Host) => proposal_Host.requests),
-    ...requests_Document
+    ...requests_Task
   ].some((request_Host) => request_Host.status === "RUNNING")
+  const state: _State_Task_ = isBusy ? "WORKING" : "YOUR_TURN"
   return {
-    label: label_Task,
-    status: isBusy ? "working" : "",
-    isBusy,
+    id: about_Task.id,
+    name: about_Task.name,
+    state,
+    summary: about_Task.summary,
+    reason: "",
+    counts_Proposals: {
+      OPEN: countOf("OPEN"),
+      REQUESTED: countOf("REQUESTED"),
+      REVISING: countOf("REVISING"),
+      ACCEPTED: countOf("ACCEPTED"),
+      REJECTED: countOf("REJECTED"),
+      WITHDRAWN: countOf("WITHDRAWN")
+    },
+    count_Documents: about_Task.count_Documents,
+    summary_Document: about_Task.summary_Document,
+    requests: requests_Task,
     actions: isBusy
       ? [
         {
@@ -425,6 +490,22 @@ function taskOf__Proposals({
           label: "Stop"
         }
       ]
-      : []
+      : [],
+    actions_Document: count_Waiting === 0
+      ? []
+      : [
+        {
+          command: "accept-here",
+          label: `Accept the ones waiting here (${count_Waiting})`
+        }
+      ]
   }
+}
+
+// the proposals waiting on nothing but you: open, nothing asked of them,
+// and theirs to accept
+function waitingOf__Proposals(
+  proposals: Array<_Proposal_Host_>
+): Array<_Proposal_Host_> {
+  return proposals.filter((proposal_Host) => proposal_Host.state === "OPEN" && proposal_Host.requests.length === 0 && proposal_Host.actions.some((action_Item) => action_Item.stateAfter === "ACCEPTED"))
 }

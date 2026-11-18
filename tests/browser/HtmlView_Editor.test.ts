@@ -77,6 +77,7 @@ describe("beside it: what can't live in one document", () => {
           places: window.COMPONENTMAP__VIEW_TEXTEDITOR.places,
           condition: window.COMPONENTMAP__VIEW_TEXTEDITOR.condition,
           header: window.COMPONENTMAP__VIEW_TEXTEDITOR.header,
+          footer: window.COMPONENTMAP__VIEW_TEXTEDITOR.footer,
           menu: window.COMPONENTMAP__VIEW_TEXTEDITOR.menu,
           request: window.COMPONENTMAP__VIEW_TEXTEDITOR.request,
           line: ({ line_Run }) => {
@@ -577,7 +578,7 @@ describe("beside it: what can't live in one document", () => {
     expect(rest.pointed).toEqual([])
     // the pointer on Reject: its item lit, its proposal pointed at, Reject a
     // step deeper, the others as they were
-    const point_Reject = await centerOf("#lit .action_htmlView + .action_htmlView")
+    const point_Reject = await centerOf("#lit .item_htmlView .action_htmlView + .action_htmlView")
     await opened.page.mouse.move(point_Reject.x, point_Reject.y)
     const onReject = await looks()
     const lit = onReject.items[0] ?? ""
@@ -628,7 +629,7 @@ describe("beside it: what can't live in one document", () => {
     expect(onReject.buttons[1]).not.toBe(rest.buttons[1])
     expect([onReject.buttons[0], onReject.buttons[2]]).toEqual([rest.buttons[0], rest.buttons[2]])
     // on Accept, the main one a step deeper
-    const point_Accept = await centerOf("#lit .action_htmlView")
+    const point_Accept = await centerOf("#lit .item_htmlView .action_htmlView")
     await opened.page.mouse.move(point_Accept.x, point_Accept.y)
     const onAccept = await looks()
     expect(onAccept.buttons[0]).not.toBe(rest.buttons[0])
@@ -636,7 +637,7 @@ describe("beside it: what can't live in one document", () => {
     // the keyboard on Reject, the pointer away: its item lit as a pointed
     // one is, Reject ringed in the page's ink; nothing pointed at
     await opened.page.mouse.move(1270, 715)
-    await opened.page.evaluate(() => (document.querySelector("#lit .action_htmlView") as HTMLElement | null)?.focus())
+    await opened.page.evaluate(() => (document.querySelector("#lit .item_htmlView .action_htmlView") as HTMLElement | null)?.focus())
     await opened.page.keyboard.press("Tab")
     const keyed = await looks()
     expect(keyed.items).toEqual([lit, "rgba(0, 0, 0, 0)"])
@@ -869,7 +870,7 @@ describe("beside it: what can't live in one document", () => {
     const words = await centerOf("#bare .rationale_htmlView")
     await opened.page.mouse.move(words.x, words.y)
     expect(await looks()).toEqual({ pointed: 0, drafted: 0, typing: false, folded: 0 })
-    const revise = await centerOf("#bare .action_htmlView")
+    const revise = await centerOf("#bare .item_htmlView .action_htmlView")
     await opened.page.mouse.click(revise.x, revise.y)
     expect(await looks()).toEqual({ pointed: 0, drafted: 1, typing: true, folded: 0 })
     await opened.page.keyboard.press("Escape")
@@ -894,7 +895,7 @@ describe("beside it: what can't live in one document", () => {
         range: { first: 1, last: 1 },
         parts: [
           { kind: "CURRENT_LINES", run: { id: "current", lines: window.parseLines_ViewModel({ multilineText: "one", module_Language: window.MODULE_PLAINTEXT }), groups: [] } },
-          { kind: "PROPOSAL_LIST", items: [{ source: "round", title: "Rename", state: "REQUESTED" as const, status: "Revision requested", places: { kind: "COUNT" as const, count_Here: 6, count_All: 9, conditions: [{ kind: "WITHIN" as const, count: 1, source: "hook", title: "Drop the hook" }, { kind: "CARRIED" as const, count: 1, source: "order", title: "Ask first" }] }, rationale: "Why.", requests: [{ id: "option", notes: "make it an option.", quote: null, isRunning: false, isStartable: true }], actions: [], isRunning: false, isStartable: true, stale: null, isDrafting: false, confirming: null, neighbors: { range_Previous: null, range_Next: null }, attributes: {} }] }
+          { kind: "PROPOSAL_LIST", items: [{ source: "round", title: "Rename", state: "REQUESTED" as const, status: "Revision requested", places: { kind: "COUNT" as const, count_Here: 6, count_All: 9, conditions: [{ kind: "WITHIN" as const, count: 1, source: "hook", title: "Drop the hook" }, { kind: "CARRIED" as const, count: 1, source: "order", title: "Ask first" }] }, rationale: "Why.", requests: [{ id: "option", notes: "make it an option.", quote: null, progress: null, isStartable: true, isRemovable: true }], actions: [], isRunning: false, isStartable: true, stale: null, isDrafting: false, confirming: null, neighbors: { range_Previous: null, range_Next: null }, attributes: {} }] }
         ]
       }]))
       const lines = [...containerElement.querySelectorAll(".places_htmlView > *")].map((line) => line.getBoundingClientRect())
@@ -1033,7 +1034,7 @@ describe("beside it: what can't live in one document", () => {
       }]))
       const rectOf = (selector: string) => containerElement.querySelector(selector)?.getBoundingClientRect()
       const [words, actions, item] = [rectOf(".rationale_htmlView"), rectOf(".item_htmlView > .actions_htmlView"), containerElement.querySelector(".item_htmlView")]
-      const [accept, revise] = [rectOf(".action_htmlView"), rectOf(".action_htmlView:last-child")]
+      const [accept, revise] = [rectOf(".item_htmlView .action_htmlView"), rectOf(".item_htmlView .action_htmlView:last-child")]
       const right = item === null ? 0 : item.getBoundingClientRect().right - parseFloat(getComputedStyle(item).paddingRight)
       containerElement.remove()
       return {
@@ -1066,7 +1067,7 @@ describe("beside it: what can't live in one document", () => {
               { source: "taken", title: "Taken already", state: "ACCEPTED" as const, status: "Accepted", places: { kind: "NONE" as const }, rationale: "It was right.", requests: [], actions: [{ command: "reopen", label: "Reopen", stateAfter: "OPEN" as const }], isRunning: false, isStartable: false, stale: null, isDrafting: false, confirming: null, neighbors: { range_Previous: null, range_Next: null }, attributes: {} },
               { source: "most", title: "Most of the orders", state: "OPEN" as const, status: "", places: { kind: "COUNT" as const, count_Here: 2, count_All: 5, conditions: [{ kind: "WITHIN" as const, count: 1, source: "lathe", title: "Cut the lathe" }, { kind: "CARRIED" as const, count: 1, source: "shift", title: "Shift it down" }] }, rationale: "Most of them need the lathe.", requests: [], actions: [{ command: "accept", label: "Accept", stateAfter: "ACCEPTED" as const }, { command: "reject", label: "Reject", stateAfter: "REJECTED" as const }], isRunning: false, isStartable: false, stale: null, isDrafting: false, confirming: null, neighbors: { range_Previous: null, range_Next: null }, attributes: {} },
               { source: "all", title: "All of them", state: "OPEN" as const, status: "", places: { kind: "NONE" as const }, rationale: "", requests: [], actions: [{ command: "accept", label: "Take it", stateAfter: "ACCEPTED" as const }], isRunning: false, isStartable: false, stale: null, isDrafting: false, confirming: null, neighbors: { range_Previous: null, range_Next: null }, attributes: {} },
-              { source: "capped", title: "Cap it", state: "REQUESTED" as const, status: "Revision requested", places: { kind: "NONE" as const }, rationale: "", requests: [{ id: "option", notes: "make it an option.", quote: null, isRunning: false, isStartable: true }], actions: [{ command: "reopen", label: "Reopen", stateAfter: "OPEN" as const }], isRunning: false, isStartable: true, stale: null, isDrafting: false, confirming: null, neighbors: { range_Previous: null, range_Next: null }, attributes: {} }
+              { source: "capped", title: "Cap it", state: "REQUESTED" as const, status: "Revision requested", places: { kind: "NONE" as const }, rationale: "", requests: [{ id: "option", notes: "make it an option.", quote: null, progress: null, isStartable: true, isRemovable: true }], actions: [{ command: "reopen", label: "Reopen", stateAfter: "OPEN" as const }], isRunning: false, isStartable: true, stale: null, isDrafting: false, confirming: null, neighbors: { range_Previous: null, range_Next: null }, attributes: {} }
             ]
           }
         ]
@@ -1808,7 +1809,7 @@ describe("beside it: what can't live in one document", () => {
         { kind: "FRAME", range: { first: 3, last: 3 }, parts: [{ kind: "CURRENT_LINES", run: { id: "three", lines: [{ ...three, gutter: { ...three.gutter, label: "100" } }], groups: [] } }] },
         { kind: "LINES", run: { id: "after", lines: [four], groups: [] } }
       ]))
-      const [runBefore, frameTwo, frameThree, runAfter] = [...containerElement.querySelector(".htmlView_editor")?.children ?? []].filter((element) => !element.classList.contains("input_htmlView")).map((element) => element.getBoundingClientRect())
+      const [runBefore, frameTwo, frameThree, runAfter] = [...containerElement.querySelector(".htmlView_editor > .document_htmlView")?.children ?? []].map((element) => element.getBoundingClientRect())
       const title = containerElement.querySelector(".title_htmlView")?.getBoundingClientRect()
       const text = containerElement.querySelector(".frame_htmlView .text_htmlView")?.getBoundingClientRect()
       const lineHeight = containerElement.querySelector(".line_htmlView")?.getBoundingClientRect().height
@@ -2702,7 +2703,7 @@ describe("beside it: what can't live in one document", () => {
     expect(rows.narrow.rows).toBe(rows.lines)
   })
 
-  test("a document of no lines draws a view with nothing in it but its input, the element text input goes to", async () => {
+  test("a document of no lines draws a view with nothing in its document: its input, the element text input goes to, its header, saying nothing but offering Request a change, its document, empty, and its footer", async () => {
     const children = await opened.page.evaluate(() => {
       const containerElement = document.createElement("div")
       document.body.append(containerElement)
@@ -2710,9 +2711,9 @@ describe("beside it: what can't live in one document", () => {
         containerElement,
         componentMap: window.COMPONENTMAP__VIEW_TEXTEDITOR
       }).draw(window.viewModelOf__Blocks([]))
-      return [...containerElement.querySelector(".htmlView_editor")?.childNodes ?? []].map((node) => node instanceof Element ? node.className : "#text")
+      return [...containerElement.querySelector(".htmlView_editor")?.childNodes ?? []].map((node) => node instanceof Element ? `${node.className} ${node.childNodes.length}` : "#text")
     })
-    expect(children).toEqual(["input_htmlView"])
+    expect(children).toEqual(["input_htmlView 0", "header_htmlView 2", "document_htmlView 0", "footer_htmlView 0"])
   })
 
   test("its look comes from variables a host sets above it, or else its own defaults", async () => {

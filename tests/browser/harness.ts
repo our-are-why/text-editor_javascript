@@ -30,11 +30,17 @@ interface _Opened_Example_ {
 // play with, from localhost, a secure origin, as the clipboard needs. What's
 // sent through the page's keyboard and mouse is the browser's own input,
 // trusted and with its default actions, which events a test dispatches
-// itself don't have.
+// itself don't have. In a laptop's window, the size an example's laid out
+// for, an app the window's height, its editor beside what it's about.
 async function openExample(name: string): Promise<_Opened_Example_> {
   const server = servePlayground(0, "testing")
   const browser = await chromium.launch({ executablePath })
-  const page = await browser.newPage()
+  const page = await browser.newPage({
+    viewport: {
+      width: 1440,
+      height: 900
+    }
+  })
   const errors: Array<string> = []
   await page.exposeFunction("reportError_Page", (message: string) => errors.push(message))
   await page.addInitScript(() => window.addEventListener("error", (event) => (window as unknown as { reportError_Page: (message: string) => void }).reportError_Page(event.message)))
