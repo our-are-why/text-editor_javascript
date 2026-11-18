@@ -938,5 +938,5 @@ function proposalOf({
   title,
   rationale
 }: _Api___proposalOf_): _Proposal_Host_ {
-  return { source, title, state: "OPEN", status: "", rationale, request: "", actions: actions_Review, attributes: {} }
+  return { source, title, state: "OPEN", status: "", rationale, requests: [], actions: actions_Review, attributes: {} }
 }

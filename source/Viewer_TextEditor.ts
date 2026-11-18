@@ -31,6 +31,9 @@ import {
   isSame__Id_Text,
   type _Module_Words_,
   askingAt__ViewModel,
+  confirmingAt__ViewModel,
+  type _Pending_Confirm_,
+  type _Item_Proposals_,
   type _Menu_ViewModel_,
   type _Item_Menu_,
   type _Target_Request_,
@@ -63,6 +66,9 @@ export {
   type _FOLD_Command_,
   type _DRAFT_Command_,
   type _ACT_Command_,
+  type _CONFIRM_Command_,
+  type _REMOVE_Command_,
+  type _START_Command_,
   type _SEND_Command_,
   type _OPEN_MENU__Command_,
   type _STEP_MENU__Command_,
@@ -90,6 +96,8 @@ export {
   type __BASE_Asked_Host_,
   type _ACTION_Asked_Host_,
   type _REQUEST_Asked_Host_,
+  type _REMOVE_Asked_Host_,
+  type _START_Asked_Host_,
   type _Answer_Dispatch_,
   type _Unit_Move_,
   type _Direction_Move_,
@@ -151,7 +159,8 @@ class _Viewer_TextEditor_ {
       isFocusing_Input: false,
       menu: null,
       request: null,
-      focus_Asking: null
+      focus_Asking: null,
+      confirm_Item: null
     }
     this.request_Draw = null
     this.point_Screen = null
@@ -401,7 +410,7 @@ interface _Answer_Edit_ {
   selection: _Selection_TextEditor_
 }
 
-type _Asked_Host_ = _ACTION_Asked_Host_ | _REQUEST_Asked_Host_
+type _Asked_Host_ = _ACTION_Asked_Host_ | _REQUEST_Asked_Host_ | _REMOVE_Asked_Host_ | _START_Asked_Host_
 
 interface __BASE_Asked_Host_<Kind extends string> {
   kind: Kind
@@ -418,6 +427,13 @@ interface _REQUEST_Asked_Host_ extends __BASE_Asked_Host_<"REQUEST"> {
   selected: _Selected_Text_ | null
   notes: string
 }
+
+interface _REMOVE_Asked_Host_ extends __BASE_Asked_Host_<"REMOVE"> {
+  source: string
+  index: number
+}
+
+interface _START_Asked_Host_ extends __BASE_Asked_Host_<"START"> {}
 
 interface _Buffer_Edit_ {
   id_Text: _Id_Text_
@@ -442,7 +458,7 @@ interface _Adapter_Event_ {
   commandOf__Event: (event: Event) => _Command_TextEditor_ | null
 }
 
-type _Command_TextEditor_ = _POINT_Command_ | _JUMP_Command_ | _FOLD_Command_ | _DRAFT_Command_ | _ACT_Command_ | _SEND_Command_ | _OPEN_MENU__Command_ | _STEP_MENU__Command_ | _CHOOSE_MENU__Command_ | _CLOSE_MENU__Command_ | _SEND_REQUEST__Command_ | _CLOSE_REQUEST__Command_ | _DISCARD_Command_ | _VISIT_Command_ | _PLACE_Command_ | _DRAG_Command_ | _RELEASE_Command_ | _MOVE_Command_ | _EXTEND_Command_ | _INSERT_Command_ | _REPLACE_Command_ | _DELETE_Command_ | _UNDO_Command_ | _REDO_Command_ | _COPY_Command_ | _CUT_Command_ | _PASTE_Command_
+type _Command_TextEditor_ = _POINT_Command_ | _JUMP_Command_ | _FOLD_Command_ | _DRAFT_Command_ | _ACT_Command_ | _CONFIRM_Command_ | _REMOVE_Command_ | _START_Command_ | _SEND_Command_ | _OPEN_MENU__Command_ | _STEP_MENU__Command_ | _CHOOSE_MENU__Command_ | _CLOSE_MENU__Command_ | _SEND_REQUEST__Command_ | _CLOSE_REQUEST__Command_ | _DISCARD_Command_ | _VISIT_Command_ | _PLACE_Command_ | _DRAG_Command_ | _RELEASE_Command_ | _MOVE_Command_ | _EXTEND_Command_ | _INSERT_Command_ | _REPLACE_Command_ | _DELETE_Command_ | _UNDO_Command_ | _REDO_Command_ | _COPY_Command_ | _CUT_Command_ | _PASTE_Command_
 
 interface __BASE_Command_<Kind extends string> {
   kind: Kind
@@ -470,10 +486,22 @@ interface _ACT_Command_ extends __BASE_Command_<"ACT"> {
   command: string
 }
 
+interface _CONFIRM_Command_ extends __BASE_Command_<"CONFIRM"> {
+  isConfirmed: boolean
+}
+
+interface _REMOVE_Command_ extends __BASE_Command_<"REMOVE"> {
+  id_Item: _Id_Item_
+  index: number
+}
+
+interface _START_Command_ extends __BASE_Command_<"START"> {}
+
 interface _SEND_Command_ extends __BASE_Command_<"SEND"> {
   id_Item: _Id_Item_
   command: string
   notes: string
+  isStarting: boolean
 }
 
 interface _OPEN_MENU__Command_ extends __BASE_Command_<"OPEN_MENU"> {
@@ -492,6 +520,7 @@ interface _CLOSE_MENU__Command_ extends __BASE_Command_<"CLOSE_MENU"> {}
 
 interface _SEND_REQUEST__Command_ extends __BASE_Command_<"SEND_REQUEST"> {
   notes: string
+  isStarting: boolean
 }
 
 interface _CLOSE_REQUEST__Command_ extends __BASE_Command_<"CLOSE_REQUEST"> {}
@@ -576,6 +605,7 @@ interface _State__Viewer_TextEditor_ {
   menu: _Menu_ViewModel_ | null
   request: _Form_Request_ | null
   focus_Asking: _Focus_Asking_ | null
+  confirm_Item: _Pending_Confirm_ | null
 }
 
 
@@ -600,13 +630,16 @@ function selectedOf__State(
 ): _ViewModel_TextEditor_ {
   return selectedAt__ViewModel({
     viewModel_TextEditor: pointedAt__ViewModel({
-      viewModel_TextEditor: draftingAt__ViewModel({
+      viewModel_TextEditor: confirmingAt__ViewModel({
+        viewModel_TextEditor: draftingAt__ViewModel({
         viewModel_TextEditor: foldedAt__ViewModel({
           viewModel_TextEditor: state.viewModel_TextEditor,
           ranges_Folded: state.ranges_Folded,
           range_Peeked: state.range_Peeked
         }),
-        items_Drafted: state.items_Drafted
+          items_Drafted: state.items_Drafted
+        }),
+        confirm_Item: state.confirm_Item
       }),
       source: state.source_Pointed,
       place: state.place_Pointed,
@@ -723,6 +756,22 @@ function ACT_stateAfter__Command({
   command,
   ask_View
 }: _Api___stateAfter__Command_<"ACT">): _State__Viewer_TextEditor_ {
+  const item_Proposals = itemOf__Id({
+    viewModel_TextEditor: viewModelOf__State(state),
+    id_Item: command.id_Item
+  })
+  const action_Item = item_Proposals?.actions.find((action_Each) => action_Each.command === command.command)
+  const isDropping = item_Proposals !== null && item_Proposals.requests.length > 0 && action_Item !== undefined && action_Item.stateAfter !== "REQUESTED"
+  if (isDropping) {
+    return {
+      ...state,
+      confirm_Item: {
+        id_Item: command.id_Item,
+        command: command.command
+      },
+      focus_Asking: "CONFIRM"
+    }
+  }
   ask_View({
     kind: "ACTION",
     source: command.id_Item.source,
@@ -733,18 +782,85 @@ function ACT_stateAfter__Command({
   return state
 }
 
+interface _Api___itemOf__Id_ {
+  viewModel_TextEditor: _ViewModel_TextEditor_
+  id_Item: _Id_Item_
+}
+
+function itemOf__Id({
+  viewModel_TextEditor,
+  id_Item
+}: _Api___itemOf__Id_): _Item_Proposals_ | null {
+  return viewModel_TextEditor.blocks.flatMap((block_ViewModel) => block_ViewModel.kind === "FRAME" && block_ViewModel.range.first === id_Item.range_Frame.first && block_ViewModel.range.last === id_Item.range_Frame.last
+    ? block_ViewModel.parts.flatMap((part_Frame) => part_Frame.kind === "PROPOSAL_LIST" ? part_Frame.items : [])
+    : []).find((item_Proposals) => item_Proposals.source === id_Item.source) ?? null
+}
+
+function CONFIRM_stateAfter__Command({
+  state,
+  command,
+  ask_View
+}: _Api___stateAfter__Command_<"CONFIRM">): _State__Viewer_TextEditor_ {
+  if (state.confirm_Item === null) return state
+  if (command.isConfirmed) {
+    ask_View({
+      kind: "ACTION",
+      source: state.confirm_Item.id_Item.source,
+      command: state.confirm_Item.command,
+      notes: null,
+      selected: null
+    })
+  }
+  return {
+    ...state,
+    confirm_Item: null
+  }
+}
+
+function REMOVE_stateAfter__Command({
+  state,
+  command,
+  ask_View
+}: _Api___stateAfter__Command_<"REMOVE">): _State__Viewer_TextEditor_ {
+  ask_View({
+    kind: "REMOVE",
+    source: command.id_Item.source,
+    index: command.index
+  })
+  return state
+}
+
+function START_stateAfter__Command({
+  state,
+  ask_View
+}: _Api___stateAfter__Command_<"START">): _State__Viewer_TextEditor_ {
+  ask_View({
+    kind: "START"
+  })
+  return state
+}
+
 function SEND_stateAfter__Command({
   state,
   command,
   ask_View
 }: _Api___stateAfter__Command_<"SEND">): _State__Viewer_TextEditor_ {
-  ask_View({
-    kind: "ACTION",
-    source: command.id_Item.source,
-    command: command.command,
-    notes: command.notes,
-    selected: null
-  })
+  const isWritten = command.notes.trim() !== ""
+  if (!isWritten && !command.isStarting) return state
+  if (isWritten) {
+    ask_View({
+      kind: "ACTION",
+      source: command.id_Item.source,
+      command: command.command,
+      notes: command.notes,
+      selected: null
+    })
+  }
+  if (command.isStarting) {
+    ask_View({
+      kind: "START"
+    })
+  }
   return closedAt__State({
     state,
     id_Item: command.id_Item
@@ -825,7 +941,7 @@ function itemsOf__Menu({
     ? block_ViewModel.parts.flatMap((part_Frame) => part_Frame.kind === "PROPOSAL_LIST" ? part_Frame.items : [])
     : [])
   const reviseOf = (source: string) => {
-    const item_Proposals = items_Proposals.find((item_Each) => item_Each.source === source && item_Each.state === "OPEN")
+    const item_Proposals = items_Proposals.find((item_Each) => item_Each.source === source && (item_Each.state === "OPEN" || item_Each.state === "REQUESTED"))
     const action_Item = item_Proposals?.actions.find((action_Each) => action_Each.stateAfter === "REQUESTED")
     return item_Proposals === undefined || action_Item === undefined
       ? null
@@ -927,6 +1043,7 @@ function CHOOSE_MENU_stateAfter__Command({
         point_Screen: state.menu.point_Screen,
         label: item_Menu.label,
         quote: item_Menu.quote,
+        isQueued: item_Menu.target.kind === "PROPOSAL",
         target: item_Menu.target
       },
       focus_Asking: "REQUEST"
@@ -950,11 +1067,19 @@ function SEND_REQUEST_stateAfter__Command({
   command,
   ask_View
 }: _Api___stateAfter__Command_<"SEND_REQUEST">): _State__Viewer_TextEditor_ {
-  if (state.request === null || command.notes.trim() === "") return state
-  ask_View(ASKEDMAP__KIND_TARGET[state.request.target.kind]({
-    target: state.request.target,
-    notes: command.notes
-  } as never))
+  const isWritten = command.notes.trim() !== ""
+  if (state.request === null || (!isWritten && !(command.isStarting && state.request.isQueued))) return state
+  if (isWritten) {
+    ask_View(ASKEDMAP__KIND_TARGET[state.request.target.kind]({
+      target: state.request.target,
+      notes: command.notes
+    } as never))
+  }
+  if (command.isStarting && state.request.isQueued) {
+    ask_View({
+      kind: "START"
+    })
+  }
   return {
     ...state,
     request: null,
@@ -2201,6 +2326,9 @@ const HANDLERMAP__TEXTEDITOR: _HandlerMap__TextEditor_ = {
   FOLD: FOLD_stateAfter__Command,
   DRAFT: DRAFT_stateAfter__Command,
   ACT: ACT_stateAfter__Command,
+  CONFIRM: CONFIRM_stateAfter__Command,
+  REMOVE: REMOVE_stateAfter__Command,
+  START: START_stateAfter__Command,
   SEND: SEND_stateAfter__Command,
   OPEN_MENU: OPEN_MENU_stateAfter__Command,
   STEP_MENU: STEP_MENU_stateAfter__Command,

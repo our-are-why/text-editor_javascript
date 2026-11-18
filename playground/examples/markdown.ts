@@ -145,7 +145,7 @@ const proposal_Signal: _Proposal_Host_ = {
   state: "OPEN",
   status: "",
   rationale: "Giving up is aborting the signal; saying so sends the reader to the option that does it.",
-  request: "",
+  requests: [],
   actions: actions_Review,
   attributes: {},
 }
@@ -156,7 +156,7 @@ const proposal_Example: _Proposal_Host_ = {
   state: "OPEN",
   status: "",
   rationale: "A caller who can cancel should see where the signal goes: to the call, so a request in flight stops, and to retry, so a wait does.",
-  request: "",
+  requests: [],
   actions: actions_Review,
   attributes: {},
 }
@@ -167,7 +167,7 @@ const proposal_Stress: _Proposal_Host_ = {
   state: "OPEN",
   status: "",
   rationale: "It's the number most callers live with, so it's the one to find at a glance.",
-  request: "",
+  requests: [],
   actions: actions_Review,
   attributes: {},
 }
@@ -178,7 +178,7 @@ const proposal_Aborted: _Proposal_Host_ = {
   state: "OPEN",
   status: "",
   rationale: "With the module's own proposal, retry asks about the signal between attempts as well as while it waits; said as it is, an abort only cuts a wait short.",
-  request: "",
+  requests: [],
   actions: actions_Review,
   attributes: {},
 }
@@ -189,7 +189,7 @@ const proposal_Hook: _Proposal_Host_ = {
   state: "OPEN",
   status: "",
   rationale: "Nothing passes onRetry any more: the callers log their retries in their own catch blocks.",
-  request: "",
+  requests: [],
   actions: actions_Review,
   attributes: {},
 }
@@ -200,7 +200,7 @@ const proposal_Order: _Proposal_Host_ = {
   state: "OPEN",
   status: "",
   rationale: "Whether a call's retried at all is the first thing a caller asks; the options only tune how.",
-  request: "",
+  requests: [],
   actions: actions_Review,
   attributes: {},
 }
@@ -213,7 +213,12 @@ const proposal_Timeout: _Proposal_Host_ = {
   state: "REVISING",
   status: "Revising",
   rationale: "A 408 means the server stopped waiting for the request, not that the request failed: sent again, it usually goes through.",
-  request: "only when the request is safe to send twice, a GET or a PUT.",
+  requests: [
+    {
+      notes: "only when the request is safe to send twice, a GET or a PUT.",
+      selected: null
+    }
+  ],
   actions: [],
   attributes: {},
 }
@@ -226,7 +231,7 @@ const proposal_Retry501: _Proposal_Host_ = {
   state: "REJECTED",
   status: "Rejected",
   rationale: "Some servers send a 501 for a method they'll support after a deploy; tried again a minute later, it works.",
-  request: "",
+  requests: [],
   actions: actions_Reopen,
   attributes: {},
 }
@@ -239,20 +244,25 @@ const proposal_Base: _Proposal_Host_ = {
   state: "ACCEPTED",
   status: "Accepted",
   rationale: "It's the name a caller finds in the module, and would search for.",
-  request: "",
+  requests: [],
   actions: actions_Reopen,
   attributes: {},
 }
 
-// sent back to be revised, as the module's own proposal is
+// a revision asked for, queued, as the module's own proposal is
 const proposal_Cap: _Proposal_Host_ = {
   source: "cap",
   title: "Cap the delay at 30 seconds",
   state: "REQUESTED",
   status: "Revision requested",
   rationale: "With the module's cap, a long outage never goes quiet for longer than half a minute; the README should say so.",
-  request: "make the cap an option, 30 seconds unless the caller gives another.",
-  actions: actions_Reopen,
+  requests: [
+    {
+      notes: "make the cap an option, 30 seconds unless the caller gives another.",
+      selected: null
+    }
+  ],
+  actions: actions_Review,
   attributes: {},
 }
 
@@ -264,7 +274,7 @@ const proposal_Link: _Proposal_Host_ = {
   state: "WITHDRAWN",
   status: "Withdrawn",
   rationale: "The guides moved under /guides.",
-  request: "",
+  requests: [],
   actions: actions_Dismiss,
   attributes: {},
 }

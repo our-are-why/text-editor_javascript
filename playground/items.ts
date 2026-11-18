@@ -23,8 +23,9 @@ const actions_Review: Array<_Action_Item_> = [
   { command: "revise", label: "Revise", stateAfter: "REQUESTED" }
 ]
 
-// what it offers once one's been decided, or a revision asked for: only to
-// take it back, to open again; and nothing while the agent's revising one
+// what it offers once one's been decided: only to take it back, to open
+// again; while revisions are queued, the same as while it's open, to ask
+// more of it or decide it anyway; and nothing while the agent's revising one
 const actions_Reopen: Array<_Action_Item_> = [
   { command: "reopen", label: "Reopen", stateAfter: "OPEN" }
 ]
@@ -45,7 +46,7 @@ const proposal_Yours: _Proposal_Host_ = {
   state: "OPEN",
   status: "",
   rationale: "",
-  request: "",
+  requests: [],
   actions: [],
   attributes: {}
 }
@@ -68,7 +69,7 @@ const shownMap_State: _ShownMap__State_ = {
   },
   REQUESTED: {
     status: "Revision requested",
-    actions: actions_Reopen
+    actions: actions_Review
   },
   REVISING: {
     status: "Revising",

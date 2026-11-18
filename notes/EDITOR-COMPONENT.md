@@ -666,20 +666,28 @@ How each shows: an item says its state, `state`, one of the six as a kind,
 what to call it, `status`, the host's words, as its actions are, drawn as a
 word after its title, "· Revision requested", "· Revising", "· Accepted",
 none for an open one; what you asked of a requested or revising one,
-`request`, your words alone, under its words as a quote, a rule beside them
-and "You asked" over them, the editor's, in its state's ink, so they're
-yours, not the agent's; and its actions, the host's for its state, as the
-playground's are Reopen alone for one requested, accepted or rejected, none
-while it's revised, and Dismiss alone once it's withdrawn, the agent's to
+`requests`, each your words alone, the words it's on quoted before them,
+under its words as a quote, a rule beside them and "Requests" over them,
+bold, the editor's, in its state's ink, so they're yours, not the agent's,
+first headed "You asked", then "Revision requests", renamed 2026-11-18 as
+they became a list; a list, `Request$_Item__Html`, a bullet in that ink before each and a
+little room between them, so where one ends and the next begins is seen
+however many lines each wraps to, each with Remove after it while it's
+queued; and its actions, the host's for its
+state, as the playground's are its review actions while revisions are
+queued, Reopen alone for one accepted or rejected, none while it's revised, and Dismiss alone once it's withdrawn, the agent's to
 take back, not yours, so nothing left of it to reopen, only to clear from
 the list, an open one's first the main one, no other's, filled in the
 proposals' indigo, its words white, the others on their grey, their words
 the colour of the state each leads to, outlined once, too heavy a column of
 them down a long list, an action saying which, `stateAfter`, rejecting
 indigo, revising plum, so a button says where it takes the proposal, and
-they're still plainly buttons, ringed in it when the keyboard's on one; once
-it's not open, waiting on the agent, or on no one, its actions neutral,
-there but not asked for, the colour on its row its state's alone. Beside
+they're still plainly buttons, ringed in it when the keyboard's on one; one
+with revisions queued waiting on you as an open one is, its actions in their
+colours too, Revise plum still, as asked on 2026-11-18, none of them the
+main one, as what's next is yours to choose; once it's waiting on the
+agent, or on no one, its actions neutral, there but not asked for, the
+colour on its row its state's alone. Beside
 each, in the gutter's column of numbers, as a line's number is beside its
 line, an icon for where it stands: a check, accepted; a cross, rejected; an
 arc going round, being revised, still where motion's reduced; an arrow
@@ -1164,7 +1172,6 @@ Selection across frames, through those showing one of their sections, was
 thought of with it and put off: nothing yet asks for it but copying, and
 an edit across one mixes the document's text and what's proposed.
 
-
 **a proposal is a decision, a change a place, a frame a view of places:**
 three things, kept apart. A proposal, a source, is what's decided, at once,
 wherever its changes are; a change is a place, anchored in the text; a frame
@@ -1323,22 +1330,23 @@ click shows nothing else yet; and the keyboard's on one ringed in the page's
 ink, `--view-focus-ring`, no colour, as each colour there says where a
 proposal stands. In a narrow list, under 40rem, an item's actions go under
 its words, not beside them, still on the right, wrapping if even that's too
-narrow, so its words keep room to be read. Revise, an open item's action
-that leads to a revision requested, asks for your notes before anything's
-sent, as asking for a revision is sending them: a box for them under the
+narrow, so its words keep room to be read. Revise, an open or requested
+item's action that leads to a revision requested, asks for your notes before
+anything's added, as asking for a revision is adding them: a box for them under the
 item's words and its actions, which stay as they were, the item's whole
 width, the keyboard put in it, three lines tall whatever's written,
 scrolling past them, so the item doesn't grow as it's written in, never
-resized by hand, and under the box, on the right, Submit, filled in the
-revision's plum, the form's own word, not Revise again, which opens it, and
-Cancel, neutral, as doctor's form has its buttons under its box. Revise is a
+resized by hand, and under the box, on the right, Add, filled in the
+revision's plum, the form's own word, not Revise again, which opens it, then
+Start, its words plum, as it leads to revising, and Cancel, neutral, as
+doctor's form has its buttons under its box. Revise is a
 disclosure, as doctor's Amend is, a chevron after its words, pressed and
 pointing up while the form's open under it, `aria-expanded`. It's in that
 item alone, its proposal in its frame, `_Id_Item_`, among the editor's
 `items_Drafted`, though the proposal has items in other frames too, and an
 item says it's the one, `isDrafting`, a host giving `false`, as a gutter
-says it's pointed at. `DRAFT` opens it, from Revise; `SEND`, from Submit or
-⌘ or Ctrl with Enter, and `DISCARD`, from Cancel or Escape, deliberately
+says it's pointed at. `DRAFT` opens it, from Revise; `SEND`, from Add, Revise
+now, or ⌘ or Ctrl with Enter, which adds, and `DISCARD`, from Cancel or Escape, deliberately
 throwing away what's in it, or Revise pressed again with nothing written in
 it, close it, the keyboard back on Revise, the editor asking for that once
 it's drawn, `focus_Draft`, as it asks for a note's target to be revealed;
@@ -1350,12 +1358,52 @@ writing, each in its own item, kept as it is, what's written in it with it,
 as GitHub's inline comments are, where doctor kept to one open at a time, a
 written one kept and gone to instead of another opening. What's written is
 the box's own, kept as what's around it's drawn again, not yet the state's,
-and gone once it's closed; and Submit sends Revise's command, the host's for
-revising, with what was written, to the host, as the observers' `asked`.
-Later,
-as doctor's do, Accept and Reject off while something's written in the form,
+and gone once it's closed; and Add sends Revise's command, the host's for
+revising, with what was written, to the host, as the observers' `asked`;
+Add with nothing written does nothing, the form kept open. Later, as
+doctor's do, Accept and Reject off while something's written in the form,
 so it's sent or cleared before deciding, never thrown away by it, once
 what's written is the state's.
+
+**revisions queued, decided 2026-11-18:** asking for a revision adds to it,
+never sends it alone: a proposal holds every request you've made of it,
+`requests`, the host's, as its state is, each your notes and the words it's
+on, `selected`, if it's on some, kept by the host so a queue built over a
+session outlives a reload, and processed by it. A proposal's requests share
+its state, as there's one state for them all: none, it's open; queued, it's
+requested, waiting on you, not on the agent, a meaning `REQUESTED` didn't
+have before, when it meant sent; being worked on, it's revising, read only;
+done, it's open again, a new round, its requests gone, as a history of
+rounds, as doctor's notes had it, is later. No state of their own, no new
+proposal states. Start, first named Revise now, beside Add, in Revise's form
+and in the menu's note on a proposal, adds what's written, if anything is,
+then asks the host, `START`, to revise everything queued, every proposal's, at once, one
+batch, no work groups, as the user decided: the orchestration's the
+user's, in what they queue, and the controls stay plain; a group could be a
+host's tag on a request later, nothing here changing. A queued request is
+removed, `REMOVE`, by its place in the list, the host opening the proposal
+again once none's left. Accepting or rejecting one with revisions queued
+would drop them, so the editor asks first, `CONFIRM`, the item's actions
+row become the question in its place, "Accept and drop 2 queued
+requests?", the action and Cancel, the keyboard on Cancel, so a second
+Enter doesn't decide, Escape taking it back: no dialog over the text, and
+one extra press only where something would be lost; the host drops what was
+queued. The words a queued or revising request is on are underlined, dotted,
+in the revision's plum, where they're proposed, `data-requested` on their
+segments, as doctor marked them, whatever the look, as what you asked is
+yours. Start is also under a proposal's queued requests, below them,
+so starting needs no form, `START` the command and what's asked. Every
+Start is set apart from every other action, as nothing's revised till one's
+pressed, though it's not the main one, Add is, in a form: its words bold,
+in the revision's plum, on a ground tinted with that plum,
+`--view-action-start-ground`, a play mark before them tried and dropped; a host
+can place one in its own interface too, as the queue can span documents,
+doctor's in its task bar. The menu's requests aimed at a selection or the document still go at
+once, Send, as only the host has a place to show requests on no proposal;
+queuing them comes with drafts. The playground's host queues, removes, drops
+on a decision, and, Start pressed, turns every requested proposal to
+revising, then, with no agent, open again a moment later, its requests
+gone.
 
 Deciding is a command, on the current proposal or one named: accept, reject,
 revise, amend; an item's actions are the editor's buttons for them, or,
@@ -1818,15 +1866,17 @@ arrows moving through them, `CHOOSE_MENU`, opens a form where the menu was,
 in, Send and Cancel, ⌘ or Ctrl with Enter and Escape; Escape, or the focus
 leaving it, closes the menu, the caret back where it was. Sent, it's asked
 of the host, `SEND_REQUEST`, never empty: a note on a proposal its Revise
-command with the notes and the words, as its draft's Submit sends it; a
-request, what's written and what it's aimed at, each piece of it a text's
+command with the notes and the words, queued, as its draft's Add sends it,
+its form offering Add and Start, as the draft's does; a request, sent
+at once, what's written and what it's aimed at, each piece of it a text's
 range and what it reads. Each the editor's own control, as a revision's
 draft is, working with no module in; menu and form both the component
 map's, `menu` and `request`, a host's own drawn in their place; the view
 keeps them in the window, as doctor's menu kept itself. The playground's
-host sends a note on words back as a revision with the words quoted, and
-reports a request, as it's no agent to answer it. Not yet: requests
-drafted, kept and sent together, as doctor's were, next; a button by a
+host queues a note on words as a revision of its proposal, the words quoted,
+and reports a request, as it's no agent to answer it. Not yet: requests on
+no proposal drafted, kept and sent together, as notes on a proposal now
+are, next; a button by a
 selection, as a document editor's comment button is; cut, copy and paste
 in the menu, the browser's own out of reach of the text; a host's own
 choices in it.
@@ -1927,7 +1977,8 @@ edits, voice.
 
 The editor's own controls are the core's: what it draws to be pressed, a
 frame's fold control and its bar, a move's note, a thread's arrows, an
-item's Revise, its form's Submit and Cancel, and the form's own keys, Escape
+item's Revise, its form's Add, Start and Cancel, a queued request's
+Remove and Start, a confirmation's action and Cancel, and the forms' own keys, Escape
 and ⌘ or Ctrl with Enter, each works as it's drawn, pressed or clicked, or
 Enter or Space on it, with no module in, from `CONTROLS__TEXTEDITOR`, which
 the editor listens with before any module. Pressing a button isn't an input

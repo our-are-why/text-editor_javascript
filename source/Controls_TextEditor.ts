@@ -76,7 +76,7 @@ const CONTROLS__TEXTEDITOR: Array<_Adapter_Event_> = [
   {
     event: "click",
     commandOf__Event: (event) => {
-      const element_Revise = event.target instanceof Element ? event.target.closest(".item_htmlView[data-state='OPEN'] .action_htmlView[data-command][data-state-after='REQUESTED']") : null
+      const element_Revise = event.target instanceof Element ? event.target.closest(".action_htmlView[data-command][aria-expanded]") : null
       const id_Item = element_Revise === null
         ? null
         : idOf__Item({
@@ -101,7 +101,7 @@ const CONTROLS__TEXTEDITOR: Array<_Adapter_Event_> = [
     commandOf__Event: (event) => {
       const element_Action = event.target instanceof Element ? event.target.closest(".action_htmlView[data-command]") : null
       const command = element_Action?.getAttribute("data-command")
-      const isRevise = element_Action?.matches(".item_htmlView[data-state='OPEN'] .action_htmlView[data-command][data-state-after='REQUESTED']") === true
+      const isRevise = element_Action?.matches(".action_htmlView[data-command][aria-expanded]") === true
       const id_Item = element_Action === null || element_Action === undefined || isRevise
         ? null
         : idOf__Item({
@@ -127,10 +127,11 @@ const CONTROLS__TEXTEDITOR: Array<_Adapter_Event_> = [
           element: element_Draft
         })
       if (element_Draft === null || element_Draft === undefined || id_Item === null) return null
-      return kind === "SEND"
+      return kind === "ADD" || kind === "START"
         ? sentOf__Item({
           element: element_Draft,
-          id_Item
+          id_Item,
+          isStarting: kind === "START"
         })
         : kind === "DISCARD"
           ? {
@@ -242,8 +243,11 @@ const CONTROLS__TEXTEDITOR: Array<_Adapter_Event_> = [
       const element_Button = event.target instanceof Element ? event.target.closest(".asking_htmlView [data-request]") : null
       const kind = element_Button?.getAttribute("data-request")
       if (element_Button === null || element_Button === undefined) return null
-      return kind === "SEND"
-        ? sentOf__Request(element_Button)
+      return kind === "SEND" || kind === "ADD" || kind === "START"
+        ? sentOf__Request({
+          element: element_Button,
+          isStarting: kind === "START"
+        })
         : kind === "CLOSE"
           ? {
             kind: "CLOSE_REQUEST"
@@ -262,7 +266,10 @@ const CONTROLS__TEXTEDITOR: Array<_Adapter_Event_> = [
         }
       }
       return event.key === "Enter" && (event.metaKey || event.ctrlKey)
-        ? sentOf__Request(element_Notes)
+        ? sentOf__Request({
+          element: element_Notes,
+          isStarting: false
+        })
         : null
     }
   },
@@ -285,21 +292,77 @@ const CONTROLS__TEXTEDITOR: Array<_Adapter_Event_> = [
       return event.key === "Enter" && (event.metaKey || event.ctrlKey) && element_Notes !== null
         ? sentOf__Item({
           element: element_Notes,
-          id_Item
+          id_Item,
+          isStarting: false
         })
         : null
     }
+  },
+  {
+    event: "click",
+    commandOf__Event: (event) => {
+      const element_Remove = event.target instanceof Element ? event.target.closest(".remove_htmlView[data-remove]") : null
+      const index = Number(element_Remove?.getAttribute("data-remove") ?? Number.NaN)
+      const id_Item = element_Remove === null
+        ? null
+        : idOf__Item({
+          element: element_Remove
+        })
+      return id_Item !== null && Number.isInteger(index)
+        ? {
+          kind: "REMOVE",
+          id_Item,
+          index
+        }
+        : null
+    }
+  },
+  {
+    event: "click",
+    commandOf__Event: (event) => event.target instanceof Element && event.target.closest(".request_htmlView > .start_htmlView") !== null
+      ? {
+        kind: "START"
+      }
+      : null
+  },
+  {
+    event: "click",
+    commandOf__Event: (event) => {
+      const element_Confirm = event.target instanceof Element ? event.target.closest(".actions_htmlView[data-confirming] > [data-confirm]") : null
+      return element_Confirm === null
+        ? null
+        : {
+          kind: "CONFIRM",
+          isConfirmed: element_Confirm.getAttribute("data-confirm") === "YES"
+        }
+    }
+  },
+  {
+    event: "keydown",
+    commandOf__Event: (event) => event instanceof KeyboardEvent && event.key === "Escape" && event.target instanceof Element && event.target.closest(".actions_htmlView[data-confirming]") !== null
+      ? {
+        kind: "CONFIRM",
+        isConfirmed: false
+      }
+      : null
   }
 ]
 
-function sentOf__Request(
+interface _Api___sentOf__Request_ {
   element: Element
-): _SEND_REQUEST__Command_ | null {
+  isStarting: boolean
+}
+
+function sentOf__Request({
+  element,
+  isStarting
+}: _Api___sentOf__Request_): _SEND_REQUEST__Command_ | null {
   const element_Notes = element.closest(".asking_htmlView")?.querySelector(":scope > .notes_htmlView")
   return element_Notes instanceof HTMLTextAreaElement
     ? {
       kind: "SEND_REQUEST",
-      notes: element_Notes.value
+      notes: element_Notes.value,
+      isStarting
     }
     : null
 }
@@ -307,21 +370,24 @@ function sentOf__Request(
 interface _Api___sentOf__Item_ {
   element: Element
   id_Item: _Id_Item_
+  isStarting: boolean
 }
 
 function sentOf__Item({
   element,
-  id_Item
+  id_Item,
+  isStarting
 }: _Api___sentOf__Item_): _SEND_Command_ | null {
   const element_Item = element.closest(".item_htmlView")
-  const command = element_Item?.querySelector(".action_htmlView[data-command][data-state-after='REQUESTED']")?.getAttribute("data-command")
+  const command = element_Item?.querySelector(".action_htmlView[data-command][aria-expanded]")?.getAttribute("data-command")
   const element_Notes = element_Item?.querySelector(".notes_htmlView")
   return typeof command === "string" && element_Notes instanceof HTMLTextAreaElement
     ? {
       kind: "SEND",
       id_Item,
       command,
-      notes: element_Notes.value
+      notes: element_Notes.value,
+      isStarting
     }
     : null
 }

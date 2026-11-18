@@ -480,9 +480,16 @@
   color: var(--view-rationale-ink, color-mix(in srgb, CanvasText 84%, transparent));
 }
 
-/* what you asked of it, a requested or revising one's, under its words: a
-   quote, your words, not the agent's, a rule beside them and "You asked"
-   over them in its state's ink */
+/* what you've asked of it, a requested or revising one's, under its
+   words: a quote, your words, not the agent's, a rule beside them and
+   "Requests" over them, in its state's ink, bold, as a list's
+   heading; a list of them, a bullet in that ink before each, a little room
+   between them, so where one ends and the next begins is seen, however
+   many lines each wraps to; each the words it's on quoted first, and, while
+   it's queued, Remove after it, a quiet link-like word, not a button that
+   competes with the item's actions; and under them, while they're queued,
+   Start, set apart, below, starting everything queued, every proposal's,
+   without its form */
 .htmlView_editor .request_htmlView {
   grid-column: 1;
   margin: 0.25rem 0 0;
@@ -491,14 +498,70 @@
   color: var(--view-rationale-ink, color-mix(in srgb, CanvasText 84%, transparent));
 }
 
-.htmlView_editor .asked_htmlView {
+.htmlView_editor .label_Request_htmlView {
   margin: 0;
   font-size: 0.82em;
+  font-weight: 600;
   color: var(--ink_state_htmlView);
+}
+
+.htmlView_editor .list_Request_htmlView {
+  margin: 0.2rem 0 0;
+  padding-left: 1.1em;
+  list-style: disc;
 }
 
 .htmlView_editor .said_htmlView {
   margin: 0;
+}
+
+.htmlView_editor .said_htmlView + .said_htmlView {
+  margin-top: 0.35rem;
+}
+
+.htmlView_editor .said_htmlView::marker {
+  color: var(--ink_state_htmlView);
+}
+
+.htmlView_editor .quote_Said_htmlView {
+  margin-right: 0.4em;
+  font-family: var(--view-font, ui-monospace, "SF Mono", Menlo, Consolas, monospace);
+  color: var(--view-placeholder-ink, color-mix(in srgb, CanvasText 58%, transparent));
+}
+
+.htmlView_editor .remove_htmlView {
+  margin-left: 0.5em;
+  padding: 0;
+  border: none;
+  background: none;
+  color: var(--view-placeholder-ink, color-mix(in srgb, CanvasText 58%, transparent));
+  font: inherit;
+  font-size: 0.82em;
+  cursor: pointer;
+}
+
+.htmlView_editor .request_htmlView > .start_htmlView {
+  display: block;
+  margin-top: 0.55rem;
+}
+
+.htmlView_editor .remove_htmlView:hover {
+  color: inherit;
+  text-decoration: underline;
+}
+
+.htmlView_editor .remove_htmlView:focus-visible {
+  outline: 2px solid var(--view-focus-ring, CanvasText);
+  outline-offset: 2px;
+}
+
+/* the words a queued or revising request is on, as proposed: underlined,
+   dotted, in the revision's plum, as doctor marked them, whatever the look,
+   as what you asked is yours, not a look's */
+.htmlView_editor .text_htmlView > [data-requested] {
+  text-decoration: underline dotted var(--accent_revision_htmlView);
+  text-decoration-thickness: 2px;
+  text-underline-offset: 0.2em;
 }
 
 .htmlView_editor :is(.places_htmlView, .rationale_htmlView, .request_htmlView, .status_htmlView):empty {
@@ -682,13 +745,16 @@
    and no action of one that isn't open the main one, as what's done with
    it now, reopening it, isn't what it's waiting for */
 
-/* its actions in colour too while it's open, waiting on you: the main
-   one filled in the proposals' indigo, its words white, a deeper indigo in
-   the dark, so they still read; the others on their grey, their words the
-   colour of the state each leads to, rejecting indigo, revising plum, so
-   they're still plainly buttons; once it's not, waiting on the agent, or
-   on no one, its actions neutral, there but not asked for, the colour on
-   its row its state's alone. Hovered, each a step deeper, its ground
+/* its actions in colour too while it's waiting on you, open, or its
+   revisions queued: an open one's main one filled in the proposals'
+   indigo, its words white, a deeper indigo in the dark, so they still
+   read; the others on their grey, their words the colour of the state
+   each leads to, rejecting indigo, revising plum, Start too, so they're
+   still plainly buttons; one with revisions queued has no main one, as
+   what's next is yours to choose, adding, starting or deciding; once it's
+   waiting on the agent, or on no one, its actions neutral, there but not
+   asked for, the colour on its row its state's alone, and a confirmation's
+   too, as it asks, not leads. Hovered, each a step deeper, its ground
    darker on its grey, the main one's indigo deeper, as a click does
    nothing else to show yet; and ringed in the page's ink when the
    keyboard's on it, no colour, as each colour here says where a proposal
@@ -703,7 +769,8 @@
   cursor: pointer;
 }
 
-.htmlView_editor .item_htmlView:not([data-state="OPEN"]) .action_htmlView {
+.htmlView_editor .item_htmlView:not([data-state="OPEN"], [data-state="REQUESTED"]) .action_htmlView,
+.htmlView_editor .actions_htmlView[data-confirming] > .action_htmlView {
   color: var(--view-action-ink, light-dark(#3b3b3b, #cccccc));
 }
 
@@ -730,8 +797,10 @@
    item's whole width, three lines tall whatever's in it, scrolling past
    them, so the item doesn't grow as it's written in, never resized by hand,
    its edge plain enough to find; and under the box, on the right, where
-   its actions end, Submit, filled in the revision's plum, as submitting
-   leads to a revision requested, and Cancel, neutral */
+   its actions end, Add, filled in the revision's plum, as adding queues
+   it, a revision requested, then Start, its words plum, which adds it and
+   starts everything queued, every proposal's, being revised, and Cancel,
+   neutral */
 .htmlView_editor .draft_htmlView {
   grid-column: 1 / -1;
   display: flex;
@@ -795,17 +864,48 @@
   border-color: var(--view-focus-edge, color-mix(in srgb, CanvasText 72%, transparent));
 }
 
-.htmlView_editor .item_htmlView[data-drafting] .action_htmlView[data-draft="SEND"] {
+.htmlView_editor .item_htmlView[data-drafting] .action_htmlView[data-draft="ADD"] {
   background: var(--view-action-revision-ground, light-dark(#8e3591, #a2449f));
   color: var(--view-action-main-ink, #ffffff);
 }
 
-.htmlView_editor .item_htmlView[data-drafting] .action_htmlView[data-draft="SEND"]:hover {
+.htmlView_editor .item_htmlView[data-drafting] .action_htmlView[data-draft="ADD"]:hover {
   background: var(--view-action-revision-hover-ground, light-dark(#782b7b, #b252af));
 }
 
 .htmlView_editor .item_htmlView[data-drafting] .action_htmlView[data-draft="DISCARD"] {
   color: var(--view-action-ink, light-dark(#3b3b3b, #cccccc));
+}
+
+/* Start, wherever it is, under what's queued or in a form: what all of
+   this waits on, as nothing's revised till it's pressed, so set apart from
+   every other action, though not the main one, as Add is in a form: its
+   words bold, in the revision's plum, on a ground tinted with that plum, a
+   step deeper hovered, no mark before them, tried and dropped; a host's
+   own grounds for it, if it gives them */
+.htmlView_editor .start_htmlView {
+  background: var(--view-action-start-ground, color-mix(in srgb, var(--ink_state_htmlView) 15%, var(--view-action-ground, light-dark(#e5e5e5, #313131))));
+  font-weight: 600;
+}
+
+.htmlView_editor .start_htmlView:hover {
+  background: var(--view-action-start-hover-ground, color-mix(in srgb, var(--ink_state_htmlView) 26%, var(--view-action-ground, light-dark(#e5e5e5, #313131))));
+}
+
+/* an action that would drop what's queued, asked first, in its place: the
+   question over the action and Cancel, which the keyboard lands on, so a
+   second Enter doesn't decide */
+.htmlView_editor .actions_htmlView[data-confirming] {
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  align-items: center;
+  max-width: 18rem;
+}
+
+.htmlView_editor .question_htmlView {
+  flex-basis: 100%;
+  text-align: right;
+  color: var(--view-rationale-ink, color-mix(in srgb, CanvasText 84%, transparent));
 }
 
 /* the editor's own selection and caret, the browser's left alone: the
@@ -957,4 +1057,13 @@
 
 .htmlView_editor .asking_htmlView .action_htmlView[data-request="SEND"]:hover {
   background: var(--view-action-main-hover-ground, light-dark(#3c39ad, #6866e2));
+}
+
+.htmlView_editor .asking_htmlView .action_htmlView[data-request="ADD"] {
+  background: var(--view-action-revision-ground, light-dark(#8e3591, #a2449f));
+  color: var(--view-action-main-ink, #ffffff);
+}
+
+.htmlView_editor .asking_htmlView .action_htmlView[data-request="ADD"]:hover {
+  background: var(--view-action-revision-hover-ground, light-dark(#782b7b, #b252af));
 }

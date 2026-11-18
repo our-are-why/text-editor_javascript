@@ -412,15 +412,25 @@ test("each edit's told to the host as it's applied, as the playground reports it
 })
 
 // then, on the JavaScript example, its host the playground's: "Keep every
-// error" accepted; "Drop the onRetry hook" sent back to be revised, what
-// should change written under it; the withdrawn "Log each retry" dismissed;
-// each proposal's items, and what's drawn, after each; and typed into again
+// error" accepted; a revision of "Drop the onRetry hook" queued, what should
+// change written under it; the withdrawn "Log each retry" dismissed; a
+// second revision of the hook queued, both listed, and the first removed;
+// Accept pressed on the hook, asked first, as it'd drop what's queued, the
+// keyboard on Cancel, and Escape taking it back; then a revision of the
+// cap added, and Start, under what's queued on it, revising everything
+// queued at once, the cap's and the hook's, both revising, and a moment later, the host having no agent,
+// open again, what was asked of them done with; each proposal's items, and
+// what's drawn, after each; and typed into again
 const itemsOf = (source: string) => opened_JavaScript.page.evaluate(async (source) => {
   await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)))
   return [...document.querySelectorAll(`.item_htmlView[data-source="${source}"]`)].map((element) => ({
     state: element.getAttribute("data-state"),
     actions: [...element.querySelectorAll(".action_htmlView[data-command]")].map((button) => button.textContent),
-    asked: element.querySelector(".said_htmlView")?.textContent ?? null
+    asked: [...element.querySelectorAll(".notes_Said_htmlView")].map((said) => said.textContent),
+    quoted: [...element.querySelectorAll(".quote_Said_htmlView")].map((quote) => quote.textContent),
+    removes: element.querySelectorAll(".remove_htmlView").length,
+    starts: element.querySelectorAll(".request_htmlView > .start_htmlView").length,
+    ink_Revise: [...element.querySelectorAll(".action_htmlView[data-command=\"revise\"]")].map((button) => getComputedStyle(button).color).join()
   }))
 }, source)
 const pressed = async (source: string, command: string) => {
@@ -428,15 +438,38 @@ const pressed = async (source: string, command: string) => {
   await button.scrollIntoViewIfNeeded()
   await button.click()
 }
+const revisedWith = async (source: string, notes: string, draft: "ADD" | "START") => {
+  await pressed(source, "revise")
+  await opened_JavaScript.page.locator(`.item_htmlView[data-source="${source}"] .notes_htmlView`).first().fill(notes)
+  await opened_JavaScript.page.locator(`.item_htmlView[data-source="${source}"] .action_htmlView[data-draft="${draft}"]`).first().click()
+}
 await pressed("errors", "accept")
 const items_Accepted = await itemsOf("errors")
-await pressed("hook", "revise")
-await opened_JavaScript.page.locator(".item_htmlView[data-source=\"hook\"] .notes_htmlView").first().fill("Keep the hook, but call it after the delay.")
-await opened_JavaScript.page.locator(".item_htmlView[data-source=\"hook\"] .action_htmlView[data-draft=\"SEND\"]").first().click()
+await revisedWith("hook", "Keep the hook, but call it after the delay.", "ADD")
 const items_Requested = await itemsOf("hook")
 await pressed("log", "dismiss")
 const items_Dismissed = await itemsOf("log")
+await revisedWith("hook", "Name what it's given.", "ADD")
+const items_Queued = await itemsOf("hook")
+await opened_JavaScript.page.locator(".item_htmlView[data-source=\"hook\"] .remove_htmlView").first().click()
+const items_Removed = await itemsOf("hook")
+await pressed("hook", "accept")
+const confirming_Hook = await opened_JavaScript.page.evaluate(async () => {
+  await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)))
+  return {
+    question: document.querySelector(".item_htmlView[data-source=\"hook\"] .question_htmlView")?.textContent ?? null,
+    focused: document.activeElement?.textContent ?? null
+  }
+})
+await opened_JavaScript.page.keyboard.press("Escape")
+const items_Kept = await itemsOf("hook")
+await revisedWith("cap", "Say why 30.", "ADD")
+await opened_JavaScript.page.locator(".item_htmlView[data-source=\"cap\"] .request_htmlView > .start_htmlView").first().click()
+const items_Revising = [...await itemsOf("hook"), ...await itemsOf("cap")]
+await opened_JavaScript.page.waitForFunction(() => [...document.querySelectorAll(".item_htmlView:is([data-source=\"hook\"], [data-source=\"cap\"])")].every((element) => element.getAttribute("data-state") === "OPEN"))
+const items_Revised = [...await itemsOf("hook"), ...await itemsOf("cap")]
 const asked_JavaScript = (await opened_JavaScript.logged()).filter((entry) => "asked" in entry)
+const queued_JavaScript = (await opened_JavaScript.logged()).filter((entry) => "removed" in entry || "revising" in entry || "revised" in entry)
 const lineOf_Attempts = () => opened_JavaScript.page.evaluate(async () => {
   await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)))
   return [...document.querySelectorAll(".run_htmlView[data-run$=\"-proposed\"] > .line_htmlView > .text_htmlView")].map((element) => element.textContent ?? "").find((text) => text.includes("round === attemptss")) ?? ""
@@ -462,16 +495,31 @@ await opened_JavaScript.page.mouse.click(point_Attempts_After.x, point_Attempts_
 await opened_JavaScript.page.keyboard.type("x")
 const line_Attempts_Typed = await lineOf_Attempts()
 
-test("a proposal's action pressed is asked of the host, which sends back what it now has: accepted, it's drawn accepted, Reopen its one action; a revision sent, its notes asked with it, it's drawn as one requested, what you asked under it; dismissed, it's gone; and what's typed after goes on as before", () => {
+test("a proposal's action pressed is asked of the host, which sends back what it now has: accepted, it's drawn accepted, Reopen its one action; a revision added, its notes asked with it, it's drawn as one requested, what you asked listed under it, still to be accepted, rejected or asked more of; dismissed, it's gone; another added, both listed, one removed; accepting one with revisions queued asked first, Cancel the keyboard's, Escape taking it back; Start, under what's queued, every proposal with revisions queued revising at once, nothing to remove or start then, and open again when the host's done, what was asked done with; and what's typed after goes on as before", () => {
   expect(items_Accepted.length).toBeGreaterThan(0)
   expect(items_Accepted.every((item) => item.state === "ACCEPTED" && item.actions.join() === "Reopen")).toBe(true)
   expect(items_Requested.length).toBeGreaterThan(0)
-  expect(items_Requested.every((item) => item.state === "REQUESTED" && item.asked === "Keep the hook, but call it after the delay.")).toBe(true)
+  expect(items_Requested.every((item) => item.state === "REQUESTED" && item.asked.join("|") === "Keep the hook, but call it after the delay." && item.actions.join() === "Accept,Reject,Revise" && item.removes === 1 && item.starts === 1)).toBe(true)
+  expect(items_Requested[0]?.ink_Revise).toBe(items_Revised[0]?.ink_Revise)
   expect(items_Dismissed).toEqual([])
+  expect(items_Queued.every((item) => item.asked.join("|") === "Keep the hook, but call it after the delay.|Name what it's given." && item.removes === 2)).toBe(true)
+  expect(items_Removed.every((item) => item.state === "REQUESTED" && item.asked.join("|") === "Name what it's given.")).toBe(true)
+  expect(confirming_Hook).toEqual({ question: "Accept and drop 1 queued request?", focused: "Cancel" })
+  expect(items_Kept.every((item) => item.state === "REQUESTED" && item.actions.join() === "Accept,Reject,Revise" && item.asked.join("|") === "Name what it's given.")).toBe(true)
+  expect(items_Revising.length).toBeGreaterThan(1)
+  expect(items_Revising.every((item) => item.state === "REVISING" && item.actions.length === 0 && item.asked.length > 0 && item.removes === 0 && item.starts === 0)).toBe(true)
+  expect(items_Revised.every((item) => item.state === "OPEN" && item.actions.join() === "Accept,Reject,Revise" && item.asked.length === 0)).toBe(true)
   expect(asked_JavaScript).toEqual([
     { asked: "accept", proposal: "errors", notes: null, words: null },
     { asked: "revise", proposal: "hook", notes: "Keep the hook, but call it after the delay.", words: null },
-    { asked: "dismiss", proposal: "log", notes: null, words: null }
+    { asked: "dismiss", proposal: "log", notes: null, words: null },
+    { asked: "revise", proposal: "hook", notes: "Name what it's given.", words: null },
+    { asked: "revise", proposal: "cap", notes: "Say why 30.", words: null }
+  ])
+  expect(queued_JavaScript).toEqual([
+    { removed: 0, proposal: "hook" },
+    { revising: "hook, cap" },
+    { revised: "hook, cap" }
   ])
   expect(line_Attempts_Typed.length).toBe(line_Attempts.length + 1)
   expect(opened_JavaScript.errors).toEqual([])
@@ -524,6 +572,7 @@ const form_Words = await opened_JavaScript.page.evaluate(async () => {
 await opened_JavaScript.page.keyboard.type("Check it before the delay too.")
 await opened_JavaScript.page.keyboard.press("Control+Enter")
 const items_Aborted = await itemsOf("aborted")
+const requested_Aborted = await opened_JavaScript.page.evaluate(() => [...document.querySelectorAll(".run_htmlView[data-run$=\"-proposed\"] .text_htmlView > [data-requested]")].map((element) => element.textContent))
 const rect_Backoff = await rectOf_Word("export function backoff(round)", "backoff")
 await opened_JavaScript.page.mouse.click(rect_Backoff.left + 2, rect_Backoff.y)
 await opened_JavaScript.page.mouse.click(rect_Backoff.left + 2, rect_Backoff.y, { button: "right" })
@@ -541,11 +590,13 @@ await opened_JavaScript.page.keyboard.type("Say why the delay doubles.")
 await opened_JavaScript.page.keyboard.press("Control+Enter")
 const asked_Menu = (await opened_JavaScript.logged()).filter((entry) => "requested" in entry || entry["words"] !== undefined && entry["words"] !== null)
 
-test("a right-click on a proposal's selected words offers a note on them, or on the whole proposal, the first focused; chosen, a form, what it's on quoted, the keyboard in it; sent, the host's told, which sends the proposal back for a revision, the words quoted with what you asked; on the document's words, nothing selected, a request for a change to the document, Escape closing it, the menu key opening it again at the caret", () => {
+test("a right-click on a proposal's selected words offers a note on them, or on the whole proposal, the first focused; chosen, a form, what it's on quoted, the keyboard in it; added, the host's told, which queues a revision of the proposal, the words quoted before what you asked, and underlined, dotted, where they're proposed; on the document's words, nothing selected, a request for a change to the document, Escape closing it, the menu key opening it again at the caret", () => {
   expect(menu_Words).toEqual({ choices: ["Note on these words of “Stop retrying once the caller aborts”", "Note on “Stop retrying once the caller aborts”"], focused: "Note on these words of “Stop retrying once the caller aborts”" })
   expect(form_Words).toEqual({ label: "Note on these words of “Stop retrying once the caller aborts”", quote: "aborted", isFocused: true })
   expect(items_Aborted.length).toBeGreaterThan(0)
-  expect(items_Aborted.every((item) => item.state === "REQUESTED" && item.asked === "On “aborted”: Check it before the delay too.")).toBe(true)
+  expect(items_Aborted.every((item) => item.state === "REQUESTED" && item.asked.join("|") === "Check it before the delay too." && item.quoted.join("|") === "aborted")).toBe(true)
+  expect(requested_Aborted.length).toBeGreaterThan(0)
+  expect(requested_Aborted.join("")).toBe("aborted".repeat(requested_Aborted.join("").length / "aborted".length))
   expect(menu_Document).toEqual({ choices: ["Request a change to this document"], focused: "Request a change to this document" })
   expect(isClosed_Menu).toBe(true)
   expect(menu_Keyboard).toEqual(menu_Document)

@@ -42,7 +42,7 @@ function proposalOf(
   title: string,
   rationale: string
 ): _Proposal_Host_ {
-  return { source, title, state: "OPEN", status: "", rationale, request: "", actions: actions_Review, attributes: {} }
+  return { source, title, state: "OPEN", status: "", rationale, requests: [], actions: actions_Review, attributes: {} }
 }
 
 const round = proposalOf("round", "Call the attempt counter round", "n says nothing; round says what it counts.")
@@ -276,3 +276,27 @@ for (const scene of [proposalsCode, proposalsThread, proposalsProse]) {
     expect(drawnAs(scene.viewModel_TextEditor)).toMatchSnapshot()
   })
 }
+
+test("what's asked of a proposal: each request listed on its item, the words it's on quoted; the item saying while they're queued, so each can be removed and they can be started, not while they're being revised; and those words underlined where they're proposed, the document's and the proposal's own, each marked requested in its frame's lines as proposed, not as they are", () => {
+  const parsed = parseModel_TextEditor({
+    multilineText: "one two three",
+    marks: [],
+    proposed: [{ source: "digit", changes: [{ kind: "REPLACE", range: { from: { line: 0, offset: 4 }, to: { line: 0, offset: 7 } }, multilineText: "2", marks: [] }] }]
+  })
+  if (parsed.kind === "REFUSED") throw new Error("refused")
+  const viewModelIn = (state: "REQUESTED" | "REVISING") => viewModelOf__Model({
+    model_TextEditor: parsed.model_TextEditor,
+    proposals: [{ source: "digit", title: "Write two as a digit", state, status: "", rationale: "", requests: [{ notes: "Both.", selected: { pieces: [{ id_Text: { kind: "DOCUMENT" }, range: { from: { line: 0, offset: 0 }, to: { line: 0, offset: 3 } } }, { id_Text: { kind: "CHANGE", source: "digit", index: 0 }, range: { from: { line: 0, offset: 0 }, to: { line: 0, offset: 1 } } }], text: "one 2" } }, { notes: "And this.", selected: null }], actions: actions_Review, attributes: {} }],
+    ranges_Frame: [],
+    module_Language: MODULE_PLAINTEXT,
+    module_Reading: MODULE_READING_TEXT
+  })
+  const partsOf = (viewModel: _ViewModel_TextEditor_) => viewModel.blocks.flatMap((block) => block.kind === "FRAME" ? block.parts : [])
+  const requestedIn = (viewModel: _ViewModel_TextEditor_, kind: "PROPOSAL_LINES" | "CURRENT_LINES") => partsOf(viewModel).flatMap((part) => part.kind === kind ? part.run.lines.flatMap((line) => line.segments.filter((segment) => "data-requested" in segment.attributes).map((segment): string => segment.text)) : [])
+  const requestsIn = (viewModel: _ViewModel_TextEditor_) => partsOf(viewModel).flatMap((part) => part.kind === "PROPOSAL_LIST" ? part.items.map((item) => [item.isQueued, item.requests]) : [])
+  expect(requestedIn(viewModelIn("REQUESTED"), "PROPOSAL_LINES")).toEqual(["one", "2"])
+  expect(requestedIn(viewModelIn("REQUESTED"), "CURRENT_LINES")).toEqual([])
+  const requests = [{ notes: "Both.", quote: "one 2" }, { notes: "And this.", quote: null }]
+  expect(requestsIn(viewModelIn("REQUESTED"))).toEqual([[true, requests]])
+  expect(requestsIn(viewModelIn("REVISING"))).toEqual([[false, requests]])
+})

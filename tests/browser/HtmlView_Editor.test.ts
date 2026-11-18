@@ -101,7 +101,7 @@ describe("beside it: what can't live in one document", () => {
           parts: [
             { kind: "CURRENT_LINES", run: { id: "current", lines: [lineOf("two")], groups: [] } },
             { kind: "PROPOSAL_LINES", run: { id: "proposed", lines: [lineOf("two, proposed")], groups: [] } },
-            { kind: "PROPOSAL_LIST", items: [{ source: "most", title: "Most of the orders", state: "OPEN", status: "", places: { kind: "NONE" as const }, rationale: "", request: "", actions: [], isDrafting: false, neighbors: { range_Previous: null, range_Next: null }, attributes: {} }] }
+            { kind: "PROPOSAL_LIST", items: [{ source: "most", title: "Most of the orders", state: "OPEN", status: "", places: { kind: "NONE" as const }, rationale: "", requests: [], actions: [], isQueued: false, isDrafting: false, confirming: null, neighbors: { range_Previous: null, range_Next: null }, attributes: {} }] }
           ]
         },
         { kind: "LINES", run: { id: "after", lines: [lineOf("three")], groups: [] } }
@@ -203,8 +203,8 @@ describe("beside it: what can't live in one document", () => {
             {
               kind: "PROPOSAL_LIST",
               items: [
-                { source: "most", title: "Most of the orders", state: "OPEN", status: "", places: { kind: "NONE" as const }, rationale: "", request: "", actions: [], isDrafting: false, neighbors: { range_Previous: null, range_Next: null }, attributes: {} },
-                { source: "all", title: "All of them", state: "OPEN", status: "", places: { kind: "NONE" as const }, rationale: "", request: "", actions: [], isDrafting: false, neighbors: { range_Previous: null, range_Next: null }, attributes: {} }
+                { source: "most", title: "Most of the orders", state: "OPEN", status: "", places: { kind: "NONE" as const }, rationale: "", requests: [], actions: [], isQueued: false, isDrafting: false, confirming: null, neighbors: { range_Previous: null, range_Next: null }, attributes: {} },
+                { source: "all", title: "All of them", state: "OPEN", status: "", places: { kind: "NONE" as const }, rationale: "", requests: [], actions: [], isQueued: false, isDrafting: false, confirming: null, neighbors: { range_Previous: null, range_Next: null }, attributes: {} }
               ]
             }
           ]
@@ -326,13 +326,13 @@ describe("beside it: what can't live in one document", () => {
     await opened.page.evaluate(() => document.getElementById("pointing-rows")?.remove())
   })
 
-  test("each state's item has its icon beside it, its status word after its title, the two in the proposals' indigo, decided by you, or their plum, a revision requested or under way, or a grey, withdrawn by the agent, never the item's words', an open one's other actions on their grey, their words the colour of the state each leads to, neutral once it's not, so colour keeps its meaning in the rings, or in a host's colour for its state, if it gives one; an open one no icon; a revising one's dots, the view's, waving as its icon goes round, its word still, the dots all there and still where motion's asked to be reduced; its title the same whatever its state", async () => {
+  test("each state's item has its icon beside it, its status word after its title, the two in the proposals' indigo, decided by you, or their plum, a revision requested or under way, or a grey, withdrawn by the agent, never the item's words', an open one's other actions on their grey, their words the colour of the state each leads to, one's with revisions queued too, waiting on you as an open one is, none of its the main one, neutral once it's waiting on the agent or on no one, so colour keeps its meaning in the rings, or in a host's colour for its state, if it gives one; an open one no icon; a revising one's dots, the view's, waving as its icon goes round, its word still, the dots all there and still where motion's asked to be reduced; its title the same whatever its state", async () => {
     const inksOf = () => opened.page.evaluate(async () => {
       const containerElement = document.createElement("div")
       containerElement.dataset["look"] = "changes"
       containerElement.style.setProperty("--view-state-rejected", "rgb(1, 2, 3)")
       document.body.append(containerElement)
-      const itemOf = (state: "OPEN" | "REQUESTED" | "REVISING" | "ACCEPTED" | "REJECTED" | "WITHDRAWN") => ({ source: state, title: state, state, status: state === "OPEN" ? "" : state, places: { kind: "NONE" as const }, rationale: "", request: "", actions: [], isDrafting: false, neighbors: { range_Previous: null, range_Next: null }, attributes: {} })
+      const itemOf = (state: "OPEN" | "REQUESTED" | "REVISING" | "ACCEPTED" | "REJECTED" | "WITHDRAWN") => ({ source: state, title: state, state, status: state === "OPEN" ? "" : state, places: { kind: "NONE" as const }, rationale: "", requests: [], actions: [], isQueued: false, isDrafting: false, confirming: null, neighbors: { range_Previous: null, range_Next: null }, attributes: {} })
       new window._View_TextEditor_({
         containerElement,
         componentMap: window.COMPONENTMAP__VIEW_TEXTEDITOR
@@ -397,7 +397,9 @@ describe("beside it: what can't live in one document", () => {
         toReject: buttonOf("OPEN", false, "REJECTED"),
         toRevise: buttonOf("OPEN", false, "REQUESTED"),
         toWithdraw: buttonOf("OPEN", false, "WITHDRAWN"),
-        notOpen: [...new Set(["REQUESTED", "REVISING", "ACCEPTED", "REJECTED", "WITHDRAWN"].flatMap((state) => [buttonOf(state, true, "OPEN"), buttonOf(state, false, "REQUESTED"), buttonOf(state, false, null)]).map((button) => JSON.stringify(button)))]
+        queuedFirst: buttonOf("REQUESTED", true, "ACCEPTED"),
+        queuedToRevise: buttonOf("REQUESTED", false, "REQUESTED"),
+        notOpen: [...new Set(["REVISING", "ACCEPTED", "REJECTED", "WITHDRAWN"].flatMap((state) => [buttonOf(state, true, "OPEN"), buttonOf(state, false, "REQUESTED"), buttonOf(state, false, null)]).map((button) => JSON.stringify(button)))]
       }
       containerElement.remove()
       return { inks, muted, revision, withdrawn, words, buttons }
@@ -434,7 +436,8 @@ describe("beside it: what can't live in one document", () => {
     expect(moving.buttons.main.ink).toBe("rgb(255, 255, 255)")
     expect(moving.buttons.main.ground).not.toBe("rgb(255, 255, 255)")
     expect(moving.buttons.main.edge).toBe("none")
-    // once it's not open, every action neutral on its grey, no edge
+    // once it's waiting on the agent or on no one, every action neutral on
+    // its grey, no edge
     expect(moving.buttons.notOpen).toHaveLength(1)
     const notOpen = JSON.parse(moving.buttons.notOpen[0] ?? "{}")
     expect(notOpen.edge).toBe("none")
@@ -447,6 +450,9 @@ describe("beside it: what can't live in one document", () => {
     expect(moving.buttons.toReject).toEqual(onGrey("rgb(1, 2, 3)"))
     expect(moving.buttons.toRevise).toEqual(onGrey(revision))
     expect(moving.buttons.toWithdraw).toEqual(onGrey(withdrawn))
+    // one with revisions queued, the same, its first not the main one
+    expect(moving.buttons.queuedFirst).toEqual(onGrey(muted))
+    expect(moving.buttons.queuedToRevise).toEqual(onGrey(revision))
     await opened.page.emulateMedia({ reducedMotion: "reduce" })
     const still = await inksOf()
     expect(still.inks["REVISING"]).toEqual({ title, dots: "none", icon: revision, word: revision })
@@ -467,7 +473,7 @@ describe("beside it: what can't live in one document", () => {
         range: { first: 1, last: 1 },
         parts: [
           { kind: "CURRENT_LINES", run: { id: "current", lines: window.parseLines_ViewModel({ multilineText: "one", module_Language: window.MODULE_PLAINTEXT }), groups: [] } },
-          { kind: "PROPOSAL_LIST", items: [{ source: "timeout", title: "Retry a timeout", state: "REVISING" as const, status: "Revising", places: { kind: "NONE" as const }, rationale: "", request: "", actions: [], isDrafting: false, neighbors: { range_Previous: null, range_Next: null }, attributes: {} }] }
+          { kind: "PROPOSAL_LIST", items: [{ source: "timeout", title: "Retry a timeout", state: "REVISING" as const, status: "Revising", places: { kind: "NONE" as const }, rationale: "", requests: [], actions: [], isQueued: false, isDrafting: false, confirming: null, neighbors: { range_Previous: null, range_Next: null }, attributes: {} }] }
         ]
       }]))
     })
@@ -535,8 +541,8 @@ describe("beside it: what can't live in one document", () => {
             { kind: "CURRENT_LINES", run: { id: "current", lines: window.parseLines_ViewModel({ multilineText: "one", module_Language: window.MODULE_PLAINTEXT }), groups: [] } },
             { kind: "PROPOSAL_LINES", run: { id: "proposed", lines: window.parseLines_ViewModel({ multilineText: "ONE", module_Language: window.MODULE_PLAINTEXT }), groups: [] } },
             { kind: "PROPOSAL_LIST", items: [
-              { source: "open", title: "Open", state: "OPEN" as const, status: "", places: { kind: "NONE" as const }, rationale: "Why.", request: "", actions: review, isDrafting: false, neighbors: { range_Previous: null, range_Next: null }, attributes: {} },
-              { source: "taken", title: "Taken", state: "ACCEPTED" as const, status: "Accepted", places: { kind: "NONE" as const }, rationale: "Why.", request: "", actions: [{ command: "reopen", label: "Reopen", stateAfter: "OPEN" as const }], isDrafting: false, neighbors: { range_Previous: null, range_Next: null }, attributes: {} }
+              { source: "open", title: "Open", state: "OPEN" as const, status: "", places: { kind: "NONE" as const }, rationale: "Why.", requests: [], actions: review, isQueued: false, isDrafting: false, confirming: null, neighbors: { range_Previous: null, range_Next: null }, attributes: {} },
+              { source: "taken", title: "Taken", state: "ACCEPTED" as const, status: "Accepted", places: { kind: "NONE" as const }, rationale: "Why.", requests: [], actions: [{ command: "reopen", label: "Reopen", stateAfter: "OPEN" as const }], isQueued: false, isDrafting: false, confirming: null, neighbors: { range_Previous: null, range_Next: null }, attributes: {} }
             ] }
           ]
         }])
@@ -634,7 +640,7 @@ describe("beside it: what can't live in one document", () => {
     await opened.page.evaluate(() => document.getElementById("lit")?.remove())
   })
 
-  test("Revise asks for your notes: a box under its item's words and actions, the keyboard in it, Submit, in the revision's plum, and Cancel, neutral, under it, in that item alone, though its proposal's in another frame too, Revise pressed, open; what's written kept as the pointer moves; Submit, Cancel, Escape, ⌘ or Ctrl with Enter, or Revise again with nothing written, close it, the keyboard back on Revise, and Revise again with something written puts the keyboard back in it; Revise on another item opens its form too, the first kept, what's written in it with it", async () => {
+  test("Revise asks for your notes: a box under its item's words and actions, the keyboard in it, Add, in the revision's plum, then Start, set apart, bold and plum, nothing before its word, on a ground tinted plum, and Cancel, neutral, under it, in that item alone, though its proposal's in another frame too, Revise pressed, open; what's written kept as the pointer moves; Add, with something written, Cancel, Escape, ⌘ or Ctrl with Enter, adding, or Revise again with nothing written, close it, the keyboard back on Revise, and Revise again with something written puts the keyboard back in it; Revise on another item opens its form too, the first kept, what's written in it with it", async () => {
     await opened.page.mouse.move(1270, 715)
     await opened.page.evaluate(() => {
       const containerElement = document.createElement("div")
@@ -647,7 +653,7 @@ describe("beside it: what can't live in one document", () => {
         { command: "reject", label: "Reject", stateAfter: "REJECTED" as const },
         { command: "revise", label: "Revise", stateAfter: "REQUESTED" as const }
       ]
-      const itemOf = (source: string) => ({ source, title: source, state: "OPEN" as const, status: "", places: { kind: "NONE" as const }, rationale: "Why.", request: "", actions: review, isDrafting: false, neighbors: { range_Previous: null, range_Next: null }, attributes: {} })
+      const itemOf = (source: string) => ({ source, title: source, state: "OPEN" as const, status: "", places: { kind: "NONE" as const }, rationale: "Why.", requests: [], actions: review, isQueued: false, isDrafting: false, confirming: null, neighbors: { range_Previous: null, range_Next: null }, attributes: {} })
       const lines = window.parseLines_ViewModel({ multilineText: "one", module_Language: window.MODULE_PLAINTEXT })
       new window._Viewer_TextEditor_({
         containerElement,
@@ -700,16 +706,16 @@ describe("beside it: what can't live in one document", () => {
     expect(await looks()).toEqual({
       drafted: ["1 round"],
       expanded: ["1 round true", "1 cap false", "3 round false"],
-      actions: ["1 round: Accept Reject Revise Submit Cancel", "1 cap: Accept Reject Revise", "3 round: Accept Reject Revise", "3 taken: Reopen"],
+      actions: ["1 round: Accept Reject Revise Add Start Cancel", "1 cap: Accept Reject Revise", "3 round: Accept Reject Revise", "3 taken: Reopen"],
       focused: "1 round notes",
       written: ""
     })
     // laid out: the box under the item's words and its actions, from where
-    // its words start to where its actions end, never resized by hand; Submit
-    // and Cancel under the box, ending where it does
+    // its words start to where its actions end, never resized by hand; Add,
+    // Start and Cancel under the box, ending where it does
     expect(await opened.page.evaluate((selector) => {
       const rectOf = (child: string) => document.querySelector(`${selector} ${child}`)?.getBoundingClientRect()
-      const [words, actions, notes, send, cancel] = [rectOf(".rationale_htmlView"), rectOf(".actions_htmlView"), rectOf(".notes_htmlView"), rectOf("[data-draft='SEND']"), rectOf("[data-draft='DISCARD']")]
+      const [words, actions, notes, send, cancel] = [rectOf(".rationale_htmlView"), rectOf(".actions_htmlView"), rectOf(".notes_htmlView"), rectOf("[data-draft='ADD']"), rectOf("[data-draft='DISCARD']")]
       return [
         (notes?.top ?? 0) >= Math.max(words?.bottom ?? 0, actions?.bottom ?? 0),
         notes?.left === words?.left,
@@ -719,15 +725,21 @@ describe("beside it: what can't live in one document", () => {
         getComputedStyle(document.querySelector(`${selector} .notes_htmlView`) ?? document.body).resize
       ]
     }, item(1, "round"))).toEqual([true, true, true, true, true, "none"])
-    // as it looks: Submit filled in plum, white on it, not Accept's indigo;
-    // Cancel as neutral as Reopen
+    // as it looks: Add filled in plum, white on it, not Accept's indigo;
+    // Start's words plum, as Revise's are, and bold, nothing before them,
+    // on a ground tinted plum, neither Add's nor Cancel's; Cancel as
+    // neutral as Reopen
     const inks = await opened.page.evaluate(({ drafted, other, taken }) => {
-      const styleOf = (selector: string) => {
+      const styleOf = (selector: string, pseudo?: string) => {
         const element = document.querySelector(selector)
-        return element === null ? null : getComputedStyle(element)
+        return element === null ? null : getComputedStyle(element, pseudo)
       }
       return {
-        send: `${styleOf(`${drafted} [data-draft="SEND"]`)?.backgroundColor} ${styleOf(`${drafted} [data-draft="SEND"]`)?.color}`,
+        send: `${styleOf(`${drafted} [data-draft="ADD"]`)?.backgroundColor} ${styleOf(`${drafted} [data-draft="ADD"]`)?.color}`,
+        start: styleOf(`${drafted} [data-draft="START"]`)?.color,
+        startLook: `${styleOf(`${drafted} [data-draft="START"]`)?.fontWeight} ${styleOf(`${drafted} [data-draft="START"]`)?.backgroundColor} ${styleOf(`${drafted} [data-draft="START"]`, "::before")?.content}`,
+        cancelGround: styleOf(`${drafted} [data-draft="DISCARD"]`)?.backgroundColor,
+        revise: styleOf(`${drafted} .action_htmlView[data-command="revise"]`)?.color,
         accept: styleOf(`${other} .action_htmlView`)?.backgroundColor,
         cancel: styleOf(`${drafted} [data-draft="DISCARD"]`)?.color,
         reopen: styleOf(`${taken} .action_htmlView`)?.color
@@ -736,6 +748,13 @@ describe("beside it: what can't live in one document", () => {
     expect(inks.send.endsWith("rgb(255, 255, 255)")).toBe(true)
     expect(inks.send.startsWith(inks.accept ?? "")).toBe(false)
     expect(inks.cancel).toBe(inks.reopen)
+    expect(inks.start).toBe(inks.revise)
+    expect(inks.start).not.toBe(inks.reopen)
+    const [weight, ...rest] = inks.startLook.split(" ")
+    const content_Before = rest.pop()
+    const ground_Start = rest.join(" ")
+    expect([weight, content_Before]).toEqual(["600", "none"])
+    expect([inks.send.startsWith(ground_Start), ground_Start === inks.cancelGround]).toEqual([false, false])
     // three lines tall, however many are written, scrolling past them
     const tall = () => opened.page.evaluate((selector) => {
       const notes = document.querySelector(`${selector} .notes_htmlView`)
@@ -758,7 +777,7 @@ describe("beside it: what can't live in one document", () => {
     expect(await looks()).toEqual({ drafted: [], expanded: shut, actions: closed, focused: "1 round Revise", written: null })
     // Revise by the keyboard: open again, empty, what was written gone
     await opened.page.keyboard.press("Enter")
-    expect(await looks()).toEqual({ drafted: ["1 round"], expanded: ["1 round true", ...shut.slice(1)], actions: ["1 round: Accept Reject Revise Submit Cancel", ...closed.slice(1)], focused: "1 round notes", written: "" })
+    expect(await looks()).toEqual({ drafted: ["1 round"], expanded: ["1 round true", ...shut.slice(1)], actions: ["1 round: Accept Reject Revise Add Start Cancel", ...closed.slice(1)], focused: "1 round notes", written: "" })
     // Ctrl with Enter: sent, closed
     await opened.page.keyboard.type("x")
     await opened.page.keyboard.press("Control+Enter")
@@ -786,12 +805,16 @@ describe("beside it: what can't live in one document", () => {
     await opened.page.keyboard.press("Escape")
     const one = await looks()
     expect([one.drafted, one.focused]).toEqual([["3 round"], "1 round Revise"])
-    // Cancel, then Submit, by the mouse
+    // Cancel, then Add, by the mouse: with nothing written, nothing added,
+    // the form kept open; with something, added, closed
     await press(`${item(3, "round")} [data-draft="DISCARD"]`)
     expect(await looks()).toEqual({ drafted: [], expanded: shut, actions: closed, focused: "3 round Revise", written: null })
     await press(`${item(1, "cap")} .action_htmlView[data-command="revise"]`)
     expect((await looks()).drafted).toEqual(["1 cap"])
-    await press(`${item(1, "cap")} [data-draft="SEND"]`)
+    await press(`${item(1, "cap")} [data-draft="ADD"]`)
+    expect((await looks()).drafted).toEqual(["1 cap"])
+    await opened.page.locator(`${item(1, "cap")} .notes_htmlView`).fill("y")
+    await press(`${item(1, "cap")} [data-draft="ADD"]`)
     expect(await looks()).toEqual({ drafted: [], expanded: shut, actions: closed, focused: "1 cap Revise", written: null })
     await opened.page.evaluate(() => document.getElementById("drafting")?.remove())
   })
@@ -817,7 +840,7 @@ describe("beside it: what can't live in one document", () => {
           parts: [
             { kind: "CURRENT_LINES", run: { id: "current", lines: window.parseLines_ViewModel({ multilineText: "one", module_Language: window.MODULE_PLAINTEXT }), groups: [] } },
             { kind: "PROPOSAL_LINES", run: { id: "proposed", lines: window.parseLines_ViewModel({ multilineText: "ONE", module_Language: window.MODULE_PLAINTEXT }), groups: [] } },
-            { kind: "PROPOSAL_LIST", items: [{ source: "open", title: "Open", state: "OPEN" as const, status: "", places: { kind: "NONE" as const }, rationale: "Why.", request: "", actions: [{ command: "revise", label: "Revise", stateAfter: "REQUESTED" as const }], isDrafting: false, neighbors: { range_Previous: null, range_Next: null }, attributes: {} }] }
+            { kind: "PROPOSAL_LIST", items: [{ source: "open", title: "Open", state: "OPEN" as const, status: "", places: { kind: "NONE" as const }, rationale: "Why.", requests: [], actions: [{ command: "revise", label: "Revise", stateAfter: "REQUESTED" as const }], isQueued: false, isDrafting: false, confirming: null, neighbors: { range_Previous: null, range_Next: null }, attributes: {} }] }
           ]
         }])
       })
@@ -866,7 +889,7 @@ describe("beside it: what can't live in one document", () => {
         range: { first: 1, last: 1 },
         parts: [
           { kind: "CURRENT_LINES", run: { id: "current", lines: window.parseLines_ViewModel({ multilineText: "one", module_Language: window.MODULE_PLAINTEXT }), groups: [] } },
-          { kind: "PROPOSAL_LIST", items: [{ source: "round", title: "Rename", state: "REQUESTED" as const, status: "Revision requested", places: { kind: "COUNT" as const, count_Here: 6, count_All: 9, conditions: [{ kind: "WITHIN" as const, count: 1, source: "hook", title: "Drop the hook" }, { kind: "CARRIED" as const, count: 1, source: "order", title: "Ask first" }] }, rationale: "Why.", request: "make it an option.", actions: [], isDrafting: false, neighbors: { range_Previous: null, range_Next: null }, attributes: {} }] }
+          { kind: "PROPOSAL_LIST", items: [{ source: "round", title: "Rename", state: "REQUESTED" as const, status: "Revision requested", places: { kind: "COUNT" as const, count_Here: 6, count_All: 9, conditions: [{ kind: "WITHIN" as const, count: 1, source: "hook", title: "Drop the hook" }, { kind: "CARRIED" as const, count: 1, source: "order", title: "Ask first" }] }, rationale: "Why.", requests: [{ notes: "make it an option.", quote: null }], actions: [], isQueued: true, isDrafting: false, confirming: null, neighbors: { range_Previous: null, range_Next: null }, attributes: {} }] }
         ]
       }]))
       const lines = [...containerElement.querySelectorAll(".places_htmlView > *")].map((line) => line.getBoundingClientRect())
@@ -881,7 +904,7 @@ describe("beside it: what can't live in one document", () => {
         before: condition === undefined ? "" : getComputedStyle(condition, "::before").content,
         chip: reference === null ? "" : getComputedStyle(reference).backgroundColor !== "rgba(0, 0, 0, 0)",
         upright: places === null ? "" : `${getComputedStyle(places).fontStyle} ${parseFloat(getComputedStyle(places).fontSize) < parseFloat(getComputedStyle(containerElement.querySelector(".rationale_htmlView") ?? places).fontSize)}`,
-        ruled: request === null || status === null ? false : getComputedStyle(request).borderLeftColor === getComputedStyle(status).color && getComputedStyle(request.querySelector(".asked_htmlView") ?? request).color === getComputedStyle(status).color
+        ruled: request === null || status === null ? false : getComputedStyle(request).borderLeftColor === getComputedStyle(status).color && getComputedStyle(request.querySelector(".label_Request_htmlView") ?? request).color === getComputedStyle(status).color
       }
       containerElement.remove()
       return looks
@@ -899,7 +922,7 @@ describe("beside it: what can't live in one document", () => {
       containerElement.dataset["look"] = "changes"
       document.body.prepend(containerElement)
       const lineOf = (text: string) => window.parseLines_ViewModel({ multilineText: text, module_Language: window.MODULE_PLAINTEXT })
-      const itemOf = (source: string, count_Here: number) => ({ source, title: source, state: "OPEN" as const, status: "", places: { kind: "COUNT" as const, count_Here, count_All: 4, conditions: [] }, rationale: "Why.", request: "", actions: [], isDrafting: false, neighbors: { range_Previous: null, range_Next: null }, attributes: {} })
+      const itemOf = (source: string, count_Here: number) => ({ source, title: source, state: "OPEN" as const, status: "", places: { kind: "COUNT" as const, count_Here, count_All: 4, conditions: [] }, rationale: "Why.", requests: [], actions: [], isQueued: false, isDrafting: false, confirming: null, neighbors: { range_Previous: null, range_Next: null }, attributes: {} })
       // lines enough between the frames that going from one to the next scrolls
       const between = (id: string) => ({ kind: "LINES" as const, run: { id, lines: lineOf(Array.from({ length: 40 }, (_, index) => `line ${index}`).join("\n")), groups: [] } })
       new window._Viewer_TextEditor_({
@@ -1000,7 +1023,7 @@ describe("beside it: what can't live in one document", () => {
         range: { first: 1, last: 1 },
         parts: [
           { kind: "CURRENT_LINES", run: { id: "current", lines: window.parseLines_ViewModel({ multilineText: "one", module_Language: window.MODULE_PLAINTEXT }), groups: [] } },
-          { kind: "PROPOSAL_LIST", items: [{ source: "open", title: "Open", state: "OPEN" as const, status: "", places: { kind: "NONE" as const }, rationale: "Why it's proposed, at some length, so it wraps where it's narrow.", request: "", actions: review, isDrafting: false, neighbors: { range_Previous: null, range_Next: null }, attributes: {} }] }
+          { kind: "PROPOSAL_LIST", items: [{ source: "open", title: "Open", state: "OPEN" as const, status: "", places: { kind: "NONE" as const }, rationale: "Why it's proposed, at some length, so it wraps where it's narrow.", requests: [], actions: review, isQueued: false, isDrafting: false, confirming: null, neighbors: { range_Previous: null, range_Next: null }, attributes: {} }] }
         ]
       }]))
       const rectOf = (selector: string) => containerElement.querySelector(selector)?.getBoundingClientRect()
@@ -1035,10 +1058,10 @@ describe("beside it: what can't live in one document", () => {
           {
             kind: "PROPOSAL_LIST",
             items: [
-              { source: "taken", title: "Taken already", state: "ACCEPTED" as const, status: "Accepted", places: { kind: "NONE" as const }, rationale: "It was right.", request: "", actions: [{ command: "reopen", label: "Reopen", stateAfter: "OPEN" as const }], isDrafting: false, neighbors: { range_Previous: null, range_Next: null }, attributes: {} },
-              { source: "most", title: "Most of the orders", state: "OPEN" as const, status: "", places: { kind: "COUNT" as const, count_Here: 2, count_All: 5, conditions: [{ kind: "WITHIN" as const, count: 1, source: "lathe", title: "Cut the lathe" }, { kind: "CARRIED" as const, count: 1, source: "shift", title: "Shift it down" }] }, rationale: "Most of them need the lathe.", request: "", actions: [{ command: "accept", label: "Accept", stateAfter: "ACCEPTED" as const }, { command: "reject", label: "Reject", stateAfter: "REJECTED" as const }], isDrafting: false, neighbors: { range_Previous: null, range_Next: null }, attributes: {} },
-              { source: "all", title: "All of them", state: "OPEN" as const, status: "", places: { kind: "NONE" as const }, rationale: "", request: "", actions: [{ command: "accept", label: "Take it", stateAfter: "ACCEPTED" as const }], isDrafting: false, neighbors: { range_Previous: null, range_Next: null }, attributes: {} },
-              { source: "capped", title: "Cap it", state: "REQUESTED" as const, status: "Revision requested", places: { kind: "NONE" as const }, rationale: "", request: "make it an option.", actions: [{ command: "reopen", label: "Reopen", stateAfter: "OPEN" as const }], isDrafting: false, neighbors: { range_Previous: null, range_Next: null }, attributes: {} }
+              { source: "taken", title: "Taken already", state: "ACCEPTED" as const, status: "Accepted", places: { kind: "NONE" as const }, rationale: "It was right.", requests: [], actions: [{ command: "reopen", label: "Reopen", stateAfter: "OPEN" as const }], isQueued: false, isDrafting: false, confirming: null, neighbors: { range_Previous: null, range_Next: null }, attributes: {} },
+              { source: "most", title: "Most of the orders", state: "OPEN" as const, status: "", places: { kind: "COUNT" as const, count_Here: 2, count_All: 5, conditions: [{ kind: "WITHIN" as const, count: 1, source: "lathe", title: "Cut the lathe" }, { kind: "CARRIED" as const, count: 1, source: "shift", title: "Shift it down" }] }, rationale: "Most of them need the lathe.", requests: [], actions: [{ command: "accept", label: "Accept", stateAfter: "ACCEPTED" as const }, { command: "reject", label: "Reject", stateAfter: "REJECTED" as const }], isQueued: false, isDrafting: false, confirming: null, neighbors: { range_Previous: null, range_Next: null }, attributes: {} },
+              { source: "all", title: "All of them", state: "OPEN" as const, status: "", places: { kind: "NONE" as const }, rationale: "", requests: [], actions: [{ command: "accept", label: "Take it", stateAfter: "ACCEPTED" as const }], isQueued: false, isDrafting: false, confirming: null, neighbors: { range_Previous: null, range_Next: null }, attributes: {} },
+              { source: "capped", title: "Cap it", state: "REQUESTED" as const, status: "Revision requested", places: { kind: "NONE" as const }, rationale: "", requests: [{ notes: "make it an option.", quote: null }], actions: [{ command: "reopen", label: "Reopen", stateAfter: "OPEN" as const }], isQueued: true, isDrafting: false, confirming: null, neighbors: { range_Previous: null, range_Next: null }, attributes: {} }
             ]
           }
         ]
@@ -1065,7 +1088,7 @@ describe("beside it: what can't live in one document", () => {
       { source: "taken", state: "ACCEPTED", shown: ["heading_htmlView", "rationale_htmlView", "actions_htmlView"], heading: "Taken already · Accepted", places: [], references: [], rationale: "It was right.", request: [], actions: ["button reopen: Reopen"], main: false },
       { source: "most", state: "OPEN", shown: ["heading_htmlView", "places_htmlView", "rationale_htmlView", "actions_htmlView"], heading: "Most of the orders", places: ["2 of 5 changes here", "1 of them only if Cut the lathe is rejected", "1 of them moved with Shift it down"], references: ["lathe normal", "shift normal"], rationale: "Most of them need the lathe.", request: [], actions: ["button accept: Accept", "button reject: Reject"], main: true },
       { source: "all", state: "OPEN", shown: ["heading_htmlView", "actions_htmlView"], heading: "All of them", places: [], references: [], rationale: "", request: [], actions: ["button accept: Take it"], main: true },
-      { source: "capped", state: "REQUESTED", shown: ["heading_htmlView", "request_htmlView", "actions_htmlView"], heading: "Cap it · Revision requested", places: [], references: [], rationale: "", request: ["You asked", "make it an option."], actions: ["button reopen: Reopen"], main: false }
+      { source: "capped", state: "REQUESTED", shown: ["heading_htmlView", "request_htmlView", "actions_htmlView"], heading: "Cap it · Revision requested", places: [], references: [], rationale: "", request: ["Requests", "make it an option.Remove", "Start"], actions: ["button reopen: Reopen"], main: false }
     ])
   })
 
@@ -1207,8 +1230,8 @@ describe("beside it: what can't live in one document", () => {
             { kind: "CURRENT_LINES", run: { id: "current", lines: window.parseLines_ViewModel({ multilineText: "one", module_Language: window.MODULE_PLAINTEXT }), groups: [] } },
             { kind: "PROPOSAL_LINES", run: { id: "proposed", lines: window.parseLines_ViewModel({ multilineText: "ONE", module_Language: window.MODULE_PLAINTEXT }), groups: [] } },
             { kind: "PROPOSAL_LIST", items: [
-              { source: "one", title: "One", state: "OPEN" as const, status: "", places: { kind: "NONE" as const }, rationale: "Why one.", request: "", actions: review, isDrafting: false, neighbors: { range_Previous: null, range_Next: null }, attributes: {} },
-              { source: "two", title: "Two", state: "OPEN" as const, status: "", places: { kind: "NONE" as const }, rationale: "Why two.", request: "", actions: review, isDrafting: false, neighbors: { range_Previous: null, range_Next: null }, attributes: {} }
+              { source: "one", title: "One", state: "OPEN" as const, status: "", places: { kind: "NONE" as const }, rationale: "Why one.", requests: [], actions: review, isQueued: false, isDrafting: false, confirming: null, neighbors: { range_Previous: null, range_Next: null }, attributes: {} },
+              { source: "two", title: "Two", state: "OPEN" as const, status: "", places: { kind: "NONE" as const }, rationale: "Why two.", requests: [], actions: review, isQueued: false, isDrafting: false, confirming: null, neighbors: { range_Previous: null, range_Next: null }, attributes: {} }
             ] }
           ]
         }])
@@ -1768,7 +1791,7 @@ describe("beside it: what can't live in one document", () => {
       document.body.append(containerElement)
       const [one, two, three, four] = window.parseLines_ViewModel({ multilineText: "one\ntwo\nthree\nfour", module_Language: window.MODULE_PLAINTEXT })
       if (one === undefined || two === undefined || three === undefined || four === undefined) throw new Error("the lines weren't parsed")
-      const item = { source: "s", title: "Title", state: "OPEN" as const, status: "", places: { kind: "NONE" as const }, rationale: "", request: "", actions: [], isDrafting: false, neighbors: { range_Previous: null, range_Next: null }, attributes: {} }
+      const item = { source: "s", title: "Title", state: "OPEN" as const, status: "", places: { kind: "NONE" as const }, rationale: "", requests: [], actions: [], isQueued: false, isDrafting: false, confirming: null, neighbors: { range_Previous: null, range_Next: null }, attributes: {} }
       new window._View_TextEditor_({
         containerElement,
         componentMap: window.COMPONENTMAP__VIEW_TEXTEDITOR
@@ -1807,7 +1830,7 @@ describe("beside it: what can't live in one document", () => {
         new window._View_TextEditor_({
           containerElement,
           componentMap: window.COMPONENTMAP__VIEW_TEXTEDITOR
-        }).draw(window.viewModelOf__Blocks([{ kind: "FRAME", range: { first: 1, last: 1 }, parts: [{ kind: "CURRENT_LINES", run: { id: "current", lines: [line], groups: [] } }, { kind: "PROPOSAL_LINES", run: { id: "proposed", lines: [line], groups: [] } }, { kind: "PROPOSAL_LIST", items: [{ source: "one", title: "One", state: "OPEN", status: "", places: { kind: "NONE" as const }, rationale: "", request: "", actions: [], isDrafting: false, neighbors: { range_Previous: null, range_Next: null }, attributes: {} }] }] }]))
+        }).draw(window.viewModelOf__Blocks([{ kind: "FRAME", range: { first: 1, last: 1 }, parts: [{ kind: "CURRENT_LINES", run: { id: "current", lines: [line], groups: [] } }, { kind: "PROPOSAL_LINES", run: { id: "proposed", lines: [line], groups: [] } }, { kind: "PROPOSAL_LIST", items: [{ source: "one", title: "One", state: "OPEN", status: "", places: { kind: "NONE" as const }, rationale: "", requests: [], actions: [], isQueued: false, isDrafting: false, confirming: null, neighbors: { range_Previous: null, range_Next: null }, attributes: {} }] }] }]))
         const currentElement = containerElement.querySelector(".current_htmlView")
         const proposedElement = containerElement.querySelector(".proposed_htmlView")
         const proposalsElement = containerElement.querySelector(".proposals_htmlView")
@@ -1996,7 +2019,7 @@ describe("beside it: what can't live in one document", () => {
           { kind: "FRAME", range: { first: 1, last: 2 }, parts: [
             { kind: "CURRENT_LINES", run: runOf("before", "current", ["one", "two", "three"]) },
             { kind: "PROPOSAL_LINES", run: runOf("after", "proposed", ["ONE", "TWO", "THREE"]) },
-            { kind: "PROPOSAL_LIST", items: [{ source: "most", title: "Shout", state: "OPEN", status: "", places: { kind: "NONE" as const }, rationale: "", request: "", actions: [], isDrafting: false, neighbors: { range_Previous: null, range_Next: null }, attributes: {} }, { source: "more", title: "Shout more", state: "OPEN", status: "", places: { kind: "NONE" as const }, rationale: "", request: "", actions: [], isDrafting: false, neighbors: { range_Previous: null, range_Next: null }, attributes: {} }] }
+            { kind: "PROPOSAL_LIST", items: [{ source: "most", title: "Shout", state: "OPEN", status: "", places: { kind: "NONE" as const }, rationale: "", requests: [], actions: [], isQueued: false, isDrafting: false, confirming: null, neighbors: { range_Previous: null, range_Next: null }, attributes: {} }, { source: "more", title: "Shout more", state: "OPEN", status: "", places: { kind: "NONE" as const }, rationale: "", requests: [], actions: [], isQueued: false, isDrafting: false, confirming: null, neighbors: { range_Previous: null, range_Next: null }, attributes: {} }] }
           ] },
           { kind: "FRAME", range: { first: 3, last: 3 }, parts: [
             { kind: "CURRENT_LINES", run: { id: "gone-current", lines: [two], groups: [] } },
@@ -2093,7 +2116,7 @@ describe("beside it: what can't live in one document", () => {
           { kind: "FRAME", range: { first: 1, last: 2 }, parts: [
             { kind: "CURRENT_LINES", run: runOf("before", "current", ["one", "two", "three"]) },
             { kind: "PROPOSAL_LINES", run: runOf("after", "proposed", ["ONE", "TWO", "THREE"]) },
-            { kind: "PROPOSAL_LIST", items: [{ source: "most", title: "Shout", state: "OPEN", status: "", places: { kind: "NONE" as const }, rationale: "", request: "", actions: [], isDrafting: false, neighbors: { range_Previous: null, range_Next: null }, attributes: {} }, { source: "more", title: "Shout more", state: "OPEN", status: "", places: { kind: "NONE" as const }, rationale: "", request: "", actions: [], isDrafting: false, neighbors: { range_Previous: null, range_Next: null }, attributes: {} }] }
+            { kind: "PROPOSAL_LIST", items: [{ source: "most", title: "Shout", state: "OPEN", status: "", places: { kind: "NONE" as const }, rationale: "", requests: [], actions: [], isQueued: false, isDrafting: false, confirming: null, neighbors: { range_Previous: null, range_Next: null }, attributes: {} }, { source: "more", title: "Shout more", state: "OPEN", status: "", places: { kind: "NONE" as const }, rationale: "", requests: [], actions: [], isQueued: false, isDrafting: false, confirming: null, neighbors: { range_Previous: null, range_Next: null }, attributes: {} }] }
           ] },
           // another frame, unfolded, the second proposal in it too
           { kind: "FRAME", range: { first: 3, last: 3 }, parts: [
@@ -2196,7 +2219,7 @@ describe("beside it: what can't live in one document", () => {
               { kind: "POINT" as const, at: { line: 0, offset: 13 }, attributes: out("after", "1") },
               { kind: "BOUNDARY" as const, line: 1, attributes: out("after", "2") }
             ] }] } },
-            { kind: "PROPOSAL_LIST", items: [{ source: "out", title: "Take it out", state: "OPEN", status: "", places: { kind: "NONE" as const }, rationale: "", request: "", actions: [], isDrafting: false, neighbors: { range_Previous: null, range_Next: null }, attributes: {} }] }
+            { kind: "PROPOSAL_LIST", items: [{ source: "out", title: "Take it out", state: "OPEN", status: "", places: { kind: "NONE" as const }, rationale: "", requests: [], actions: [], isQueued: false, isDrafting: false, confirming: null, neighbors: { range_Previous: null, range_Next: null }, attributes: {} }] }
           ]
         }])
       })
@@ -2299,7 +2322,7 @@ describe("beside it: what can't live in one document", () => {
         { attributes: { "data-source": "timeout" }, underlays: [{ kind: "STRETCH" as const, from: { line: 0, offset: 15 }, to: { line: 0, offset: 18 }, attributes: change(side, "timeout") }] },
         { attributes: { "data-source": "rename" }, underlays: [{ kind: "STRETCH" as const, from: { line: 0, offset: 23 }, to: { line: 0, offset: side === "before" ? 28 : 27 }, attributes: change(side, "rename") }] }
       ]
-      const item = (source: string, state: "OPEN" | "REVISING" | "ACCEPTED", status: string) => ({ source, title: source, state, status, places: { kind: "NONE" as const }, rationale: "", request: "", actions: [], isDrafting: false, neighbors: { range_Previous: null, range_Next: null }, attributes: {} })
+      const item = (source: string, state: "OPEN" | "REVISING" | "ACCEPTED", status: string) => ({ source, title: source, state, status, places: { kind: "NONE" as const }, rationale: "", requests: [], actions: [], isQueued: false, isDrafting: false, confirming: null, neighbors: { range_Previous: null, range_Next: null }, attributes: {} })
       new window._Viewer_TextEditor_({
         containerElement,
         componentMap: window.COMPONENTMAP__VIEW_TEXTEDITOR,

@@ -109,7 +109,7 @@ test("plain text's module marks nothing: each line is one segment, its text, car
 
 // a group behind a run, and an item in a list, of a proposal, by its source
 const groupOf = (source: string): _Group_Underlay_ => ({ attributes: { "data-source": source }, underlays: [] })
-const itemOf = (source: string): _Item_Proposals_ => ({ source, title: source, state: "OPEN", status: "", places: { kind: "NONE" as const }, rationale: "", request: "", actions: [], isDrafting: false, neighbors: { range_Previous: null, range_Next: null }, attributes: {} })
+const itemOf = (source: string): _Item_Proposals_ => ({ source, title: source, state: "OPEN", status: "", places: { kind: "NONE" as const }, rationale: "", requests: [], actions: [], isQueued: false, isDrafting: false, confirming: null, neighbors: { range_Previous: null, range_Next: null }, attributes: {} })
 
 test("pointing at a proposal marks its groups and its items, in every run and list, and nothing else; pointing at none leaves the view model as it was", () => {
   const lines = parseLines_ViewModel({ multilineText: "one", module_Language: MODULE_PLAINTEXT })
@@ -220,7 +220,7 @@ test("a folded frame peeked has its rings, all of them, every proposal's; anothe
 
 test("each item says where else its proposal's listed, the frame before and the frame after, none past the first or the last, none for one listed once; a folded frame, showing no list, passed over", () => {
   const lines = parseLines_ViewModel({ multilineText: "one", module_Language: MODULE_PLAINTEXT })
-  const itemOf = (source: string) => ({ source, title: source, state: "OPEN" as const, status: "", places: { kind: "NONE" as const }, rationale: "", request: "", actions: [], isDrafting: false, neighbors: { range_Previous: null, range_Next: null }, attributes: {} })
+  const itemOf = (source: string) => ({ source, title: source, state: "OPEN" as const, status: "", places: { kind: "NONE" as const }, rationale: "", requests: [], actions: [], isQueued: false, isDrafting: false, confirming: null, neighbors: { range_Previous: null, range_Next: null }, attributes: {} })
   const viewModel = viewModelOf__Blocks([
     { kind: "FRAME", range: { first: 1, last: 1 }, parts: [{ kind: "CURRENT_LINES", run: { id: "one", lines, groups: [] } }, { kind: "PROPOSAL_LIST", items: [itemOf("round"), itemOf("cap")] }] },
     { kind: "FRAME", range: { first: 3, last: 3 }, parts: [{ kind: "CURRENT_LINES", run: { id: "three", lines, groups: [] } }, { kind: "PROPOSAL_LINES", run: { id: "three-proposed", lines, groups: [] } }, { kind: "PROPOSAL_LIST", items: [itemOf("round")] }] },
@@ -233,7 +233,7 @@ test("each item says where else its proposal's listed, the frame before and the 
 
 test("each item you're drafting notes in, of one proposal in one frame, says so, however many there are; that proposal's item in another frame, the frame's other items, and every item while none is drafted, don't", () => {
   const lines = parseLines_ViewModel({ multilineText: "one", module_Language: MODULE_PLAINTEXT })
-  const itemOf = (source: string) => ({ source, title: source, state: "OPEN" as const, status: "", places: { kind: "NONE" as const }, rationale: "", request: "", actions: [], isDrafting: false, neighbors: { range_Previous: null, range_Next: null }, attributes: {} })
+  const itemOf = (source: string) => ({ source, title: source, state: "OPEN" as const, status: "", places: { kind: "NONE" as const }, rationale: "", requests: [], actions: [], isQueued: false, isDrafting: false, confirming: null, neighbors: { range_Previous: null, range_Next: null }, attributes: {} })
   const viewModel = viewModelOf__Blocks([
     { kind: "FRAME", range: { first: 1, last: 1 }, parts: [{ kind: "CURRENT_LINES", run: { id: "first", lines, groups: [] } }, { kind: "PROPOSAL_LIST", items: [itemOf("round"), itemOf("cap")] }] },
     { kind: "LINES", run: { id: "between", lines, groups: [] } },

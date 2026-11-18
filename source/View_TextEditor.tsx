@@ -35,6 +35,7 @@ import type {
   _MOVE_Places_Item_,
   _Way_Move_,
   _Neighbors_Item_,
+  _Request_Item_,
   _Action_Item_,
   _Attributes_Element_,
   _Underlay_Text_,
@@ -45,7 +46,8 @@ import type {
   _Position_Drawn_,
   _Point_Screen_,
   _Menu_ViewModel_,
-  _Form_Request_
+  _Form_Request_,
+  _State_Proposal_
 } from "./ViewModel_TextEditor.ts"
 
 export {
@@ -352,13 +354,33 @@ function Request_TextEditor__Html({
         rows="3"
       />
       <div class="actions_htmlView">
-        <button
-          type="button"
-          class="action_htmlView"
-          data-request="SEND"
-        >
-          Send
-        </button>
+        {form_Request.isQueued
+          ? [
+            <button
+              type="button"
+              class="action_htmlView"
+              data-request="ADD"
+            >
+              Add
+            </button>,
+            <button
+              type="button"
+              class="action_htmlView start_htmlView"
+              data-request="START"
+              data-state-after="REVISING"
+            >
+              Start
+            </button>
+          ]
+          : (
+            <button
+              type="button"
+              class="action_htmlView"
+              data-request="SEND"
+            >
+              Send
+            </button>
+          )}
         <button
           type="button"
           class="action_htmlView"
@@ -752,22 +774,45 @@ function Item_ProposalList__Html({
         neighbors_Item={item_ProposalList.neighbors}
       />
       <p class="rationale_htmlView">{item_ProposalList.rationale}</p>
-      {item_ProposalList.request === ""
-        ? null
+      {item_ProposalList.requests.length > 0 && (
+        <Request$_Item__Html
+          request$_Item={item_ProposalList.requests}
+          isQueued={item_ProposalList.isQueued}
+        />
+      )}
+      {item_ProposalList.confirming === null
+        ? (
+          <div class="actions_htmlView">
+            {item_ProposalList.actions.map((action_Item) => (
+              <Action_Item__Html
+                action_Item={action_Item}
+                isExpanded={ISREVISABLEMAP__STATE_PROPOSAL[item_ProposalList.state] && action_Item.stateAfter === "REQUESTED" ? item_ProposalList.isDrafting : null}
+              />
+            ))}
+          </div>
+        )
         : (
-          <div class="request_htmlView">
-            <p class="asked_htmlView">You asked</p>
-            <p class="said_htmlView">{item_ProposalList.request}</p>
+          <div
+            class="actions_htmlView"
+            data-confirming=""
+          >
+            <span class="question_htmlView">{item_ProposalList.confirming.label_Question}</span>
+            <button
+              type="button"
+              class="action_htmlView"
+              data-confirm="YES"
+            >
+              {item_ProposalList.confirming.label_Action}
+            </button>
+            <button
+              type="button"
+              class="action_htmlView"
+              data-confirm="NO"
+            >
+              Cancel
+            </button>
           </div>
         )}
-      <div class="actions_htmlView">
-        {item_ProposalList.actions.map((action_Item) => (
-          <Action_Item__Html
-            action_Item={action_Item}
-            isExpanded={item_ProposalList.state === "OPEN" && action_Item.stateAfter === "REQUESTED" ? item_ProposalList.isDrafting : null}
-          />
-        ))}
-      </div>
       {item_ProposalList.isDrafting && <Draft_Item__Html item_ProposalList={item_ProposalList} />}
     </li>
   )
@@ -792,10 +837,18 @@ function Draft_Item__Html({
         <button
           type="button"
           class="action_htmlView"
-          data-draft="SEND"
+          data-draft="ADD"
           data-state-after="REQUESTED"
         >
-          Submit
+          Add
+        </button>
+        <button
+          type="button"
+          class="action_htmlView start_htmlView"
+          data-draft="START"
+          data-state-after="REVISING"
+        >
+          Start
         </button>
         <button
           type="button"
@@ -1028,6 +1081,52 @@ const WORDMAP__NONE_VISIT: _WordMap_Visit_ = {
   NEXT: "No change of this proposal below"
 }
 
+interface _Api___Request$_Item__Html_ {
+  request$_Item: Array<_Request_Item_>
+  isQueued: boolean
+}
+
+function Request$_Item__Html({
+  request$_Item,
+  isQueued
+}: _Api___Request$_Item__Html_): JSX.Element {
+  return (
+    <div class="request_htmlView">
+      <p class="label_Request_htmlView">Requests</p>
+      <ol class="list_Request_htmlView">
+        {request$_Item.map((
+          request_Item,
+          index
+        ) => (
+          <li class="said_htmlView">
+            {request_Item.quote !== null && <q class="quote_Said_htmlView">{request_Item.quote}</q>}
+            <span class="notes_Said_htmlView">{request_Item.notes}</span>
+            {isQueued && (
+              <button
+                type="button"
+                class="remove_htmlView"
+                data-remove={String(index)}
+                aria-label={`Remove “${request_Item.notes}”`}
+              >
+                Remove
+              </button>
+            )}
+          </li>
+        ))}
+      </ol>
+      {isQueued && (
+        <button
+          type="button"
+          class="action_htmlView start_htmlView"
+          data-state-after="REVISING"
+        >
+          Start
+        </button>
+      )}
+    </div>
+  )
+}
+
 interface _Api___Action_Item__Html_ {
   action_Item: _Action_Item_
   isExpanded: boolean | null
@@ -1048,6 +1147,19 @@ function Action_Item__Html({
       {action_Item.label}
     </button>
   )
+}
+
+type _IsRevisableMap__State_Proposal_ = {
+  [State in _State_Proposal_]: boolean
+}
+
+const ISREVISABLEMAP__STATE_PROPOSAL: _IsRevisableMap__State_Proposal_ = {
+  OPEN: true,
+  REQUESTED: true,
+  REVISING: false,
+  ACCEPTED: false,
+  REJECTED: false,
+  WITHDRAWN: false
 }
 
 interface _Api___drawTextUnderlay$__View_TextEditor_ {
@@ -3257,7 +3369,7 @@ const COMPONENTMAP__VIEW_TEXTEDITOR: _ComponentMap__View_TextEditor_ = {
   request: Request_TextEditor__Html
 }
 
-type _Focus_Asking_ = "MENU" | "REQUEST"
+type _Focus_Asking_ = "MENU" | "REQUEST" | "CONFIRM"
 
 type _SelectorMap__Focus_Asking_ = {
   [Focus in _Focus_Asking_]: string
@@ -3265,7 +3377,8 @@ type _SelectorMap__Focus_Asking_ = {
 
 const SELECTORMAP__FOCUS_ASKING: _SelectorMap__Focus_Asking_ = {
   MENU: ".menu_htmlView > .choice_htmlView[tabindex='0']",
-  REQUEST: ".asking_htmlView > .notes_htmlView"
+  REQUEST: ".asking_htmlView > .notes_htmlView",
+  CONFIRM: ".actions_htmlView[data-confirming] > [data-confirm='NO']"
 }
 
 interface _Api___keptInWindow__View_TextEditor_ {

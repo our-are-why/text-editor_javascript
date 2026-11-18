@@ -63,6 +63,10 @@ export {
   pointedAt__ViewModel,
   foldedAt__ViewModel,
   draftingAt__ViewModel,
+  confirmingAt__ViewModel,
+  type _Pending_Confirm_,
+  type _Request_Item_,
+  type _Confirm_Item_,
   type _Id_Item_,
   selectedAt__ViewModel,
   type _Selection_TextEditor_,
@@ -242,10 +246,23 @@ interface _Item_Proposals_ {
   places: _Places_Item_
   neighbors: _Neighbors_Item_
   rationale: string
-  request: string
+  requests: Array<_Request_Item_>
+  isQueued: boolean
   actions: Array<_Action_Item_>
   isDrafting: boolean
+  confirming: _Confirm_Item_ | null
   attributes: _Attributes_Element_
+}
+
+interface _Request_Item_ {
+  notes: string
+  quote: string | null
+}
+
+interface _Confirm_Item_ {
+  command: string
+  label_Question: string
+  label_Action: string
 }
 
 type _State_Proposal_ = "OPEN" | "REQUESTED" | "REVISING" | "ACCEPTED" | "REJECTED" | "WITHDRAWN"
@@ -743,6 +760,55 @@ function draftingAt__ViewModel({
   }))
 }
 
+interface _Api___confirmingAt__ViewModel_ {
+  viewModel_TextEditor: _ViewModel_TextEditor_
+  confirm_Item: _Pending_Confirm_ | null
+}
+
+interface _Pending_Confirm_ {
+  id_Item: _Id_Item_
+  command: string
+}
+
+function confirmingAt__ViewModel({
+  viewModel_TextEditor,
+  confirm_Item
+}: _Api___confirmingAt__ViewModel_): _ViewModel_TextEditor_ {
+  if (confirm_Item === null) return viewModel_TextEditor
+  return viewModelOf__Blocks(viewModel_TextEditor.blocks.map((block_ViewModel): _Block_ViewModel_ => block_ViewModel.kind !== "FRAME" || confirm_Item.id_Item.range_Frame.first !== block_ViewModel.range.first || confirm_Item.id_Item.range_Frame.last !== block_ViewModel.range.last
+    ? block_ViewModel
+    : {
+      ...block_ViewModel,
+      parts: mapped__NonEmpty({
+        items: block_ViewModel.parts,
+        map: (part_Frame): _Part_Frame_ => part_Frame.kind === "PROPOSAL_LIST"
+          ? {
+            ...part_Frame,
+            items: mapped__NonEmpty({
+              items: part_Frame.items,
+              map: (item_Proposals) => {
+                const action_Item = item_Proposals.source === confirm_Item.id_Item.source
+                  ? item_Proposals.actions.find((action_Each) => action_Each.command === confirm_Item.command)
+                  : undefined
+                const count = item_Proposals.requests.length
+                return action_Item === undefined
+                  ? item_Proposals
+                  : {
+                    ...item_Proposals,
+                    confirming: {
+                      command: action_Item.command,
+                      label_Question: `${action_Item.label} and drop ${count} queued ${count === 1 ? "request" : "requests"}?`,
+                      label_Action: action_Item.label
+                    }
+                  }
+              }
+            })
+          }
+          : part_Frame
+      })
+    }))
+}
+
 interface _Api___pointedIn__Part_ {
   part_Frame: _Part_Frame_
   source: string | null
@@ -899,6 +965,7 @@ interface _Form_Request_ {
   point_Screen: _Point_Screen_
   label: string
   quote: string | null
+  isQueued: boolean
   target: _Target_Request_
 }
 

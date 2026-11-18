@@ -43,12 +43,16 @@ import {
   type _Condition_Places_,
   parseLines_ViewModel,
   viewModelOf__Blocks,
-  segmentsOf__Stretches
+  segmentsOf__Stretches,
+  type _Selected_Text_,
+  type _Piece_Text_,
+  isSame__Id_Text
 } from "./ViewModel_TextEditor.ts"
 
 export {
   viewModelOf__Model,
   type _Proposal_Host_,
+  type _Request_Host_,
   type _Module_Reading_,
   type _Api___boxesOf__Replacement_,
   type _Box_Reading_,
@@ -190,9 +194,14 @@ interface _Proposal_Host_ {
   state: _State_Proposal_
   status: string
   rationale: string
-  request: string
+  requests: Array<_Request_Host_>
   actions: Array<_Action_Item_>
   attributes: _Attributes_Element_
+}
+
+interface _Request_Host_ {
+  notes: string
+  selected: _Selected_Text_ | null
 }
 
 interface _Module_Reading_ {
@@ -2195,15 +2204,25 @@ function frameOf__Drawn({
         range_Next: null
       },
       rationale: proposal_Host.rationale,
-      request: proposal_Host.request,
+      requests: proposal_Host.requests.map((request_Host) => ({
+        notes: request_Host.notes,
+        quote: request_Host.selected?.text ?? null
+      })),
+      isQueued: proposal_Host.state === "REQUESTED" && proposal_Host.requests.length > 0,
       actions: proposal_Host.actions,
       isDrafting: false,
+      confirming: null,
       attributes: proposal_Host.attributes
     }))
   if (item_First === undefined) throw new Error(`a frame at line ${frame_Drawn.frame_Model.first + 1} lists no proposal`)
   const part_Proposed: _Part_Frame_ = {
     kind: "PROPOSAL_LINES",
-    run: frame_Drawn.run_Proposed
+    run: requestedOf__Run({
+      run_Lines: frame_Drawn.run_Proposed,
+      pieces: proposals
+        .filter((proposal_Host) => frame_Drawn.sources.includes(proposal_Host.source))
+        .flatMap((proposal_Host) => proposal_Host.requests.flatMap((request_Host) => request_Host.selected?.pieces ?? []))
+    })
   }
   const part_List: _Part_Frame_ = {
     kind: "PROPOSAL_LIST",
@@ -2319,4 +2338,72 @@ function placesOf__Source({
       count_All,
       conditions
     }
+}
+
+interface _Api___requestedOf__Run_ {
+  run_Lines: _Run_Lines_
+  pieces: Array<_Piece_Text_>
+}
+
+function requestedOf__Run({
+  run_Lines,
+  pieces
+}: _Api___requestedOf__Run_): _Run_Lines_ {
+  if (pieces.length === 0) return run_Lines
+  return {
+    ...run_Lines,
+    lines: run_Lines.lines.map((line_Run) => {
+      const text = line_Run.segments.map((segment_Line) => segment_Line.text).join("")
+      const stretches_Requested = line_Run.origins.flatMap((origin_Line) => pieces.flatMap((piece_Text): Array<_Stretch_Line_> => {
+        const isSame = isSame__Id_Text({
+          id_Text: piece_Text.id_Text,
+          id_Text_Other: origin_Line.id_Text
+        })
+        const line = origin_Line.position.line
+        if (!isSame || line < piece_Text.range.from.line || piece_Text.range.to.line < line) return []
+        const codePoints_Origin = Array.from(text.slice(
+          origin_Line.from,
+          origin_Line.to
+        ))
+        const start = origin_Line.position.offset
+        const from = Math.max(
+          line === piece_Text.range.from.line ? piece_Text.range.from.offset : 0,
+          start
+        ) - start
+        const to = Math.min(
+          line === piece_Text.range.to.line ? piece_Text.range.to.offset : start + codePoints_Origin.length,
+          start + codePoints_Origin.length
+        ) - start
+        return from < to
+          ? [
+            {
+              from: origin_Line.from + codePoints_Origin.slice(
+                0,
+                from
+              ).join("").length,
+              to: origin_Line.from + codePoints_Origin.slice(
+                0,
+                to
+              ).join("").length,
+              attributes: {
+                "data-requested": ""
+              }
+            }
+          ]
+          : []
+      }))
+      return stretches_Requested.length === 0
+        ? line_Run
+        : {
+          ...line_Run,
+          segments: segmentsOf__Stretches({
+            text: parseTexts_Line(text)[0],
+            stretches: [
+              ...stretchesOf__Segments(line_Run.segments),
+              ...stretches_Requested
+            ]
+          })
+        }
+    })
+  }
 }
