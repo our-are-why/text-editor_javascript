@@ -1,6 +1,7 @@
 import {
   type _Model_TextEditor_,
-  type _NonEmpty_
+  type _NonEmpty_,
+  type _Transaction_Model_
 } from "./Model_TextEditor.ts"
 import {
   viewModelOf__Model,
@@ -31,7 +32,9 @@ export {
   type _Api__TextEditor_,
   type _Setup_TextEditor_,
   type _Perspective_TextEditor_,
-  type _Look_TextEditor_
+  type _Look_TextEditor_,
+  type _Observer_TextEditor_,
+  type _Applied_Edit_
 }
 
 class _TextEditor_<State> {
@@ -41,6 +44,7 @@ class _TextEditor_<State> {
   proposals: Array<_Proposal_Host_>
   source_Yours: string
   ranges_Frame: Array<_Range_Lines_>
+  observers: Array<_Observer_TextEditor_>
   perspective_Shown: _Perspective_TextEditor_
   history: _History_TextEditor_
   viewer: _Viewer_TextEditor_
@@ -51,7 +55,8 @@ class _TextEditor_<State> {
     model_TextEditor,
     proposals,
     source_Yours,
-    ranges_Frame
+    ranges_Frame,
+    observers
   }: _Api__TextEditor_<State>) {
     this.containerElement = containerElement
     this.setup = setup
@@ -59,6 +64,7 @@ class _TextEditor_<State> {
     this.proposals = proposals
     this.source_Yours = source_Yours
     this.ranges_Frame = ranges_Frame
+    this.observers = observers
     this.perspective_Shown = this.setup.perspectives[0]
     this.history = HISTORY_EMPTY
     this.containerElement.dataset["look"] = lookOf__Perspective(this.perspective_Shown)
@@ -84,8 +90,19 @@ class _TextEditor_<State> {
       request_Edit
     })
     if (edited === null) return null
+    const model_Before = this.model_TextEditor
     this.model_TextEditor = edited.model_TextEditor
     this.history = edited.history
+    const applied_Edit: _Applied_Edit_ = {
+      request_Edit,
+      transaction: edited.transaction,
+      transaction_Inverse: edited.transaction_Inverse,
+      model_Before,
+      model_After: this.model_TextEditor,
+      sources_Changed: sourcesOf__Transaction(edited.transaction),
+      isChanged_Document: edited.transaction.steps.some((step_Transaction) => step_Transaction.kind === "TEXT" && step_Transaction.id_Text.kind === "DOCUMENT")
+    }
+    for (const observer of this.observers) observer.applied(applied_Edit)
     return {
       viewModel_TextEditor: this.projected(),
       selection: edited.selection
@@ -119,6 +136,21 @@ interface _Api__TextEditor_<State> {
   proposals: Array<_Proposal_Host_>
   source_Yours: string
   ranges_Frame: Array<_Range_Lines_>
+  observers: Array<_Observer_TextEditor_>
+}
+
+interface _Observer_TextEditor_ {
+  applied: (applied_Edit: _Applied_Edit_) => void
+}
+
+interface _Applied_Edit_ {
+  request_Edit: _Request_Edit_
+  transaction: _Transaction_Model_
+  transaction_Inverse: _Transaction_Model_
+  model_Before: _Model_TextEditor_
+  model_After: _Model_TextEditor_
+  sources_Changed: Array<string>
+  isChanged_Document: boolean
 }
 
 interface _Setup_TextEditor_<State> {
@@ -143,4 +175,18 @@ function lookOf__Perspective(
   perspective_TextEditor: _Perspective_TextEditor_
 ): string {
   return perspective_TextEditor.looks.map((look) => look.name).join(" ")
+}
+
+function sourcesOf__Transaction(
+  transaction: _Transaction_Model_
+): Array<string> {
+  return [...new Set(transaction.steps.flatMap((step_Transaction) => step_Transaction.kind === "TEXT"
+    ? step_Transaction.id_Text.kind === "CHANGE"
+      ? [
+        step_Transaction.id_Text.source
+      ]
+      : []
+    : [
+      step_Transaction.source
+    ]))]
 }

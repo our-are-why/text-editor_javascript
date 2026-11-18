@@ -64,7 +64,8 @@ What doctor needs, and what any host would:
   edit to one told to the host as the proposal's next round;
 - what a round changed since the one before, shown;
 - notes asked of a proposal, on words of it or the whole of it;
-- your own edits made proposals, as a suggesting mode, when the host says;
+- your own edits among what's proposed made proposals of your own, and the
+  document's own lines, where nothing's proposed, edited as they are;
 - input of every kind a person uses: the keyboard alone, the mouse with it,
   voice, or a mix of them;
 - accessibility tailored to the person and where they are, not one kind for
@@ -339,21 +340,25 @@ another's removal, one carried in a move, three sources on one line.
   into one, and a change loses what it hung on only by what the host sends.
   The lock's the pipeline's, as it goes by the proposals' states, which are
   the host's; the model's spans are what it's drawn from.
-- **typing in the document's own text, where no proposal is, is the host's
-  to say:** it edits the document, or it's a proposal of yours, suggesting
-  mode, as doctor's is all the while a task's active, with no way round it.
-  Suggesting mode's the editor's own, built in, as only the core has what it
-  takes, the model, the pipeline, the view showing a line held as you type;
-  only when it's on is the host's, as the editor knows nothing of tasks. It
-  comes after editing inside proposals, and before doctor's editor is
-  replaced, as doctor can't do without it. What doctor's branch
-  `experiment/manual-proposals` worked out carries over: your edits divided
-  as the agent's are, a line changed one proposal, a run of new lines one, a
-  line taken out or moved one each; the line you're in held as you type,
-  marked purple, yours, and lifted into its proposal once the caret leaves
-  it, as a frame opening under the caret would throw it about; your rounds
-  of a proposal, one after another, folded into one. It needs a step of its
-  own that makes a change, beside `TEXT` and `CHANGE`.
+- **you edit what you see, one rule, no mode:** where a line's shown once,
+  it's the document's, and an edit changes the document; where it's shown
+  twice, as it is and as proposed, in a frame, you're editing what's
+  proposed, so an edit's a proposal, a change of yours, or a proposal's own
+  words edited in it, never the lines as they are. A frame's no border
+  drawn at random: it's where a line's shown twice. Decided on 2026-11-18,
+  as a first pass, over a suggesting mode, a host's switch making every
+  edit a proposal, as doctor's `experiment/manual-proposals` designed it,
+  everything edited while a task's active the task's: modes are what a
+  model not yet found leaves to a switch. Why this one holds: that design's
+  worry, an edit breaking a proposal made against an older version, can't
+  happen here, as all a proposal touches is in a frame, and its spans move
+  with the document's edits; nothing opens under the caret as it types, a
+  frame where a plain line was, which that design held the line purple
+  against; and what's left of it, the file kept at the trunk till a task
+  completes, your edits going with the task, is where the host keeps what's
+  typed, which it's told of, every edit, by observers, not how it's typed.
+  What it gives up: what you type outside frames isn't reviewed beside the
+  agent's proposals; if that turns out to matter, it's looked at again.
 - **spans, not lines:** a span is any range, a phrase in a long line of
   prose, a sentence, lines. A line is a granularity a host can choose:
   doctor's adapter would send a span for each line it changes, as its holders
@@ -1345,8 +1350,8 @@ Editing inside a change changes its next state: a selection across its
 lines, Enter making a line, Backspace joining two, pasting, undo, all as
 anywhere else, and kept inside it, so an edit can't leak out of a change
 into the document; it's told to the host as its source's, for its proposal's
-next round. Editing outside one changes the document, or, in suggesting
-mode, makes changes of your own, a source of your own.
+next round. Editing outside one, among what's proposed, makes changes of
+your own, a source of your own; outside frames, it changes the document.
 
 ## how it's built
 
@@ -1766,13 +1771,11 @@ Then typing, the second of editing:
   left it. The editor projects again and hands the viewer the view model
   and the selection; the viewer, standing alone, as the changes document's
   and the gallery's, is given an `edit` that refuses every request.
-- **not yet:** the host told of edits, an observer, so a proposal edited is
-  its source's next round; the marks of what's typed, as in a bold word;
+- **not yet:** the marks of what's typed, as in a bold word;
   folds kept on their lines as lines are put in or taken out above them;
   Tab; select all; a double click selecting a word, a triple a line; a
   wrapped line's own rows' ends for Home and End; dragging past the
-  editor's edge, and scrolling as it goes; suggesting mode, your edits made
-  proposals of your own.
+  editor's edge, and scrolling as it goes.
 
 ## observers
 
@@ -1795,6 +1798,21 @@ transaction, the states and what's on the screen. It costs only what the
 pipeline already made, held, not copied, since data is replaced, never
 changed; an observer that keeps them keeps old states alive, though states
 share most of what's in them.
+
+**So far, edits, applied:** the editor's `observers`, the host's, each an
+`_Observer_TextEditor_`, told `applied` once an edit's applied, typed,
+deleted, pasted, undone or redone, before it's drawn, an `_Applied_Edit_`:
+the request the command was resolved to, the edit's own transaction, a
+keystroke run into the one before it only its own, and its inverse, the
+model before and after, and, worked out from the transaction, whose
+changes it changed, `sources_Changed`, each a proposal's next round, yours
+among them, and whether it changed the document, `isChanged_Document`. A
+host keeps what it's told as it likes: doctor, a proposal edited as its
+next round, once the caret leaves it, say; the document's edits written to
+the file, or kept with a task till it completes. The playground's host
+reports each edit, `playground/edits.ts`, what kind, whose, and the
+document or not. Not yet: commands that edit nothing, a caret moved, a
+selection made; the stage drawn; modules' observers.
 
 ## modules
 
@@ -2025,8 +2043,9 @@ Doctor's roadblock, and nothing more: a document with proposals in it, the
 proposals edited in place, a selection across a proposal's lines, Enter,
 Backspace, paste and undo working there as in the document, edits kept
 inside the proposal they're in, and each proposal accepted or rejected.
-Then, in order: suggesting mode, your edits made proposals; what a round
-changed since the one before; amendments; and doctor's editor replaced by
+Then, in order: the host told of edits, by observers, so an edit to a
+proposal is its source's next round, and one to the document the host's to
+keep; what a round changed since the one before; amendments; and doctor's editor replaced by
 it, through an adapter from doctor's documents and proposals to its
 document and changes.
 

@@ -126,6 +126,8 @@ interface _Edited_Model_ {
   model_TextEditor: _Model_TextEditor_
   history: _History_TextEditor_
   selection: _Selection_TextEditor_
+  transaction: _Transaction_Model_
+  transaction_Inverse: _Transaction_Model_
 }
 
 const EDITMAP__KIND_REQUEST: _EditMap__Kind_Request_ = {
@@ -1161,7 +1163,9 @@ function editedOf__Steps({
       ],
       redos: []
     },
-    selection: selection_After
+    selection: selection_After,
+    transaction: transaction_Redo,
+    transaction_Inverse: applied.transaction_Inverse
   }
 }
 
@@ -1788,7 +1792,9 @@ function UNDO_editedOf__Request({
         }
       ]
     },
-    selection: entry_Last.selection_Before
+    selection: entry_Last.selection_Before,
+    transaction: entry_Last.transaction_Undo,
+    transaction_Inverse: applied.transaction_Inverse
   }
 }
 
@@ -1817,7 +1823,9 @@ function REDO_editedOf__Request({
         -1
       )
     },
-    selection: entry_Last.selection_After
+    selection: entry_Last.selection_After,
+    transaction: entry_Last.transaction_Redo,
+    transaction_Inverse: applied.transaction_Inverse
   }
 }
 

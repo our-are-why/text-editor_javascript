@@ -12,6 +12,7 @@ import { modelOf } from "../projected.ts"
 import { actions_Review, actions_Reopen, actions_Dismiss, proposal_Yours } from "../items.ts"
 import { module_Markdown, type _State_Markdown_ } from "../syntax.ts"
 import { perspective_Markdown } from "../readings.ts"
+import { observerOf__Log } from "../edits.ts"
 
 export {
   readme,
@@ -324,7 +325,8 @@ const markdown: _Example_ = {
   about: "The JavaScript example's module's README, in Markdown, drawn whole as its source, its syntax worked out by a language module, the playground's Markdown tokenizer, and styled by the playground, as a host's theme: its syntax kept as it's written, faint, and what that marks shown as it marks it, headings and strong words bold, emphasis italic, code and links coloured. Its marks are its syntax, so the document holds none, and a proposal that makes words bold puts in asterisks. Its changes are read two ways, a button over it for each, both in the editor's changes look: as Markdown, the playground's reading, first, what a change means, a word made bold one dashed ring, restyled, round it and its asterisks, as it was and as it becomes; and as text, the editor's reading, every character that changed ringed, the asterisks put in green, as code's are. The fenced JavaScript is the JavaScript module's to colour, the Markdown module handing its lines on. Eleven proposals, keeping the README in step with the module's: in its opening words, how a caller gives up, inline code put in; a signal passed in the example's call, inside the fence; in the options, framed whole, a default made bold, words replaced, and onRetry's line taken out; what it retries, its heading, words and table, moved up before the options, carrying a row put in, being revised, and a row taken out, rejected, so not ringed; and in how long it waits, framed from its words to its link, the base delay's name, accepted and applied, its words the README's already, so nothing to ring, the quote's last words changed, a revision asked for, and the link's address, withdrawn, so not ringed. Point at a ring or an item to see a proposal; press a move's note to go to its other end.",
   // the editor, put together as above, drawing the README and its
   // proposals into the stage, over it a button for each perspective, the
-  // one shown pressed; pressing another shows it, and reports which
+  // one shown pressed; pressing another shows it, and reports which; and
+  // each edit reported as it's told
   mount: (root, log) => {
     const switcher = document.createElement("div")
     switcher.className = "perspectives"
@@ -336,7 +338,10 @@ const markdown: _Example_ = {
       model_TextEditor: model_readme,
       proposals: proposals_readme,
       source_Yours: proposal_Yours.source,
-      ranges_Frame: ranges_readme
+      ranges_Frame: ranges_readme,
+      observers: [
+        observerOf__Log(log)
+      ]
     })
     const buttons = setup_readme.perspectives.map((perspective) => {
       const button = document.createElement("button")

@@ -1,5 +1,5 @@
 import { expect, test } from "bun:test"
-import { parseModel_TextEditor, textWith__Sources, type _Model_TextEditor_, type _Range_Text_, type _Id_Text_ } from "../source/Model_TextEditor.ts"
+import { parseModel_TextEditor, textWith__Sources, applied__Transaction, type _Model_TextEditor_, type _Range_Text_, type _Id_Text_ } from "../source/Model_TextEditor.ts"
 import type { _Proposal_Host_ } from "../source/Projection_TextEditor.ts"
 import { editedOf__Request, HISTORY_EMPTY, type _History_TextEditor_, type _Edited_Model_ } from "../source/Editing_TextEditor.ts"
 import type { _Selection_TextEditor_, _State_Proposal_ } from "../source/ViewModel_TextEditor.ts"
@@ -271,4 +271,20 @@ test("what a word is, the host says, by the words module it passes: as text, let
   const typedWith = (module_Words: typeof MODULE_WORDS_TEXT) => editedOf__Request({ model_TextEditor: result.model_TextEditor, proposals: proposalsIn("OPEN"), source_Yours: "yours", module_Words, history: HISTORY_EMPTY, request_Edit: { kind: "TEXT", id_Text: document_Text, range: on(0, 11, 11), multilineText: "X", id_Run: "run", selection_Before: caretAt(document_Text, 0, 11), isTyping: true, isProposed: true, places_Caret: null } })?.model_TextEditor.proposed[0]?.changes
   expect(typedWith(MODULE_WORDS_TEXT)).toMatchObject([{ range: on(0, 11, 11), next: { lines: ["X"] } }])
   expect(typedWith(module_Words_Spaced)).toMatchObject([{ range: on(0, 0, 12), next: { lines: ["push(error)X;"] } }])
+})
+
+test("each edit says what it did, its own transaction, the model before made the model after by it, and its inverse, the model after made the one before: a keystroke run into the one before it, only its own; an undo, its own", () => {
+  const model = modelOf()
+  const first = typedIn(model, HISTORY_EMPTY, "OPEN", document_Text, on(0, 9, 9), "x")
+  if (first === null) throw new Error("refused")
+  const second = editedOf__Request({ model_TextEditor: first.model_TextEditor, proposals: proposalsIn("OPEN"), source_Yours: "yours", module_Words: MODULE_WORDS_TEXT, history: first.history, request_Edit: { kind: "TEXT", id_Text: first.selection.head.id_Text, range: { from: first.selection.head.position, to: first.selection.head.position }, multilineText: "y", id_Run: "run", selection_Before: first.selection, isTyping: true, isProposed: true, places_Caret: null } })
+  if (second === null) throw new Error("refused")
+  expect(second.history.undos.length).toBe(1)
+  const undone = editedOf__Request({ model_TextEditor: second.model_TextEditor, proposals: proposalsIn("OPEN"), source_Yours: "yours", module_Words: MODULE_WORDS_TEXT, history: second.history, request_Edit: { kind: "UNDO" } })
+  if (undone === null) throw new Error("refused")
+  for (const [before, edited] of [[model, first], [first.model_TextEditor, second], [second.model_TextEditor, undone]] as const) {
+    expect(applied__Transaction({ model_TextEditor: before, transaction: edited.transaction }).model_TextEditor).toEqual(edited.model_TextEditor)
+    expect(applied__Transaction({ model_TextEditor: edited.model_TextEditor, transaction: edited.transaction_Inverse }).model_TextEditor).toEqual(before)
+  }
+  expect(undone.model_TextEditor).toEqual(model)
 })

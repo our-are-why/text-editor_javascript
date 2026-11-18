@@ -33,7 +33,7 @@ describe("the Markdown example: a perspective for each way to read its changes, 
   })
   test("switched back, it's read as Markdown again, and each switch is reported", async () => {
     expect(shown_Again).toEqual(shown_Markdown)
-    expect(await opened.logged()).toEqual([{ perspective: "changes" }, { perspective: "markdown" }])
+    expect((await opened.logged()).filter((entry) => "perspective" in entry)).toEqual([{ perspective: "changes" }, { perspective: "markdown" }])
   })
   test("opens and switches with no error reported", () => {
     expect(opened.errors).toEqual([])
@@ -395,4 +395,18 @@ test("typed onto the end of a word where another proposal's words begin, a lette
   expect(rings_Attempts).toContain("attemptss order+yours")
   expect(rings_Attempts.filter((ring) => ring.endsWith(" aborted"))).toEqual([" || signal?. aborted", "aborted aborted"])
   expect(opened_JavaScript.errors).toEqual([])
+})
+
+// what each page's host was told of the edits made on it, as the
+// playground reports it
+const logged_Markdown = await opened.logged()
+const logged_JavaScript = await opened_JavaScript.logged()
+
+test("each edit's told to the host as it's applied, as the playground reports it: what kind it was, whose proposals' changes it changed, each its next round, and whether the document changed; typing outside frames, the document; among what's proposed, a proposal's own words, that proposal, and anywhere else, yours; undoing too", () => {
+  const edits = logged_Markdown.filter((entry) => "edited" in entry)
+  expect(edits).toContainEqual({ edited: "TEXT", proposals: "", document: true })
+  expect(edits).toContainEqual({ edited: "TEXT", proposals: "example", document: false })
+  expect(edits).toContainEqual({ edited: "TEXT", proposals: "yours", document: false })
+  expect(edits.some((entry) => entry["edited"] === "UNDO")).toBe(true)
+  expect(logged_JavaScript.filter((entry) => "edited" in entry)).toEqual([{ edited: "TEXT", proposals: "yours", document: false }])
 })
