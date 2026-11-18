@@ -1147,6 +1147,24 @@ proposals are all decided folds itself, and unfolds when one's open again,
 and in between stays as you leave it. Later: a move's note unfolding the
 frame it goes to; keys to fold and unfold, and to fold every decided frame.
 
+**a frame's header, tried and set aside, 2026-11-18:** a line of its own
+above a frame's lines, how far its proposals had got, decided of all, a
+fraction and a segment each, hollow till decided, filled after, in its
+state's ink, as doctor's status says a proposal's in a word and a mark; the
+revising arc turning while one was revised; and a toggle each for its lines
+as they are and as proposed, which made folding a frame's showing one of
+them, the list only with both, and none while it showed one, as it read
+then as the document does. It said again what the list says, a line
+sooner, for a line, and the toggles were a state per frame to keep, near
+the modes this editor does without; folded, it broke the lines that read as
+the document's, which led to dropping it there, and then to doubting it at
+all. Kept as a patch, not in the code. If a folded frame's progress turns
+out to matter, its bar, beside its lines, can carry a mark, taking no line.
+Selection across frames, through those showing one of their sections, was
+thought of with it and put off: nothing yet asks for it but copying, and
+an edit across one mixes the document's text and what's proposed.
+
+
 **a proposal is a decision, a change a place, a frame a view of places:**
 three things, kept apart. A proposal, a source, is what's decided, at once,
 wherever its changes are; a change is a place, anchored in the text; a frame
