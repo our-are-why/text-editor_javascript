@@ -10,6 +10,7 @@ import {
   type _Piece_Applied_,
   type _Move_Piece_,
   type _Mark_Text_,
+  mapped__NonEmpty,
   textIn__Range,
   comparisonOf__Texts,
   shiftedBy__Position,
@@ -22,6 +23,12 @@ import {
   type _Module_Language_,
   type _ViewModel_TextEditor_,
   type _State_Proposal_,
+  type _Decision_Proposal_,
+  type _Status_Request_,
+  type _Stale_Item_,
+  type _Task_Header_,
+  type _Header_ViewModel_,
+  type _Part_Header_,
   type _Action_Item_,
   type _Attributes_Element_,
   type _Line_Run_,
@@ -53,15 +60,19 @@ export {
   viewModelOf__Model,
   type _Proposal_Host_,
   type _Request_Host_,
+  type _Landed_Round_,
   type _Module_Reading_,
   type _Api___boxesOf__Replacement_,
   type _Box_Reading_,
-  ISAPPLIEDMAP__STATE_PROPOSAL
+  ISAPPLIEDMAP__DECISION_PROPOSAL
 }
 
 interface _Api___viewModelOf__Model_<State> {
   model_TextEditor: _Model_TextEditor_
   proposals: Array<_Proposal_Host_>
+  requests_Document: Array<_Request_Host_>
+  rounds_Landed: Array<_Landed_Round_>
+  task_Header: _Task_Header_ | null
   ranges_Frame: Array<_Range_Lines_>
   module_Language: _Module_Language_<State>
   module_Reading: _Module_Reading_
@@ -70,6 +81,9 @@ interface _Api___viewModelOf__Model_<State> {
 function viewModelOf__Model<State>({
   model_TextEditor,
   proposals,
+  requests_Document,
+  rounds_Landed,
+  task_Header,
   ranges_Frame,
   module_Language,
   module_Reading
@@ -85,6 +99,7 @@ function viewModelOf__Model<State>({
   const changes_Placed = placedOf__Changes({
     model_TextEditor,
     proposals,
+    rounds_Landed,
     module_Reading
   })
   const frames_Model = framesOf__Changes({
@@ -114,7 +129,8 @@ function viewModelOf__Model<State>({
         model_TextEditor,
         frame_Drawn,
         changes_Placed,
-        proposals
+        proposals,
+        rounds_Landed
       })
     )
     line_Next = Math.max(
@@ -122,13 +138,122 @@ function viewModelOf__Model<State>({
       frame_Drawn.frame_Model.last + 1
     )
   }
-  return viewModelOf__Blocks([
-    ...blocks,
-    ...blocksOf__Lines({
-      lines_Run: lines_Document.slice(line_Next),
-      line_First: line_Next
+  return {
+    ...viewModelOf__Blocks(requestedIn__Blocks({
+      blocks_ViewModel: [
+        ...blocks,
+        ...blocksOf__Lines({
+          lines_Run: lines_Document.slice(line_Next),
+          line_First: line_Next
+        })
+      ],
+      pieces: requests_Document.flatMap((request_Host) => request_Host.selected?.pieces ?? [])
+    })),
+    header: headerOf__Proposals({
+      model_TextEditor,
+      proposals,
+      requests_Document,
+      task_Header
     })
-  ])
+  }
+}
+
+interface _Api___requestedIn__Blocks_ {
+  blocks_ViewModel: Array<_Block_ViewModel_>
+  pieces: Array<_Piece_Text_>
+}
+
+function requestedIn__Blocks({
+  blocks_ViewModel,
+  pieces
+}: _Api___requestedIn__Blocks_): Array<_Block_ViewModel_> {
+  if (pieces.length === 0) return blocks_ViewModel
+  return blocks_ViewModel.map((block_ViewModel): _Block_ViewModel_ => block_ViewModel.kind === "FRAME"
+    ? {
+      ...block_ViewModel,
+      parts: mapped__NonEmpty({
+        items: block_ViewModel.parts,
+        map: (part_Frame): _Part_Frame_ => part_Frame.kind === "PROPOSAL_LIST"
+          ? part_Frame
+          : {
+            ...part_Frame,
+            run: requestedOf__Run({
+              run_Lines: part_Frame.run,
+              pieces
+            })
+          }
+      })
+    }
+    : {
+      ...block_ViewModel,
+      run: requestedOf__Run({
+        run_Lines: block_ViewModel.run,
+        pieces
+      })
+    })
+}
+
+interface _Api___headerOf__Proposals_ {
+  model_TextEditor: _Model_TextEditor_
+  proposals: Array<_Proposal_Host_>
+  requests_Document: Array<_Request_Host_>
+  task_Header: _Task_Header_ | null
+}
+
+function headerOf__Proposals({
+  model_TextEditor,
+  proposals,
+  requests_Document,
+  task_Header
+}: _Api___headerOf__Proposals_): _Header_ViewModel_ | null {
+  const proposals_Here = proposals.filter((proposal_Host) => model_TextEditor.proposed.some((changes_Source) => changes_Source.source === proposal_Host.source && changes_Source.changes.length > 0))
+  const count_Decided = proposals_Here.filter((proposal_Host) => proposal_Host.state !== "OPEN").length
+  const requests_Here = [
+    ...proposals_Here.flatMap((proposal_Host) => proposal_Host.requests),
+    ...requests_Document
+  ]
+  const count_Queued = requests_Here.filter((request_Host) => request_Host.status === "QUEUED").length
+  const count_Running = requests_Here.filter((request_Host) => request_Host.status === "RUNNING").length
+  const parts: Array<_Part_Header_> = [
+    ...proposals_Here.length === 0
+      ? []
+      : [
+        {
+          text: `${count_Decided} of ${proposals_Here.length} decided`,
+          isBusy: false
+        }
+      ],
+    ...count_Queued === 0
+      ? []
+      : [
+        {
+          text: `${count_Queued} ${count_Queued === 1 ? "request" : "requests"} queued`,
+          isBusy: false
+        }
+      ],
+    ...count_Running === 0
+      ? []
+      : [
+        {
+          text: `${count_Running} in progress`,
+          isBusy: task_Header === null || !task_Header.isBusy
+        }
+      ]
+  ]
+  return task_Header === null && requests_Here.length === 0
+    ? null
+    : {
+      task: task_Header,
+      parts,
+      isStartable: requests_Document.some((request_Host) => request_Host.status === "QUEUED") || proposals_Here.some((proposal_Host) => proposal_Host.state === "OPEN" && proposal_Host.requests.some((request_Host) => request_Host.status === "QUEUED") && !proposal_Host.requests.some((request_Host) => request_Host.status === "RUNNING")),
+      requests: requests_Document.map((request_Host) => ({
+        id: request_Host.id,
+        notes: request_Host.notes,
+        quote: request_Host.selected?.text ?? null,
+        isRunning: request_Host.status === "RUNNING",
+        isStartable: request_Host.status === "QUEUED"
+      }))
+    }
 }
 
 interface _Api___markedOf__Lines_ {
@@ -191,7 +316,7 @@ function markedOf__Lines({
 interface _Proposal_Host_ {
   source: string
   title: string
-  state: _State_Proposal_
+  state: _Decision_Proposal_
   status: string
   rationale: string
   requests: Array<_Request_Host_>
@@ -200,8 +325,16 @@ interface _Proposal_Host_ {
 }
 
 interface _Request_Host_ {
+  id: string
   notes: string
   selected: _Selected_Text_ | null
+  status: _Status_Request_
+}
+
+interface _Landed_Round_ {
+  source: string
+  indexes_Stale: Array<number>
+  count_Dropped: number
 }
 
 interface _Module_Reading_ {
@@ -224,12 +357,14 @@ interface _Box_Reading_ {
 interface _Api___placedOf__Changes_ {
   model_TextEditor: _Model_TextEditor_
   proposals: Array<_Proposal_Host_>
+  rounds_Landed: Array<_Landed_Round_>
   module_Reading: _Module_Reading_
 }
 
 function placedOf__Changes({
   model_TextEditor,
   proposals,
+  rounds_Landed,
   module_Reading
 }: _Api___placedOf__Changes_): Array<_Placed_Change_> {
   const places_Source = new Map<
@@ -256,7 +391,7 @@ function placedOf__Changes({
       const change = change_Model.change
       const proposal_Host = proposals.find((proposal_Each) => proposal_Each.source === change_Model.source)
       if (proposal_Host === undefined) throw new Error(`no proposal for the source ${change_Model.source}`)
-      const isApplied = ISAPPLIEDMAP__STATE_PROPOSAL[proposal_Host.state]
+      const isApplied = ISAPPLIEDMAP__DECISION_PROPOSAL[proposal_Host.state]
       const text_Before = textIn__Range({
         text_Model: model_TextEditor.document,
         range: change.range
@@ -303,6 +438,7 @@ function placedOf__Changes({
         index: change_Model.index,
         change,
         isApplied,
+        isStale: rounds_Landed.some((round_Landed) => round_Landed.source === change_Model.source && round_Landed.indexes_Stale.includes(change_Model.index)),
         runs,
         ranges_Kept: runs_Comparison.flatMap((run_Comparison) => run_Comparison.kind === "KEPT"
           ? [
@@ -381,14 +517,12 @@ interface _Placed_Change_ extends _Compared_Change_ {
   outer: _Outer_Change_ | null
 }
 
-type _IsAppliedMap__State_Proposal_ = {
-  [State in _State_Proposal_]: boolean
+type _IsAppliedMap__Decision_Proposal_ = {
+  [Decision in _Decision_Proposal_]: boolean
 }
 
-const ISAPPLIEDMAP__STATE_PROPOSAL: _IsAppliedMap__State_Proposal_ = {
+const ISAPPLIEDMAP__DECISION_PROPOSAL: _IsAppliedMap__Decision_Proposal_ = {
   OPEN: true,
-  REQUESTED: true,
-  REVISING: true,
   ACCEPTED: true,
   REJECTED: false,
   WITHDRAWN: false
@@ -399,6 +533,7 @@ interface _Compared_Change_ {
   index: number
   change: _Change_
   isApplied: boolean
+  isStale: boolean
   runs: Array<_Run_Placed_>
   ranges_Kept: Array<_Range_Text_>
 }
@@ -908,7 +1043,8 @@ function rangesBefore__Frame(
         word: run_Placed.word,
         source: end_Change.change_Placed.source,
         outer: end_Change.change_Placed.outer,
-        place: run_Placed.place
+        place: run_Placed.place,
+        isStale: end_Change.change_Placed.isStale
       })))
 }
 
@@ -939,6 +1075,7 @@ interface _Range_Change_ {
   source: string
   outer: _Outer_Change_ | null
   place: number
+  isStale: boolean
 }
 
 interface _Api___notesLeaving__Frame_ {
@@ -1116,6 +1253,11 @@ function runOf__Side({
               ...(range_Change.outer === null
                 ? {}
                 : OUTERMAP__KIND_OUTER[range_Change.outer.kind].attributesOf__Underlay(range_Change.outer.source)),
+              ...(range_Change.isStale
+                ? {
+                  "data-stale": ""
+                }
+                : {}),
               "data-place": String(range_Change.place)
             }
           }
@@ -1870,7 +2012,8 @@ function rangesAfter__Pieces({
               word: run_Placed.word,
               source: piece_Applied.source,
               outer: change_Placed?.outer ?? null,
-              place: run_Placed.place
+              place: run_Placed.place,
+              isStale: change_Placed?.isStale ?? false
             }
           ]
       })
@@ -1923,7 +2066,8 @@ function rangesMoved__Pieces({
           word: run_Move.word,
           source: move.source,
           outer: null,
-          place: run_Move.place
+          place: run_Move.place,
+          isStale: change_Move?.isStale ?? false
         }
       ]
   })
@@ -2171,13 +2315,15 @@ interface _Api___frameOf__Drawn_ {
   frame_Drawn: _Drawn_Frame_
   changes_Placed: Array<_Placed_Change_>
   proposals: Array<_Proposal_Host_>
+  rounds_Landed: Array<_Landed_Round_>
 }
 
 function frameOf__Drawn({
   model_TextEditor,
   frame_Drawn,
   changes_Placed,
-  proposals
+  proposals,
+  rounds_Landed
 }: _Api___frameOf__Drawn_): _FRAME_Block__ViewModel_ {
   for (const source of frame_Drawn.sources) {
     if (!proposals.some((proposal_Host) => proposal_Host.source === source)) throw new Error(`no proposal for the source ${source}`)
@@ -2187,33 +2333,53 @@ function frameOf__Drawn({
     ...items_Rest
   ] = proposals
     .filter((proposal_Host) => frame_Drawn.sources.includes(proposal_Host.source))
-    .map((proposal_Host): _Item_Proposals_ => ({
-      source: proposal_Host.source,
-      title: proposal_Host.title,
-      state: proposal_Host.state,
-      status: proposal_Host.status,
-      places: placesOf__Source({
-        model_TextEditor,
+    .map((proposal_Host): _Item_Proposals_ => {
+      const isOpen = proposal_Host.state === "OPEN"
+      const isRunning = proposal_Host.requests.some((request_Host) => request_Host.status === "RUNNING")
+      const isQueued = proposal_Host.requests.some((request_Host) => request_Host.status === "QUEUED")
+      const state: _State_Proposal_ = !isOpen
+        ? proposal_Host.state
+        : isRunning
+          ? "REVISING"
+          : isQueued
+            ? "REQUESTED"
+            : "OPEN"
+      return {
         source: proposal_Host.source,
-        frame_Drawn,
-        changes_Placed,
-        proposals
-      }),
-      neighbors: {
-        range_Previous: null,
-        range_Next: null
-      },
-      rationale: proposal_Host.rationale,
-      requests: proposal_Host.requests.map((request_Host) => ({
-        notes: request_Host.notes,
-        quote: request_Host.selected?.text ?? null
-      })),
-      isQueued: proposal_Host.state === "REQUESTED" && proposal_Host.requests.length > 0,
-      actions: proposal_Host.actions,
-      isDrafting: false,
-      confirming: null,
-      attributes: proposal_Host.attributes
-    }))
+        title: proposal_Host.title,
+        state,
+        status: STATUSMAP__STATE_PROPOSAL[state] ?? proposal_Host.status,
+        places: placesOf__Source({
+          model_TextEditor,
+          source: proposal_Host.source,
+          frame_Drawn,
+          changes_Placed,
+          proposals
+        }),
+        neighbors: {
+          range_Previous: null,
+          range_Next: null
+        },
+        rationale: proposal_Host.rationale,
+        requests: proposal_Host.requests.map((request_Host) => ({
+          id: request_Host.id,
+          notes: request_Host.notes,
+          quote: request_Host.selected?.text ?? null,
+          isRunning: request_Host.status === "RUNNING",
+          isStartable: isOpen && !isRunning && request_Host.status === "QUEUED"
+        })),
+        isRunning,
+        isStartable: isOpen && !isRunning && isQueued,
+        stale: staleOf__Round({
+          round_Landed: rounds_Landed.find((round_Landed) => round_Landed.source === proposal_Host.source) ?? null,
+          isRerunnable: isOpen && !isRunning
+        }),
+        actions: proposal_Host.actions,
+        isDrafting: false,
+        confirming: null,
+        attributes: proposal_Host.attributes
+      }
+    })
   if (item_First === undefined) throw new Error(`a frame at line ${frame_Drawn.frame_Model.first + 1} lists no proposal`)
   const part_Proposed: _Part_Frame_ = {
     kind: "PROPOSAL_LINES",
@@ -2251,6 +2417,43 @@ function frameOf__Drawn({
         part_List
       ]
   }
+}
+
+interface _Api___staleOf__Round_ {
+  round_Landed: _Landed_Round_ | null
+  isRerunnable: boolean
+}
+
+function staleOf__Round({
+  round_Landed,
+  isRerunnable
+}: _Api___staleOf__Round_): _Stale_Item_ | null {
+  if (round_Landed === null) return null
+  const count_Stale = round_Landed.indexes_Stale.length
+  const count_Dropped = round_Landed.count_Dropped
+  const parts = [
+    ...count_Stale === 0 ? [] : [`${count_Stale} ${count_Stale === 1 ? "change" : "changes"} written before your edits`],
+    ...count_Dropped === 0 ? [] : [`${count_Dropped} dropped, ${count_Dropped === 1 ? "its" : "their"} text gone`]
+  ]
+  return parts.length === 0
+    ? null
+    : {
+      label: parts.join(" · "),
+      isRerunnable
+    }
+}
+
+type _StatusMap__State_Proposal_ = {
+  [State in _State_Proposal_]: string | null
+}
+
+const STATUSMAP__STATE_PROPOSAL: _StatusMap__State_Proposal_ = {
+  OPEN: null,
+  REQUESTED: "Revision requested",
+  REVISING: "Revising",
+  ACCEPTED: null,
+  REJECTED: null,
+  WITHDRAWN: null
 }
 
 interface _Api___placesOf__Source_ {

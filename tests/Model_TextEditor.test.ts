@@ -1,6 +1,6 @@
 import { expect, test } from "bun:test"
 import fc from "fast-check"
-import { parseTexts_Line, type _Changes_Host_, type _Model_TextEditor_, parseModel_TextEditor, type _Range_Text_, textWith__Sources, piecesWith__Sources, type _Step_Transaction_, applied__Transaction, type _Position_Text_, carried__Position, comparisonOf__Texts } from "../source/Model_TextEditor.ts"
+import { parseTexts_Line, type _Changes_Host_, type _Model_TextEditor_, parseModel_TextEditor, type _Range_Text_, textWith__Sources, piecesWith__Sources, type _Step_Transaction_, applied__Transaction, rebasedOf__Changes, type _Position_Text_, carried__Position, comparisonOf__Texts } from "../source/Model_TextEditor.ts"
 
 // every line break a text can hold: each ends a line, "\r\n" as one
 const lineBreaks = ["\r\n", "\n", "\r", "\v", "\f", "\u0085", "\u2028", "\u2029"]
@@ -387,4 +387,37 @@ test("the document as it'd be with a change, with its marks: the document's, car
 test("a change's marks outside its text are refused, and why; the document's, the host's own, throw", () => {
   expect(refusalsOf("one", [{ source: "far", changes: [{ kind: "REPLACE", range: on(0, 0, 3), multilineText: "two", marks: [{ range: on(0, 0, 9), data: bold }] }] }])).toEqual(["far: its change at 0:0 to 0:3 has a mark at 0:0 to 0:9 isn't inside its text, or ends before it starts"])
   expect(() => parseModel_TextEditor({ multilineText: "one", marks: [{ range: on(0, 2, 9), data: bold }], proposed: [] })).toThrow()
+})
+
+test("a round written on an older document lands on the one there is now: its changes carried through each edit to the document since, as the model's own are; one whose text an edit since touched, overlapping it, or put in inside it, or a move cut where it lands, marked written before your edits, one an edit only came up to not; a move whose text's gone dropped, and counted", () => {
+  const parsed = parseModel_TextEditor({
+    multilineText: "one two three four",
+    marks: [],
+    proposed: [
+      { source: "digit", changes: [{ kind: "REPLACE", range: { from: { line: 0, offset: 4 }, to: { line: 0, offset: 7 } }, multilineText: "2", marks: [] }] },
+      { source: "last", changes: [{ kind: "REPLACE", range: { from: { line: 0, offset: 14 }, to: { line: 0, offset: 18 } }, multilineText: "4", marks: [] }] },
+      { source: "moved", changes: [{ kind: "MOVE", range: { from: { line: 0, offset: 0 }, to: { line: 0, offset: 4 } }, at: { line: 0, offset: 18 } }] }
+    ]
+  })
+  if (parsed.kind === "REFUSED") throw new Error("refused")
+  const changes = parsed.model_TextEditor.proposed.flatMap((changes_Source) => changes_Source.changes)
+  const on = (from: number, to: number): _Range_Text_ => ({ from: { line: 0, offset: from }, to: { line: 0, offset: to } })
+  const edited = (range: _Range_Text_, multilineText: string) => ({ steps: [atDocument(range, multilineText)] as [_Step_Transaction_] })
+  const rebased = rebasedOf__Changes({
+    changes,
+    transactions: [
+      edited(on(4, 4), "x"),
+      { steps: [{ kind: "TEXT", id_Text: { kind: "CHANGE", source: "digit", index: 0 }, range: on(0, 0), next: { lines: parseTexts_Line("!"), marks: [] } }] },
+      edited(on(15, 17), ""),
+      edited(on(0, 4), "")
+    ]
+  })
+  expect(rebased.changes.map((change) => [change.kind, change.range])).toEqual([["REPLACE", on(1, 4)], ["REPLACE", on(11, 13)]])
+  expect([rebased.indexes_Stale, rebased.count_Dropped]).toEqual([[1], 1])
+  expect(rebasedOf__Changes({ changes, transactions: [] })).toEqual({ changes, indexes_Stale: [], count_Dropped: 0 })
+  expect(rebasedOf__Changes({ changes, transactions: [edited(on(5, 5), "x")] }).indexes_Stale).toEqual([0])
+  expect(rebasedOf__Changes({ changes, transactions: [edited(on(16, 16), "x")] }).indexes_Stale).toEqual([1])
+  const move_Inward = { kind: "MOVE" as const, range: on(0, 4), at: { line: 0, offset: 10 } }
+  expect(rebasedOf__Changes({ changes: [move_Inward], transactions: [edited(on(9, 11), "x")] }).indexes_Stale).toEqual([0])
+  expect(rebasedOf__Changes({ changes: [move_Inward], transactions: [edited(on(10, 10), "x")] }).indexes_Stale).toEqual([])
 })

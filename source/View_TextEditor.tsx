@@ -45,6 +45,7 @@ import type {
   _Selection_Drawn_,
   _Position_Drawn_,
   _Point_Screen_,
+  _Header_ViewModel_,
   _Menu_ViewModel_,
   _Form_Request_,
   _State_Proposal_
@@ -68,6 +69,7 @@ export {
   type _Focus_Draft_,
   type _Visit_Item_,
   type _Focus_Asking_,
+  type _Api___Header_TextEditor__Html_,
   type _Api___Menu_TextEditor__Html_,
   type _Api___Request_TextEditor__Html_
 }
@@ -269,6 +271,7 @@ function TextEditor_Html({
   componentMap_View,
   viewModel_TextEditor
 }: _Api___TextEditor_Html_): JSX.Element {
+  const Component_Header = componentMap_View.header
   const Component_Menu = componentMap_View.menu
   const Component_Request = componentMap_View.request
   return (
@@ -283,6 +286,8 @@ function TextEditor_Html({
         aria-multiline="true"
         aria-label="Text"
       />
+      {viewModel_TextEditor.header !== null && <Component_Header header_ViewModel={viewModel_TextEditor.header} />}
+      {viewModel_TextEditor.header !== null && viewModel_TextEditor.header.requests.length > 0 && <Request$_Document__Html request$_Document={viewModel_TextEditor.header.requests} />}
       {viewModel_TextEditor.blocks.map((block_ViewModel) => (
         <Block_TextEditor__Html
           componentMap_View={componentMap_View}
@@ -292,6 +297,96 @@ function TextEditor_Html({
       {viewModel_TextEditor.menu !== null && <Component_Menu menu_ViewModel={viewModel_TextEditor.menu} />}
       {viewModel_TextEditor.request !== null && <Component_Request form_Request={viewModel_TextEditor.request} />}
     </div>
+  )
+}
+
+interface _Api___Header_TextEditor__Html_ {
+  header_ViewModel: _Header_ViewModel_
+}
+
+function Header_TextEditor__Html({
+  header_ViewModel
+}: _Api___Header_TextEditor__Html_): JSX.Element {
+  return (
+    <div class="header_htmlView">
+      <p class="status_Header_htmlView">
+        {header_ViewModel.task !== null && (
+          <span class="task_Header_htmlView">
+            {header_ViewModel.task.isBusy && (
+              <span
+                class="spinner_htmlView"
+                aria-hidden="true"
+              />
+            )}
+            <span class="label_Task_htmlView">{header_ViewModel.task.label}</span>
+            {header_ViewModel.task.status !== "" && <span class="status_Task_htmlView">{header_ViewModel.task.status}</span>}
+          </span>
+        )}
+        {header_ViewModel.parts.map((part_Header) => (
+          <span
+            class="part_Header_htmlView"
+            data-busy={part_Header.isBusy ? "" : undefined}
+          >
+            {part_Header.isBusy && (
+              <span
+                class="spinner_htmlView"
+                aria-hidden="true"
+              />
+            )}
+            {part_Header.text}
+          </span>
+        ))}
+      </p>
+      <div class="actions_Header_htmlView">
+        {header_ViewModel.task?.actions.map((action_Task) => (
+          <button
+            type="button"
+            class="action_htmlView"
+            data-task={action_Task.command}
+          >
+            {action_Task.label}
+          </button>
+        ))}
+        <button
+          type="button"
+          class="action_htmlView"
+          data-ask="DOCUMENT"
+          aria-haspopup="dialog"
+        >
+          Request a change
+        </button>
+        {header_ViewModel.isStartable && (
+          <button
+            type="button"
+            class="action_htmlView start_htmlView"
+            data-state-after="REVISING"
+            aria-label="Start this document's requests"
+          >
+            Start
+          </button>
+        )}
+      </div>
+    </div>
+  )
+}
+
+interface _Api___Request$_Document__Html_ {
+  request$_Document: Array<_Request_Item_>
+}
+
+function Request$_Document__Html({
+  request$_Document
+}: _Api___Request$_Document__Html_): JSX.Element {
+  return (
+    <section
+      class="requests_Document_htmlView"
+      aria-label="This document's requests"
+    >
+      <Request$__Html
+        request$={request$_Document}
+        isStartable={false}
+      />
+    </section>
   )
 }
 
@@ -354,33 +449,23 @@ function Request_TextEditor__Html({
         rows="3"
       />
       <div class="actions_htmlView">
-        {form_Request.isQueued
-          ? [
-            <button
-              type="button"
-              class="action_htmlView"
-              data-request="ADD"
-            >
-              Add
-            </button>,
-            <button
-              type="button"
-              class="action_htmlView start_htmlView"
-              data-request="START"
-              data-state-after="REVISING"
-            >
-              Start
-            </button>
-          ]
-          : (
-            <button
-              type="button"
-              class="action_htmlView"
-              data-request="SEND"
-            >
-              Send
-            </button>
-          )}
+        <button
+          type="button"
+          class="action_htmlView"
+          data-request="ADD"
+        >
+          Add
+        </button>
+        {form_Request.isStartable && (
+          <button
+            type="button"
+            class="action_htmlView start_htmlView"
+            data-request="START"
+            data-state-after="REVISING"
+          >
+            Start
+          </button>
+        )}
         <button
           type="button"
           class="action_htmlView"
@@ -773,11 +858,25 @@ function Item_ProposalList__Html({
         places_Item={item_ProposalList.places}
         neighbors_Item={item_ProposalList.neighbors}
       />
+      {item_ProposalList.stale !== null && (
+        <p class="stale_htmlView">
+          {item_ProposalList.stale.label}
+          {item_ProposalList.stale.isRerunnable && (
+            <button
+              type="button"
+              class="rerun_htmlView"
+              data-state-after="REVISING"
+            >
+              Run again
+            </button>
+          )}
+        </p>
+      )}
       <p class="rationale_htmlView">{item_ProposalList.rationale}</p>
       {item_ProposalList.requests.length > 0 && (
-        <Request$_Item__Html
-          request$_Item={item_ProposalList.requests}
-          isQueued={item_ProposalList.isQueued}
+        <Request$__Html
+          request$={item_ProposalList.requests}
+          isStartable={item_ProposalList.isStartable}
         />
       )}
       {item_ProposalList.confirming === null
@@ -842,14 +941,16 @@ function Draft_Item__Html({
         >
           Add
         </button>
-        <button
-          type="button"
-          class="action_htmlView start_htmlView"
-          data-draft="START"
-          data-state-after="REVISING"
-        >
-          Start
-        </button>
+        {!item_ProposalList.isRunning && (
+          <button
+            type="button"
+            class="action_htmlView start_htmlView"
+            data-draft="START"
+            data-state-after="REVISING"
+          >
+            Start
+          </button>
+        )}
         <button
           type="button"
           class="action_htmlView"
@@ -1081,31 +1182,42 @@ const WORDMAP__NONE_VISIT: _WordMap_Visit_ = {
   NEXT: "No change of this proposal below"
 }
 
-interface _Api___Request$_Item__Html_ {
-  request$_Item: Array<_Request_Item_>
-  isQueued: boolean
+interface _Api___Request$__Html_ {
+  request$: Array<_Request_Item_>
+  isStartable: boolean
 }
 
-function Request$_Item__Html({
-  request$_Item,
-  isQueued
-}: _Api___Request$_Item__Html_): JSX.Element {
+function Request$__Html({
+  request$,
+  isStartable
+}: _Api___Request$__Html_): JSX.Element {
   return (
     <div class="request_htmlView">
       <p class="label_Request_htmlView">Requests</p>
       <ol class="list_Request_htmlView">
-        {request$_Item.map((
-          request_Item,
-          index
-        ) => (
-          <li class="said_htmlView">
+        {request$.map((request_Item) => (
+          <li
+            class="said_htmlView"
+            data-running={request_Item.isRunning ? "" : undefined}
+          >
             {request_Item.quote !== null && <q class="quote_Said_htmlView">{request_Item.quote}</q>}
             <span class="notes_Said_htmlView">{request_Item.notes}</span>
-            {isQueued && (
+            {request_Item.isRunning && <span class="progress_Said_htmlView">in progress</span>}
+            {request_Item.isStartable && (
+              <button
+                type="button"
+                class="start_Said_htmlView"
+                data-start={request_Item.id}
+                aria-label={`Start “${request_Item.notes}” alone`}
+              >
+                Start
+              </button>
+            )}
+            {!request_Item.isRunning && (
               <button
                 type="button"
                 class="remove_htmlView"
-                data-remove={String(index)}
+                data-remove={request_Item.id}
                 aria-label={`Remove “${request_Item.notes}”`}
               >
                 Remove
@@ -1114,11 +1226,12 @@ function Request$_Item__Html({
           </li>
         ))}
       </ol>
-      {isQueued && (
+      {isStartable && (
         <button
           type="button"
           class="action_htmlView start_htmlView"
           data-state-after="REVISING"
+          aria-label="Start this proposal's requests"
         >
           Start
         </button>
@@ -1156,7 +1269,7 @@ type _IsRevisableMap__State_Proposal_ = {
 const ISREVISABLEMAP__STATE_PROPOSAL: _IsRevisableMap__State_Proposal_ = {
   OPEN: true,
   REQUESTED: true,
-  REVISING: false,
+  REVISING: true,
   ACCEPTED: false,
   REJECTED: false,
   WITHDRAWN: false
@@ -3324,6 +3437,7 @@ interface _ComponentMap__View_TextEditor_ {
   places: _ComponentMap_Places_
   condition: _ComponentMap_Condition_
   line: (api_Line: _Api___Line_Run__Html_) => _Node_Jsx_
+  header: (api_Header: _Api___Header_TextEditor__Html_) => _Node_Jsx_
   menu: (api_Menu: _Api___Menu_TextEditor__Html_) => _Node_Jsx_
   request: (api_Request: _Api___Request_TextEditor__Html_) => _Node_Jsx_
 }
@@ -3365,6 +3479,7 @@ const COMPONENTMAP__VIEW_TEXTEDITOR: _ComponentMap__View_TextEditor_ = {
     CARRIED: CARRIED_Condition_Places__Html
   },
   line: Line_Run__Html,
+  header: Header_TextEditor__Html,
   menu: Menu_TextEditor__Html,
   request: Request_TextEditor__Html
 }

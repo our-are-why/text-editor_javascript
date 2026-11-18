@@ -1369,20 +1369,13 @@ what's written is the state's.
 never sends it alone: a proposal holds every request you've made of it,
 `requests`, the host's, as its state is, each your notes and the words it's
 on, `selected`, if it's on some, kept by the host so a queue built over a
-session outlives a reload, and processed by it. A proposal's requests share
-its state, as there's one state for them all: none, it's open; queued, it's
-requested, waiting on you, not on the agent, a meaning `REQUESTED` didn't
-have before, when it meant sent; being worked on, it's revising, read only;
-done, it's open again, a new round, its requests gone, as a history of
-rounds, as doctor's notes had it, is later. No state of their own, no new
-proposal states. Start, first named Revise now, beside Add, in Revise's form
-and in the menu's note on a proposal, adds what's written, if anything is,
-then asks the host, `START`, to revise everything queued, every proposal's, at once, one
-batch, no work groups, as the user decided: the orchestration's the
-user's, in what they queue, and the controls stay plain; a group could be a
-host's tag on a request later, nothing here changing. A queued request is
-removed, `REMOVE`, by its place in the list, the host opening the proposal
-again once none's left. Accepting or rejecting one with revisions queued
+session outlives a reload, and processed by it. At first a proposal's
+requests shared its state, one batch of everything queued, every
+proposal's, started at once; the same day, that gave way to the next
+entry, each request its own status, Start scoped. Start, first named Revise
+now, beside Add, in Revise's form and in the menu's note on a proposal,
+adds what's written, if anything is, then asks the host, `START`, to start
+what's queued. A queued request is removed, `REMOVE`, by its id. Accepting or rejecting one with revisions queued
 would drop them, so the editor asks first, `CONFIRM`, the item's actions
 row become the question in its place, "Accept and drop 2 queued
 requests?", the action and Cancel, the keyboard on Cancel, so a second
@@ -1401,9 +1394,113 @@ can place one in its own interface too, as the queue can span documents,
 doctor's in its task bar. The menu's requests aimed at a selection or the document still go at
 once, Send, as only the host has a place to show requests on no proposal;
 queuing them comes with drafts. The playground's host queues, removes, drops
-on a decision, and, Start pressed, turns every requested proposal to
-revising, then, with no agent, open again a moment later, its requests
-gone.
+on a decision, and, Start pressed, sets what's queued in its scope going,
+then, with no agent, a moment later, has them done with, as a round would.
+
+**revisions as work, decided 2026-11-18:** a request is a piece of work, a
+proposal a decision; the two kept apart, as a statechart's orthogonal
+regions are. A host's proposal says only what's been decided of it,
+`_Decision_Proposal_`, open, accepted, rejected or withdrawn; each request
+its own status, `_Status_Request_`, queued or running, and its own id, the
+host's; done with, it's gone, as a history of rounds is later. What an item
+shows, revision requested, revising, is a rollup, as a test runner's
+suite shows its tests': an open one with a request running is revising,
+with one queued requested, in the editor's words, the view model's
+`STATUSMAP__STATE_PROPOSAL`; the six states drawn as before. So one
+proposal can have a round under way and more asked of it, queued for the
+next. Starting is scoped, a filter over what's queued, not a group a
+request belongs to, as a test runner runs a test, a file or all of them:
+`_Scope_Start_`, one request, its own Start, a quiet word after it, a
+proposal's, Start under its list or in a form, or the document's, Start in
+its header; a task's the host's, its own action in the header; a frame's
+left out, as a proposal runs through frames and a frame holds parts of
+many. The unit of
+work is a proposal's round: one at a time, so nothing's startable on a
+proposal while a round of it's under way, its form offering Add alone, and
+its words not to be typed into, `isLocked__Edit`, as the agent's rewriting
+them; everything else stays editable, and a round lands on what's changed
+since by its base version, mapped, never overwriting, as the next entry
+says.
+Accepting or rejecting one being revised asks first, "Accept and stop its
+revision, dropping 2 requests?". A revising one's actions are in colour, as
+more can be asked of it; only a decided one's are neutral.
+
+**the header, decided 2026-11-18:** a line over the document, for the
+whole of it, as doctor's bar is, `Header_TextEditor__Html`, the component
+map's `header`, a host's own drawn in its place; named the header, as a
+frame's fold control's already its bar. It stays put as the document
+scrolls under it, sticky, across the editor's width, on the proposals'
+band, flat, a faint edge under it, in the interface's font; what's
+scrolled to, the caret, or a control the keyboard lands on, kept clear of
+it. On its left, where the text starts, how the document stands, in as few
+words as say it, apart by dots, the last cut short where there's no room:
+the host's task, if it gives one; how many of the document's proposals
+are decided, "3 of 14 decided"; how many requests are queued; how many in
+progress, in the revision's plum, a spinner turning, unless the task's
+already says it's busy, so one spinner says it. On its right, the task's
+actions, neutral, and the document's Start, starting every request queued
+in it. The view model's `header`, the projection's, from the host's
+proposals and its task, `task_Header`, `_Task_Header_`: its name, how it's
+going, whether it's busy, its actions, each a command asked of the host,
+`TASK`, as a proposal's are; given to the editor with the proposals, and
+with each `update`, `null` where there's none. Drawn only where there's
+work, a task given or something asked, so a document with proposals and
+nothing asked of them has none; layered on last, from the projection, as
+the folds and the rest rebuild the view model from its blocks. The
+playground's host names its task per example, working while a round's
+under way, with Stop then, putting what's running back in the queue.
+
+**the document's own requests, decided 2026-11-18:** a request for a change
+on no proposal, about what's selected or the whole document, is queued as
+a proposal's is, not sent at once: every form offers Add and Start, the
+menu's and the header's, Start there adding it and starting it, the ask
+saying so, `isStarting`, as the host has the id to start it by. The host
+keeps them beside the proposals, `requests_Document`, each its id, notes,
+the words it's on and its status; the editor lists them under the header,
+flush with it, scrolling with the document, `Request$_Document__Html`, the
+same list a proposal's are, `Request$__Html`, each with its own Start and
+Remove, and underlines the words each's about wherever the document's text
+is drawn, outside frames, and in a frame's lines as they are and as
+proposed. The header counts them with the rest, and its Start starts them
+with the rest; a request's Start, or Remove, names no proposal,
+`source: null`. The header's Request a change opens the form for the whole
+document under it, as doctor's Quick task does, `OPEN_REQUEST`. What one
+gets back is the host's: new proposals, answering it, as doctor's tasks'
+are; the playground's host, no agent, has it done with a moment after it's
+started. When the header's too narrow, its last part's cut short; its
+other parts keep their words.
+
+**a round landing on what's changed since, decided 2026-11-18:** a round's
+written on the document as it was when it started, its base, and lands on
+the document as it is, as optimistic concurrency does, git's and
+ProseMirror's: nothing locked but the proposal's own words while its round's
+under way, nothing ever overwritten. The model's `rebasedOf__Changes`, a
+pure function a host calls, server side where its edits are, carries a
+round's changes through each edit to the document's text since its base,
+as the model carries its own, `carriedOf__Change`, and says which of them
+an edit touched, overlapping it, putting something in inside it, or, a
+move, cutting where it lands, an edit only coming up to it not, and how
+many moves it dropped, their text gone: `_Rebased_Changes_`. The host keeps
+the edits, each `applied` transaction, numbered, each run's base, and
+tells the editor how each proposal's last round landed, beside the
+proposals, not on them, as work is apart from decisions:
+`rounds_Landed`, `_Landed_Round_`, its source, the indexes of its changes
+written before your edits, how many dropped; with the proposals, and with
+each `update`. Every round lands: no conflict state, nothing asked before
+it's shown, as a round proposes and changes nothing; it's accepting it that
+could undo what you'd written, so the review shows it: a change written
+before your edits ringed dashed, `data-stale`, the "changes" look's, and its
+item saying so under its title, "1 change written before your edits",
+"1 dropped, its text gone", in the revision's plum, with Run again, a quiet
+word, while it's open and no round of it's under way, `RERUN`, asking the
+host to start that round's requests again on the document as it is now, so
+the agent sees your edits. Dropping just a round, keeping the one before,
+waits on a history of rounds. The playground's host keeps its edits and
+each run's base, lands each round through the editor's rebasing, its round
+the proposal's changes as they were, as there's no agent to write others,
+and runs again what the round answered, or, a round it didn't start, asks
+again; its JavaScript example starts with the opening comment's last round
+landed after an edit, so its ring's dashed and Run again's offered.
 
 Deciding is a command, on the current proposal or one named: accept, reject,
 revise, amend; an item's actions are the editor's buttons for them, or,

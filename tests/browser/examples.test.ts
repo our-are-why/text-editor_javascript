@@ -416,11 +416,15 @@ test("each edit's told to the host as it's applied, as the playground reports it
 // change written under it; the withdrawn "Log each retry" dismissed; a
 // second revision of the hook queued, both listed, and the first removed;
 // Accept pressed on the hook, asked first, as it'd drop what's queued, the
-// keyboard on Cancel, and Escape taking it back; then a revision of the
-// cap added, and Start, under what's queued on it, revising everything
-// queued at once, the cap's and the hook's, both revising, and a moment later, the host having no agent,
-// open again, what was asked of them done with; each proposal's items, and
-// what's drawn, after each; and typed into again
+// keyboard on Cancel, and Escape taking it back; then the hook's one
+// request started alone, from its own Start, the hook revising, that
+// request in progress; a revision of it added meanwhile, its form offering
+// no Start while a round's under way, queued for the next; a revision of
+// the cap added, and both its requests started from Start under them; and,
+// a moment later, the host having no agent, each round back: the cap open,
+// what was asked of it done with, the hook's started request done with,
+// the one added meanwhile still queued; each proposal's items, and what's
+// drawn, after each; and typed into again
 const itemsOf = (source: string) => opened_JavaScript.page.evaluate(async (source) => {
   await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)))
   return [...document.querySelectorAll(`.item_htmlView[data-source="${source}"]`)].map((element) => ({
@@ -430,6 +434,8 @@ const itemsOf = (source: string) => opened_JavaScript.page.evaluate(async (sourc
     quoted: [...element.querySelectorAll(".quote_Said_htmlView")].map((quote) => quote.textContent),
     removes: element.querySelectorAll(".remove_htmlView").length,
     starts: element.querySelectorAll(".request_htmlView > .start_htmlView").length,
+    starts_Request: element.querySelectorAll(".start_Said_htmlView").length,
+    progress: element.querySelectorAll(".progress_Said_htmlView").length,
     ink_Revise: [...element.querySelectorAll(".action_htmlView[data-command=\"revise\"]")].map((button) => getComputedStyle(button).color).join()
   }))
 }, source)
@@ -463,13 +469,68 @@ const confirming_Hook = await opened_JavaScript.page.evaluate(async () => {
 })
 await opened_JavaScript.page.keyboard.press("Escape")
 const items_Kept = await itemsOf("hook")
+await opened_JavaScript.page.locator(".item_htmlView[data-source=\"hook\"] .start_Said_htmlView").first().click()
+const items_Alone = await itemsOf("hook")
+await pressed("hook", "revise")
+await opened_JavaScript.page.locator(".item_htmlView[data-source=\"hook\"] .notes_htmlView").first().fill("And document it.")
+const draft_Running = await opened_JavaScript.page.evaluate(() => [...document.querySelectorAll(".item_htmlView[data-source=\"hook\"] .draft_htmlView .action_htmlView")].map((button) => button.textContent))
+await opened_JavaScript.page.locator(".item_htmlView[data-source=\"hook\"] .action_htmlView[data-draft=\"ADD\"]").first().click()
+const items_Meanwhile = await itemsOf("hook")
 await revisedWith("cap", "Say why 30.", "ADD")
 await opened_JavaScript.page.locator(".item_htmlView[data-source=\"cap\"] .request_htmlView > .start_htmlView").first().click()
-const items_Revising = [...await itemsOf("hook"), ...await itemsOf("cap")]
-await opened_JavaScript.page.waitForFunction(() => [...document.querySelectorAll(".item_htmlView:is([data-source=\"hook\"], [data-source=\"cap\"])")].every((element) => element.getAttribute("data-state") === "OPEN"))
-const items_Revised = [...await itemsOf("hook"), ...await itemsOf("cap")]
+const items_Capped = await itemsOf("cap")
+await opened_JavaScript.page.waitForFunction(() => [...document.querySelectorAll(".item_htmlView:is([data-source=\"hook\"], [data-source=\"cap\"])")].every((element) => element.getAttribute("data-state") !== "REVISING"))
+const items_Back_Hook = await itemsOf("hook")
+const items_Back_Cap = await itemsOf("cap")
 const asked_JavaScript = (await opened_JavaScript.logged()).filter((entry) => "asked" in entry)
 const queued_JavaScript = (await opened_JavaScript.logged()).filter((entry) => "removed" in entry || "revising" in entry || "revised" in entry)
+// then the header over the document: the playground's task, named,
+// working while the timeout's revised, Stop offered then; how many of the
+// document's proposals are decided, how many requests are queued, how many
+// in progress; Stop putting what's running back in the queue; the header's
+// Start setting every proposal's queued requests going at once; and, a
+// moment later, nothing left asked
+const headerShown = () => opened_JavaScript.page.evaluate(async () => {
+  await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)))
+  const header = document.querySelector(".htmlView_editor > .header_htmlView")
+  return {
+    task: [...header?.querySelectorAll(".task_Header_htmlView > :not(.spinner_htmlView)") ?? []].map((element) => element.textContent),
+    parts: [...header?.querySelectorAll(".part_Header_htmlView") ?? []].map((element) => element.textContent),
+    spinners: header?.querySelectorAll(".spinner_htmlView").length ?? 0,
+    actions: [...header?.querySelectorAll(".actions_Header_htmlView > button") ?? []].map((element) => element.textContent),
+    isSticky: header === null ? false : getComputedStyle(header).position === "sticky"
+  }
+})
+const header_Working = await headerShown()
+await opened_JavaScript.page.locator(".header_htmlView .action_htmlView[data-task=\"stop\"]").click()
+const header_Stopped = await headerShown()
+await opened_JavaScript.page.locator(".header_htmlView .start_htmlView").click()
+const header_Started = await headerShown()
+await opened_JavaScript.page.waitForFunction(() => document.querySelector(".item_htmlView[data-state=\"REVISING\"], .item_htmlView[data-state=\"REQUESTED\"]") === null)
+const header_Done = await headerShown()
+const logged_Header = (await opened_JavaScript.logged()).filter((entry) => "task" in entry || "revising" in entry || "revised" in entry)
+const logged_Stopped = logged_Header.slice(logged_Header.findIndex((entry) => "task" in entry))
+// then Run again on the opening comment, its last round written before an
+// edit of yours touched what it was on, its ring dashed: asked of the host,
+// which starts it again, on the document as it is now, revising, the line
+// still saying so, nothing to run again while it's under way; and, its
+// round back, written on the document as it is, nothing marked
+const staleOf_Header = () => opened_JavaScript.page.evaluate(async () => {
+  await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)))
+  const item = document.querySelector(".item_htmlView[data-source=\"header\"]")
+  const rings = [...document.querySelectorAll(".underlay_htmlView[data-source=\"header\"][data-stale]")]
+  return {
+    state: item?.getAttribute("data-state") ?? null,
+    stale: item?.querySelector(".stale_htmlView")?.textContent ?? null,
+    dashes: [...new Set(rings.map((ring) => getComputedStyle(ring).strokeDasharray))]
+  }
+})
+const stale_Landed = await staleOf_Header()
+await opened_JavaScript.page.locator(".item_htmlView[data-source=\"header\"] .rerun_htmlView").first().click()
+const stale_Rerunning = await staleOf_Header()
+await opened_JavaScript.page.waitForFunction(() => document.querySelector(".item_htmlView[data-source=\"header\"]")?.getAttribute("data-state") === "OPEN")
+const stale_Again = await staleOf_Header()
+const logged_Rerun = (await opened_JavaScript.logged()).filter((entry) => "rerun" in entry || ("revising" in entry && entry["revising"] === "header"))
 const lineOf_Attempts = () => opened_JavaScript.page.evaluate(async () => {
   await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)))
   return [...document.querySelectorAll(".run_htmlView[data-run$=\"-proposed\"] > .line_htmlView > .text_htmlView")].map((element) => element.textContent ?? "").find((text) => text.includes("round === attemptss")) ?? ""
@@ -495,33 +556,58 @@ await opened_JavaScript.page.mouse.click(point_Attempts_After.x, point_Attempts_
 await opened_JavaScript.page.keyboard.type("x")
 const line_Attempts_Typed = await lineOf_Attempts()
 
-test("a proposal's action pressed is asked of the host, which sends back what it now has: accepted, it's drawn accepted, Reopen its one action; a revision added, its notes asked with it, it's drawn as one requested, what you asked listed under it, still to be accepted, rejected or asked more of; dismissed, it's gone; another added, both listed, one removed; accepting one with revisions queued asked first, Cancel the keyboard's, Escape taking it back; Start, under what's queued, every proposal with revisions queued revising at once, nothing to remove or start then, and open again when the host's done, what was asked done with; and what's typed after goes on as before", () => {
+test("a proposal's action pressed is asked of the host, which sends back what it now has: accepted, it's drawn accepted, Reopen its one action; a revision added, its notes asked with it, it's drawn as one requested, what you asked listed under it, still to be accepted, rejected or asked more of; dismissed, it's gone; another added, both listed, one removed; accepting one with revisions queued asked first, Cancel the keyboard's, Escape taking it back; one request started alone, from its own Start, the proposal revising, that request in progress, nothing of it to remove; one added meanwhile queued for the next round, nothing to start while a round's under way; Start under a proposal's requests starting all of them, and that proposal alone; each round back, what it answered done with, what's queued since still queued; and what's typed after goes on as before", () => {
   expect(items_Accepted.length).toBeGreaterThan(0)
   expect(items_Accepted.every((item) => item.state === "ACCEPTED" && item.actions.join() === "Reopen")).toBe(true)
   expect(items_Requested.length).toBeGreaterThan(0)
   expect(items_Requested.every((item) => item.state === "REQUESTED" && item.asked.join("|") === "Keep the hook, but call it after the delay." && item.actions.join() === "Accept,Reject,Revise" && item.removes === 1 && item.starts === 1)).toBe(true)
-  expect(items_Requested[0]?.ink_Revise).toBe(items_Revised[0]?.ink_Revise)
+  expect(items_Requested[0]?.ink_Revise).toBe(items_Back_Cap[0]?.ink_Revise)
   expect(items_Dismissed).toEqual([])
   expect(items_Queued.every((item) => item.asked.join("|") === "Keep the hook, but call it after the delay.|Name what it's given." && item.removes === 2)).toBe(true)
   expect(items_Removed.every((item) => item.state === "REQUESTED" && item.asked.join("|") === "Name what it's given.")).toBe(true)
   expect(confirming_Hook).toEqual({ question: "Accept and drop 1 queued request?", focused: "Cancel" })
   expect(items_Kept.every((item) => item.state === "REQUESTED" && item.actions.join() === "Accept,Reject,Revise" && item.asked.join("|") === "Name what it's given.")).toBe(true)
-  expect(items_Revising.length).toBeGreaterThan(1)
-  expect(items_Revising.every((item) => item.state === "REVISING" && item.actions.length === 0 && item.asked.length > 0 && item.removes === 0 && item.starts === 0)).toBe(true)
-  expect(items_Revised.every((item) => item.state === "OPEN" && item.actions.join() === "Accept,Reject,Revise" && item.asked.length === 0)).toBe(true)
+  const shape = (items: Awaited<ReturnType<typeof itemsOf>>) => [...new Set(items.map((item) => JSON.stringify([item.state, item.asked, item.progress, item.removes, item.starts, item.starts_Request])))]
+  expect(shape(items_Alone)).toEqual([JSON.stringify(["REVISING", ["Name what it's given."], 1, 0, 0, 0])])
+  expect(draft_Running).toEqual(["Add", "Cancel"])
+  expect(shape(items_Meanwhile)).toEqual([JSON.stringify(["REVISING", ["Name what it's given.", "And document it."], 1, 1, 0, 0])])
+  expect(items_Meanwhile.every((item) => item.actions.join() === "Accept,Reject,Revise")).toBe(true)
+  expect(shape(items_Capped)).toEqual([JSON.stringify(["REVISING", ["make the cap an option, 30 seconds unless the caller gives another.", "Say why 30."], 2, 0, 0, 0])])
+  expect(shape(items_Back_Hook)).toEqual([JSON.stringify(["REQUESTED", ["And document it."], 0, 1, 1, 1])])
+  expect(shape(items_Back_Cap)).toEqual([JSON.stringify(["OPEN", [], 0, 0, 0, 0])])
   expect(asked_JavaScript).toEqual([
     { asked: "accept", proposal: "errors", notes: null, words: null },
     { asked: "revise", proposal: "hook", notes: "Keep the hook, but call it after the delay.", words: null },
     { asked: "dismiss", proposal: "log", notes: null, words: null },
     { asked: "revise", proposal: "hook", notes: "Name what it's given.", words: null },
+    { asked: "revise", proposal: "hook", notes: "And document it.", words: null },
     { asked: "revise", proposal: "cap", notes: "Say why 30.", words: null }
   ])
   expect(queued_JavaScript).toEqual([
-    { removed: 0, proposal: "hook" },
-    { revising: "hook, cap" },
-    { revised: "hook, cap" }
+    { removed: "hook-1", proposal: "hook" },
+    { revising: "hook", requests: 1 },
+    { revising: "cap", requests: 2 },
+    { revised: "hook" },
+    { revised: "cap" }
   ])
   expect(line_Attempts_Typed.length).toBe(line_Attempts.length + 1)
+  expect(opened_JavaScript.errors).toEqual([])
+})
+
+test("the header over the document stays put as it scrolls, saying the host's task, how many proposals are decided, how many requests queued and in progress, a spinner only on the task while it's working; the host's own actions on its right, Stop putting what's running back in the queue; the header's Start setting every proposal's queued requests going at once, each proposal's round its own; nothing asked, it says only what's decided, nothing to start", () => {
+  expect(header_Working).toEqual({ task: ["Tidy the retry loop", "working"], parts: ["3 of 14 decided", "1 request queued", "1 in progress"], spinners: 1, actions: ["Stop", "Request a change", "Start"], isSticky: true })
+  expect(header_Stopped).toEqual({ task: ["Tidy the retry loop"], parts: ["3 of 14 decided", "2 requests queued"], spinners: 0, actions: ["Request a change", "Start"], isSticky: true })
+  expect(header_Started).toEqual({ task: ["Tidy the retry loop", "working"], parts: ["3 of 14 decided", "2 in progress"], spinners: 1, actions: ["Stop", "Request a change"], isSticky: true })
+  expect(header_Done).toEqual({ task: ["Tidy the retry loop"], parts: ["3 of 14 decided"], spinners: 0, actions: ["Request a change"], isSticky: true })
+  expect(logged_Stopped).toEqual([{ task: "stop" }, { revising: "hook, timeout", requests: 2 }, { revised: "hook, timeout" }])
+  expect(opened_JavaScript.errors).toEqual([])
+})
+
+test("a round that landed after your edits: its changes written before them ringed dashed, its item saying how many, with Run again; pressed, asked of the host, which starts it again, the proposal revising, nothing to run again while it's under way; its round back, written on the document as it is now, nothing marked", () => {
+  expect(stale_Landed).toEqual({ state: "OPEN", stale: "1 change written before your editsRun again", dashes: ["3px, 2px"] })
+  expect(stale_Rerunning).toEqual({ state: "REVISING", stale: "1 change written before your edits", dashes: ["3px, 2px"] })
+  expect(stale_Again).toEqual({ state: "OPEN", stale: null, dashes: [] })
+  expect(logged_Rerun).toEqual([{ rerun: "header", requests: 1 }, { revising: "header", requests: 1 }])
   expect(opened_JavaScript.errors).toEqual([])
 })
 
@@ -589,6 +675,35 @@ await opened_JavaScript.page.evaluate(() => new Promise((resolve) => requestAnim
 await opened_JavaScript.page.keyboard.type("Say why the delay doubles.")
 await opened_JavaScript.page.keyboard.press("Control+Enter")
 const asked_Menu = (await opened_JavaScript.logged()).filter((entry) => "requested" in entry || entry["words"] !== undefined && entry["words"] !== null)
+// then the document's own requests: the one just added, on no proposal,
+// listed under the header; Request a change, in the header, opening the
+// form for the whole document under it, Start there adding one and
+// starting it, in progress, the other still queued; then it done with, and
+// the other removed, nothing left listed
+const requestsOf_Document = () => opened_JavaScript.page.evaluate(async () => {
+  await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)))
+  return [...document.querySelectorAll(".requests_Document_htmlView .said_htmlView")].map((element) => `${element.querySelector(".notes_Said_htmlView")?.textContent}${element.querySelector(".progress_Said_htmlView") === null ? "" : " (in progress)"}`)
+})
+const requests_Added = await requestsOf_Document()
+await opened_JavaScript.page.locator(".header_htmlView [data-ask=\"DOCUMENT\"]").click()
+const form_Header = await opened_JavaScript.page.evaluate(async () => {
+  await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)))
+  const button = document.querySelector(".header_htmlView [data-ask=\"DOCUMENT\"]")?.getBoundingClientRect()
+  const form = document.querySelector(".asking_htmlView")?.getBoundingClientRect()
+  return {
+    label: document.querySelector(".asking_htmlView > .label_Asking_htmlView")?.textContent ?? null,
+    actions: [...document.querySelectorAll(".asking_htmlView .action_htmlView")].map((element) => element.textContent),
+    isFocused: document.activeElement?.matches(".asking_htmlView > .notes_htmlView") === true,
+    isUnder: button !== undefined && form !== undefined && form.top >= button.bottom
+  }
+})
+await opened_JavaScript.page.keyboard.type("Name the module's exports.")
+await opened_JavaScript.page.locator(".asking_htmlView [data-request=\"START\"]").click()
+const requests_Started = await requestsOf_Document()
+await opened_JavaScript.page.waitForFunction(() => document.querySelector(".requests_Document_htmlView .progress_Said_htmlView") === null)
+const requests_Done = await requestsOf_Document()
+await opened_JavaScript.page.locator(".requests_Document_htmlView .remove_htmlView").first().click()
+const requests_Removed = await requestsOf_Document()
 
 test("a right-click on a proposal's selected words offers a note on them, or on the whole proposal, the first focused; chosen, a form, what it's on quoted, the keyboard in it; added, the host's told, which queues a revision of the proposal, the words quoted before what you asked, and underlined, dotted, where they're proposed; on the document's words, nothing selected, a request for a change to the document, Escape closing it, the menu key opening it again at the caret", () => {
   expect(menu_Words).toEqual({ choices: ["Note on these words of “Stop retrying once the caller aborts”", "Note on “Stop retrying once the caller aborts”"], focused: "Note on these words of “Stop retrying once the caller aborts”" })
@@ -604,5 +719,14 @@ test("a right-click on a proposal's selected words offers a note on them, or on 
     { asked: "revise", proposal: "aborted", notes: "Check it before the delay too.", words: "aborted" },
     { requested: "Say why the delay doubles.", aimed: null }
   ])
+  expect(opened_JavaScript.errors).toEqual([])
+})
+
+test("a request on no proposal, the document's own, queued and listed under the header; Request a change, in the header, a form for the whole document under it, the keyboard in it, Add and Start; started there, added and in progress at once, the rest still queued; done with, gone from the list; removed, gone", () => {
+  expect(requests_Added).toEqual(["Say why the delay doubles."])
+  expect(form_Header).toEqual({ label: "Request a change to this document", actions: ["Add", "Start", "Cancel"], isFocused: true, isUnder: true })
+  expect(requests_Started).toEqual(["Say why the delay doubles.", "Name the module's exports. (in progress)"])
+  expect(requests_Done).toEqual(["Say why the delay doubles."])
+  expect(requests_Removed).toEqual([])
   expect(opened_JavaScript.errors).toEqual([])
 })

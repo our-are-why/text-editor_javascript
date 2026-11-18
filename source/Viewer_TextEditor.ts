@@ -34,6 +34,7 @@ import {
   confirmingAt__ViewModel,
   type _Pending_Confirm_,
   type _Item_Proposals_,
+  type _State_Proposal_,
   type _Menu_ViewModel_,
   type _Item_Menu_,
   type _Target_Request_,
@@ -69,11 +70,14 @@ export {
   type _CONFIRM_Command_,
   type _REMOVE_Command_,
   type _START_Command_,
+  type _TASK_Command_,
+  type _RERUN_Command_,
   type _SEND_Command_,
   type _OPEN_MENU__Command_,
   type _STEP_MENU__Command_,
   type _CHOOSE_MENU__Command_,
   type _CLOSE_MENU__Command_,
+  type _OPEN_REQUEST__Command_,
   type _SEND_REQUEST__Command_,
   type _CLOSE_REQUEST__Command_,
   type _DISCARD_Command_,
@@ -98,6 +102,13 @@ export {
   type _REQUEST_Asked_Host_,
   type _REMOVE_Asked_Host_,
   type _START_Asked_Host_,
+  type _Scope_Start_,
+  type __BASE_Scope_Start_,
+  type _REQUEST_Scope_Start_,
+  type _PROPOSAL_Scope_Start_,
+  type _DOCUMENT_Scope_Start_,
+  type _TASK_Asked_Host_,
+  type _RERUN_Asked_Host_,
   type _Answer_Dispatch_,
   type _Unit_Move_,
   type _Direction_Move_,
@@ -410,7 +421,7 @@ interface _Answer_Edit_ {
   selection: _Selection_TextEditor_
 }
 
-type _Asked_Host_ = _ACTION_Asked_Host_ | _REQUEST_Asked_Host_ | _REMOVE_Asked_Host_ | _START_Asked_Host_
+type _Asked_Host_ = _ACTION_Asked_Host_ | _REQUEST_Asked_Host_ | _REMOVE_Asked_Host_ | _START_Asked_Host_ | _TASK_Asked_Host_ | _RERUN_Asked_Host_
 
 interface __BASE_Asked_Host_<Kind extends string> {
   kind: Kind
@@ -426,14 +437,42 @@ interface _ACTION_Asked_Host_ extends __BASE_Asked_Host_<"ACTION"> {
 interface _REQUEST_Asked_Host_ extends __BASE_Asked_Host_<"REQUEST"> {
   selected: _Selected_Text_ | null
   notes: string
+  isStarting: boolean
 }
 
 interface _REMOVE_Asked_Host_ extends __BASE_Asked_Host_<"REMOVE"> {
-  source: string
-  index: number
+  source: string | null
+  id: string
 }
 
-interface _START_Asked_Host_ extends __BASE_Asked_Host_<"START"> {}
+interface _START_Asked_Host_ extends __BASE_Asked_Host_<"START"> {
+  scope: _Scope_Start_
+}
+
+type _Scope_Start_ = _REQUEST_Scope_Start_ | _PROPOSAL_Scope_Start_ | _DOCUMENT_Scope_Start_
+
+interface __BASE_Scope_Start_<Kind extends string> {
+  kind: Kind
+}
+
+interface _REQUEST_Scope_Start_ extends __BASE_Scope_Start_<"REQUEST"> {
+  source: string | null
+  id: string
+}
+
+interface _PROPOSAL_Scope_Start_ extends __BASE_Scope_Start_<"PROPOSAL"> {
+  source: string
+}
+
+interface _DOCUMENT_Scope_Start_ extends __BASE_Scope_Start_<"DOCUMENT"> {}
+
+interface _TASK_Asked_Host_ extends __BASE_Asked_Host_<"TASK"> {
+  command: string
+}
+
+interface _RERUN_Asked_Host_ extends __BASE_Asked_Host_<"RERUN"> {
+  source: string
+}
 
 interface _Buffer_Edit_ {
   id_Text: _Id_Text_
@@ -458,7 +497,7 @@ interface _Adapter_Event_ {
   commandOf__Event: (event: Event) => _Command_TextEditor_ | null
 }
 
-type _Command_TextEditor_ = _POINT_Command_ | _JUMP_Command_ | _FOLD_Command_ | _DRAFT_Command_ | _ACT_Command_ | _CONFIRM_Command_ | _REMOVE_Command_ | _START_Command_ | _SEND_Command_ | _OPEN_MENU__Command_ | _STEP_MENU__Command_ | _CHOOSE_MENU__Command_ | _CLOSE_MENU__Command_ | _SEND_REQUEST__Command_ | _CLOSE_REQUEST__Command_ | _DISCARD_Command_ | _VISIT_Command_ | _PLACE_Command_ | _DRAG_Command_ | _RELEASE_Command_ | _MOVE_Command_ | _EXTEND_Command_ | _INSERT_Command_ | _REPLACE_Command_ | _DELETE_Command_ | _UNDO_Command_ | _REDO_Command_ | _COPY_Command_ | _CUT_Command_ | _PASTE_Command_
+type _Command_TextEditor_ = _POINT_Command_ | _JUMP_Command_ | _FOLD_Command_ | _DRAFT_Command_ | _ACT_Command_ | _CONFIRM_Command_ | _REMOVE_Command_ | _START_Command_ | _TASK_Command_ | _RERUN_Command_ | _SEND_Command_ | _OPEN_MENU__Command_ | _STEP_MENU__Command_ | _CHOOSE_MENU__Command_ | _CLOSE_MENU__Command_ | _OPEN_REQUEST__Command_ | _SEND_REQUEST__Command_ | _CLOSE_REQUEST__Command_ | _DISCARD_Command_ | _VISIT_Command_ | _PLACE_Command_ | _DRAG_Command_ | _RELEASE_Command_ | _MOVE_Command_ | _EXTEND_Command_ | _INSERT_Command_ | _REPLACE_Command_ | _DELETE_Command_ | _UNDO_Command_ | _REDO_Command_ | _COPY_Command_ | _CUT_Command_ | _PASTE_Command_
 
 interface __BASE_Command_<Kind extends string> {
   kind: Kind
@@ -491,11 +530,21 @@ interface _CONFIRM_Command_ extends __BASE_Command_<"CONFIRM"> {
 }
 
 interface _REMOVE_Command_ extends __BASE_Command_<"REMOVE"> {
-  id_Item: _Id_Item_
-  index: number
+  source: string | null
+  id: string
 }
 
-interface _START_Command_ extends __BASE_Command_<"START"> {}
+interface _START_Command_ extends __BASE_Command_<"START"> {
+  scope: _Scope_Start_
+}
+
+interface _TASK_Command_ extends __BASE_Command_<"TASK"> {
+  command: string
+}
+
+interface _RERUN_Command_ extends __BASE_Command_<"RERUN"> {
+  id_Item: _Id_Item_
+}
 
 interface _SEND_Command_ extends __BASE_Command_<"SEND"> {
   id_Item: _Id_Item_
@@ -517,6 +566,10 @@ interface _CHOOSE_MENU__Command_ extends __BASE_Command_<"CHOOSE_MENU"> {
 }
 
 interface _CLOSE_MENU__Command_ extends __BASE_Command_<"CLOSE_MENU"> {}
+
+interface _OPEN_REQUEST__Command_ extends __BASE_Command_<"OPEN_REQUEST"> {
+  point_Screen: _Point_Screen_
+}
 
 interface _SEND_REQUEST__Command_ extends __BASE_Command_<"SEND_REQUEST"> {
   notes: string
@@ -619,7 +672,10 @@ function viewModelOf__State(
   state: _State__Viewer_TextEditor_
 ): _ViewModel_TextEditor_ {
   return askingAt__ViewModel({
-    viewModel_TextEditor: selectedOf__State(state),
+    viewModel_TextEditor: {
+      ...selectedOf__State(state),
+      header: state.viewModel_TextEditor.header
+    },
     menu: state.menu,
     request: state.request
   })
@@ -824,18 +880,44 @@ function REMOVE_stateAfter__Command({
 }: _Api___stateAfter__Command_<"REMOVE">): _State__Viewer_TextEditor_ {
   ask_View({
     kind: "REMOVE",
-    source: command.id_Item.source,
-    index: command.index
+    source: command.source,
+    id: command.id
   })
   return state
 }
 
 function START_stateAfter__Command({
   state,
+  command,
   ask_View
 }: _Api___stateAfter__Command_<"START">): _State__Viewer_TextEditor_ {
   ask_View({
-    kind: "START"
+    kind: "START",
+    scope: command.scope
+  })
+  return state
+}
+
+function TASK_stateAfter__Command({
+  state,
+  command,
+  ask_View
+}: _Api___stateAfter__Command_<"TASK">): _State__Viewer_TextEditor_ {
+  ask_View({
+    kind: "TASK",
+    command: command.command
+  })
+  return state
+}
+
+function RERUN_stateAfter__Command({
+  state,
+  command,
+  ask_View
+}: _Api___stateAfter__Command_<"RERUN">): _State__Viewer_TextEditor_ {
+  ask_View({
+    kind: "RERUN",
+    source: command.id_Item.source
   })
   return state
 }
@@ -858,7 +940,11 @@ function SEND_stateAfter__Command({
   }
   if (command.isStarting) {
     ask_View({
-      kind: "START"
+      kind: "START",
+      scope: {
+        kind: "PROPOSAL",
+        source: command.id_Item.source
+      }
     })
   }
   return closedAt__State({
@@ -941,7 +1027,7 @@ function itemsOf__Menu({
     ? block_ViewModel.parts.flatMap((part_Frame) => part_Frame.kind === "PROPOSAL_LIST" ? part_Frame.items : [])
     : [])
   const reviseOf = (source: string) => {
-    const item_Proposals = items_Proposals.find((item_Each) => item_Each.source === source && (item_Each.state === "OPEN" || item_Each.state === "REQUESTED"))
+    const item_Proposals = items_Proposals.find((item_Each) => item_Each.source === source && ISNOTABLEMAP__STATE_PROPOSAL[item_Each.state])
     const action_Item = item_Proposals?.actions.find((action_Each) => action_Each.stateAfter === "REQUESTED")
     return item_Proposals === undefined || action_Item === undefined
       ? null
@@ -1043,11 +1129,34 @@ function CHOOSE_MENU_stateAfter__Command({
         point_Screen: state.menu.point_Screen,
         label: item_Menu.label,
         quote: item_Menu.quote,
-        isQueued: item_Menu.target.kind === "PROPOSAL",
+        isStartable: item_Menu.target.kind !== "PROPOSAL" || !isRunning__Source({
+          viewModel_TextEditor: viewModelOf__State(state),
+          source: item_Menu.target.source
+        }),
         target: item_Menu.target
       },
       focus_Asking: "REQUEST"
     }
+}
+
+function OPEN_REQUEST_stateAfter__Command({
+  state,
+  command
+}: _Api___stateAfter__Command_<"OPEN_REQUEST">): _State__Viewer_TextEditor_ {
+  return {
+    ...state,
+    menu: null,
+    request: {
+      point_Screen: command.point_Screen,
+      label: "Request a change to this document",
+      quote: null,
+      isStartable: true,
+      target: {
+        kind: "DOCUMENT"
+      }
+    },
+    focus_Asking: "REQUEST"
+  }
 }
 
 function CLOSE_MENU_stateAfter__Command({
@@ -1067,17 +1176,25 @@ function SEND_REQUEST_stateAfter__Command({
   command,
   ask_View
 }: _Api___stateAfter__Command_<"SEND_REQUEST">): _State__Viewer_TextEditor_ {
+  if (state.request === null) return state
   const isWritten = command.notes.trim() !== ""
-  if (state.request === null || (!isWritten && !(command.isStarting && state.request.isQueued))) return state
+  const target = state.request.target
+  const isStarting = command.isStarting && state.request.isStartable
+  if (!isWritten && !(isStarting && target.kind === "PROPOSAL")) return state
   if (isWritten) {
-    ask_View(ASKEDMAP__KIND_TARGET[state.request.target.kind]({
-      target: state.request.target,
-      notes: command.notes
+    ask_View(ASKEDMAP__KIND_TARGET[target.kind]({
+      target,
+      notes: command.notes,
+      isStarting
     } as never))
   }
-  if (command.isStarting && state.request.isQueued) {
+  if (isStarting && target.kind === "PROPOSAL") {
     ask_View({
-      kind: "START"
+      kind: "START",
+      scope: {
+        kind: "PROPOSAL",
+        source: target.source
+      }
     })
   }
   return {
@@ -1085,6 +1202,31 @@ function SEND_REQUEST_stateAfter__Command({
     request: null,
     isFocusing_Input: true
   }
+}
+
+type _IsNotableMap__State_Proposal_ = {
+  [State in _State_Proposal_]: boolean
+}
+
+const ISNOTABLEMAP__STATE_PROPOSAL: _IsNotableMap__State_Proposal_ = {
+  OPEN: true,
+  REQUESTED: true,
+  REVISING: true,
+  ACCEPTED: false,
+  REJECTED: false,
+  WITHDRAWN: false
+}
+
+interface _Api___isRunning__Source_ {
+  viewModel_TextEditor: _ViewModel_TextEditor_
+  source: string
+}
+
+function isRunning__Source({
+  viewModel_TextEditor,
+  source
+}: _Api___isRunning__Source_): boolean {
+  return viewModel_TextEditor.blocks.some((block_ViewModel) => block_ViewModel.kind === "FRAME" && block_ViewModel.parts.some((part_Frame) => part_Frame.kind === "PROPOSAL_LIST" && part_Frame.items.some((item_Proposals) => item_Proposals.source === source && item_Proposals.isRunning)))
 }
 
 type _AskedMap__Kind_Target_ = {
@@ -1097,23 +1239,28 @@ interface _Api___asked__Kind_Target_<Kind extends _Target_Request_["kind"]> {
     __BASE_Target_Request_<Kind>
   >
   notes: string
+  isStarting: boolean
 }
 
 const ASKEDMAP__KIND_TARGET: _AskedMap__Kind_Target_ = {
   SELECTION: ({
     target,
-    notes
+    notes,
+    isStarting
   }) => ({
     kind: "REQUEST",
     selected: target.selected,
-    notes
+    notes,
+    isStarting
   }),
   DOCUMENT: ({
-    notes
+    notes,
+    isStarting
   }) => ({
     kind: "REQUEST",
     selected: null,
-    notes
+    notes,
+    isStarting
   }),
   PROPOSAL: ({
     target,
@@ -2329,11 +2476,14 @@ const HANDLERMAP__TEXTEDITOR: _HandlerMap__TextEditor_ = {
   CONFIRM: CONFIRM_stateAfter__Command,
   REMOVE: REMOVE_stateAfter__Command,
   START: START_stateAfter__Command,
+  TASK: TASK_stateAfter__Command,
+  RERUN: RERUN_stateAfter__Command,
   SEND: SEND_stateAfter__Command,
   OPEN_MENU: OPEN_MENU_stateAfter__Command,
   STEP_MENU: STEP_MENU_stateAfter__Command,
   CHOOSE_MENU: CHOOSE_MENU_stateAfter__Command,
   CLOSE_MENU: CLOSE_MENU_stateAfter__Command,
+  OPEN_REQUEST: OPEN_REQUEST_stateAfter__Command,
   SEND_REQUEST: SEND_REQUEST_stateAfter__Command,
   CLOSE_REQUEST: CLOSE_REQUEST_stateAfter__Command,
   DISCARD: DISCARD_stateAfter__Command,

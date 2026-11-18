@@ -46,6 +46,9 @@ export {
   type _PROPOSALS_Part__Frame_,
   type _Item_Proposals_,
   type _State_Proposal_,
+  type _Decision_Proposal_,
+  type _Status_Request_,
+  type _Stale_Item_,
   type _Places_Item_,
   type __BASE_Places_Item_,
   type _NONE_Places_Item_,
@@ -64,6 +67,10 @@ export {
   foldedAt__ViewModel,
   draftingAt__ViewModel,
   confirmingAt__ViewModel,
+  type _Header_ViewModel_,
+  type _Task_Header_,
+  type _Action_Task_,
+  type _Part_Header_,
   type _Pending_Confirm_,
   type _Request_Item_,
   type _Confirm_Item_,
@@ -108,6 +115,31 @@ interface _ViewModel_TextEditor_ {
   selection: _Selection_Drawn_ | null
   menu: _Menu_ViewModel_ | null
   request: _Form_Request_ | null
+  header: _Header_ViewModel_ | null
+}
+
+interface _Header_ViewModel_ {
+  task: _Task_Header_ | null
+  parts: Array<_Part_Header_>
+  isStartable: boolean
+  requests: Array<_Request_Item_>
+}
+
+interface _Task_Header_ {
+  label: string
+  status: string
+  isBusy: boolean
+  actions: Array<_Action_Task_>
+}
+
+interface _Action_Task_ {
+  command: string
+  label: string
+}
+
+interface _Part_Header_ {
+  text: string
+  isBusy: boolean
 }
 
 type _Block_ViewModel_ = _LINES_Block__ViewModel_ | _FRAME_Block__ViewModel_ | _FOLDED_Block__ViewModel_
@@ -247,7 +279,9 @@ interface _Item_Proposals_ {
   neighbors: _Neighbors_Item_
   rationale: string
   requests: Array<_Request_Item_>
-  isQueued: boolean
+  isRunning: boolean
+  isStartable: boolean
+  stale: _Stale_Item_ | null
   actions: Array<_Action_Item_>
   isDrafting: boolean
   confirming: _Confirm_Item_ | null
@@ -255,8 +289,18 @@ interface _Item_Proposals_ {
 }
 
 interface _Request_Item_ {
+  id: string
   notes: string
   quote: string | null
+  isRunning: boolean
+  isStartable: boolean
+}
+
+type _Status_Request_ = "QUEUED" | "RUNNING"
+
+interface _Stale_Item_ {
+  label: string
+  isRerunnable: boolean
 }
 
 interface _Confirm_Item_ {
@@ -265,7 +309,9 @@ interface _Confirm_Item_ {
   label_Action: string
 }
 
-type _State_Proposal_ = "OPEN" | "REQUESTED" | "REVISING" | "ACCEPTED" | "REJECTED" | "WITHDRAWN"
+type _State_Proposal_ = _Decision_Proposal_ | "REQUESTED" | "REVISING"
+
+type _Decision_Proposal_ = "OPEN" | "ACCEPTED" | "REJECTED" | "WITHDRAWN"
 
 type _Places_Item_ = _NONE_Places_Item_ | _COUNT_Places_Item_ | _MOVE_Places_Item_
 
@@ -326,7 +372,8 @@ function viewModelOf__Blocks(
     runs: runs_ViewModel,
     selection: null,
     menu: null,
-    request: null
+    request: null,
+    header: null
   }
 }
 
@@ -791,13 +838,16 @@ function confirmingAt__ViewModel({
                   ? item_Proposals.actions.find((action_Each) => action_Each.command === confirm_Item.command)
                   : undefined
                 const count = item_Proposals.requests.length
+                const label_Requests = `${count} ${count === 1 ? "request" : "requests"}`
                 return action_Item === undefined
                   ? item_Proposals
                   : {
                     ...item_Proposals,
                     confirming: {
                       command: action_Item.command,
-                      label_Question: `${action_Item.label} and drop ${count} queued ${count === 1 ? "request" : "requests"}?`,
+                      label_Question: item_Proposals.isRunning
+                        ? `${action_Item.label} and stop its revision, dropping ${label_Requests}?`
+                        : `${action_Item.label} and drop ${count} queued ${count === 1 ? "request" : "requests"}?`,
                       label_Action: action_Item.label
                     }
                   }
@@ -965,7 +1015,7 @@ interface _Form_Request_ {
   point_Screen: _Point_Screen_
   label: string
   quote: string | null
-  isQueued: boolean
+  isStartable: boolean
   target: _Target_Request_
 }
 

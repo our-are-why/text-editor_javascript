@@ -2,7 +2,7 @@ import { expect, test } from "bun:test"
 import { parseModel_TextEditor, textWith__Sources, applied__Transaction, type _Model_TextEditor_, type _Range_Text_, type _Id_Text_ } from "../source/Model_TextEditor.ts"
 import type { _Proposal_Host_ } from "../source/Projection_TextEditor.ts"
 import { editedOf__Request, HISTORY_EMPTY, type _History_TextEditor_, type _Edited_Model_ } from "../source/Editing_TextEditor.ts"
-import type { _Selection_TextEditor_, _State_Proposal_ } from "../source/ViewModel_TextEditor.ts"
+import type { _Selection_TextEditor_, _Decision_Proposal_, _Status_Request_ } from "../source/ViewModel_TextEditor.ts"
 import { actions_Review } from "../playground/items.ts"
 import { MODULE_WORDS_TEXT } from "../source/words/text.ts"
 
@@ -24,7 +24,7 @@ function modelOf(): _Model_TextEditor_ {
 }
 
 function proposalsIn(
-  state: _State_Proposal_
+  state: _Decision_Proposal_
 ): Array<_Proposal_Host_> {
   return [
     { source: "digit", title: "Write two as a digit", state, status: "", rationale: "", requests: [], actions: actions_Review, attributes: {} },
@@ -45,7 +45,7 @@ const caretAt = (id_Text: _Id_Text_, line: number, offset: number): _Selection_T
 function typed(
   model_TextEditor: _Model_TextEditor_,
   history: _History_TextEditor_,
-  state: _State_Proposal_,
+  state: _Decision_Proposal_,
   id_Text: _Id_Text_,
   range: _Range_Text_,
   multilineText: string,
@@ -54,7 +54,7 @@ function typed(
   return editedOf__Request({ model_TextEditor, proposals: proposalsIn(state), source_Yours: "yours", module_Words: MODULE_WORDS_TEXT, history, request_Edit: { kind: "TEXT", id_Text, range, multilineText, id_Run: "run", selection_Before: caretAt(id_Text, range.from.line, range.from.offset), isTyping, isProposed: false, places_Caret: null } })
 }
 
-test("the document's text inside what a pending or accepted proposal's span holds is locked, its edges not, nor what a rejected or withdrawn one's would; a proposal's own text, shown, is edited whatever its state", () => {
+test("the document's text inside what a pending or accepted proposal's span holds is locked, its edges not, nor what a rejected or withdrawn one's would; a proposal's own text, shown, is edited whatever its decision, revisions queued on it or not, but not while a round of it's under way, a request of it running, as the agent's rewriting it", () => {
   const model = modelOf()
   expect(typed(model, HISTORY_EMPTY, "OPEN", document_Text, on(0, 5, 5), "x", true)).toBe(null)
   expect(typed(model, HISTORY_EMPTY, "OPEN", document_Text, on(0, 2, 5), "", false)).toBe(null)
@@ -63,7 +63,10 @@ test("the document's text inside what a pending or accepted proposal's span hold
   expect<unknown>(typed(model, HISTORY_EMPTY, "OPEN", document_Text, on(0, 7, 8), "", false)?.model_TextEditor.document.lines).toEqual(["one twothree", "four"])
   expect<unknown>(typed(model, HISTORY_EMPTY, "REJECTED", document_Text, on(0, 5, 5), "x", true)?.model_TextEditor.document.lines).toEqual(["one txwo three", "four"])
   expect(typed(model, HISTORY_EMPTY, "OPEN", digit_Text, on(0, 1, 1), "!", true)?.model_TextEditor.proposed[0]?.changes[0]).toMatchObject({ next: { lines: ["2!"] } })
-  for (const state of ["REQUESTED", "REVISING", "ACCEPTED"] as const) expect(typed(model, HISTORY_EMPTY, state, digit_Text, on(0, 1, 1), "!", true)?.model_TextEditor.proposed[0]?.changes[0]).toMatchObject({ next: { lines: ["2!"] } })
+  expect(typed(model, HISTORY_EMPTY, "ACCEPTED", digit_Text, on(0, 1, 1), "!", true)?.model_TextEditor.proposed[0]?.changes[0]).toMatchObject({ next: { lines: ["2!"] } })
+  const asked = (status: _Status_Request_) => editedOf__Request({ model_TextEditor: model, proposals: proposalsIn("OPEN").map((proposal_Host) => proposal_Host.source === "digit" ? { ...proposal_Host, requests: [{ id: "spell", notes: "Spell it.", selected: null, status }] } : proposal_Host), source_Yours: "yours", module_Words: MODULE_WORDS_TEXT, history: HISTORY_EMPTY, request_Edit: { kind: "TEXT", id_Text: digit_Text, range: on(0, 1, 1), multilineText: "!", id_Run: "run", selection_Before: caretAt(digit_Text, 0, 1), isTyping: true, isProposed: false, places_Caret: null } })
+  expect(asked("QUEUED")?.model_TextEditor.proposed[0]?.changes[0]).toMatchObject({ next: { lines: ["2!"] } })
+  expect(asked("RUNNING")).toBe(null)
   for (const state of ["REJECTED", "WITHDRAWN"] as const) expect(typed(model, HISTORY_EMPTY, state, digit_Text, on(0, 1, 1), "!", true)).toBe(null)
 })
 
@@ -153,7 +156,7 @@ test("typed at the very start of what a move carries, as it lands, an edit's sti
 function typedIn(
   model_TextEditor: _Model_TextEditor_,
   history: _History_TextEditor_,
-  state: _State_Proposal_,
+  state: _Decision_Proposal_,
   id_Text: _Id_Text_,
   range: _Range_Text_,
   multilineText: string

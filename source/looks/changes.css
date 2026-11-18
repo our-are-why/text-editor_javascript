@@ -21,6 +21,12 @@
   stroke-linejoin: round;
 }
 
+/* a change its round wrote before your edits touched what it was written
+   on, its ring dashed, as one that may not say what it would now */
+[data-look~="changes"] .underlay_htmlView[data-change][data-stale] {
+  stroke-dasharray: 3 2;
+}
+
 /* where a removal took words out of a line, or whole lines, its ring on the
    lines as proposed has nothing to go round, and collapses to a notch, a
    small wedge at the point its text left, filled in its colour: over the

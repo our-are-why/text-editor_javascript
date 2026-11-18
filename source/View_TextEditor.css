@@ -395,6 +395,39 @@
   font-variant-numeric: tabular-nums;
 }
 
+/* how its last round landed, where your edits since had touched what it
+   was written on: how many of its changes were written before them, their
+   rings dashed, and how many dropped, their text gone, in the places'
+   size, in the revision's plum, as it's about a revision; and Run again
+   after it, a quiet word, starting the round's requests again from now,
+   so the agent sees your edits */
+.htmlView_editor .stale_htmlView {
+  grid-column: 1;
+  margin: 0;
+  color: var(--accent_revision_htmlView);
+  font-size: 0.86em;
+}
+
+.htmlView_editor .rerun_htmlView {
+  margin-left: 0.6em;
+  padding: 0;
+  border: none;
+  background: none;
+  color: inherit;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.htmlView_editor .rerun_htmlView:hover {
+  text-decoration: underline;
+}
+
+.htmlView_editor .rerun_htmlView:focus-visible {
+  outline: 2px solid var(--view-focus-ring, CanvasText);
+  outline-offset: 2px;
+}
+
 .htmlView_editor :is(.extent_htmlView, .condition_htmlView) {
   margin: 0;
 }
@@ -486,10 +519,11 @@
    heading; a list of them, a bullet in that ink before each, a little room
    between them, so where one ends and the next begins is seen, however
    many lines each wraps to; each the words it's on quoted first, and, while
-   it's queued, Remove after it, a quiet link-like word, not a button that
-   competes with the item's actions; and under them, while they're queued,
-   Start, set apart, below, starting everything queued, every proposal's,
-   without its form */
+   it's queued, Start and Remove after it, quiet link-like words, not
+   buttons that compete with the item's actions, Start in the revision's
+   plum, starting it alone; while it's worked on, "in progress" in its
+   place; and under them, while some are queued and none's under way,
+   Start, set apart, below, starting all of them, without a form */
 .htmlView_editor .request_htmlView {
   grid-column: 1;
   margin: 0.25rem 0 0;
@@ -538,6 +572,33 @@
   font: inherit;
   font-size: 0.82em;
   cursor: pointer;
+}
+
+.htmlView_editor :is(.start_Said_htmlView, .progress_Said_htmlView) {
+  margin-left: 0.5em;
+  padding: 0;
+  border: none;
+  background: none;
+  color: var(--accent_revision_htmlView);
+  font: inherit;
+  font-size: 0.82em;
+}
+
+.htmlView_editor .start_Said_htmlView {
+  cursor: pointer;
+}
+
+.htmlView_editor .start_Said_htmlView:hover {
+  text-decoration: underline;
+}
+
+.htmlView_editor .start_Said_htmlView:focus-visible {
+  outline: 2px solid var(--view-focus-ring, CanvasText);
+  outline-offset: 2px;
+}
+
+.htmlView_editor .progress_Said_htmlView {
+  font-style: italic;
 }
 
 .htmlView_editor .request_htmlView > .start_htmlView {
@@ -745,16 +806,17 @@
    and no action of one that isn't open the main one, as what's done with
    it now, reopening it, isn't what it's waiting for */
 
-/* its actions in colour too while it's waiting on you, open, or its
-   revisions queued: an open one's main one filled in the proposals'
-   indigo, its words white, a deeper indigo in the dark, so they still
-   read; the others on their grey, their words the colour of the state
-   each leads to, rejecting indigo, revising plum, Start too, so they're
-   still plainly buttons; one with revisions queued has no main one, as
-   what's next is yours to choose, adding, starting or deciding; once it's
-   waiting on the agent, or on no one, its actions neutral, there but not
-   asked for, the colour on its row its state's alone, and a confirmation's
-   too, as it asks, not leads. Hovered, each a step deeper, its ground
+/* its actions in colour too while it's still to be decided, open, its
+   revisions queued, or one being revised, as more can be asked of it
+   then too: an open one's main one filled in the proposals' indigo, its
+   words white, a deeper indigo in the dark, so they still read; the
+   others on their grey, their words the colour of the state each leads
+   to, rejecting indigo, revising plum, Start too, so they're still
+   plainly buttons; one with revisions queued or under way has no main
+   one, as what's next is yours to choose, adding, starting or deciding;
+   once it's decided, its actions neutral, there but not asked for, the
+   colour on its row its state's alone, and a confirmation's too, as it
+   asks, not leads. Hovered, each a step deeper, its ground
    darker on its grey, the main one's indigo deeper, as a click does
    nothing else to show yet; and ringed in the page's ink when the
    keyboard's on it, no colour, as each colour here says where a proposal
@@ -769,7 +831,7 @@
   cursor: pointer;
 }
 
-.htmlView_editor .item_htmlView:not([data-state="OPEN"], [data-state="REQUESTED"]) .action_htmlView,
+.htmlView_editor .item_htmlView:is([data-state="ACCEPTED"], [data-state="REJECTED"], [data-state="WITHDRAWN"]) .action_htmlView,
 .htmlView_editor .actions_htmlView[data-confirming] > .action_htmlView {
   color: var(--view-action-ink, light-dark(#3b3b3b, #cccccc));
 }
@@ -955,6 +1017,12 @@
   translate: -0.75px 0;
 }
 
+/* what's scrolled to, the caret, or a control the keyboard lands on, kept
+   clear of the header over the document, which stays put as it scrolls */
+.htmlView_editor :is(.caret_htmlView, button, textarea) {
+  scroll-margin-top: 3rem;
+}
+
 .htmlView_editor:not(:has(> .input_htmlView:focus)) .caret_htmlView {
   visibility: hidden;
 }
@@ -969,6 +1037,131 @@
   50% {
     opacity: 0;
   }
+}
+
+/* the header over the document, for the whole of it, as doctor's is: kept at
+   the top as the document scrolls under it, across the editor's width, on
+   the proposals' band, a faint edge under it, flat, no shadow, in the
+   interface's font. On its left, where the text starts, how it stands, its
+   parts plain words apart by dots: the host's task, if it gives one, its
+   name in the page's ink and how it's going after it, a spinner while
+   it's busy; how many of the document's proposals are decided; how many
+   requests are queued; how many are in progress, in the revision's plum,
+   a spinner turning, still where motion's asked to be reduced, unless the
+   task's already says it's busy; in as few words as say it, the last cut
+   short where there's no room, never wrapping. On its
+   right, the host's actions for its task, neutral; Request a change,
+   neutral, opening a request for the whole document under it, as a
+   right-click with nothing selected does; and Start, the document's,
+   starting every request queued in it, set apart as every Start is */
+.htmlView_editor .header_htmlView {
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  box-sizing: border-box;
+  min-height: 2.4rem;
+  margin: calc(-1 * var(--view-padding-block, 0.75rem)) calc(-1 * var(--view-padding-inline, 1rem)) var(--view-padding-block, 0.75rem);
+  padding: 0.35rem var(--view-padding-inline, 1rem) 0.35rem calc(var(--view-padding-inline, 1rem) + var(--labelWidth_htmlView) + var(--gutterGap_htmlView) + var(--laneWidth_htmlView) + var(--gutterEnd_htmlView));
+  border-bottom: 1px solid var(--view-menu-edge, color-mix(in srgb, CanvasText 16%, transparent));
+  background:
+    linear-gradient(var(--view-proposals-shade, color-mix(in srgb, CanvasText 5%, transparent)), var(--view-proposals-shade, color-mix(in srgb, CanvasText 5%, transparent))),
+    linear-gradient(var(--view-proposed, color-mix(in srgb, CanvasText 4%, transparent)), var(--view-proposed, color-mix(in srgb, CanvasText 4%, transparent))),
+    var(--view-ground, Canvas);
+  font-family: var(--view-ui-font, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif);
+  font-size: var(--view-ui-font-size, 13px);
+  line-height: 1.45;
+}
+
+.htmlView_editor .status_Header_htmlView {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  gap: 0.4rem;
+  min-width: 0;
+  margin: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  color: var(--view-placeholder-ink, color-mix(in srgb, CanvasText 58%, transparent));
+}
+
+.htmlView_editor .status_Header_htmlView > * + *::before {
+  content: "·";
+  margin-right: 0.4rem;
+  color: var(--view-placeholder-ink, color-mix(in srgb, CanvasText 58%, transparent));
+}
+
+.htmlView_editor :is(.task_Header_htmlView, .part_Header_htmlView) {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  min-width: 0;
+}
+
+.htmlView_editor .status_Header_htmlView > :not(:last-child) {
+  flex: none;
+}
+
+.htmlView_editor .status_Header_htmlView > :last-child {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.htmlView_editor .label_Task_htmlView {
+  font-weight: 600;
+  color: var(--view-ink, CanvasText);
+}
+
+.htmlView_editor .part_Header_htmlView[data-busy] {
+  color: var(--accent_revision_htmlView);
+}
+
+.htmlView_editor .spinner_htmlView {
+  flex: none;
+  box-sizing: border-box;
+  width: 0.8em;
+  height: 0.8em;
+  border: 1.5px solid currentColor;
+  border-right-color: transparent;
+  border-radius: 50%;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .htmlView_editor .spinner_htmlView {
+    animation: revising_htmlView 0.9s linear infinite;
+  }
+}
+
+.htmlView_editor .actions_Header_htmlView {
+  display: flex;
+  flex: none;
+  gap: 0.4rem;
+}
+
+.htmlView_editor .actions_Header_htmlView > .action_htmlView:not(.start_htmlView) {
+  color: var(--view-action-ink, light-dark(#3b3b3b, #cccccc));
+}
+
+/* the document's own requests, on no proposal, about what's selected or
+   the whole of it: under the header, flush with it, scrolling with the
+   document, on the same band, a faint edge under it, where the text
+   starts, listed as a proposal's are, their rule and bullets in the
+   revision's plum, each with its own Start and Remove; the header's Start
+   starts them with the rest */
+.htmlView_editor .requests_Document_htmlView {
+  --ink_state_htmlView: var(--accent_revision_htmlView);
+  margin: calc(-1 * var(--view-padding-block, 0.75rem)) calc(-1 * var(--view-padding-inline, 1rem)) var(--view-padding-block, 0.75rem);
+  padding: 0.35rem var(--view-padding-inline, 1rem) 0.6rem calc(var(--view-padding-inline, 1rem) + var(--labelWidth_htmlView) + var(--gutterGap_htmlView) + var(--laneWidth_htmlView) + var(--gutterEnd_htmlView));
+  border-bottom: 1px solid var(--view-menu-edge, color-mix(in srgb, CanvasText 16%, transparent));
+  background:
+    linear-gradient(var(--view-proposals-shade, color-mix(in srgb, CanvasText 5%, transparent)), var(--view-proposals-shade, color-mix(in srgb, CanvasText 5%, transparent))),
+    linear-gradient(var(--view-proposed, color-mix(in srgb, CanvasText 4%, transparent)), var(--view-proposed, color-mix(in srgb, CanvasText 4%, transparent))),
+    var(--view-ground, Canvas);
+  font-family: var(--view-ui-font, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif);
+  font-size: var(--view-ui-font-size, 13px);
+  line-height: 1.45;
 }
 
 /* what a right-click opens, or the menu key, over the text: what you can

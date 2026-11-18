@@ -37,6 +37,8 @@ export {
   type _SOURCE_Step_Transaction_,
   type _Applied_Transaction_,
   mapped__NonEmpty,
+  rebasedOf__Changes,
+  type _Rebased_Changes_,
   carried__Position,
   type _Bias_Position_,
   textWith__Sources,
@@ -1098,6 +1100,94 @@ function mapped__NonEmpty<Item, Mapped>({
     map(first),
     ...rest.map((item) => map(item))
   ]
+}
+
+interface _Api___rebasedOf__Changes_ {
+  changes: Array<_Change_>
+  transactions: Array<_Transaction_Model_>
+}
+
+interface _Rebased_Changes_ {
+  changes: Array<_Change_>
+  indexes_Stale: Array<number>
+  count_Dropped: number
+}
+
+function rebasedOf__Changes({
+  changes,
+  transactions
+}: _Api___rebasedOf__Changes_): _Rebased_Changes_ {
+  const steps_Document = transactions
+    .flatMap((transaction) => transaction.steps)
+    .filter((step_Transaction) => step_Transaction.kind === "TEXT" && step_Transaction.id_Text.kind === "DOCUMENT")
+    .flatMap((step_Transaction) => step_Transaction.kind === "TEXT" ? [step_Transaction] : [])
+  const changes_Carried = changes.map((change) => steps_Document.reduce(
+    (carried, step_Text) => ({
+      change: carriedOf__Change({
+        change: carried.change,
+        range: step_Text.range,
+        next: step_Text.next
+      }),
+      isStale: carried.isStale || isTouched__Change({
+        change: carried.change,
+        range: step_Text.range
+      })
+    }),
+    {
+      change,
+      isStale: false
+    }
+  ))
+  const changes_Kept = changes_Carried.filter((carried) => carried.change.kind !== "MOVE" || orderOf__Positions({
+    position: carried.change.range.from,
+    position_Other: carried.change.range.to
+  }) !== 0)
+  return {
+    changes: changes_Kept.map((carried) => carried.change),
+    indexes_Stale: changes_Kept.flatMap((
+      carried,
+      index
+    ) => carried.isStale ? [index] : []),
+    count_Dropped: changes_Carried.length - changes_Kept.length
+  }
+}
+
+interface _Api___isTouched__Change_ {
+  change: _Change_
+  range: _Range_Text_
+}
+
+function isTouched__Change({
+  change,
+  range
+}: _Api___isTouched__Change_): boolean {
+  const isEmpty_Step = orderOf__Positions({
+    position: range.from,
+    position_Other: range.to
+  }) === 0
+  const isOverlapping = isEmpty_Step
+    ? orderOf__Positions({
+      position: change.range.from,
+      position_Other: range.from
+    }) < 0 && orderOf__Positions({
+      position: range.from,
+      position_Other: change.range.to
+    }) < 0
+    : orderOf__Positions({
+      position: range.from,
+      position_Other: change.range.to
+    }) < 0 && orderOf__Positions({
+      position: change.range.from,
+      position_Other: range.to
+    }) < 0
+  const isCutAt = change.kind === "MOVE" && !isEmpty_Step && orderOf__Positions({
+    position: range.from,
+    position_Other: change.at
+  }) < 0 && orderOf__Positions({
+    position: change.at,
+    position_Other: range.to
+  }) < 0
+  return isOverlapping || isCutAt
 }
 
 interface _Api___carriedOf__Change_ {

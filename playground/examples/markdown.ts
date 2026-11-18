@@ -205,21 +205,23 @@ const proposal_Order: _Proposal_Host_ = {
   attributes: {},
 }
 
-// being revised, as the module's own proposal is, nothing to do with it
-// until the agent's done
+// open, being revised, as the module's own proposal is, its words not to
+// be typed into until the agent's done
 const proposal_Timeout: _Proposal_Host_ = {
   source: "timeout",
   title: "Retry a request that timed out",
-  state: "REVISING",
-  status: "Revising",
+  state: "OPEN",
+  status: "",
   rationale: "A 408 means the server stopped waiting for the request, not that the request failed: sent again, it usually goes through.",
   requests: [
     {
+      id: "timeout-0",
       notes: "only when the request is safe to send twice, a GET or a PUT.",
-      selected: null
+      selected: null,
+      status: "RUNNING"
     }
   ],
-  actions: [],
+  actions: actions_Review,
   attributes: {},
 }
 
@@ -253,13 +255,15 @@ const proposal_Base: _Proposal_Host_ = {
 const proposal_Cap: _Proposal_Host_ = {
   source: "cap",
   title: "Cap the delay at 30 seconds",
-  state: "REQUESTED",
-  status: "Revision requested",
+  state: "OPEN",
+  status: "",
   rationale: "With the module's cap, a long outage never goes quiet for longer than half a minute; the README should say so.",
   requests: [
     {
+      id: "cap-0",
       notes: "make the cap an option, 30 seconds unless the caller gives another.",
-      selected: null
+      selected: null,
+      status: "QUEUED"
     }
   ],
   actions: actions_Review,
@@ -347,6 +351,8 @@ const markdown: _Example_ = {
       setup: setup_readme,
       model_TextEditor: model_readme,
       proposals: proposals_readme,
+      rounds_Landed: [],
+      label_Task: "Bring the README up to date",
       ranges_Frame: ranges_readme,
       log
     })

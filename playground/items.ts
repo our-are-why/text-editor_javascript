@@ -1,6 +1,6 @@
 import type {
   _Action_Item_,
-  _State_Proposal_
+  _Decision_Proposal_
 } from "../source/ViewModel_TextEditor.ts"
 import type { _Proposal_Host_ } from "../source/Projection_TextEditor.ts"
 
@@ -54,7 +54,7 @@ const proposal_Yours: _Proposal_Host_ = {
 // what the playground, as host, says of a proposal in each state, and offers
 // to do with it then, as its examples give them
 type _ShownMap__State_ = {
-  [State in _State_Proposal_]: _Shown_State_
+  [Decision in _Decision_Proposal_]: _Shown_State_
 }
 
 interface _Shown_State_ {
@@ -66,14 +66,6 @@ const shownMap_State: _ShownMap__State_ = {
   OPEN: {
     status: "",
     actions: actions_Review
-  },
-  REQUESTED: {
-    status: "Revision requested",
-    actions: actions_Review
-  },
-  REVISING: {
-    status: "Revising",
-    actions: []
   },
   ACCEPTED: {
     status: "Accepted",

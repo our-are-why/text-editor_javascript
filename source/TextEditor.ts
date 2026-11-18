@@ -6,9 +6,12 @@ import {
 import {
   viewModelOf__Model,
   type _Proposal_Host_,
+  type _Request_Host_,
+  type _Landed_Round_,
   type _Module_Reading_
 } from "./Projection_TextEditor.ts"
 import {
+  type _Task_Header_,
   type _Range_Lines_,
   type _ViewModel_TextEditor_,
   type _Module_Language_,
@@ -44,6 +47,9 @@ class _TextEditor_<State> {
   setup: _Setup_TextEditor_<State>
   model_TextEditor: _Model_TextEditor_
   proposals: Array<_Proposal_Host_>
+  requests_Document: Array<_Request_Host_>
+  rounds_Landed: Array<_Landed_Round_>
+  task_Header: _Task_Header_ | null
   source_Yours: string
   ranges_Frame: Array<_Range_Lines_>
   observers: Array<_Observer_TextEditor_>
@@ -56,6 +62,9 @@ class _TextEditor_<State> {
     setup,
     model_TextEditor,
     proposals,
+    requests_Document,
+    rounds_Landed,
+    task_Header,
     source_Yours,
     ranges_Frame,
     observers
@@ -64,6 +73,9 @@ class _TextEditor_<State> {
     this.setup = setup
     this.model_TextEditor = model_TextEditor
     this.proposals = proposals
+    this.requests_Document = requests_Document
+    this.rounds_Landed = rounds_Landed
+    this.task_Header = task_Header
     this.source_Yours = source_Yours
     this.ranges_Frame = ranges_Frame
     this.observers = observers
@@ -121,6 +133,9 @@ class _TextEditor_<State> {
   ): void {
     this.model_TextEditor = update_Host.model_TextEditor
     this.proposals = update_Host.proposals
+    this.requests_Document = update_Host.requests_Document
+    this.rounds_Landed = update_Host.rounds_Landed
+    this.task_Header = update_Host.task_Header
     this.history = HISTORY_EMPTY
     this.viewer.show(this.projected())
   }
@@ -138,6 +153,9 @@ class _TextEditor_<State> {
     return viewModelOf__Model({
       model_TextEditor: this.model_TextEditor,
       proposals: this.proposals,
+      requests_Document: this.requests_Document,
+      rounds_Landed: this.rounds_Landed,
+      task_Header: this.task_Header,
       ranges_Frame: this.ranges_Frame,
       module_Language: this.setup.module_Language,
       module_Reading: this.perspective_Shown.module_Reading
@@ -150,6 +168,9 @@ interface _Api__TextEditor_<State> {
   setup: _Setup_TextEditor_<State>
   model_TextEditor: _Model_TextEditor_
   proposals: Array<_Proposal_Host_>
+  requests_Document: Array<_Request_Host_>
+  rounds_Landed: Array<_Landed_Round_>
+  task_Header: _Task_Header_ | null
   source_Yours: string
   ranges_Frame: Array<_Range_Lines_>
   observers: Array<_Observer_TextEditor_>
@@ -173,6 +194,9 @@ interface _Applied_Edit_ {
 interface _Update_Host_ {
   model_TextEditor: _Model_TextEditor_
   proposals: Array<_Proposal_Host_>
+  requests_Document: Array<_Request_Host_>
+  rounds_Landed: Array<_Landed_Round_>
+  task_Header: _Task_Header_ | null
 }
 
 interface _Setup_TextEditor_<State> {

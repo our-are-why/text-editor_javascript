@@ -15,13 +15,13 @@ import {
 } from "./Model_TextEditor.ts"
 import {
   type _Proposal_Host_,
-  ISAPPLIEDMAP__STATE_PROPOSAL
+  ISAPPLIEDMAP__DECISION_PROPOSAL
 } from "./Projection_TextEditor.ts"
 import {
   type _Selection_TextEditor_,
   type _Place_Text_,
   type _Piece_Text_,
-  type _State_Proposal_,
+  type _Decision_Proposal_,
   isSame__Selection,
   isSame__Id_Text,
   type _Module_Words_
@@ -803,7 +803,7 @@ function isApplied__Source({
   source
 }: _Api___isApplied__Source_): boolean {
   const proposal_Host = proposals.find((proposal_Each) => proposal_Each.source === source)
-  return proposal_Host === undefined || ISAPPLIEDMAP__STATE_PROPOSAL[proposal_Host.state]
+  return proposal_Host === undefined || ISAPPLIEDMAP__DECISION_PROPOSAL[proposal_Host.state]
 }
 
 interface _Api___relationOf__Spans_ {
@@ -1055,18 +1055,18 @@ function isLocked__Edit({
   id_Text,
   range
 }: _Api___isLocked__Edit_): boolean {
-  const stateOf = (source: string) => proposals.find((proposal_Host) => proposal_Host.source === source)?.state ?? null
+  const proposalOf = (source: string) => proposals.find((proposal_Host) => proposal_Host.source === source) ?? null
   if (id_Text.kind === "CHANGE") {
-    const state = stateOf(id_Text.source)
-    return state === null || !ISEDITABLEMAP__STATE_PROPOSAL[state]
+    const proposal_Host = proposalOf(id_Text.source)
+    return proposal_Host === null || !ISEDITABLEMAP__DECISION_PROPOSAL[proposal_Host.state] || proposal_Host.requests.some((request_Host) => request_Host.status === "RUNNING")
   }
   const isEmpty = orderOf__Positions({
     position: range.from,
     position_Other: range.to
   }) === 0
   return model_TextEditor.proposed.some((changes_Source) => {
-    const state = stateOf(changes_Source.source)
-    return state !== null && ISLOCKINGMAP__STATE_PROPOSAL[state] && changes_Source.changes.some((change) => isEmpty
+    const proposal_Host = proposalOf(changes_Source.source)
+    return proposal_Host !== null && ISLOCKINGMAP__DECISION_PROPOSAL[proposal_Host.state] && changes_Source.changes.some((change) => isEmpty
       ? orderOf__Positions({
         position: change.range.from,
         position_Other: range.from
@@ -1084,23 +1084,19 @@ function isLocked__Edit({
   })
 }
 
-const ISEDITABLEMAP__STATE_PROPOSAL: _IsMap__State_Proposal_ = {
+const ISEDITABLEMAP__DECISION_PROPOSAL: _IsMap__Decision_Proposal_ = {
   OPEN: true,
-  REQUESTED: true,
-  REVISING: true,
   ACCEPTED: true,
   REJECTED: false,
   WITHDRAWN: false
 }
 
-type _IsMap__State_Proposal_ = {
-  [State in _State_Proposal_]: boolean
+type _IsMap__Decision_Proposal_ = {
+  [Decision in _Decision_Proposal_]: boolean
 }
 
-const ISLOCKINGMAP__STATE_PROPOSAL: _IsMap__State_Proposal_ = {
+const ISLOCKINGMAP__DECISION_PROPOSAL: _IsMap__Decision_Proposal_ = {
   OPEN: true,
-  REQUESTED: true,
-  REVISING: true,
   ACCEPTED: true,
   REJECTED: false,
   WITHDRAWN: false

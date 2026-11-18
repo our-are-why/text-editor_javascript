@@ -243,7 +243,7 @@ const CONTROLS__TEXTEDITOR: Array<_Adapter_Event_> = [
       const element_Button = event.target instanceof Element ? event.target.closest(".asking_htmlView [data-request]") : null
       const kind = element_Button?.getAttribute("data-request")
       if (element_Button === null || element_Button === undefined) return null
-      return kind === "SEND" || kind === "ADD" || kind === "START"
+      return kind === "ADD" || kind === "START"
         ? sentOf__Request({
           element: element_Button,
           isStarting: kind === "START"
@@ -302,28 +302,118 @@ const CONTROLS__TEXTEDITOR: Array<_Adapter_Event_> = [
     event: "click",
     commandOf__Event: (event) => {
       const element_Remove = event.target instanceof Element ? event.target.closest(".remove_htmlView[data-remove]") : null
-      const index = Number(element_Remove?.getAttribute("data-remove") ?? Number.NaN)
-      const id_Item = element_Remove === null
+      const id = element_Remove?.getAttribute("data-remove")
+      const asked = element_Remove === null
         ? null
-        : idOf__Item({
+        : askedOf__Request({
           element: element_Remove
         })
-      return id_Item !== null && Number.isInteger(index)
+      return asked !== null && typeof id === "string"
         ? {
           kind: "REMOVE",
-          id_Item,
-          index
+          source: asked.source,
+          id
         }
         : null
     }
   },
   {
     event: "click",
-    commandOf__Event: (event) => event.target instanceof Element && event.target.closest(".request_htmlView > .start_htmlView") !== null
+    commandOf__Event: (event) => {
+      const element_Rerun = event.target instanceof Element ? event.target.closest(".stale_htmlView > .rerun_htmlView") : null
+      const id_Item = element_Rerun === null
+        ? null
+        : idOf__Item({
+          element: element_Rerun
+        })
+      return id_Item === null
+        ? null
+        : {
+          kind: "RERUN",
+          id_Item
+        }
+    }
+  },
+  {
+    event: "click",
+    commandOf__Event: (event) => {
+      const element_Ask = event.target instanceof Element ? event.target.closest(".header_htmlView [data-ask='DOCUMENT']") : null
+      const rect = element_Ask?.getBoundingClientRect()
+      return rect === undefined
+        ? null
+        : {
+          kind: "OPEN_REQUEST",
+          point_Screen: {
+            x: rect.left,
+            y: rect.bottom + 4
+          }
+        }
+    }
+  },
+  {
+    event: "click",
+    commandOf__Event: (event) => event.target instanceof Element && event.target.closest(".header_htmlView .start_htmlView") !== null
       ? {
-        kind: "START"
+        kind: "START",
+        scope: {
+          kind: "DOCUMENT"
+        }
       }
       : null
+  },
+  {
+    event: "click",
+    commandOf__Event: (event) => {
+      const command = event.target instanceof Element ? event.target.closest(".header_htmlView .action_htmlView[data-task]")?.getAttribute("data-task") : null
+      return typeof command === "string"
+        ? {
+          kind: "TASK",
+          command
+        }
+        : null
+    }
+  },
+  {
+    event: "click",
+    commandOf__Event: (event) => {
+      const element_Start = event.target instanceof Element ? event.target.closest(".request_htmlView > .start_htmlView") : null
+      const id_Item = element_Start === null
+        ? null
+        : idOf__Item({
+          element: element_Start
+        })
+      return id_Item === null
+        ? null
+        : {
+          kind: "START",
+          scope: {
+            kind: "PROPOSAL",
+            source: id_Item.source
+          }
+        }
+    }
+  },
+  {
+    event: "click",
+    commandOf__Event: (event) => {
+      const element_Start = event.target instanceof Element ? event.target.closest(".start_Said_htmlView[data-start]") : null
+      const id = element_Start?.getAttribute("data-start")
+      const asked = element_Start === null
+        ? null
+        : askedOf__Request({
+          element: element_Start
+        })
+      return asked !== null && typeof id === "string"
+        ? {
+          kind: "START",
+          scope: {
+            kind: "REQUEST",
+            source: asked.source,
+            id
+          }
+        }
+        : null
+    }
   },
   {
     event: "click",
@@ -390,6 +480,32 @@ function sentOf__Item({
       isStarting
     }
     : null
+}
+
+interface _Api___askedOf__Request_ {
+  element: Element
+}
+
+interface _Asked_Request_ {
+  source: string | null
+}
+
+function askedOf__Request({
+  element
+}: _Api___askedOf__Request_): _Asked_Request_ | null {
+  if (element.closest(".requests_Document_htmlView") !== null) {
+    return {
+      source: null
+    }
+  }
+  const id_Item = idOf__Item({
+    element
+  })
+  return id_Item === null
+    ? null
+    : {
+      source: id_Item.source
+    }
 }
 
 interface _Api___idOf__Item_ {
