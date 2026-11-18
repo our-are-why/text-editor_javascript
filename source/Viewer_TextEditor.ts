@@ -4,7 +4,8 @@ import {
   type _Layout_View_,
   type _Point_Screen_,
   type _Focus_Draft_,
-  type _Visit_Item_
+  type _Visit_Item_,
+  type _Focus_Asking_
 } from "./View_TextEditor.tsx"
 import {
   type _ViewModel_TextEditor_,
@@ -28,7 +29,15 @@ import {
   placeIn__Line,
   textOf__Line,
   isSame__Id_Text,
-  type _Module_Words_
+  type _Module_Words_,
+  askingAt__ViewModel,
+  type _Menu_ViewModel_,
+  type _Item_Menu_,
+  type _Target_Request_,
+  type __BASE_Target_Request_,
+  type _Selected_Text_,
+  type _Piece_Text_,
+  type _Form_Request_
 } from "./ViewModel_TextEditor.ts"
 import type {
   _Id_Text_,
@@ -55,6 +64,12 @@ export {
   type _DRAFT_Command_,
   type _ACT_Command_,
   type _SEND_Command_,
+  type _OPEN_MENU__Command_,
+  type _STEP_MENU__Command_,
+  type _CHOOSE_MENU__Command_,
+  type _CLOSE_MENU__Command_,
+  type _SEND_REQUEST__Command_,
+  type _CLOSE_REQUEST__Command_,
   type _DISCARD_Command_,
   type _VISIT_Command_,
   type _PLACE_Command_,
@@ -71,7 +86,10 @@ export {
   type _CUT_Command_,
   type _PASTE_Command_,
   type _Answer_Edit_,
-  type _Asked_Action_,
+  type _Asked_Host_,
+  type __BASE_Asked_Host_,
+  type _ACTION_Asked_Host_,
+  type _REQUEST_Asked_Host_,
   type _Answer_Dispatch_,
   type _Unit_Move_,
   type _Direction_Move_,
@@ -89,7 +107,7 @@ class _Viewer_TextEditor_ {
   request_Draw: number | null
   point_Screen: _Point_Screen_ | null
   edit: (request_Edit: _Request_Edit_) => _Answer_Edit_ | null
-  ask: (asked_Action: _Asked_Action_) => void
+  ask: (asked_Host: _Asked_Host_) => void
   editContext: EditContext
   buffer: _Buffer_Edit_ | null
   isComposing: boolean
@@ -130,7 +148,10 @@ class _Viewer_TextEditor_ {
       isSelecting: false,
       x_Goal: null,
       isRevealing_Caret: false,
-      isFocusing_Input: false
+      isFocusing_Input: false,
+      menu: null,
+      request: null,
+      focus_Asking: null
     }
     this.request_Draw = null
     this.point_Screen = null
@@ -329,6 +350,13 @@ class _Viewer_TextEditor_ {
           focus_Draft: null
         }
       }
+      if (this.state.focus_Asking !== null) {
+        this.view.focusAsking(this.state.focus_Asking)
+        this.state = {
+          ...this.state,
+          focus_Asking: null
+        }
+      }
       if (this.state.isRevealing_Caret) {
         this.view.revealCaret()
         this.state = {
@@ -365,7 +393,7 @@ interface _Api__Viewer_TextEditor_ {
   module_Words: _Module_Words_
   viewModel_TextEditor: _ViewModel_TextEditor_
   edit: (request_Edit: _Request_Edit_) => _Answer_Edit_ | null
-  ask: (asked_Action: _Asked_Action_) => void
+  ask: (asked_Host: _Asked_Host_) => void
 }
 
 interface _Answer_Edit_ {
@@ -373,10 +401,22 @@ interface _Answer_Edit_ {
   selection: _Selection_TextEditor_
 }
 
-interface _Asked_Action_ {
+type _Asked_Host_ = _ACTION_Asked_Host_ | _REQUEST_Asked_Host_
+
+interface __BASE_Asked_Host_<Kind extends string> {
+  kind: Kind
+}
+
+interface _ACTION_Asked_Host_ extends __BASE_Asked_Host_<"ACTION"> {
   source: string
   command: string
   notes: string | null
+  selected: _Selected_Text_ | null
+}
+
+interface _REQUEST_Asked_Host_ extends __BASE_Asked_Host_<"REQUEST"> {
+  selected: _Selected_Text_ | null
+  notes: string
 }
 
 interface _Buffer_Edit_ {
@@ -402,7 +442,7 @@ interface _Adapter_Event_ {
   commandOf__Event: (event: Event) => _Command_TextEditor_ | null
 }
 
-type _Command_TextEditor_ = _POINT_Command_ | _JUMP_Command_ | _FOLD_Command_ | _DRAFT_Command_ | _ACT_Command_ | _SEND_Command_ | _DISCARD_Command_ | _VISIT_Command_ | _PLACE_Command_ | _DRAG_Command_ | _RELEASE_Command_ | _MOVE_Command_ | _EXTEND_Command_ | _INSERT_Command_ | _REPLACE_Command_ | _DELETE_Command_ | _UNDO_Command_ | _REDO_Command_ | _COPY_Command_ | _CUT_Command_ | _PASTE_Command_
+type _Command_TextEditor_ = _POINT_Command_ | _JUMP_Command_ | _FOLD_Command_ | _DRAFT_Command_ | _ACT_Command_ | _SEND_Command_ | _OPEN_MENU__Command_ | _STEP_MENU__Command_ | _CHOOSE_MENU__Command_ | _CLOSE_MENU__Command_ | _SEND_REQUEST__Command_ | _CLOSE_REQUEST__Command_ | _DISCARD_Command_ | _VISIT_Command_ | _PLACE_Command_ | _DRAG_Command_ | _RELEASE_Command_ | _MOVE_Command_ | _EXTEND_Command_ | _INSERT_Command_ | _REPLACE_Command_ | _DELETE_Command_ | _UNDO_Command_ | _REDO_Command_ | _COPY_Command_ | _CUT_Command_ | _PASTE_Command_
 
 interface __BASE_Command_<Kind extends string> {
   kind: Kind
@@ -435,6 +475,26 @@ interface _SEND_Command_ extends __BASE_Command_<"SEND"> {
   command: string
   notes: string
 }
+
+interface _OPEN_MENU__Command_ extends __BASE_Command_<"OPEN_MENU"> {
+  point_Screen: _Point_Screen_ | null
+}
+
+interface _STEP_MENU__Command_ extends __BASE_Command_<"STEP_MENU"> {
+  direction: _Direction_Move_
+}
+
+interface _CHOOSE_MENU__Command_ extends __BASE_Command_<"CHOOSE_MENU"> {
+  index: number
+}
+
+interface _CLOSE_MENU__Command_ extends __BASE_Command_<"CLOSE_MENU"> {}
+
+interface _SEND_REQUEST__Command_ extends __BASE_Command_<"SEND_REQUEST"> {
+  notes: string
+}
+
+interface _CLOSE_REQUEST__Command_ extends __BASE_Command_<"CLOSE_REQUEST"> {}
 
 interface _DISCARD_Command_ extends __BASE_Command_<"DISCARD"> {
   id_Item: _Id_Item_
@@ -513,7 +573,11 @@ interface _State__Viewer_TextEditor_ {
   x_Goal: number | null
   isRevealing_Caret: boolean
   isFocusing_Input: boolean
+  menu: _Menu_ViewModel_ | null
+  request: _Form_Request_ | null
+  focus_Asking: _Focus_Asking_ | null
 }
+
 
 function eventsOf__Adapters(
   adapters: Array<_Adapter_Event_>
@@ -522,6 +586,16 @@ function eventsOf__Adapters(
 }
 
 function viewModelOf__State(
+  state: _State__Viewer_TextEditor_
+): _ViewModel_TextEditor_ {
+  return askingAt__ViewModel({
+    viewModel_TextEditor: selectedOf__State(state),
+    menu: state.menu,
+    request: state.request
+  })
+}
+
+function selectedOf__State(
   state: _State__Viewer_TextEditor_
 ): _ViewModel_TextEditor_ {
   return selectedAt__ViewModel({
@@ -551,7 +625,7 @@ interface _Api___stateAfter__Command_<Kind extends _Command_TextEditor_["kind"]>
   layout_View: _Layout_View_
   module_Words: _Module_Words_
   edit_View: (request_Edit: _Request_Edit_) => _Answer_Edit_ | null
-  ask_View: (asked_Action: _Asked_Action_) => void
+  ask_View: (asked_Host: _Asked_Host_) => void
 }
 
 function stateAfter__Command<Kind extends _Command_TextEditor_["kind"]>({
@@ -650,9 +724,11 @@ function ACT_stateAfter__Command({
   ask_View
 }: _Api___stateAfter__Command_<"ACT">): _State__Viewer_TextEditor_ {
   ask_View({
+    kind: "ACTION",
     source: command.id_Item.source,
     command: command.command,
-    notes: null
+    notes: null,
+    selected: null
   })
   return state
 }
@@ -663,14 +739,279 @@ function SEND_stateAfter__Command({
   ask_View
 }: _Api___stateAfter__Command_<"SEND">): _State__Viewer_TextEditor_ {
   ask_View({
+    kind: "ACTION",
     source: command.id_Item.source,
     command: command.command,
-    notes: command.notes
+    notes: command.notes,
+    selected: null
   })
   return closedAt__State({
     state,
     id_Item: command.id_Item
   })
+}
+
+function OPEN_MENU_stateAfter__Command({
+  state,
+  command,
+  layout_View
+}: _Api___stateAfter__Command_<"OPEN_MENU">): _State__Viewer_TextEditor_ {
+  const viewModel_TextEditor = viewModelOf__State(state)
+  const caret = command.point_Screen === null && viewModel_TextEditor.selection !== null
+    ? layout_View.caretOf(viewModel_TextEditor.selection.head)
+    : null
+  const point_Screen = command.point_Screen ?? (caret === null
+    ? null
+    : {
+      x: caret.x,
+      y: caret.bottom
+    })
+  if (point_Screen === null) return state
+  const [item_First, ...items_Rest] = itemsOf__Menu({
+    viewModel_TextEditor,
+    source_Pointed: command.point_Screen === null ? null : layout_View.sourceAt(command.point_Screen)
+  })
+  return item_First === undefined
+    ? state
+    : {
+      ...state,
+      menu: {
+        point_Screen,
+        items: [
+          item_First,
+          ...items_Rest
+        ],
+        index_Focused: 0
+      },
+      focus_Asking: "MENU"
+    }
+}
+
+interface _Api___itemsOf__Menu_ {
+  viewModel_TextEditor: _ViewModel_TextEditor_
+  source_Pointed: string | null
+}
+
+function itemsOf__Menu({
+  viewModel_TextEditor,
+  source_Pointed
+}: _Api___itemsOf__Menu_): Array<_Item_Menu_> {
+  const selection_Drawn = viewModel_TextEditor.selection
+  const pieces = selection_Drawn === null
+    ? []
+    : joinedOf__Pieces(piecesOf__Drawn({
+      viewModel_TextEditor,
+      position_Drawn_From: selection_Drawn.anchor,
+      position_Drawn_To: selection_Drawn.head
+    })).filter((piece) => !piece.isEmpty)
+  const [piece_First, ...pieces_Rest] = pieces
+  const pieceOf = (piece: _Piece_Drawn_): _Piece_Text_ => ({
+    id_Text: piece.id_Text,
+    range: {
+      from: piece.from,
+      to: piece.to
+    }
+  })
+  const selected: _Selected_Text_ | null = piece_First === undefined
+    ? null
+    : {
+      pieces: [
+        pieceOf(piece_First),
+        ...pieces_Rest.map(pieceOf)
+      ],
+      text: textOf__Selection(viewModel_TextEditor) ?? ""
+    }
+  const items_Proposals = viewModel_TextEditor.blocks.flatMap((block_ViewModel) => block_ViewModel.kind === "FRAME"
+    ? block_ViewModel.parts.flatMap((part_Frame) => part_Frame.kind === "PROPOSAL_LIST" ? part_Frame.items : [])
+    : [])
+  const reviseOf = (source: string) => {
+    const item_Proposals = items_Proposals.find((item_Each) => item_Each.source === source && item_Each.state === "OPEN")
+    const action_Item = item_Proposals?.actions.find((action_Each) => action_Each.stateAfter === "REQUESTED")
+    return item_Proposals === undefined || action_Item === undefined
+      ? null
+      : {
+        title: item_Proposals.title,
+        command: action_Item.command
+      }
+  }
+  const source_Words = piece_First !== undefined && piece_First.id_Text.kind === "CHANGE" && pieces.every((piece) => piece.id_Text.kind === "CHANGE" && piece.id_Text.source === (piece_First.id_Text.kind === "CHANGE" ? piece_First.id_Text.source : null))
+    ? piece_First.id_Text.source
+    : null
+  const revise_Words = source_Words === null ? null : reviseOf(source_Words)
+  if (source_Words !== null && revise_Words !== null) {
+    return [
+      {
+        label: `Note on these words of “${revise_Words.title}”`,
+        quote: selected?.text ?? null,
+        target: {
+          kind: "PROPOSAL",
+          source: source_Words,
+          command: revise_Words.command,
+          selected
+        }
+      },
+      {
+        label: `Note on “${revise_Words.title}”`,
+        quote: null,
+        target: {
+          kind: "PROPOSAL",
+          source: source_Words,
+          command: revise_Words.command,
+          selected: null
+        }
+      }
+    ]
+  }
+  const revise_Pointed = source_Pointed === null ? null : reviseOf(source_Pointed)
+  return [
+    selected === null
+      ? {
+        label: "Request a change to this document",
+        quote: null,
+        target: {
+          kind: "DOCUMENT"
+        }
+      }
+      : {
+        label: "Request a change",
+        quote: selected.text,
+        target: {
+          kind: "SELECTION",
+          selected
+        }
+      },
+    ...(source_Pointed === null || revise_Pointed === null
+      ? []
+      : [
+        {
+          label: `Note on “${revise_Pointed.title}”`,
+          quote: null,
+          target: {
+            kind: "PROPOSAL" as const,
+            source: source_Pointed,
+            command: revise_Pointed.command,
+            selected: null
+          }
+        }
+      ])
+  ]
+}
+
+function STEP_MENU_stateAfter__Command({
+  state,
+  command
+}: _Api___stateAfter__Command_<"STEP_MENU">): _State__Viewer_TextEditor_ {
+  if (state.menu === null) return state
+  const count = state.menu.items.length
+  return {
+    ...state,
+    menu: {
+      ...state.menu,
+      index_Focused: (state.menu.index_Focused + (command.direction === "FORWARD" ? 1 : -1) + count) % count
+    },
+    focus_Asking: "MENU"
+  }
+}
+
+function CHOOSE_MENU_stateAfter__Command({
+  state,
+  command
+}: _Api___stateAfter__Command_<"CHOOSE_MENU">): _State__Viewer_TextEditor_ {
+  const item_Menu = state.menu?.items[command.index]
+  return state.menu === null || item_Menu === undefined
+    ? state
+    : {
+      ...state,
+      menu: null,
+      request: {
+        point_Screen: state.menu.point_Screen,
+        label: item_Menu.label,
+        quote: item_Menu.quote,
+        target: item_Menu.target
+      },
+      focus_Asking: "REQUEST"
+    }
+}
+
+function CLOSE_MENU_stateAfter__Command({
+  state
+}: _Api___stateAfter__Command_<"CLOSE_MENU">): _State__Viewer_TextEditor_ {
+  return state.menu === null
+    ? state
+    : {
+      ...state,
+      menu: null,
+      isFocusing_Input: true
+    }
+}
+
+function SEND_REQUEST_stateAfter__Command({
+  state,
+  command,
+  ask_View
+}: _Api___stateAfter__Command_<"SEND_REQUEST">): _State__Viewer_TextEditor_ {
+  if (state.request === null || command.notes.trim() === "") return state
+  ask_View(ASKEDMAP__KIND_TARGET[state.request.target.kind]({
+    target: state.request.target,
+    notes: command.notes
+  } as never))
+  return {
+    ...state,
+    request: null,
+    isFocusing_Input: true
+  }
+}
+
+type _AskedMap__Kind_Target_ = {
+  [Kind in _Target_Request_["kind"]]: (api_Asked: _Api___asked__Kind_Target_<Kind>) => _Asked_Host_
+}
+
+interface _Api___asked__Kind_Target_<Kind extends _Target_Request_["kind"]> {
+  target: Extract<
+    _Target_Request_,
+    __BASE_Target_Request_<Kind>
+  >
+  notes: string
+}
+
+const ASKEDMAP__KIND_TARGET: _AskedMap__Kind_Target_ = {
+  SELECTION: ({
+    target,
+    notes
+  }) => ({
+    kind: "REQUEST",
+    selected: target.selected,
+    notes
+  }),
+  DOCUMENT: ({
+    notes
+  }) => ({
+    kind: "REQUEST",
+    selected: null,
+    notes
+  }),
+  PROPOSAL: ({
+    target,
+    notes
+  }) => ({
+    kind: "ACTION",
+    source: target.source,
+    command: target.command,
+    notes,
+    selected: target.selected
+  })
+}
+
+function CLOSE_REQUEST_stateAfter__Command({
+  state
+}: _Api___stateAfter__Command_<"CLOSE_REQUEST">): _State__Viewer_TextEditor_ {
+  return state.request === null
+    ? state
+    : {
+      ...state,
+      request: null,
+      isFocusing_Input: true
+    }
 }
 
 function DISCARD_stateAfter__Command({
@@ -1861,6 +2202,12 @@ const HANDLERMAP__TEXTEDITOR: _HandlerMap__TextEditor_ = {
   DRAFT: DRAFT_stateAfter__Command,
   ACT: ACT_stateAfter__Command,
   SEND: SEND_stateAfter__Command,
+  OPEN_MENU: OPEN_MENU_stateAfter__Command,
+  STEP_MENU: STEP_MENU_stateAfter__Command,
+  CHOOSE_MENU: CHOOSE_MENU_stateAfter__Command,
+  CLOSE_MENU: CLOSE_MENU_stateAfter__Command,
+  SEND_REQUEST: SEND_REQUEST_stateAfter__Command,
+  CLOSE_REQUEST: CLOSE_REQUEST_stateAfter__Command,
   DISCARD: DISCARD_stateAfter__Command,
   VISIT: VISIT_stateAfter__Command,
   PLACE: PLACE_stateAfter__Command,

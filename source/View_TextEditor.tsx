@@ -42,7 +42,10 @@ import type {
   _STRETCH_Underlay_Text_,
   _Position_Run_,
   _Selection_Drawn_,
-  _Position_Drawn_
+  _Position_Drawn_,
+  _Point_Screen_,
+  _Menu_ViewModel_,
+  _Form_Request_
 } from "./ViewModel_TextEditor.ts"
 
 export {
@@ -61,7 +64,10 @@ export {
   type _Layout_View_,
   type _Caret_Screen_,
   type _Focus_Draft_,
-  type _Visit_Item_
+  type _Visit_Item_,
+  type _Focus_Asking_,
+  type _Api___Menu_TextEditor__Html_,
+  type _Api___Request_TextEditor__Html_
 }
 
 class _View_TextEditor_ {
@@ -104,6 +110,9 @@ class _View_TextEditor_ {
     this.run$ = viewModel_TextEditor.runs
     this.selection = viewModel_TextEditor.selection
     this.measure()
+    keptInWindow__View_TextEditor({
+      containerElement_View: this.containerElement
+    })
   }
 
   measure(): void {
@@ -125,6 +134,13 @@ class _View_TextEditor_ {
       containerElement_View: this.containerElement,
       point_Screen
     })
+  }
+
+  focusAsking(
+    focus_Asking: _Focus_Asking_
+  ): void {
+    const element = this.containerElement.querySelector(SELECTORMAP__FOCUS_ASKING[focus_Asking])
+    if (element instanceof HTMLElement) element.focus()
   }
 
   caretOf(
@@ -251,6 +267,8 @@ function TextEditor_Html({
   componentMap_View,
   viewModel_TextEditor
 }: _Api___TextEditor_Html_): JSX.Element {
+  const Component_Menu = componentMap_View.menu
+  const Component_Request = componentMap_View.request
   return (
     <div
       class="htmlView_editor"
@@ -269,6 +287,86 @@ function TextEditor_Html({
           block_ViewModel={block_ViewModel}
         />
       ))}
+      {viewModel_TextEditor.menu !== null && <Component_Menu menu_ViewModel={viewModel_TextEditor.menu} />}
+      {viewModel_TextEditor.request !== null && <Component_Request form_Request={viewModel_TextEditor.request} />}
+    </div>
+  )
+}
+
+interface _Api___Menu_TextEditor__Html_ {
+  menu_ViewModel: _Menu_ViewModel_
+}
+
+function Menu_TextEditor__Html({
+  menu_ViewModel
+}: _Api___Menu_TextEditor__Html_): JSX.Element {
+  return (
+    <div
+      class="menu_htmlView"
+      role="menu"
+      aria-label="Ask"
+      style={`left: ${menu_ViewModel.point_Screen.x}px; top: ${menu_ViewModel.point_Screen.y}px`}
+      data-x={String(menu_ViewModel.point_Screen.x)}
+      data-y={String(menu_ViewModel.point_Screen.y)}
+    >
+      {menu_ViewModel.items.map((
+        item_Menu,
+        index
+      ) => (
+        <button
+          type="button"
+          class="choice_htmlView"
+          role="menuitem"
+          data-index={String(index)}
+          tabindex={index === menu_ViewModel.index_Focused ? "0" : "-1"}
+        >
+          {item_Menu.label}
+        </button>
+      ))}
+    </div>
+  )
+}
+
+interface _Api___Request_TextEditor__Html_ {
+  form_Request: _Form_Request_
+}
+
+function Request_TextEditor__Html({
+  form_Request
+}: _Api___Request_TextEditor__Html_): JSX.Element {
+  return (
+    <div
+      class="asking_htmlView"
+      role="dialog"
+      aria-label={form_Request.label}
+      style={`left: ${form_Request.point_Screen.x}px; top: ${form_Request.point_Screen.y}px`}
+      data-x={String(form_Request.point_Screen.x)}
+      data-y={String(form_Request.point_Screen.y)}
+    >
+      <p class="label_Asking_htmlView">{form_Request.label}</p>
+      {form_Request.quote !== null && <p class="quote_Asking_htmlView">{form_Request.quote}</p>}
+      <textarea
+        class="notes_htmlView"
+        aria-label={form_Request.label}
+        placeholder="What should change?"
+        rows="3"
+      />
+      <div class="actions_htmlView">
+        <button
+          type="button"
+          class="action_htmlView"
+          data-request="SEND"
+        >
+          Send
+        </button>
+        <button
+          type="button"
+          class="action_htmlView"
+          data-request="CLOSE"
+        >
+          Cancel
+        </button>
+      </div>
     </div>
   )
 }
@@ -2507,11 +2605,6 @@ function length$Of__Dasharray(
 
 const REGEXP_LENGTH = /\d*\.?\d+/g
 
-interface _Point_Screen_ {
-  x: number
-  y: number
-}
-
 interface _Layout_View_ {
   sourceAt: (point_Screen: _Point_Screen_) => string | null
   placeAt: (point_Screen: _Point_Screen_) => string | null
@@ -3119,6 +3212,8 @@ interface _ComponentMap__View_TextEditor_ {
   places: _ComponentMap_Places_
   condition: _ComponentMap_Condition_
   line: (api_Line: _Api___Line_Run__Html_) => _Node_Jsx_
+  menu: (api_Menu: _Api___Menu_TextEditor__Html_) => _Node_Jsx_
+  request: (api_Request: _Api___Request_TextEditor__Html_) => _Node_Jsx_
 }
 
 type _ComponentMap_Block_ = {
@@ -3157,5 +3252,35 @@ const COMPONENTMAP__VIEW_TEXTEDITOR: _ComponentMap__View_TextEditor_ = {
     WITHIN: WITHIN_Condition_Places__Html,
     CARRIED: CARRIED_Condition_Places__Html
   },
-  line: Line_Run__Html
+  line: Line_Run__Html,
+  menu: Menu_TextEditor__Html,
+  request: Request_TextEditor__Html
+}
+
+type _Focus_Asking_ = "MENU" | "REQUEST"
+
+type _SelectorMap__Focus_Asking_ = {
+  [Focus in _Focus_Asking_]: string
+}
+
+const SELECTORMAP__FOCUS_ASKING: _SelectorMap__Focus_Asking_ = {
+  MENU: ".menu_htmlView > .choice_htmlView[tabindex='0']",
+  REQUEST: ".asking_htmlView > .notes_htmlView"
+}
+
+interface _Api___keptInWindow__View_TextEditor_ {
+  containerElement_View: HTMLElement
+}
+
+function keptInWindow__View_TextEditor({
+  containerElement_View
+}: _Api___keptInWindow__View_TextEditor_): void {
+  const margin = 4
+  for (const element of containerElement_View.querySelectorAll(":is(.menu_htmlView, .asking_htmlView)[data-x][data-y]")) {
+    if (!(element instanceof HTMLElement)) continue
+    const rect = element.getBoundingClientRect()
+    const y = Number(element.dataset["y"])
+    if (rect.right > window.innerWidth - margin) element.style.left = `${Math.max(window.innerWidth - rect.width - margin, margin)}px`
+    if (rect.bottom > window.innerHeight - margin) element.style.top = `${Math.max(y - rect.height, margin)}px`
+  }
 }

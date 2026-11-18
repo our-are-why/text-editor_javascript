@@ -21,9 +21,10 @@ interface _Api___hostedOf__Editor_<State> {
 // the playground as a host: an editor of a document and its proposals,
 // told of each edit, keeping the model it leaves, and of each action asked
 // of a proposal, taking it at once: its state the action's, what it says
-// and offers what that state's are, a revision's notes what you asked;
-// dismissed, it's gone, its changes with it; and sending the editor what
-// it now has. Each reported as it's told
+// and offers what that state's are, a revision's notes what you asked, on
+// the words they're on, if they are; dismissed, it's gone, its changes
+// with it; and sending the editor what it now has. A request for a change,
+// with no agent to answer it, only reported. Each reported as it's told
 function hostedOf__Editor<State>({
   containerElement,
   setup,
@@ -51,11 +52,20 @@ function hostedOf__Editor<State>({
             document: applied_Edit.isChanged_Document
           })
         },
-        asked: (asked_Action) => {
+        asked: (asked_Host) => {
+          if (asked_Host.kind === "REQUEST") {
+            log({
+              requested: asked_Host.notes,
+              aimed: asked_Host.selected?.text ?? null
+            })
+            return
+          }
+          const asked_Action = asked_Host
           log({
             asked: asked_Action.command,
             proposal: asked_Action.source,
-            notes: asked_Action.notes
+            notes: asked_Action.notes,
+            words: asked_Action.selected?.text ?? null
           })
           const action_Item = proposals_Host.find((proposal_Host) => proposal_Host.source === asked_Action.source)?.actions.find((action_Each) => action_Each.command === asked_Action.command)
           if (action_Item === undefined) return
@@ -73,7 +83,11 @@ function hostedOf__Editor<State>({
                 state: stateAfter,
                 status: shownMap_State[stateAfter].status,
                 actions: shownMap_State[stateAfter].actions,
-                request: asked_Action.notes ?? proposal_Host.request
+                request: asked_Action.notes === null
+                  ? proposal_Host.request
+                  : asked_Action.selected === null
+                    ? asked_Action.notes
+                    : `On “${asked_Action.selected.text}”: ${asked_Action.notes}`
               }
               : proposal_Host)
           }

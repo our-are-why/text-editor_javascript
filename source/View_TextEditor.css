@@ -787,9 +787,12 @@
   color: var(--view-placeholder-ink, color-mix(in srgb, CanvasText 58%, transparent));
 }
 
+/* the box written in, focused: its own edge a step nearer the page's
+   ink than it was, no ring round it, no colour, as each colour here says
+   where a proposal stands */
 .htmlView_editor .notes_htmlView:focus-visible {
-  outline: 2px solid var(--view-focus-ring, CanvasText);
-  outline-offset: -1px;
+  outline: none;
+  border-color: var(--view-focus-edge, color-mix(in srgb, CanvasText 72%, transparent));
 }
 
 .htmlView_editor .item_htmlView[data-drafting] .action_htmlView[data-draft="SEND"] {
@@ -866,4 +869,92 @@
   50% {
     opacity: 0;
   }
+}
+
+/* what a right-click opens, or the menu key, over the text: what you can
+   ask, a request for a change, aimed at what's selected or the whole
+   document, or a note on a proposal, on its words or the whole of it; a
+   list of choices at the pointer, in the interface's font, as a list of
+   proposals is, on the proposals' band, made solid over the text, a faint
+   edge round it, flat, as all of the editor is, with no shadow; each
+   choice a row across it, lit a step darker where it's pointed at or the
+   keyboard's on it, as an item's lit, no ring */
+.htmlView_editor :is(.menu_htmlView, .asking_htmlView) {
+  position: fixed;
+  z-index: 10;
+  box-sizing: border-box;
+  border: 1px solid var(--view-menu-edge, color-mix(in srgb, CanvasText 16%, transparent));
+  border-radius: 2px;
+  background:
+    linear-gradient(var(--view-proposals-shade, color-mix(in srgb, CanvasText 5%, transparent)), var(--view-proposals-shade, color-mix(in srgb, CanvasText 5%, transparent))),
+    linear-gradient(var(--view-proposed, color-mix(in srgb, CanvasText 4%, transparent)), var(--view-proposed, color-mix(in srgb, CanvasText 4%, transparent))),
+    var(--view-ground, Canvas);
+  font-family: var(--view-ui-font, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif);
+  font-size: var(--view-ui-font-size, 13px);
+  line-height: 1.45;
+}
+
+.htmlView_editor .menu_htmlView {
+  display: flex;
+  flex-direction: column;
+  min-width: 12rem;
+  max-width: 26rem;
+  padding: 0.25rem 0;
+}
+
+.htmlView_editor .choice_htmlView {
+  padding: 0.3rem 0.75rem;
+  border: none;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-align: start;
+  cursor: pointer;
+}
+
+.htmlView_editor .choice_htmlView:is(:hover, :focus) {
+  outline: none;
+  background: var(--view-choice-lit, color-mix(in srgb, CanvasText 9%, transparent));
+}
+
+/* the form a choice opens, where the menu was, on the same band: what
+   you're asking, what it's aimed at, quoted on a line of its own, cut
+   where it runs past it, a box for what you ask, as a revision's is, and
+   under it, on the right, Send, in the main action's indigo, and Cancel,
+   neutral */
+.htmlView_editor .asking_htmlView {
+  width: min(26rem, calc(100vw - 2rem));
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+  padding: 0.6rem 0.75rem;
+}
+
+.htmlView_editor .label_Asking_htmlView {
+  margin: 0;
+  font-weight: 600;
+}
+
+.htmlView_editor .quote_Asking_htmlView {
+  margin: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--view-placeholder-ink, color-mix(in srgb, CanvasText 58%, transparent));
+  font-family: var(--view-font, ui-monospace, "SF Mono", Menlo, Consolas, monospace);
+}
+
+.htmlView_editor .asking_htmlView > .actions_htmlView {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.4rem;
+}
+
+.htmlView_editor .asking_htmlView .action_htmlView[data-request="SEND"] {
+  background: var(--view-action-main-ground, light-dark(#4b48c8, #5654d6));
+  color: var(--view-action-main-ink, #ffffff);
+}
+
+.htmlView_editor .asking_htmlView .action_htmlView[data-request="SEND"]:hover {
+  background: var(--view-action-main-hover-ground, light-dark(#3c39ad, #6866e2));
 }

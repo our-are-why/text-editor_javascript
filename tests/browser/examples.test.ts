@@ -469,10 +469,89 @@ test("a proposal's action pressed is asked of the host, which sends back what it
   expect(items_Requested.every((item) => item.state === "REQUESTED" && item.asked === "Keep the hook, but call it after the delay.")).toBe(true)
   expect(items_Dismissed).toEqual([])
   expect(asked_JavaScript).toEqual([
-    { asked: "accept", proposal: "errors", notes: null },
-    { asked: "revise", proposal: "hook", notes: "Keep the hook, but call it after the delay." },
-    { asked: "dismiss", proposal: "log", notes: null }
+    { asked: "accept", proposal: "errors", notes: null, words: null },
+    { asked: "revise", proposal: "hook", notes: "Keep the hook, but call it after the delay.", words: null },
+    { asked: "dismiss", proposal: "log", notes: null, words: null }
   ])
   expect(line_Attempts_Typed.length).toBe(line_Attempts.length + 1)
+  expect(opened_JavaScript.errors).toEqual([])
+})
+
+// then a right-click, on the JavaScript example: on "aborted", the words
+// "Stop retrying once the caller aborts" puts in, selected by a drag, its menu, and the note
+// its first choice opens, written and sent with the keyboard; then on the
+// document's words, nothing selected, its menu, closed with Escape, opened
+// again from the keyboard, and a request for a change to the document sent
+const rectOf_Word = (needle: string, word: string) => opened_JavaScript.page.evaluate(({ needle, word }) => {
+  const element_Line = [...document.querySelectorAll(".run_htmlView[data-run$=\"-proposed\"] > .line_htmlView > .text_htmlView")].find((element) => (element.textContent ?? "").includes(needle))
+  if (!(element_Line instanceof HTMLElement)) throw new Error(`no line with ${needle}`)
+  element_Line.scrollIntoView({ block: "center" })
+  const walker = document.createTreeWalker(element_Line, NodeFilter.SHOW_TEXT)
+  for (let node = walker.nextNode(); node instanceof Text; node = walker.nextNode()) {
+    const index = node.data.indexOf(word)
+    if (index === -1) continue
+    const range = document.createRange()
+    range.setStart(node, index)
+    range.setEnd(node, index + word.length)
+    const rect = range.getBoundingClientRect()
+    return { left: rect.left, right: rect.right, y: rect.top + rect.height / 2 }
+  }
+  throw new Error(`no ${word}`)
+}, { needle, word })
+const menuShown = () => opened_JavaScript.page.evaluate(async () => {
+  await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)))
+  return {
+    choices: [...document.querySelectorAll(".menu_htmlView > .choice_htmlView")].map((element) => element.textContent),
+    focused: document.activeElement?.textContent ?? null
+  }
+})
+const rect_Aborted = await rectOf_Word("signal?.aborted) break", "aborted")
+await opened_JavaScript.page.mouse.move(rect_Aborted.left + 1, rect_Aborted.y)
+await opened_JavaScript.page.mouse.down()
+await opened_JavaScript.page.mouse.move(rect_Aborted.right - 1, rect_Aborted.y, { steps: 5 })
+await opened_JavaScript.page.mouse.up()
+await opened_JavaScript.page.mouse.click(rect_Aborted.left + 4, rect_Aborted.y, { button: "right" })
+const menu_Words = await menuShown()
+await opened_JavaScript.page.keyboard.press("Enter")
+const form_Words = await opened_JavaScript.page.evaluate(async () => {
+  await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)))
+  return {
+    label: document.querySelector(".asking_htmlView > .label_Asking_htmlView")?.textContent ?? null,
+    quote: document.querySelector(".asking_htmlView > .quote_Asking_htmlView")?.textContent ?? null,
+    isFocused: document.activeElement?.matches(".asking_htmlView > .notes_htmlView") === true
+  }
+})
+await opened_JavaScript.page.keyboard.type("Check it before the delay too.")
+await opened_JavaScript.page.keyboard.press("Control+Enter")
+const items_Aborted = await itemsOf("aborted")
+const rect_Backoff = await rectOf_Word("export function backoff(round)", "backoff")
+await opened_JavaScript.page.mouse.click(rect_Backoff.left + 2, rect_Backoff.y)
+await opened_JavaScript.page.mouse.click(rect_Backoff.left + 2, rect_Backoff.y, { button: "right" })
+const menu_Document = await menuShown()
+await opened_JavaScript.page.keyboard.press("Escape")
+const isClosed_Menu = await opened_JavaScript.page.evaluate(async () => {
+  await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)))
+  return document.querySelector(".menu_htmlView") === null && document.activeElement?.matches(".input_htmlView") === true
+})
+await opened_JavaScript.page.keyboard.press("Shift+F10")
+const menu_Keyboard = await menuShown()
+await opened_JavaScript.page.keyboard.press("Enter")
+await opened_JavaScript.page.evaluate(() => new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve))))
+await opened_JavaScript.page.keyboard.type("Say why the delay doubles.")
+await opened_JavaScript.page.keyboard.press("Control+Enter")
+const asked_Menu = (await opened_JavaScript.logged()).filter((entry) => "requested" in entry || entry["words"] !== undefined && entry["words"] !== null)
+
+test("a right-click on a proposal's selected words offers a note on them, or on the whole proposal, the first focused; chosen, a form, what it's on quoted, the keyboard in it; sent, the host's told, which sends the proposal back for a revision, the words quoted with what you asked; on the document's words, nothing selected, a request for a change to the document, Escape closing it, the menu key opening it again at the caret", () => {
+  expect(menu_Words).toEqual({ choices: ["Note on these words of “Stop retrying once the caller aborts”", "Note on “Stop retrying once the caller aborts”"], focused: "Note on these words of “Stop retrying once the caller aborts”" })
+  expect(form_Words).toEqual({ label: "Note on these words of “Stop retrying once the caller aborts”", quote: "aborted", isFocused: true })
+  expect(items_Aborted.length).toBeGreaterThan(0)
+  expect(items_Aborted.every((item) => item.state === "REQUESTED" && item.asked === "On “aborted”: Check it before the delay too.")).toBe(true)
+  expect(menu_Document).toEqual({ choices: ["Request a change to this document"], focused: "Request a change to this document" })
+  expect(isClosed_Menu).toBe(true)
+  expect(menu_Keyboard).toEqual(menu_Document)
+  expect(asked_Menu).toEqual([
+    { asked: "revise", proposal: "aborted", notes: "Check it before the delay too.", words: "aborted" },
+    { requested: "Say why the delay doubles.", aimed: null }
+  ])
   expect(opened_JavaScript.errors).toEqual([])
 })

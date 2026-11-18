@@ -1,6 +1,7 @@
 import {
   type _Text_Line_NonTerminated_,
   type _Id_Text_,
+  type _Range_Text_,
   type _Position_Text_,
   type _NonEmpty_,
   mapped__NonEmpty,
@@ -71,6 +72,18 @@ export {
   type _Selection_Drawn_,
   type _Place_Text_,
   type _Position_Drawn_,
+  askingAt__ViewModel,
+  type _Menu_ViewModel_,
+  type _Point_Screen_,
+  type _Item_Menu_,
+  type _Target_Request_,
+  type __BASE_Target_Request_,
+  type _SELECTION_Target_Request_,
+  type _DOCUMENT_Target_Request_,
+  type _PROPOSAL_Target_Request_,
+  type _Selected_Text_,
+  type _Piece_Text_,
+  type _Form_Request_,
   drawnOf__End,
   orderOf__Positions_Drawn,
   sectionOf__Run,
@@ -89,6 +102,8 @@ interface _ViewModel_TextEditor_ {
   blocks: Array<_Block_ViewModel_>
   runs: Array<_Run_Lines_>
   selection: _Selection_Drawn_ | null
+  menu: _Menu_ViewModel_ | null
+  request: _Form_Request_ | null
 }
 
 type _Block_ViewModel_ = _LINES_Block__ViewModel_ | _FRAME_Block__ViewModel_ | _FOLDED_Block__ViewModel_
@@ -292,7 +307,9 @@ function viewModelOf__Blocks(
     ),
     blocks: block$_Stated,
     runs: runs_ViewModel,
-    selection: null
+    selection: null,
+    menu: null,
+    request: null
   }
 }
 
@@ -845,6 +862,78 @@ function isSame__End({
     })
     && end_Selection.position.line === end_Selection_Other.position.line
     && end_Selection.position.offset === end_Selection_Other.position.offset
+}
+
+interface _Api___askingAt__ViewModel_ {
+  viewModel_TextEditor: _ViewModel_TextEditor_
+  menu: _Menu_ViewModel_ | null
+  request: _Form_Request_ | null
+}
+
+function askingAt__ViewModel({
+  viewModel_TextEditor,
+  menu,
+  request
+}: _Api___askingAt__ViewModel_): _ViewModel_TextEditor_ {
+  return menu === null && request === null
+    ? viewModel_TextEditor
+    : {
+      ...viewModel_TextEditor,
+      menu,
+      request
+    }
+}
+
+interface _Menu_ViewModel_ {
+  point_Screen: _Point_Screen_
+  items: _NonEmpty_<_Item_Menu_>
+  index_Focused: number
+}
+
+interface _Point_Screen_ {
+  x: number
+  y: number
+}
+
+interface _Item_Menu_ {
+  label: string
+  quote: string | null
+  target: _Target_Request_
+}
+
+type _Target_Request_ = _SELECTION_Target_Request_ | _DOCUMENT_Target_Request_ | _PROPOSAL_Target_Request_
+
+interface __BASE_Target_Request_<Kind extends string> {
+  kind: Kind
+}
+
+interface _SELECTION_Target_Request_ extends __BASE_Target_Request_<"SELECTION"> {
+  selected: _Selected_Text_
+}
+
+interface _DOCUMENT_Target_Request_ extends __BASE_Target_Request_<"DOCUMENT"> {}
+
+interface _PROPOSAL_Target_Request_ extends __BASE_Target_Request_<"PROPOSAL"> {
+  source: string
+  command: string
+  selected: _Selected_Text_ | null
+}
+
+interface _Selected_Text_ {
+  pieces: _NonEmpty_<_Piece_Text_>
+  text: string
+}
+
+interface _Piece_Text_ {
+  id_Text: _Id_Text_
+  range: _Range_Text_
+}
+
+interface _Form_Request_ {
+  point_Screen: _Point_Screen_
+  label: string
+  quote: string | null
+  target: _Target_Request_
 }
 
 interface _Api___selectedAt__ViewModel_ {

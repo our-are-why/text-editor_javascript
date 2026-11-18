@@ -1779,6 +1779,40 @@ Then typing, the second of editing:
   wrapped line's own rows' ends for Home and End; dragging past the
   editor's edge, and scrolling as it goes.
 
+## asking, from a menu
+
+A right-click in the editor, or the menu key, or Shift+F10, at the caret,
+opens a menu of what can be asked there, `OPEN_MENU`, worked out as it
+opens from what's selected and what's pointed at: on words of an open
+proposal, selected, a note on them, or on the whole proposal, its title
+saying which; on anything else selected, a request for a change, aimed at
+it; with nothing selected, a request for a change to the document, and,
+pointing at an open proposal, a note on it. One request, never a choice of
+scope: doctor's notes have it that what a request's aimed at says where,
+not how far, and the words written say the rest, or the agent infers it, a
+name's every use, a sentence itself; what it made of it is seen in the
+proposal that answers it, before it's taken, and a note sends it back if
+it read it wrong. Decided on 2026-11-18, over a rename of its own beside a
+change here, as doctor's requests, bound in practice to what was selected,
+read a rename as one place. Choosing one, a click, or Enter on it, the
+arrows moving through them, `CHOOSE_MENU`, opens a form where the menu was,
+`asking_htmlView`, what it is, what it's aimed at quoted, a box to write
+in, Send and Cancel, ⌘ or Ctrl with Enter and Escape; Escape, or the focus
+leaving it, closes the menu, the caret back where it was. Sent, it's asked
+of the host, `SEND_REQUEST`, never empty: a note on a proposal its Revise
+command with the notes and the words, as its draft's Submit sends it; a
+request, what's written and what it's aimed at, each piece of it a text's
+range and what it reads. Each the editor's own control, as a revision's
+draft is, working with no module in; menu and form both the component
+map's, `menu` and `request`, a host's own drawn in their place; the view
+keeps them in the window, as doctor's menu kept itself. The playground's
+host sends a note on words back as a revision with the words quoted, and
+reports a request, as it's no agent to answer it. Not yet: requests
+drafted, kept and sent together, as doctor's were, next; a button by a
+selection, as a document editor's comment button is; cut, copy and paste
+in the menu, the browser's own out of reach of the text; a host's own
+choices in it.
+
 ## observers
 
 What a command did is told to observers, the host's and modules', stage by
@@ -1813,10 +1847,13 @@ among them, and whether it changed the document, `isChanged_Document`. A
 host keeps what it's told as it likes: doctor, a proposal edited as its
 next round, once the caret leaves it, say; the document's edits written to
 the file, or kept with a task till it completes. And told `asked`, an
-`_Asked_Action_`, once a proposal's action's pressed, `ACT`, or a
-revision's notes sent, `SEND`: the proposal's source, the action's
-command, the host's own, and what was written, or `null`; the editor
-decides nothing itself, a proposal's state being the host's. What the host
+`_Asked_Host_`: an `ACTION` once a proposal's action's pressed, `ACT`, or
+a revision's notes sent, `SEND`, or a note on it sent from the menu: the
+proposal's source, the action's command, the host's own, what was
+written, or `null`, and the words it's on, if it's on words, or `null`;
+or a `REQUEST`, a request for a change from the menu, what was written and
+what it's aimed at, the words selected, or `null`, the document. The
+editor decides nothing itself, a proposal's state being the host's. What the host
 has then it sends back, `update`, an `_Update_Host_`, the model and the
 proposals, which the editor draws, the caret kept where it can still be
 drawn, the history cleared, as above. Observers are told just after the

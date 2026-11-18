@@ -76,6 +76,8 @@ describe("beside it: what can't live in one document", () => {
           block: window.COMPONENTMAP__VIEW_TEXTEDITOR.block,
           places: window.COMPONENTMAP__VIEW_TEXTEDITOR.places,
           condition: window.COMPONENTMAP__VIEW_TEXTEDITOR.condition,
+          menu: window.COMPONENTMAP__VIEW_TEXTEDITOR.menu,
+          request: window.COMPONENTMAP__VIEW_TEXTEDITOR.request,
           line: ({ line_Run }) => {
             const pElement_line = document.createElement("p")
             pElement_line.className = "line_host"

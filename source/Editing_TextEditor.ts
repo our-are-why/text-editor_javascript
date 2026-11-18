@@ -20,6 +20,7 @@ import {
 import {
   type _Selection_TextEditor_,
   type _Place_Text_,
+  type _Piece_Text_,
   type _State_Proposal_,
   isSame__Selection,
   isSame__Id_Text,
@@ -111,11 +112,6 @@ interface _ACROSS_Request_Edit_ extends __BASE_Request_Edit_<"ACROSS"> {
   id_Run: string
   selection_Before: _Selection_TextEditor_
   isTyping: boolean
-}
-
-interface _Piece_Text_ {
-  id_Text: _Id_Text_
-  range: _Range_Text_
 }
 
 interface _UNDO_Request_Edit_ extends __BASE_Request_Edit_<"UNDO"> {}
@@ -751,14 +747,22 @@ function isTouching__Yours({
     proposals,
     source: changes_Source.source
   }) && changes_Source.changes.some((change_Other) => change_Other.kind === "MOVE"
-    ? [
+    ? isAt(
       change_Other.at,
+      position_Met
+    ) || ([
       change_Other.range.from,
       change_Other.range.to
     ].some((position) => isAt(
       position,
       position_Met
-    ))
+    )) && isInside__Move({
+      range: change.range,
+      range_Move: change_Other.range
+    }) !== isInside__Move({
+      range,
+      range_Move: change_Other.range
+    }))
     : isAt(
       change_Other.range.from,
       position_Met
@@ -766,6 +770,27 @@ function isTouching__Yours({
       change_Other.range.to,
       position_Met
     )))
+}
+
+interface _Api___isInside__Move_ {
+  range: _Range_Text_
+  range_Move: _Range_Text_
+}
+
+function isInside__Move({
+  range,
+  range_Move
+}: _Api___isInside__Move_): boolean {
+  return orderOf__Positions({
+    position: range.from,
+    position_Other: range.to
+  }) < 0 && orderOf__Positions({
+    position: range_Move.from,
+    position_Other: range.from
+  }) <= 0 && orderOf__Positions({
+    position: range.to,
+    position_Other: range_Move.to
+  }) <= 0
 }
 
 interface _Api___isApplied__Source_ {

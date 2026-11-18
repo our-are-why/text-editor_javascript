@@ -53,7 +53,7 @@ const layout_View: _Layout_View_ = {
 function stateOf(
   selection: _Selection_TextEditor_ | null
 ): _State__Viewer_TextEditor_ {
-  return { viewModel_TextEditor: viewModel, source_Pointed: null, place_Pointed: null, target_Pointed: null, target_Revealed: null, ranges_Folded: [], range_Peeked: null, items_Drafted: [], focus_Draft: null, visit_Item: null, selection, isSelecting: false, x_Goal: null, isRevealing_Caret: false, isFocusing_Input: false }
+  return { viewModel_TextEditor: viewModel, source_Pointed: null, place_Pointed: null, target_Pointed: null, target_Revealed: null, ranges_Folded: [], range_Peeked: null, items_Drafted: [], focus_Draft: null, visit_Item: null, selection, isSelecting: false, x_Goal: null, isRevealing_Caret: false, isFocusing_Input: false, menu: null, request: null, focus_Asking: null }
 }
 
 // the state after each command in turn, as the viewer works it out
@@ -354,5 +354,32 @@ test("a proposal's action pressed is asked of the host, its command, the viewer 
   const drafting = { ...state, items_Drafted: [id_Item] }
   const sent = HANDLERMAP__TEXTEDITOR.SEND({ state: drafting, command: { kind: "SEND", id_Item, command: "revise", notes: "Say what it's for." }, layout_View, module_Words: MODULE_WORDS_TEXT, edit_View: () => null, ask_View })
   expect(sent.items_Drafted).toEqual([])
-  expect(asked).toEqual([{ source: "digit", command: "accept", notes: null }, { source: "digit", command: "revise", notes: "Say what it's for." }])
+  expect(asked).toEqual([{ kind: "ACTION", source: "digit", command: "accept", notes: null, selected: null }, { kind: "ACTION", source: "digit", command: "revise", notes: "Say what it's for.", selected: null }])
+})
+
+test("a right-click's menu offers what can be asked there: on a proposal's words, a note on them, or on the whole proposal; on the document's words, a request for a change aimed at them; with nothing selected, one for the document; a choice opens a form, what it's aimed at quoted, and what's written there's asked of the host, with where it was aimed, never an empty one", () => {
+  const menuOf = (selection: _Selection_TextEditor_) => HANDLERMAP__TEXTEDITOR.OPEN_MENU({ state: stateOf(selection), command: { kind: "OPEN_MENU", point_Screen: { x: 40, y: 40 } }, layout_View, module_Words: MODULE_WORDS_TEXT, edit_View: () => null, ask_View: () => {} })
+  const digit_Text = { kind: "CHANGE" as const, source: "digit", index: 0 }
+  const over_Digit: _Selection_TextEditor_ = { anchor: { id_Run: "frame-1-proposed", id_Text: digit_Text, position: { line: 0, offset: 0 } }, head: { id_Run: "frame-1-proposed", id_Text: digit_Text, position: { line: 0, offset: 1 } } }
+  const over_One: _Selection_TextEditor_ = { anchor: caretOf("frame-1-proposed", 0, 0).anchor, head: caretOf("frame-1-proposed", 0, 3).head }
+  expect(menuOf(over_Digit).menu?.items.map((item) => `${item.label} | ${item.quote}`)).toEqual(["Note on these words of “Write two as a digit” | 2", "Note on “Write two as a digit” | null"])
+  expect(menuOf(over_One).menu?.items.map((item) => `${item.label} | ${item.quote}`)).toEqual(["Request a change | one"])
+  expect(menuOf(caretOf("lines-2", 1, 2)).menu?.items.map((item) => `${item.label} | ${item.quote}`)).toEqual(["Request a change to this document | null"])
+  const asked: Array<unknown> = []
+  const ask_View = (asked_Host: unknown) => {
+    asked.push(asked_Host)
+  }
+  const chosen = HANDLERMAP__TEXTEDITOR.CHOOSE_MENU({ state: menuOf(over_Digit), command: { kind: "CHOOSE_MENU", index: 0 }, layout_View, module_Words: MODULE_WORDS_TEXT, edit_View: () => null, ask_View })
+  expect(chosen.menu).toBe(null)
+  expect(chosen.request).toMatchObject({ point_Screen: { x: 40, y: 40 }, label: "Note on these words of “Write two as a digit”", quote: "2" })
+  const unsent = HANDLERMAP__TEXTEDITOR.SEND_REQUEST({ state: chosen, command: { kind: "SEND_REQUEST", notes: "  " }, layout_View, module_Words: MODULE_WORDS_TEXT, edit_View: () => null, ask_View })
+  expect(unsent).toBe(chosen)
+  const sent = HANDLERMAP__TEXTEDITOR.SEND_REQUEST({ state: chosen, command: { kind: "SEND_REQUEST", notes: "Spell it out." }, layout_View, module_Words: MODULE_WORDS_TEXT, edit_View: () => null, ask_View })
+  expect(sent.request).toBe(null)
+  const requested = HANDLERMAP__TEXTEDITOR.SEND_REQUEST({ state: HANDLERMAP__TEXTEDITOR.CHOOSE_MENU({ state: menuOf(over_One), command: { kind: "CHOOSE_MENU", index: 0 }, layout_View, module_Words: MODULE_WORDS_TEXT, edit_View: () => null, ask_View }), command: { kind: "SEND_REQUEST", notes: "Say which one." }, layout_View, module_Words: MODULE_WORDS_TEXT, edit_View: () => null, ask_View })
+  expect(requested.request).toBe(null)
+  expect(asked).toEqual([
+    { kind: "ACTION", source: "digit", command: "revise", notes: "Spell it out.", selected: { pieces: [{ id_Text: digit_Text, range: { from: { line: 0, offset: 0 }, to: { line: 0, offset: 1 } } }], text: "2" } },
+    { kind: "REQUEST", selected: { pieces: [{ id_Text: { kind: "DOCUMENT" }, range: { from: { line: 0, offset: 0 }, to: { line: 0, offset: 3 } } }], text: "one" }, notes: "Say which one." }
+  ])
 })

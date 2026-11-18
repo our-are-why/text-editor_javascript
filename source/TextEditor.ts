@@ -18,7 +18,7 @@ import {
   _Viewer_TextEditor_,
   type _Module_TextEditor_,
   type _Answer_Edit_,
-  type _Asked_Action_
+  type _Asked_Host_
 } from "./Viewer_TextEditor.ts"
 import {
   editedOf__Request,
@@ -77,8 +77,8 @@ class _TextEditor_<State> {
       module_Words: this.setup.module_Words,
       viewModel_TextEditor: this.projected(),
       edit: (request_Edit) => this.edited(request_Edit),
-      ask: (asked_Action) => queueMicrotask(() => {
-        for (const observer of this.observers) observer.asked(asked_Action)
+      ask: (asked_Host) => queueMicrotask(() => {
+        for (const observer of this.observers) observer.asked(asked_Host)
       })
     })
   }
@@ -157,7 +157,7 @@ interface _Api__TextEditor_<State> {
 
 interface _Observer_TextEditor_ {
   applied: (applied_Edit: _Applied_Edit_) => void
-  asked: (asked_Action: _Asked_Action_) => void
+  asked: (asked_Host: _Asked_Host_) => void
 }
 
 interface _Applied_Edit_ {

@@ -288,3 +288,12 @@ test("each edit says what it did, its own transaction, the model before made the
   }
   expect(undone.model_TextEditor).toEqual(model)
 })
+
+test("where a move leaves, a change of yours put in just after the gap, and one deleting what's after it, meet as they're drawn, side by side, so they run together; only one inside what the move carries is kept apart from one outside", () => {
+  const result = parseModel_TextEditor({ multilineText: "a\nb\nc d", marks: [], proposed: [{ source: "lift", changes: [{ kind: "MOVE", range: { from: { line: 1, offset: 0 }, to: { line: 2, offset: 0 } }, at: { line: 0, offset: 0 } }] }, { source: "yours", changes: [{ kind: "REPLACE", range: on(2, 0, 0), multilineText: "Q", marks: [] }] }] })
+  if (result.kind === "REFUSED") throw new Error("refused")
+  const proposals: Array<_Proposal_Host_> = [{ source: "lift", title: "Lift b", state: "OPEN", status: "", rationale: "", request: "", actions: [], attributes: {} }, { source: "yours", title: "Your edits", state: "OPEN", status: "", rationale: "", request: "", actions: [], attributes: {} }]
+  const deleted = editedOf__Request({ model_TextEditor: result.model_TextEditor, proposals, source_Yours: "yours", module_Words: MODULE_WORDS_TEXT, history: HISTORY_EMPTY, request_Edit: { kind: "TEXT", id_Text: document_Text, range: on(2, 0, 1), multilineText: "", id_Run: "run", selection_Before: caretAt(document_Text, 2, 0), isTyping: false, isProposed: true, places_Caret: null } })
+  expect(deleted?.model_TextEditor.proposed[1]?.changes).toMatchObject([{ range: on(2, 0, 1), next: { lines: ["Q"] } }])
+  expect<unknown>(deleted === null ? null : textWith__Sources({ model_TextEditor: deleted.model_TextEditor, sources: ["lift", "yours"] }).lines).toEqual(["b", "a", "Q d"])
+})

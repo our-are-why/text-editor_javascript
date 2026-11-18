@@ -123,8 +123,9 @@ function drawnAs(
       ...run.groups.flatMap((group) => [`    ring ${attributesOf(group.attributes)}`, ...group.underlays.map(underlayOf)])
     ]
   }
-  known(viewModel, ["charCount_Max__Label_Gutter", "blocks", "runs", "selection"], "view model")
+  known(viewModel, ["charCount_Max__Label_Gutter", "blocks", "runs", "selection", "menu", "request"], "view model")
   if (viewModel.selection !== null) throw new Error("the projection draws no selection; the viewer does, from its state")
+  if (viewModel.menu !== null || viewModel.request !== null) throw new Error("the projection draws no menu or request; the viewer does, from its state")
   return [
     `label width ${viewModel.charCount_Max__Label_Gutter}`,
     ...viewModel.blocks.flatMap((block) => {

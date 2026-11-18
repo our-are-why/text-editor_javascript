@@ -1,6 +1,7 @@
 import type {
   _Adapter_Event_,
-  _SEND_Command_
+  _SEND_Command_,
+  _SEND_REQUEST__Command_
 } from "./Viewer_TextEditor.ts"
 import type { _Id_Item_ } from "./ViewModel_TextEditor.ts"
 
@@ -168,6 +169,104 @@ const CONTROLS__TEXTEDITOR: Array<_Adapter_Event_> = [
     }
   },
   {
+    event: "contextmenu",
+    commandOf__Event: (event) => {
+      if (!(event instanceof MouseEvent) || !(event.target instanceof Element) || event.target.closest(".menu_htmlView, .asking_htmlView, textarea") !== null) return null
+      event.preventDefault()
+      return {
+        kind: "OPEN_MENU",
+        point_Screen: {
+          x: event.clientX,
+          y: event.clientY
+        }
+      }
+    }
+  },
+  {
+    event: "keydown",
+    commandOf__Event: (event) => {
+      const isMenuKey = event instanceof KeyboardEvent && (event.key === "ContextMenu" || (event.key === "F10" && event.shiftKey))
+      if (!isMenuKey || !(event.target instanceof Element) || event.target.closest(".input_htmlView") === null) return null
+      event.preventDefault()
+      return {
+        kind: "OPEN_MENU",
+        point_Screen: null
+      }
+    }
+  },
+  {
+    event: "click",
+    commandOf__Event: (event) => {
+      const element_Choice = event.target instanceof Element ? event.target.closest(".menu_htmlView > .choice_htmlView[data-index]") : null
+      const index = Number(element_Choice?.getAttribute("data-index") ?? Number.NaN)
+      return Number.isInteger(index)
+        ? {
+          kind: "CHOOSE_MENU",
+          index
+        }
+        : null
+    }
+  },
+  {
+    event: "keydown",
+    commandOf__Event: (event) => {
+      if (!(event instanceof KeyboardEvent) || !(event.target instanceof Element) || event.target.closest(".menu_htmlView") === null) return null
+      if (event.key === "Escape") {
+        return {
+          kind: "CLOSE_MENU"
+        }
+      }
+      if (event.key !== "ArrowDown" && event.key !== "ArrowUp") return null
+      event.preventDefault()
+      return {
+        kind: "STEP_MENU",
+        direction: event.key === "ArrowDown" ? "FORWARD" : "BACKWARD"
+      }
+    }
+  },
+  {
+    event: "focusout",
+    commandOf__Event: (event) => {
+      const element_Menu = event.target instanceof Element ? event.target.closest(".menu_htmlView") : null
+      const isLeaving = event instanceof FocusEvent && element_Menu !== null && !(event.relatedTarget instanceof Node && element_Menu.contains(event.relatedTarget))
+      return isLeaving
+        ? {
+          kind: "CLOSE_MENU"
+        }
+        : null
+    }
+  },
+  {
+    event: "click",
+    commandOf__Event: (event) => {
+      const element_Button = event.target instanceof Element ? event.target.closest(".asking_htmlView [data-request]") : null
+      const kind = element_Button?.getAttribute("data-request")
+      if (element_Button === null || element_Button === undefined) return null
+      return kind === "SEND"
+        ? sentOf__Request(element_Button)
+        : kind === "CLOSE"
+          ? {
+            kind: "CLOSE_REQUEST"
+          }
+          : null
+    }
+  },
+  {
+    event: "keydown",
+    commandOf__Event: (event) => {
+      const element_Notes = event.target instanceof Element ? event.target.closest(".asking_htmlView > .notes_htmlView") : null
+      if (!(event instanceof KeyboardEvent) || element_Notes === null) return null
+      if (event.key === "Escape") {
+        return {
+          kind: "CLOSE_REQUEST"
+        }
+      }
+      return event.key === "Enter" && (event.metaKey || event.ctrlKey)
+        ? sentOf__Request(element_Notes)
+        : null
+    }
+  },
+  {
     event: "keydown",
     commandOf__Event: (event) => {
       const element_Notes = event.target instanceof Element ? event.target.closest(".notes_htmlView") : null
@@ -192,6 +291,18 @@ const CONTROLS__TEXTEDITOR: Array<_Adapter_Event_> = [
     }
   }
 ]
+
+function sentOf__Request(
+  element: Element
+): _SEND_REQUEST__Command_ | null {
+  const element_Notes = element.closest(".asking_htmlView")?.querySelector(":scope > .notes_htmlView")
+  return element_Notes instanceof HTMLTextAreaElement
+    ? {
+      kind: "SEND_REQUEST",
+      notes: element_Notes.value
+    }
+    : null
+}
 
 interface _Api___sentOf__Item_ {
   element: Element
