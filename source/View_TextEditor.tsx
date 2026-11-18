@@ -190,6 +190,15 @@ class _View_TextEditor_ {
     })
   }
 
+  focusInput(): void {
+    const element_Input = this.containerElement.querySelector(".input_htmlView")
+    if (element_Input instanceof HTMLElement) {
+      element_Input.focus({
+        preventScroll: true
+      })
+    }
+  }
+
   revealCaret(): void {
     this.containerElement.querySelector(".caret_htmlView")?.scrollIntoView({
       block: "nearest"
@@ -245,9 +254,15 @@ function TextEditor_Html({
   return (
     <div
       class="htmlView_editor"
-      tabindex="0"
       style={`--labelWidth_htmlView: ${viewModel_TextEditor.charCount_Max__Label_Gutter}ch`}
     >
+      <div
+        class="input_htmlView"
+        tabindex="0"
+        role="textbox"
+        aria-multiline="true"
+        aria-label="Text"
+      />
       {viewModel_TextEditor.blocks.map((block_ViewModel) => (
         <Block_TextEditor__Html
           componentMap_View={componentMap_View}

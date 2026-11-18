@@ -180,6 +180,8 @@ describe("beside it: what can't live in one document", () => {
         containerElement,
         componentMap: window.COMPONENTMAP__VIEW_TEXTEDITOR,
         modules: [window.MODULE_MOUSE],
+        module_Words: window.MODULE_WORDS_TEXT,
+        edit: () => null,
         viewModel_TextEditor: window.viewModelOf__Blocks([{
           kind: "FRAME",
           range: { first: 1, last: 1 },
@@ -257,6 +259,8 @@ describe("beside it: what can't live in one document", () => {
         containerElement,
         componentMap: window.COMPONENTMAP__VIEW_TEXTEDITOR,
         modules: [window.MODULE_MOUSE],
+        module_Words: window.MODULE_WORDS_TEXT,
+        edit: () => null,
         viewModel_TextEditor: window.viewModelOf__Blocks([{
           kind: "LINES",
           run: {
@@ -517,6 +521,8 @@ describe("beside it: what can't live in one document", () => {
         containerElement,
         componentMap: window.COMPONENTMAP__VIEW_TEXTEDITOR,
         modules: [window.MODULE_MOUSE],
+        module_Words: window.MODULE_WORDS_TEXT,
+        edit: () => null,
         viewModel_TextEditor: window.viewModelOf__Blocks([{
           kind: "FRAME",
           range: { first: 1, last: 1 },
@@ -642,6 +648,8 @@ describe("beside it: what can't live in one document", () => {
         containerElement,
         componentMap: window.COMPONENTMAP__VIEW_TEXTEDITOR,
         modules: [window.MODULE_MOUSE],
+        module_Words: window.MODULE_WORDS_TEXT,
+        edit: () => null,
         viewModel_TextEditor: window.viewModelOf__Blocks([
           { kind: "FRAME", range: { first: 1, last: 1 }, parts: [
             { kind: "CURRENT_LINES", run: { id: "first", lines, groups: [] } },
@@ -794,6 +802,8 @@ describe("beside it: what can't live in one document", () => {
         containerElement,
         componentMap: window.COMPONENTMAP__VIEW_TEXTEDITOR,
         modules: [],
+        module_Words: window.MODULE_WORDS_TEXT,
+        edit: () => null,
         viewModel_TextEditor: window.viewModelOf__Blocks([{
           kind: "FRAME",
           range: { first: 1, last: 1 },
@@ -889,6 +899,8 @@ describe("beside it: what can't live in one document", () => {
         containerElement,
         componentMap: window.COMPONENTMAP__VIEW_TEXTEDITOR,
         modules: [window.MODULE_MOUSE],
+        module_Words: window.MODULE_WORDS_TEXT,
+        edit: () => null,
         viewModel_TextEditor: window.viewModelOf__Blocks([
           { kind: "FRAME", range: { first: 1, last: 1 }, parts: [{ kind: "CURRENT_LINES", run: { id: "current-1", lines: lineOf("one"), groups: [] } }, { kind: "PROPOSAL_LIST", items: [itemOf("round", 1), itemOf("alone", 4)] }] },
           between("between-1"),
@@ -1177,6 +1189,8 @@ describe("beside it: what can't live in one document", () => {
         containerElement,
         componentMap: window.COMPONENTMAP__VIEW_TEXTEDITOR,
         modules: [window.MODULE_MOUSE],
+        module_Words: window.MODULE_WORDS_TEXT,
+        edit: () => null,
         viewModel_TextEditor: window.viewModelOf__Blocks([{
           kind: "FRAME",
           range: { first: 1, last: 1 },
@@ -1757,7 +1771,7 @@ describe("beside it: what can't live in one document", () => {
         { kind: "FRAME", range: { first: 3, last: 3 }, parts: [{ kind: "CURRENT_LINES", run: { id: "three", lines: [{ ...three, gutter: { ...three.gutter, label: "100" } }], groups: [] } }] },
         { kind: "LINES", run: { id: "after", lines: [four], groups: [] } }
       ]))
-      const [runBefore, frameTwo, frameThree, runAfter] = [...containerElement.querySelector(".htmlView_editor")?.children ?? []].map((element) => element.getBoundingClientRect())
+      const [runBefore, frameTwo, frameThree, runAfter] = [...containerElement.querySelector(".htmlView_editor")?.children ?? []].filter((element) => !element.classList.contains("input_htmlView")).map((element) => element.getBoundingClientRect())
       const title = containerElement.querySelector(".title_htmlView")?.getBoundingClientRect()
       const text = containerElement.querySelector(".frame_htmlView .text_htmlView")?.getBoundingClientRect()
       const lineHeight = containerElement.querySelector(".line_htmlView")?.getBoundingClientRect().height
@@ -1844,6 +1858,8 @@ describe("beside it: what can't live in one document", () => {
         containerElement,
         componentMap: window.COMPONENTMAP__VIEW_TEXTEDITOR,
         modules: [window.MODULE_MOUSE],
+        module_Words: window.MODULE_WORDS_TEXT,
+        edit: () => null,
         viewModel_TextEditor: window.viewModelOf__Blocks([{
           kind: "LINES",
           run: { id: "document", lines: marked, groups: [{ attributes: { "data-source": "move" }, underlays: [{ kind: "STRETCH" as const, from: { line: 0, offset: 0 }, to: { line: 0, offset: 6 }, attributes: moved("before") }, { kind: "STRETCH" as const, from: { line: lines.length - 1, offset: 0 }, to: { line: lines.length - 1, offset: 6 }, attributes: moved("after") }] }] }
@@ -1894,6 +1910,8 @@ describe("beside it: what can't live in one document", () => {
         containerElement,
         componentMap: window.COMPONENTMAP__VIEW_TEXTEDITOR,
         modules: [window.MODULE_MOUSE],
+        module_Words: window.MODULE_WORDS_TEXT,
+        edit: () => null,
         viewModel_TextEditor: window.viewModelOf__Blocks([{
           kind: "LINES",
           run: { id: "document", lines: marked, groups: [{ attributes: { "data-source": "move" }, underlays: [{ kind: "STRETCH" as const, from: { line: 0, offset: 0 }, to: { line: 0, offset: 6 }, attributes: moved("before") }, { kind: "STRETCH" as const, from: { line: 2, offset: 0 }, to: { line: 2, offset: 6 }, attributes: moved("after") }] }] }
@@ -1960,6 +1978,8 @@ describe("beside it: what can't live in one document", () => {
         containerElement,
         componentMap: window.COMPONENTMAP__VIEW_TEXTEDITOR,
         modules: [window.MODULE_MOUSE],
+        module_Words: window.MODULE_WORDS_TEXT,
+        edit: () => null,
         viewModel_TextEditor: window.viewModelOf__Blocks([
           { kind: "FRAME", range: { first: 1, last: 2 }, parts: [
             { kind: "CURRENT_LINES", run: runOf("before", "current", ["one", "two", "three"]) },
@@ -2054,6 +2074,8 @@ describe("beside it: what can't live in one document", () => {
         containerElement,
         componentMap: window.COMPONENTMAP__VIEW_TEXTEDITOR,
         modules: [window.MODULE_MOUSE],
+        module_Words: window.MODULE_WORDS_TEXT,
+        edit: () => null,
         viewModel_TextEditor: window.viewModelOf__Blocks([
           { kind: "FRAME", range: { first: 1, last: 2 }, parts: [
             { kind: "CURRENT_LINES", run: runOf("before", "current", ["one", "two", "three"]) },
@@ -2146,6 +2168,8 @@ describe("beside it: what can't live in one document", () => {
         containerElement,
         componentMap: window.COMPONENTMAP__VIEW_TEXTEDITOR,
         modules: [window.MODULE_MOUSE],
+        module_Words: window.MODULE_WORDS_TEXT,
+        edit: () => null,
         viewModel_TextEditor: window.viewModelOf__Blocks([{
           kind: "FRAME",
           range: { first: 1, last: 3 },
@@ -2266,6 +2290,8 @@ describe("beside it: what can't live in one document", () => {
         containerElement,
         componentMap: window.COMPONENTMAP__VIEW_TEXTEDITOR,
         modules: [window.MODULE_MOUSE],
+        module_Words: window.MODULE_WORDS_TEXT,
+        edit: () => null,
         viewModel_TextEditor: window.viewModelOf__Blocks([{
           kind: "FRAME",
           range: { first: 1, last: 2 },
@@ -2331,6 +2357,8 @@ describe("beside it: what can't live in one document", () => {
         containerElement,
         componentMap: window.COMPONENTMAP__VIEW_TEXTEDITOR,
         modules: [window.MODULE_MOUSE],
+        module_Words: window.MODULE_WORDS_TEXT,
+        edit: () => null,
         viewModel_TextEditor: window.viewModelOf__Blocks([{
           kind: "FRAME",
           range: { first: 1, last: 1 },
@@ -2468,6 +2496,8 @@ describe("beside it: what can't live in one document", () => {
         containerElement,
         componentMap: window.COMPONENTMAP__VIEW_TEXTEDITOR,
         modules: [window.MODULE_MOUSE],
+        module_Words: window.MODULE_WORDS_TEXT,
+        edit: () => null,
         viewModel_TextEditor: window.viewModelOf__Blocks([{
           kind: "LINES",
           run: { id: "document", lines: [line], groups: [{ attributes: { "data-source": "long" }, underlays: [{ kind: "STRETCH" as const, from: { line: 0, offset: index_Wrap - 6 }, to: { line: 0, offset: index_Wrap + 3 }, attributes: change }] }] }
@@ -2627,7 +2657,7 @@ describe("beside it: what can't live in one document", () => {
     expect(rows.narrow.rows).toBe(rows.lines)
   })
 
-  test("a document of no lines draws a view with nothing in it", async () => {
+  test("a document of no lines draws a view with nothing in it but its input, the element text input goes to", async () => {
     const children = await opened.page.evaluate(() => {
       const containerElement = document.createElement("div")
       document.body.append(containerElement)
@@ -2635,9 +2665,9 @@ describe("beside it: what can't live in one document", () => {
         containerElement,
         componentMap: window.COMPONENTMAP__VIEW_TEXTEDITOR
       }).draw(window.viewModelOf__Blocks([]))
-      return containerElement.querySelector(".htmlView_editor")?.childNodes.length
+      return [...containerElement.querySelector(".htmlView_editor")?.childNodes ?? []].map((node) => node instanceof Element ? node.className : "#text")
     })
-    expect(children).toBe(0)
+    expect(children).toEqual(["input_htmlView"])
   })
 
   test("its look comes from variables a host sets above it, or else its own defaults", async () => {

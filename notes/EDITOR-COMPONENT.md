@@ -478,7 +478,14 @@ language module, the view model the view draws now. Its frames are the lines
 changes touch, a span ending at a line's start not touching that line, and a
 point between lines, where whole lines are put in, touching none; run
 together where they share a line, never back to back, the host's ranges
-joining the frames they share a line with. Each frame's lines as they are,
+joining the frames they share a line with. Lines put in belong to the line
+they were put in at, typed at its start or its end: a frame holding that
+line takes them, so Enter at a frame's first line's start, or its last
+line's end, grows the frame where it was pressed; lines put in by a line no
+frame holds are a frame of their own, named for that line, as no other
+frame can start on it. Once, lines put in just before a frame the changes
+made were a frame of their own, named as that frame was, two runs sharing a
+name, the caret lost between them. Each frame's lines as they are,
 numbered, its lines as proposed, from the pieces, signed, each line's syntax
 the language module's, as proposed in the document the proposals would
 leave; the rings, each a box the reading makes of a change, on the lines
@@ -1643,10 +1650,128 @@ typed yet:
   Home and End, Alt or Ctrl a word, Meta an edge, Shift extending. Lowering's
   tested on a grid, a fake of the layout, as above; the view's answers in
   Chromium, in the Markdown example.
-- **not yet:** typing, EditContext, and the clipboard, which the browser's
-  selection being off takes away till they come; a double click selecting
-  a word, a triple a line; a wrapped line's own rows' ends for Home and End;
-  dragging past the editor's edge, and scrolling as it goes.
+
+Then typing, the second of editing:
+
+- **text input's EditContext's,** set on an element of the editor's own, its
+  input, `.input_htmlView`, focusable, not seen, kept apart from what's
+  drawn: set on the editor's element, it made the proposals' buttons inside
+  it not buttons, an editing host's, out of reach of the keyboard. A click
+  in the text places the caret and focuses the input at once, its own
+  default kept from taking the focus back, so what's typed straight after
+  goes where the caret is. The EditContext's told, each time the state
+  changes, the stretch of one text the caret's in, on its line, from the
+  line's origins, and the selection where it's inside that stretch, so what
+  it reports typed, or composed by an input method, is a range of that
+  text and what it becomes; told where the editor and the caret are, so an
+  input method's window sits by them. Backspace, Delete, Enter, undo and
+  redo it doesn't do as the editor needs, so they're keys, the keyboard
+  module's, Backspace and Delete by a character, Alt or Ctrl a word, Meta
+  an edge; the clipboard's copy, cut and paste the editor's own controls'.
+- **lowered by the viewer to a request,** `_Request_Edit_`: a range of one
+  text and what it becomes, `TEXT`, or `UNDO` or `REDO`. What's typed
+  replaces the selection; deleting takes it out, or what's drawn next to the
+  caret, in the text that's from, before a proposal's words the document's
+  character before them, at a line's start its line break, never across a
+  section's edge. A range is asked only where what's drawn between its ends
+  is one text, running on: another text's words inside it, a proposal's,
+  or one text out of its order, as across a move's words, and nothing's
+  asked. Copying gives what's drawn between the selection's ends.
+- **each section edits its own:** the document's lines outside frames, the
+  document's text; a frame's lines as they are, the original, the hatched
+  ones, nothing, read only, and a folded frame nothing; a frame's lines as
+  proposed, all of them, never mirrored in the lines as they are. There, a
+  proposal's own words, whatever its state, open, a revision asked for or
+  under way, or accepted, are edited as they are, its text; anywhere else,
+  the document's words round a proposal's, a line no proposal changes, the
+  lines a move carries, an edit's a change of yours, a source the host
+  names, `source_Yours`, and describes as any proposal, "Your edits" in the
+  playground: made by a step of its own, `SOURCE`, setting a source's
+  changes, checked as parsing checks them, undone by setting them back. So
+  the document, and the lines as they are, never change for what's typed
+  among what's proposed. A frame whose lines as proposed are none, all
+  taken out or moved away, has nowhere to put a caret, and so nothing typed
+  there, yet.
+- **what a word is, the host says:** a words module, `_Module_Words_`,
+  `wordsOf` a line's words, in the setup beside the language and the
+  perspectives, `module_Words`; the editor's own, `MODULE_WORDS_TEXT`, in
+  `source/words/text.ts`, text as text, Unicode's words, letters and
+  digits, `_` inside them, a `.` between letters too (`errors.push`,
+  `e.g.`), what a word step's always gone by; a host passes it, or its
+  own, a language's tokens, say, as text, code and prose may well want
+  words of their own. Three things go by it, so they agree: a word step,
+  and a word deleted; whose text a keystroke goes into, where two texts
+  meet; and the shape of a change of yours.
+- **where two texts meet, a keystroke goes to the word it joins:** the
+  viewer says what's drawn either side of a caret typed at, the text ending
+  there and the one beginning, `places_Caret`, and the editor says whose
+  word what's typed joins: a letter after the document's word, the
+  document's, so a change of yours, never the proposal's words after it, as
+  "attempts" with an "s" put on, at the meeting with `aborted`'s " ||
+  signal?.aborted", once went into theirs; a letter before their word,
+  theirs, edited as their words are; what joins no word, a space, a comma,
+  yours, never another proposal's. You edit a proposal only where you
+  change a word it wrote.
+- **a change of yours is whole words:** over every word it touches, as
+  typed and as it was, "attempts" made "attemptss", a replacement of the
+  word, "tried" with a letter taken out, "trid"; as agents' proposals
+  quote whole words. Never past another change's edge, anyone's, nor into
+  their words; your changes whose words meet run together, unless another
+  proposal's words put in sit between. So a change of yours at a move's
+  edge is inside it, drawn where it was typed, as an "s" put after
+  "attempts", the end of what `order` moves, once was drawn where the move
+  leaves. A change touching no word, a space, a new word after a bracket,
+  is what was typed. Where it would be the very span of another's change,
+  as typed just beside words another puts in, or at a move's very edge, it
+  takes in the character beside it on the side the caret's on, as it is,
+  so it's drawn where it was typed. Your changes touching the edit are
+  taken into it, so typing on, or deleting on, is one change. Where it
+  would cross a proposal not shown, rejected or withdrawn, whose words are
+  drawn as the document has them, it takes in that proposal's whole span,
+  as the model never lets two sources' changes cross. Once it's back to
+  what the document says it goes with the next edit made, unless the
+  caret's in it, where it stays, drawn as nothing.
+- **a selection across texts,** a proposal's words and the document's,
+  yours among them, or a moved line and the line it lands before, is typed
+  over, or deleted, piece by piece: the viewer asks with the pieces it
+  drew, in order, `ACROSS`; each stretch of the proposal's words edited in
+  the proposal, each stretch of the document's that runs on, with yours,
+  as one change of yours; what's typed goes in where the selection starts,
+  the caret after it. The stretches after the first are edited first, so a
+  change of yours the first makes doesn't change which of yours a later one
+  names; a later one with nothing in it is left be.
+- **where a caret is, in the model:** the text of the character after it;
+  at a line's end, the text whose line break comes next, the one going on
+  at the next line's start, so a caret at the end of a line before a line
+  break of yours is in yours, and what's typed there goes before the break;
+  and only a place drawn back where the caret is, as the document's place
+  beside words of yours put in is drawn on both sides of them, and drawn
+  at the first. A range's ends are where what's drawn in it starts and
+  ends, so a Backspace beside where yours took the document's out takes the
+  character before. The text input, the EditContext, holds the stretch of
+  the caret's own text, so what the browser types goes in there. Each found
+  by a fuzz, as typing into what's there went wrong: random keys at random
+  places among what's proposed, each checked against a plain text box, the
+  original and the document checked unchanged, and undoing checked to give
+  back the start.
+- **done by the editor,** `editedOf__Request`, in
+  `source/Editing_TextEditor.ts`, without a screen: the lock first, the
+  document's text inside what a pending or accepted proposal's span holds
+  refused, its edges not, nor what a rejected or withdrawn one's would; a
+  proposal's own text edited only while it's open. Then the transaction,
+  a `TEXT` step, applied, the caret after what it put in, and the history,
+  each entry what undoes it and what redoes it, the selections before and
+  after; typing run together into one undo while the caret's where the last
+  left it. The editor projects again and hands the viewer the view model
+  and the selection; the viewer, standing alone, as the changes document's
+  and the gallery's, is given an `edit` that refuses every request.
+- **not yet:** the host told of edits, an observer, so a proposal edited is
+  its source's next round; the marks of what's typed, as in a bold word;
+  folds kept on their lines as lines are put in or taken out above them;
+  Tab; select all; a double click selecting a word, a triple a line; a
+  wrapped line's own rows' ends for Home and End; dragging past the
+  editor's edge, and scrolling as it goes; suggesting mode, your edits made
+  proposals of your own.
 
 ## observers
 

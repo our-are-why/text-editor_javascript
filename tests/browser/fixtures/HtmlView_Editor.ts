@@ -5,12 +5,13 @@ import { draw__Node_Jsx, jsx } from "../../../source/Jsx.ts"
 import { _Viewer_TextEditor_ } from "../../../source/Viewer_TextEditor.ts"
 import { MODULE_MOUSE } from "../../../source/modules/mouse.ts"
 import { viewModelOf__Blocks, parseLines_ViewModel, MODULE_PLAINTEXT } from "../../../source/ViewModel_TextEditor.ts"
+import { MODULE_WORDS_TEXT } from "../../../source/words/text.ts"
 
 // the view, with its stylesheet, its "changes" look, on where a test
 // sets it, and its own components, for a test to make and draw with in the
 // page, the JSX runtime it draws with, and the parser that makes the lines
 // it draws, with plain text's module; the editor that holds the view, and
-// the mouse, its module; and the main example, the gallery's Everything
+// the mouse, its module, and what a word is, as text; and the main example, the gallery's Everything
 // scene, with what must hold of it, to check as the gallery does
 window._View_TextEditor_ = _View_TextEditor_
 window.COMPONENTMAP__VIEW_TEXTEDITOR = COMPONENTMAP__VIEW_TEXTEDITOR
@@ -21,6 +22,7 @@ window.parseLines_ViewModel = parseLines_ViewModel
 window.MODULE_PLAINTEXT = MODULE_PLAINTEXT
 window._Viewer_TextEditor_ = _Viewer_TextEditor_
 window.MODULE_MOUSE = MODULE_MOUSE
+window.MODULE_WORDS_TEXT = MODULE_WORDS_TEXT
 window.everything = everything
 
 declare global {
@@ -34,6 +36,7 @@ declare global {
     MODULE_PLAINTEXT: typeof MODULE_PLAINTEXT
     _Viewer_TextEditor_: typeof _Viewer_TextEditor_
     MODULE_MOUSE: typeof MODULE_MOUSE
+    MODULE_WORDS_TEXT: typeof MODULE_WORDS_TEXT
     everything: typeof everything
   }
 }

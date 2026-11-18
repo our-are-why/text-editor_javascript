@@ -806,15 +806,23 @@
 }
 
 /* the editor's own selection and caret, the browser's left alone: the
-   text's own selection off, the editor focusable, its focus said by its
-   caret, not an outline. Both are drawn after the view draws, measured
+   text's own selection off; the editor's input, the element text input
+   goes to, its EditContext's, focusable but not seen, as its focus is said
+   by the caret, not an outline, and kept apart from what's drawn, so the
+   proposals' buttons inside the editor stay buttons, as they wouldn't
+   inside an element text input goes to. Both are drawn after the view draws, measured
    from the text, in a layer of the run they're in: the selection behind
    the text, a box for each row it covers, and a sliver past a line's end
    for the line break it takes in; the caret, at its head, before the text,
    blinking while the editor's focused, where motion's not reduced, and
    hidden while it isn't focused, the selection then greyed */
-.htmlView_editor:focus {
-  outline: none;
+.htmlView_editor .input_htmlView {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  opacity: 0;
+  pointer-events: none;
 }
 
 .htmlView_editor .line_htmlView {
@@ -833,7 +841,7 @@
   background: var(--view-selection, color-mix(in srgb, Highlight 35%, transparent));
 }
 
-.htmlView_editor:not(:focus) .selected_htmlView {
+.htmlView_editor:not(:has(> .input_htmlView:focus)) .selected_htmlView {
   background: var(--view-selection-unfocused, color-mix(in srgb, GrayText 25%, transparent));
 }
 
@@ -844,12 +852,12 @@
   translate: -0.75px 0;
 }
 
-.htmlView_editor:not(:focus) .caret_htmlView {
+.htmlView_editor:not(:has(> .input_htmlView:focus)) .caret_htmlView {
   visibility: hidden;
 }
 
 @media (prefers-reduced-motion: no-preference) {
-  .htmlView_editor:focus .caret_htmlView {
+  .htmlView_editor:has(> .input_htmlView:focus) .caret_htmlView {
     animation: blink_htmlView 1.1s step-end infinite;
   }
 }

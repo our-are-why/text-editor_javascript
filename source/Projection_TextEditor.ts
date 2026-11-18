@@ -51,7 +51,8 @@ export {
   type _Proposal_Host_,
   type _Module_Reading_,
   type _Api___boxesOf__Replacement_,
-  type _Box_Reading_
+  type _Box_Reading_,
+  ISAPPLIEDMAP__STATE_PROPOSAL
 }
 
 interface _Api___viewModelOf__Model_<State> {
@@ -509,7 +510,6 @@ interface _Frame_Model_ {
   first: number
   last: number
   ends: Array<_End_Change_>
-  isHost: boolean
 }
 
 interface _End_Change_ {
@@ -538,8 +538,7 @@ function framesOf__Changes({
               change_Placed,
               kind: "SPAN"
             }
-          ],
-          isHost: false
+          ]
         },
         ...(change.kind === "MOVE"
           ? [
@@ -553,8 +552,7 @@ function framesOf__Changes({
                   change_Placed,
                   kind: "LANDING" as const
                 }
-              ],
-              isHost: false
+              ]
             }
           ]
           : [])
@@ -563,8 +561,7 @@ function framesOf__Changes({
     ...ranges_Frame.map((range_Frame) => ({
       first: range_Frame.first - 1,
       last: range_Frame.last - 1,
-      ends: [],
-      isHost: true
+      ends: []
     }))
   ]).filter((frame_Model) => frame_Model.ends.length > 0)
 }
@@ -717,11 +714,11 @@ function isSharing__Frames({
   const isPoint_Other = frame_Other.last < frame_Other.first
   if (isPoint && isPoint_Other) return frame_Model.first === frame_Other.first
   if (isPoint) return isAt__Frame({
-    line: frame_Model.first,
+    line: lineOf__Point(frame_Model),
     frame_Model: frame_Other
   })
   if (isPoint_Other) return isAt__Frame({
-    line: frame_Other.first,
+    line: lineOf__Point(frame_Other),
     frame_Model
   })
   return Math.max(
@@ -733,6 +730,18 @@ function isSharing__Frames({
   )
 }
 
+function lineOf__Point(
+  frame_Model: _Frame_Model_
+): number {
+  const end_Change = frame_Model.ends[0]
+  const change = end_Change?.change_Placed.change
+  return end_Change === undefined || change === undefined
+    ? frame_Model.first
+    : end_Change.kind === "LANDING" && change.kind === "MOVE"
+      ? change.at.line
+      : change.range.from.line
+}
+
 interface _Api___isAt__Frame_ {
   line: number
   frame_Model: _Frame_Model_
@@ -742,7 +751,7 @@ function isAt__Frame({
   line,
   frame_Model
 }: _Api___isAt__Frame_): boolean {
-  return (frame_Model.isHost ? frame_Model.first <= line : frame_Model.first < line) && line <= frame_Model.last
+  return frame_Model.first <= line && line <= frame_Model.last
 }
 
 interface _Api___joinedOf__Frames_ {
@@ -758,18 +767,15 @@ function joinedOf__Frames({
     ...frame_Model.ends,
     ...frame_Other.ends
   ]
-  const isHost = frame_Model.isHost || frame_Other.isHost
   if (frame_Model.last < frame_Model.first) return {
     first: frame_Other.first,
     last: frame_Other.last,
-    ends,
-    isHost
+    ends
   }
   if (frame_Other.last < frame_Other.first) return {
     first: frame_Model.first,
     last: frame_Model.last,
-    ends,
-    isHost
+    ends
   }
   return {
     first: Math.min(
@@ -780,8 +786,7 @@ function joinedOf__Frames({
       frame_Model.last,
       frame_Other.last
     ),
-    ends,
-    isHost
+    ends
   }
 }
 
@@ -1670,7 +1675,7 @@ function proposedOf__Frame<State>({
   )
   return {
     run_Proposed: runOf__Side({
-      id: `frame-${frame_Model.first + 1}-proposed`,
+      id: `frame-${(isPoint ? lineOf__Point(frame_Model) : frame_Model.first) + 1}-proposed`,
       side: "AFTER",
       number_First: frame_Model.first + 1,
       isEnd_Document,

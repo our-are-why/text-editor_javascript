@@ -8,6 +8,13 @@ const MODULE_MOUSE: _Module_TextEditor_ = {
   name: "mouse",
   adapters: [
     {
+      event: "mousedown",
+      commandOf__Event: (event) => {
+        if (event.target instanceof Element && event.target.closest(".line_htmlView") !== null && event.target.closest(".note_htmlView") === null) event.preventDefault()
+        return null
+      }
+    },
+    {
       event: "pointerdown",
       commandOf__Event: (event) => event instanceof PointerEvent && event.button === 0 && event.target instanceof Element && event.target.closest(".line_htmlView") !== null && event.target.closest(".note_htmlView") === null
         ? {

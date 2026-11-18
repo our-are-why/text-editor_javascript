@@ -172,6 +172,24 @@ test("frames are the lines changes touch, run together only where they share a l
   expect(framesOf([{ source: "one", changes: [linesOf(text, 1, 2, "B\nC")] }], [{ first: 3, last: 3 }])).toEqual(["2-3"])
 })
 
+test("lines put in at a frame's first line's start, or at its last line's end, are the frame's, as proposed, where they were typed; ones put in by a line no frame holds are a frame of their own, named for that line, so no two runs share a name", () => {
+  const text = "a\nb\nc\nd\ne"
+  const drawnWith = (insert: _Change_Host_) => {
+    const viewModel = viewModelOf__Model({
+      model_TextEditor: modelOf(text, [{ source: "one", changes: [spanOf([1, 0], [1, 1], "B")] }, { source: "other", changes: [insert] }]),
+      proposals: [proposalOf("one", "One", ""), proposalOf("other", "Other", "")],
+      ranges_Frame: [],
+      module_Language: MODULE_PLAINTEXT,
+      module_Reading: MODULE_READING_TEXT
+    })
+    return viewModel.runs.filter((run_Lines) => run_Lines.id.startsWith("frame")).map((run_Lines) => `${run_Lines.id} ${run_Lines.lines.map((line_Run) => line_Run.segments.map((segment) => segment.text).join("")).join("/")}`)
+  }
+  expect(drawnWith(spanOf([1, 0], [1, 0], "x\n"))).toEqual(["frame-2-current b", "frame-2-proposed x/B"])
+  expect(drawnWith(spanOf([1, 0], [1, 0], "\n"))).toEqual(["frame-2-current b", "frame-2-proposed /B"])
+  expect(drawnWith(spanOf([1, 1], [1, 1], "\ny"))).toEqual(["frame-2-current b", "frame-2-proposed B/y"])
+  expect(drawnWith(spanOf([2, 1], [2, 1], "\nz"))).toEqual(["frame-2-current b", "frame-2-proposed B", "frame-3-proposed z"])
+})
+
 test("a change inside another's span, where the other keeps its words, is no condition of it: on the lines as proposed it's in the other's text, ringed as its own, and its item says nothing of the other", () => {
   const line = "      if (n === attempts) break;"
   const viewModel = viewModelOf__Model({

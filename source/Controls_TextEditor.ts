@@ -7,6 +7,31 @@ export {
 
 const CONTROLS__TEXTEDITOR: Array<_Adapter_Event_> = [
   {
+    event: "copy",
+    commandOf__Event: (event) => isInput__Event(event)
+      ? {
+        kind: "COPY"
+      }
+      : null
+  },
+  {
+    event: "cut",
+    commandOf__Event: (event) => isInput__Event(event)
+      ? {
+        kind: "CUT"
+      }
+      : null
+  },
+  {
+    event: "paste",
+    commandOf__Event: (event) => event instanceof ClipboardEvent && isInput__Event(event)
+      ? {
+        kind: "PASTE",
+        text: event.clipboardData?.getData("text/plain") ?? ""
+      }
+      : null
+  },
+  {
     event: "click",
     commandOf__Event: (event) => {
       const element_Fold = event.target instanceof Element ? event.target.closest("[data-fold-first]") : null
@@ -159,4 +184,10 @@ function idOf__Item({
       }
     }
     : null
+}
+
+function isInput__Event(
+  event: Event
+): boolean {
+  return event.target instanceof Element && event.target.classList.contains("input_htmlView")
 }

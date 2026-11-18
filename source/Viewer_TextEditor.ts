@@ -14,16 +14,31 @@ import {
   type _Selection_TextEditor_,
   type _End_Selection_,
   type _Position_Drawn_,
+  type _Position_Run_,
   selectedAt__ViewModel,
   pointedAt__ViewModel,
   draftingAt__ViewModel,
   foldedAt__ViewModel,
   orderOf__Positions_Drawn,
+  orderOf__Positions_Run,
+  sectionOf__Run,
+  type _Kind_Section_,
+  positionIn__Run,
+  type _Place_Text_,
   placeIn__Line,
   textOf__Line,
-  isSame__Id_Text
+  isSame__Id_Text,
+  type _Module_Words_
 } from "./ViewModel_TextEditor.ts"
-import type { _Id_Text_ } from "./Model_TextEditor.ts"
+import type {
+  _Id_Text_,
+  _Range_Text_,
+  _Position_Text_
+} from "./Model_TextEditor.ts"
+import type {
+  _Request_Edit_,
+  _Places_Caret_
+} from "./Editing_TextEditor.ts"
 import { CONTROLS__TEXTEDITOR } from "./Controls_TextEditor.ts"
 
 export {
@@ -46,6 +61,16 @@ export {
   type _RELEASE_Command_,
   type _MOVE_Command_,
   type _EXTEND_Command_,
+  type _INSERT_Command_,
+  type _REPLACE_Command_,
+  type _DELETE_Command_,
+  type _UNDO_Command_,
+  type _REDO_Command_,
+  type _COPY_Command_,
+  type _CUT_Command_,
+  type _PASTE_Command_,
+  type _Answer_Edit_,
+  type _Answer_Dispatch_,
   type _Unit_Move_,
   type _Direction_Move_,
   type _HandlerMap__TextEditor_,
@@ -56,23 +81,35 @@ class _Viewer_TextEditor_ {
   containerElement: HTMLElement
   view: _View_TextEditor_
   modules: Array<_Module_TextEditor_>
+  module_Words: _Module_Words_
   adapters: Array<_Adapter_Event_>
   state: _State__Viewer_TextEditor_
   request_Draw: number | null
   point_Screen: _Point_Screen_ | null
+  edit: (request_Edit: _Request_Edit_) => _Answer_Edit_ | null
+  editContext: EditContext
+  buffer: _Buffer_Edit_ | null
+  isComposing: boolean
 
   constructor({
     containerElement,
     componentMap,
     modules,
-    viewModel_TextEditor
+    module_Words,
+    viewModel_TextEditor,
+    edit
   }: _Api__Viewer_TextEditor_) {
     this.containerElement = containerElement
+    this.edit = edit
+    this.editContext = new EditContext()
+    this.buffer = null
+    this.isComposing = false
     this.view = new _View_TextEditor_({
       containerElement: this.containerElement,
       componentMap
     })
     this.modules = modules
+    this.module_Words = module_Words
     this.state = {
       viewModel_TextEditor,
       source_Pointed: null,
@@ -87,7 +124,8 @@ class _Viewer_TextEditor_ {
       selection: null,
       isSelecting: false,
       x_Goal: null,
-      isRevealing_Caret: false
+      isRevealing_Caret: false,
+      isFocusing_Input: false
     }
     this.request_Draw = null
     this.point_Screen = null
@@ -101,7 +139,108 @@ class _Viewer_TextEditor_ {
         (event_Heard) => this.hear(event_Heard)
       )
     }
+    this.editContext.addEventListener(
+      "textupdate",
+      (event) => this.type(event)
+    )
+    this.editContext.addEventListener(
+      "compositionstart",
+      () => {
+        this.isComposing = true
+      }
+    )
+    this.editContext.addEventListener(
+      "compositionend",
+      () => {
+        this.isComposing = false
+        this.tell()
+      }
+    )
+    this.editContext.addEventListener(
+      "characterboundsupdate",
+      (event) => {
+        const rect = this.containerElement.querySelector(".caret_htmlView")?.getBoundingClientRect() ?? this.containerElement.getBoundingClientRect()
+        this.editContext.updateCharacterBounds(
+          event.rangeStart,
+          Array.from(
+            {
+              length: event.rangeEnd - event.rangeStart
+            },
+            () => rect
+          )
+        )
+      }
+    )
     this.view.draw(viewModelOf__State(this.state))
+    this.tell()
+  }
+
+  type(
+    event: TextUpdateEvent
+  ): void {
+    const buffer = this.buffer
+    const state_Before = this.state
+    if (buffer !== null && (buffer.isSelection_Inside || this.isComposing)) {
+      this.buffer = {
+        ...buffer,
+        text: buffer.text.slice(
+          0,
+          event.updateRangeStart
+        ) + event.text + buffer.text.slice(event.updateRangeEnd)
+      }
+      this.dispatch({
+        kind: "REPLACE",
+        id_Text: buffer.id_Text,
+        range: {
+          from: positionIn__Buffer({
+            buffer_Edit: buffer,
+            offset: event.updateRangeStart
+          }),
+          to: positionIn__Buffer({
+            buffer_Edit: buffer,
+            offset: event.updateRangeEnd
+          })
+        },
+        text: event.text
+      })
+    } else {
+      this.dispatch({
+        kind: "INSERT",
+        text: event.text,
+        isTyping: true
+      })
+    }
+    if (this.state === state_Before) this.tell()
+  }
+
+  tell(): void {
+    const element_Root = this.containerElement.querySelector(".htmlView_editor")
+    const element_Input = element_Root?.querySelector(":scope > .input_htmlView")
+    if (element_Input instanceof HTMLElement && element_Input.editContext !== this.editContext) element_Input.editContext = this.editContext
+    if (this.isComposing) return
+    this.buffer = bufferOf__ViewModel({
+      viewModel_TextEditor: viewModelOf__State(this.state),
+      selection_TextEditor: this.state.selection
+    })
+    const text = this.buffer?.text ?? ""
+    if (this.editContext.text !== text) {
+      this.editContext.updateText(
+        0,
+        this.editContext.text.length,
+        text
+      )
+    }
+    const start = this.buffer?.selectionStart ?? 0
+    const end = this.buffer?.selectionEnd ?? 0
+    if (this.editContext.selectionStart !== start || this.editContext.selectionEnd !== end) {
+      this.editContext.updateSelection(
+        start,
+        end
+      )
+    }
+    if (element_Root instanceof HTMLElement) this.editContext.updateControlBounds(element_Root.getBoundingClientRect())
+    const rect_Caret = this.containerElement.querySelector(".caret_htmlView")?.getBoundingClientRect()
+    if (rect_Caret !== undefined) this.editContext.updateSelectionBounds(rect_Caret)
   }
 
   show(
@@ -119,24 +258,50 @@ class _Viewer_TextEditor_ {
   ): void {
     for (const adapter of this.adapters.filter((adapter_Each) => adapter_Each.event === event.type)) {
       const command = adapter.commandOf__Event(event)
-      if (command !== null && this.dispatch(command)) return
+      if (command === null) continue
+      const answer_Dispatch = this.dispatch(command)
+      if (event instanceof ClipboardEvent) {
+        event.preventDefault()
+        if (answer_Dispatch.text_Clipboard !== null) {
+          event.clipboardData?.setData(
+            "text/plain",
+            answer_Dispatch.text_Clipboard
+          )
+        }
+      }
+      return
     }
   }
 
   dispatch(
     command: _Command_TextEditor_
-  ): boolean {
+  ): _Answer_Dispatch_ {
     if (command.kind === "POINT") this.point_Screen = command.point_Screen
+    const text_Clipboard = command.kind === "COPY" || command.kind === "CUT"
+      ? textOf__Selection(viewModelOf__State(this.state))
+      : null
     const state = stateAfter__Command({
       state: this.state,
       command,
-      layout_View: this.view
+      layout_View: this.view,
+      module_Words: this.module_Words,
+      edit_View: this.edit
     })
     if (state !== this.state) {
       this.state = state
+      this.tell()
       this.drawOnNextFrame()
     }
-    return true
+    if (this.state.isFocusing_Input) {
+      this.view.focusInput()
+      this.state = {
+        ...this.state,
+        isFocusing_Input: false
+      }
+    }
+    return {
+      text_Clipboard
+    }
   }
 
   drawOnNextFrame(): void {
@@ -144,6 +309,7 @@ class _Viewer_TextEditor_ {
     this.request_Draw = requestAnimationFrame(() => {
       this.request_Draw = null
       this.view.draw(viewModelOf__State(this.state))
+      this.tell()
       if (this.state.focus_Draft !== null) {
         this.view.focusDraft(this.state.focus_Draft)
         this.state = {
@@ -184,7 +350,27 @@ interface _Api__Viewer_TextEditor_ {
   containerElement: HTMLElement
   componentMap: _ComponentMap__View_TextEditor_
   modules: Array<_Module_TextEditor_>
+  module_Words: _Module_Words_
   viewModel_TextEditor: _ViewModel_TextEditor_
+  edit: (request_Edit: _Request_Edit_) => _Answer_Edit_ | null
+}
+
+interface _Answer_Edit_ {
+  viewModel_TextEditor: _ViewModel_TextEditor_
+  selection: _Selection_TextEditor_
+}
+
+interface _Buffer_Edit_ {
+  id_Text: _Id_Text_
+  position: _Position_Text_
+  text: string
+  selectionStart: number
+  selectionEnd: number
+  isSelection_Inside: boolean
+}
+
+interface _Answer_Dispatch_ {
+  text_Clipboard: string | null
 }
 
 interface _Module_TextEditor_ {
@@ -197,7 +383,7 @@ interface _Adapter_Event_ {
   commandOf__Event: (event: Event) => _Command_TextEditor_ | null
 }
 
-type _Command_TextEditor_ = _POINT_Command_ | _JUMP_Command_ | _FOLD_Command_ | _DRAFT_Command_ | _SEND_Command_ | _DISCARD_Command_ | _VISIT_Command_ | _PLACE_Command_ | _DRAG_Command_ | _RELEASE_Command_ | _MOVE_Command_ | _EXTEND_Command_
+type _Command_TextEditor_ = _POINT_Command_ | _JUMP_Command_ | _FOLD_Command_ | _DRAFT_Command_ | _SEND_Command_ | _DISCARD_Command_ | _VISIT_Command_ | _PLACE_Command_ | _DRAG_Command_ | _RELEASE_Command_ | _MOVE_Command_ | _EXTEND_Command_ | _INSERT_Command_ | _REPLACE_Command_ | _DELETE_Command_ | _UNDO_Command_ | _REDO_Command_ | _COPY_Command_ | _CUT_Command_ | _PASTE_Command_
 
 interface __BASE_Command_<Kind extends string> {
   kind: Kind
@@ -253,6 +439,34 @@ interface _EXTEND_Command_ extends __BASE_Command_<"EXTEND"> {
   direction: _Direction_Move_
 }
 
+interface _INSERT_Command_ extends __BASE_Command_<"INSERT"> {
+  text: string
+  isTyping: boolean
+}
+
+interface _REPLACE_Command_ extends __BASE_Command_<"REPLACE"> {
+  id_Text: _Id_Text_
+  range: _Range_Text_
+  text: string
+}
+
+interface _DELETE_Command_ extends __BASE_Command_<"DELETE"> {
+  by: _Unit_Move_
+  direction: _Direction_Move_
+}
+
+interface _UNDO_Command_ extends __BASE_Command_<"UNDO"> {}
+
+interface _REDO_Command_ extends __BASE_Command_<"REDO"> {}
+
+interface _COPY_Command_ extends __BASE_Command_<"COPY"> {}
+
+interface _CUT_Command_ extends __BASE_Command_<"CUT"> {}
+
+interface _PASTE_Command_ extends __BASE_Command_<"PASTE"> {
+  text: string
+}
+
 type _Unit_Move_ = "CHARACTER" | "WORD" | "LINE" | "EDGE"
 
 type _Direction_Move_ = "BACKWARD" | "FORWARD"
@@ -272,6 +486,7 @@ interface _State__Viewer_TextEditor_ {
   isSelecting: boolean
   x_Goal: number | null
   isRevealing_Caret: boolean
+  isFocusing_Input: boolean
 }
 
 function eventsOf__Adapters(
@@ -308,18 +523,24 @@ interface _Api___stateAfter__Command_<Kind extends _Command_TextEditor_["kind"]>
     __BASE_Command_<Kind>
   >
   layout_View: _Layout_View_
+  module_Words: _Module_Words_
+  edit_View: (request_Edit: _Request_Edit_) => _Answer_Edit_ | null
 }
 
 function stateAfter__Command<Kind extends _Command_TextEditor_["kind"]>({
   state,
   command,
-  layout_View
+  layout_View,
+  module_Words,
+  edit_View
 }: _Api___stateAfter__Command_<Kind>): _State__Viewer_TextEditor_ {
   const handle = HANDLERMAP__TEXTEDITOR[command.kind]
   return handle({
     state,
     command,
-    layout_View
+    layout_View,
+    module_Words,
+    edit_View
   })
 }
 
@@ -454,7 +675,8 @@ function PLACE_stateAfter__Command({
         head: end_Selection
       },
       isSelecting: true,
-      x_Goal: null
+      x_Goal: null,
+      isFocusing_Input: true
     }
 }
 
@@ -505,29 +727,652 @@ function RELEASE_stateAfter__Command({
 function MOVE_stateAfter__Command({
   state,
   command,
-  layout_View
+  layout_View,
+  module_Words
 }: _Api___stateAfter__Command_<"MOVE">): _State__Viewer_TextEditor_ {
   return movedAt__State({
     state,
     by: command.by,
     direction: command.direction,
     isExtending: false,
-    layout_View
+    layout_View,
+    module_Words
   })
 }
 
 function EXTEND_stateAfter__Command({
   state,
   command,
-  layout_View
+  layout_View,
+  module_Words
 }: _Api___stateAfter__Command_<"EXTEND">): _State__Viewer_TextEditor_ {
   return movedAt__State({
     state,
     by: command.by,
     direction: command.direction,
     isExtending: true,
-    layout_View
+    layout_View,
+    module_Words
   })
+}
+
+function INSERT_stateAfter__Command({
+  state,
+  command,
+  edit_View
+}: _Api___stateAfter__Command_<"INSERT">): _State__Viewer_TextEditor_ {
+  return insertedAt__State({
+    state,
+    multilineText: command.text,
+    isTyping: command.isTyping,
+    edit_View
+  })
+}
+
+function REPLACE_stateAfter__Command({
+  state,
+  command,
+  edit_View
+}: _Api___stateAfter__Command_<"REPLACE">): _State__Viewer_TextEditor_ {
+  const isAt_Caret = state.selection !== null && isSame__End({
+    end_Selection: state.selection.anchor,
+    end_Selection_Other: state.selection.head
+  }) && isSame__Id_Text({
+    id_Text: command.id_Text,
+    id_Text_Other: state.selection.head.id_Text
+  }) && [
+    command.range.from,
+    command.range.to
+  ].every((position) => position.line === state.selection?.head.position.line && position.offset === state.selection.head.position.offset)
+  if (isAt_Caret) {
+    return insertedAt__State({
+      state,
+      multilineText: command.text,
+      isTyping: true,
+      edit_View
+    })
+  }
+  return state.selection === null
+    ? state
+    : editedAt__State({
+      state,
+      request_Edit: {
+        kind: "TEXT",
+        id_Text: command.id_Text,
+        range: command.range,
+        multilineText: command.text,
+        id_Run: state.selection.head.id_Run,
+        selection_Before: state.selection,
+        isTyping: true,
+        isProposed: false,
+        places_Caret: null
+      },
+      edit_View
+    })
+}
+
+function DELETE_stateAfter__Command({
+  state,
+  command,
+  layout_View,
+  module_Words,
+  edit_View
+}: _Api___stateAfter__Command_<"DELETE">): _State__Viewer_TextEditor_ {
+  const viewModel_TextEditor = viewModelOf__State(state)
+  const selection_Drawn = viewModel_TextEditor.selection
+  if (state.selection === null || selection_Drawn === null) return state
+  if (orderOf__Positions_Drawn({
+    viewModel_TextEditor,
+    position_Drawn: selection_Drawn.head,
+    position_Drawn_Other: selection_Drawn.anchor
+  }) !== 0) {
+    return insertedAt__State({
+      state,
+      multilineText: "",
+      isTyping: false,
+      edit_View
+    })
+  }
+  const position_Stepped = STEPMAP__UNIT_MOVE[command.by]({
+    viewModel_TextEditor,
+    position_Drawn: selection_Drawn.head,
+    direction: command.direction,
+    x_Goal: null,
+    layout_View,
+    module_Words
+  })
+  if (position_Stepped === null || position_Stepped.id_Run !== selection_Drawn.head.id_Run) return state
+  const isForward = command.direction === "FORWARD"
+  const request_Edit = requestOf__Drawn({
+    viewModel_TextEditor,
+    position_Drawn_From: isForward ? selection_Drawn.head : position_Stepped,
+    position_Drawn_To: isForward ? position_Stepped : selection_Drawn.head,
+    multilineText: "",
+    selection_Before: state.selection,
+    isTyping: false
+  })
+  return request_Edit === null
+    ? state
+    : editedAt__State({
+      state,
+      request_Edit,
+      edit_View
+    })
+}
+
+function UNDO_stateAfter__Command({
+  state,
+  edit_View
+}: _Api___stateAfter__Command_<"UNDO">): _State__Viewer_TextEditor_ {
+  return editedAt__State({
+    state,
+    request_Edit: {
+      kind: "UNDO"
+    },
+    edit_View
+  })
+}
+
+function REDO_stateAfter__Command({
+  state,
+  edit_View
+}: _Api___stateAfter__Command_<"REDO">): _State__Viewer_TextEditor_ {
+  return editedAt__State({
+    state,
+    request_Edit: {
+      kind: "REDO"
+    },
+    edit_View
+  })
+}
+
+function COPY_stateAfter__Command({
+  state
+}: _Api___stateAfter__Command_<"COPY">): _State__Viewer_TextEditor_ {
+  return state
+}
+
+function CUT_stateAfter__Command({
+  state,
+  edit_View
+}: _Api___stateAfter__Command_<"CUT">): _State__Viewer_TextEditor_ {
+  return insertedAt__State({
+    state,
+    multilineText: "",
+    isTyping: false,
+    edit_View
+  })
+}
+
+function PASTE_stateAfter__Command({
+  state,
+  command,
+  edit_View
+}: _Api___stateAfter__Command_<"PASTE">): _State__Viewer_TextEditor_ {
+  return insertedAt__State({
+    state,
+    multilineText: command.text,
+    isTyping: false,
+    edit_View
+  })
+}
+
+interface _Api___insertedAt__State_ {
+  state: _State__Viewer_TextEditor_
+  multilineText: string
+  isTyping: boolean
+  edit_View: (request_Edit: _Request_Edit_) => _Answer_Edit_ | null
+}
+
+function insertedAt__State({
+  state,
+  multilineText,
+  isTyping,
+  edit_View
+}: _Api___insertedAt__State_): _State__Viewer_TextEditor_ {
+  const viewModel_TextEditor = viewModelOf__State(state)
+  const selection_Drawn = viewModel_TextEditor.selection
+  if (state.selection === null || selection_Drawn === null) return state
+  const request_Edit: _Request_Edit_ | null = isSame__End({
+    end_Selection: state.selection.anchor,
+    end_Selection_Other: state.selection.head
+  })
+    ? {
+      kind: "TEXT",
+      id_Text: state.selection.head.id_Text,
+      range: {
+        from: state.selection.head.position,
+        to: state.selection.head.position
+      },
+      multilineText,
+      id_Run: selection_Drawn.head.id_Run,
+      selection_Before: state.selection,
+      isTyping,
+      isProposed: false,
+      places_Caret: placesOf__Caret({
+        viewModel_TextEditor,
+        position_Drawn: selection_Drawn.head
+      })
+    }
+    : requestOf__Drawn({
+      viewModel_TextEditor,
+      position_Drawn_From: selection_Drawn.anchor,
+      position_Drawn_To: selection_Drawn.head,
+      multilineText,
+      selection_Before: state.selection,
+      isTyping
+    })
+  return request_Edit === null
+    ? state
+    : editedAt__State({
+      state,
+      request_Edit,
+      edit_View
+    })
+}
+
+interface _Api___placesOf__Caret_ {
+  viewModel_TextEditor: _ViewModel_TextEditor_
+  position_Drawn: _Position_Drawn_
+}
+
+function placesOf__Caret({
+  viewModel_TextEditor,
+  position_Drawn
+}: _Api___placesOf__Caret_): _Places_Caret_ | null {
+  const line_Run = viewModel_TextEditor.runs.find((run_Each) => run_Each.id === position_Drawn.id_Run)?.lines[position_Drawn.position.line]
+  const offset = position_Drawn.position.offset
+  if (line_Run === undefined || line_Run.origins.some((origin_Line) => origin_Line.from < offset && offset < origin_Line.to)) return null
+  const text_Line = textOf__Line(line_Run)
+  const origin_Before = line_Run.origins.findLast((origin_Line) => origin_Line.from < origin_Line.to && origin_Line.to === offset)
+  const origin_After = line_Run.origins.find((origin_Line) => origin_Line.from < origin_Line.to && origin_Line.from === offset)
+  return origin_Before === undefined && origin_After === undefined
+    ? null
+    : {
+      place_Before: origin_Before === undefined
+        ? null
+        : {
+          id_Text: origin_Before.id_Text,
+          position: {
+            line: origin_Before.position.line,
+            offset: origin_Before.position.offset + Array.from(text_Line.slice(
+              origin_Before.from,
+              origin_Before.to
+            )).length
+          }
+        },
+      place_After: origin_After === undefined
+        ? null
+        : {
+          id_Text: origin_After.id_Text,
+          position: origin_After.position
+        }
+    }
+}
+
+interface _Api___editedAt__State_ {
+  state: _State__Viewer_TextEditor_
+  request_Edit: _Request_Edit_
+  edit_View: (request_Edit: _Request_Edit_) => _Answer_Edit_ | null
+}
+
+function editedAt__State({
+  state,
+  request_Edit,
+  edit_View
+}: _Api___editedAt__State_): _State__Viewer_TextEditor_ {
+  const viewModel_TextEditor = viewModelOf__State(state)
+  const section = request_Edit.kind === "TEXT" || request_Edit.kind === "ACROSS"
+    ? sectionOf__Run({
+      viewModel_TextEditor,
+      id_Run: request_Edit.id_Run
+    })
+    : null
+  if (request_Edit.kind === "TEXT" && (section === null || !EDITABLEMAP__KIND_SECTION[section][request_Edit.id_Text.kind])) return state
+  if (request_Edit.kind === "ACROSS" && section !== "PROPOSAL_LINES") return state
+  const answer_Edit = edit_View(request_Edit.kind === "TEXT"
+    ? {
+      ...request_Edit,
+      isProposed: section === "PROPOSAL_LINES"
+    }
+    : request_Edit)
+  return answer_Edit === null
+    ? state
+    : {
+      ...state,
+      viewModel_TextEditor: answer_Edit.viewModel_TextEditor,
+      selection: answer_Edit.selection,
+      x_Goal: null,
+      isRevealing_Caret: true
+    }
+}
+
+type _EditableMap__Kind_Section_ = {
+  [Kind in _Kind_Section_]: {
+    [Kind_Text in _Id_Text_["kind"]]: boolean
+  }
+}
+
+const EDITABLEMAP__KIND_SECTION: _EditableMap__Kind_Section_ = {
+  LINES: {
+    DOCUMENT: true,
+    CHANGE: false
+  },
+  CURRENT_LINES: {
+    DOCUMENT: false,
+    CHANGE: false
+  },
+  PROPOSAL_LINES: {
+    DOCUMENT: true,
+    CHANGE: true
+  },
+  FOLDED: {
+    DOCUMENT: false,
+    CHANGE: false
+  }
+}
+
+interface _Api___requestOf__Drawn_ {
+  viewModel_TextEditor: _ViewModel_TextEditor_
+  position_Drawn_From: _Position_Drawn_
+  position_Drawn_To: _Position_Drawn_
+  multilineText: string
+  selection_Before: _Selection_TextEditor_
+  isTyping: boolean
+}
+
+function requestOf__Drawn({
+  viewModel_TextEditor,
+  position_Drawn_From,
+  position_Drawn_To,
+  multilineText,
+  selection_Before,
+  isTyping
+}: _Api___requestOf__Drawn_): _Request_Edit_ | null {
+  const [piece_First, ...pieces_Rest] = joinedOf__Pieces(piecesOf__Drawn({
+    viewModel_TextEditor,
+    position_Drawn_From,
+    position_Drawn_To
+  }))
+  if (piece_First === undefined) return null
+  return pieces_Rest.length === 0
+    ? {
+      kind: "TEXT",
+      id_Text: piece_First.id_Text,
+      range: {
+        from: piece_First.from,
+        to: piece_First.to
+      },
+      multilineText,
+      id_Run: position_Drawn_From.id_Run,
+      selection_Before,
+      isTyping,
+      isProposed: false,
+      places_Caret: null
+    }
+    : {
+      kind: "ACROSS",
+      pieces: [
+        {
+          id_Text: piece_First.id_Text,
+          range: {
+            from: piece_First.from,
+            to: piece_First.to
+          }
+        },
+        ...pieces_Rest.map((piece) => ({
+          id_Text: piece.id_Text,
+          range: {
+            from: piece.from,
+            to: piece.to
+          }
+        }))
+      ],
+      multilineText,
+      id_Run: position_Drawn_From.id_Run,
+      selection_Before,
+      isTyping
+    }
+}
+
+function joinedOf__Pieces(
+  pieces: Array<_Piece_Drawn_>
+): Array<_Piece_Drawn_> {
+  return pieces.reduce<Array<_Piece_Drawn_>>(
+    (
+      pieces_Joined,
+      piece
+    ) => {
+      const piece_Before = pieces_Joined.at(-1)
+      return piece_Before !== undefined && isSame__Id_Text({
+        id_Text: piece_Before.id_Text,
+        id_Text_Other: piece.id_Text
+      }) && isContinuous__Pieces([
+        piece_Before,
+        piece
+      ])
+        ? [
+          ...pieces_Joined.slice(
+            0,
+            -1
+          ),
+          {
+            ...piece,
+            from: piece_Before.from,
+            isEmpty: piece_Before.isEmpty && piece.isEmpty
+          }
+        ]
+        : [
+          ...pieces_Joined,
+          piece
+        ]
+    },
+    []
+  )
+}
+
+interface _Api___piecesOf__Drawn_ {
+  viewModel_TextEditor: _ViewModel_TextEditor_
+  position_Drawn_From: _Position_Drawn_
+  position_Drawn_To: _Position_Drawn_
+}
+
+interface _Piece_Drawn_ {
+  id_Text: _Id_Text_
+  line: number
+  from: _Position_Text_
+  to: _Position_Text_
+  isEmpty: boolean
+}
+
+function piecesOf__Drawn({
+  viewModel_TextEditor,
+  position_Drawn_From,
+  position_Drawn_To
+}: _Api___piecesOf__Drawn_): Array<_Piece_Drawn_> {
+  const run_Lines = viewModel_TextEditor.runs.find((run_Each) => run_Each.id === position_Drawn_From.id_Run)
+  if (run_Lines === undefined || position_Drawn_To.id_Run !== run_Lines.id) return []
+  const isBackward = orderOf__Positions_Run({
+    position: position_Drawn_To.position,
+    position_Other: position_Drawn_From.position
+  }) < 0
+  const start = isBackward ? position_Drawn_To.position : position_Drawn_From.position
+  const end = isBackward ? position_Drawn_From.position : position_Drawn_To.position
+  const pieces = run_Lines.lines.slice(
+    start.line,
+    end.line + 1
+  ).flatMap((
+    line_Run,
+    index
+  ) => {
+    const line = start.line + index
+    const text_Line = textOf__Line(line_Run)
+    return line_Run.origins.flatMap((origin_Line) => {
+      const from = line === start.line
+        ? Math.max(
+          origin_Line.from,
+          start.offset
+        )
+        : origin_Line.from
+      const to = line === end.line
+        ? Math.min(
+          origin_Line.to,
+          end.offset
+        )
+        : origin_Line.to
+      if (from > to) return []
+      const offset_From = origin_Line.position.offset + Array.from(text_Line.slice(
+        origin_Line.from,
+        from
+      )).length
+      return [
+        {
+          id_Text: origin_Line.id_Text,
+          line,
+          from: {
+            line: origin_Line.position.line,
+            offset: offset_From
+          },
+          to: {
+            line: origin_Line.position.line,
+            offset: offset_From + Array.from(text_Line.slice(
+              from,
+              to
+            )).length
+          },
+          isEmpty: from === to
+        }
+      ]
+    })
+  })
+  const isKept = (
+    piece: _Piece_Drawn_ | undefined,
+    piece_Beside: _Piece_Drawn_ | undefined,
+    isBefore: boolean
+  ) => piece === undefined || piece_Beside === undefined || !piece.isEmpty || isSame__Id_Text({
+    id_Text: piece.id_Text,
+    id_Text_Other: piece_Beside.id_Text
+  }) && isContinuous__Pieces(isBefore
+    ? [
+      piece,
+      piece_Beside
+    ]
+    : [
+      piece_Beside,
+      piece
+    ])
+  while (pieces.length > 1 && !isKept(
+    pieces[0],
+    pieces[1],
+    true
+  )) pieces.shift()
+  while (pieces.length > 1 && !isKept(
+    pieces.at(-1),
+    pieces.at(-2),
+    false
+  )) pieces.pop()
+  return pieces
+}
+
+function isContinuous__Pieces(
+  pieces: Array<_Piece_Drawn_>
+): boolean {
+  return pieces.slice(1).every((
+    piece,
+    index
+  ) => {
+    const piece_Before = pieces[index]
+    return piece_Before !== undefined && (piece.line === piece_Before.line
+      ? piece.from.line === piece_Before.to.line && piece.from.offset === piece_Before.to.offset
+      : piece.from.line === piece_Before.to.line + 1 && piece.from.offset === 0)
+  })
+}
+
+function textOf__Selection(
+  viewModel_TextEditor: _ViewModel_TextEditor_
+): string | null {
+  const selection_Drawn = viewModel_TextEditor.selection
+  const run_Lines = viewModel_TextEditor.runs.find((run_Each) => run_Each.id === selection_Drawn?.anchor.id_Run)
+  if (selection_Drawn === null || run_Lines === undefined || selection_Drawn.head.id_Run !== run_Lines.id) return null
+  const isBackward = orderOf__Positions_Run({
+    position: selection_Drawn.head.position,
+    position_Other: selection_Drawn.anchor.position
+  }) < 0
+  const start = isBackward ? selection_Drawn.head.position : selection_Drawn.anchor.position
+  const end = isBackward ? selection_Drawn.anchor.position : selection_Drawn.head.position
+  return run_Lines.lines
+    .slice(
+      start.line,
+      end.line + 1
+    )
+    .map((
+      line_Run,
+      index
+    ) => textOf__Line(line_Run).slice(
+      index === 0 ? start.offset : 0,
+      start.line + index === end.line ? end.offset : undefined
+    ))
+    .join("\n")
+}
+
+interface _Api___bufferOf__ViewModel_ {
+  viewModel_TextEditor: _ViewModel_TextEditor_
+  selection_TextEditor: _Selection_TextEditor_ | null
+}
+
+function bufferOf__ViewModel({
+  viewModel_TextEditor,
+  selection_TextEditor
+}: _Api___bufferOf__ViewModel_): _Buffer_Edit_ | null {
+  const selection_Drawn = viewModel_TextEditor.selection
+  const line_Run = viewModel_TextEditor.runs.find((run_Each) => run_Each.id === selection_Drawn?.head.id_Run)?.lines[selection_Drawn?.head.position.line ?? -1]
+  if (selection_Drawn === null || selection_TextEditor === null || line_Run === undefined) return null
+  const offset = selection_Drawn.head.position.offset
+  const head = selection_TextEditor.head
+  const text_Line = textOf__Line(line_Run)
+  const origins_Head = line_Run.origins.filter((origin_Each) => isSame__Id_Text({
+    id_Text: origin_Each.id_Text,
+    id_Text_Other: head.id_Text
+  }) && origin_Each.from <= offset && offset <= origin_Each.to)
+  const origin_Line = origins_Head.find((origin_Each) => origin_Each.position.line === head.position.line && origin_Each.position.offset + Array.from(text_Line.slice(
+    origin_Each.from,
+    offset
+  )).length === head.position.offset) ?? origins_Head[0]
+  if (origin_Line === undefined) return null
+  const anchor = selection_Drawn.anchor
+  const isSelection_Inside = isSame__Id_Text({
+    id_Text: selection_TextEditor.anchor.id_Text,
+    id_Text_Other: head.id_Text
+  }) && anchor.id_Run === selection_Drawn.head.id_Run && anchor.position.line === selection_Drawn.head.position.line && origin_Line.from <= anchor.position.offset && anchor.position.offset <= origin_Line.to
+  return {
+    id_Text: origin_Line.id_Text,
+    position: origin_Line.position,
+    text: textOf__Line(line_Run).slice(
+      origin_Line.from,
+      origin_Line.to
+    ),
+    selectionStart: (isSelection_Inside ? anchor.position.offset : offset) - origin_Line.from,
+    selectionEnd: offset - origin_Line.from,
+    isSelection_Inside
+  }
+}
+
+interface _Api___positionIn__Buffer_ {
+  buffer_Edit: _Buffer_Edit_
+  offset: number
+}
+
+function positionIn__Buffer({
+  buffer_Edit,
+  offset
+}: _Api___positionIn__Buffer_): _Position_Text_ {
+  return {
+    line: buffer_Edit.position.line,
+    offset: buffer_Edit.position.offset + Array.from(buffer_Edit.text.slice(
+      0,
+      offset
+    )).length
+  }
 }
 
 interface _Api___endAt__Position_ {
@@ -541,25 +1386,49 @@ function endAt__Position({
   position_Drawn,
   id_Text_Kept
 }: _Api___endAt__Position_): _End_Selection_ | null {
-  const line_Run = viewModel_TextEditor.runs.find((run_Each) => run_Each.id === position_Drawn.id_Run)?.lines[position_Drawn.position.line]
-  if (line_Run === undefined) return null
+  const run_Lines = viewModel_TextEditor.runs.find((run_Each) => run_Each.id === position_Drawn.id_Run)
+  const line_Run = run_Lines?.lines[position_Drawn.position.line]
+  if (run_Lines === undefined || line_Run === undefined) return null
+  const line_Run_Next = run_Lines.lines[position_Drawn.position.line + 1] ?? null
   const place_Text = (id_Text_Kept === null
     ? null
     : placeIn__Line({
       line_Run,
+      line_Run_Next,
       offset: position_Drawn.position.offset,
       id_Text: id_Text_Kept
     })) ?? placeIn__Line({
     line_Run,
+    line_Run_Next,
     offset: position_Drawn.position.offset,
     id_Text: null
   })
-  return place_Text === null
+  const isDrawnAt = (place_Each: _Place_Text_) => {
+    const position_Run = positionIn__Run({
+      run_Lines,
+      place_Text: place_Each
+    })
+    return position_Run !== null && position_Run.line === position_Drawn.position.line && position_Run.offset === position_Drawn.position.offset
+  }
+  const text_Line = textOf__Line(line_Run)
+  const place_Drawn = place_Text === null || isDrawnAt(place_Text)
+    ? place_Text
+    : line_Run.origins.filter((origin_Line) => origin_Line.from <= position_Drawn.position.offset && position_Drawn.position.offset <= origin_Line.to).map((origin_Line) => ({
+      id_Text: origin_Line.id_Text,
+      position: {
+        line: origin_Line.position.line,
+        offset: origin_Line.position.offset + Array.from(text_Line.slice(
+          origin_Line.from,
+          position_Drawn.position.offset
+        )).length
+      }
+    })).find(isDrawnAt) ?? place_Text
+  return place_Drawn === null
     ? null
     : {
       id_Run: position_Drawn.id_Run,
-      id_Text: place_Text.id_Text,
-      position: place_Text.position
+      id_Text: place_Drawn.id_Text,
+      position: place_Drawn.position
     }
 }
 
@@ -607,6 +1476,7 @@ interface _Api___movedAt__State_ {
   direction: _Direction_Move_
   isExtending: boolean
   layout_View: _Layout_View_
+  module_Words: _Module_Words_
 }
 
 function movedAt__State({
@@ -614,7 +1484,8 @@ function movedAt__State({
   by,
   direction,
   isExtending,
-  layout_View
+  layout_View,
+  module_Words
 }: _Api___movedAt__State_): _State__Viewer_TextEditor_ {
   const viewModel_TextEditor = viewModelOf__State(state)
   const selection_Drawn = viewModel_TextEditor.selection
@@ -642,7 +1513,8 @@ function movedAt__State({
     position_Drawn: selection_Drawn.head,
     direction,
     x_Goal,
-    layout_View
+    layout_View,
+    module_Words
   })
   const end_Selection = position_Drawn === null
     ? null
@@ -676,6 +1548,7 @@ interface _Api___steppedOf__Position_ {
   direction: _Direction_Move_
   x_Goal: number | null
   layout_View: _Layout_View_
+  module_Words: _Module_Words_
 }
 
 type _StepMap__Unit_Move_ = {
@@ -686,22 +1559,26 @@ const STEPMAP__UNIT_MOVE: _StepMap__Unit_Move_ = {
   CHARACTER: ({
     viewModel_TextEditor,
     position_Drawn,
-    direction
+    direction,
+    module_Words
   }) => steppedAlong__Lines({
     viewModel_TextEditor,
     position_Drawn,
     direction,
+    module_Words,
     boundariesOf: boundariesOf__Graphemes,
     isStep_Break: true
   }),
   WORD: ({
     viewModel_TextEditor,
     position_Drawn,
-    direction
+    direction,
+    module_Words
   }) => steppedAlong__Lines({
     viewModel_TextEditor,
     position_Drawn,
     direction,
+    module_Words,
     boundariesOf: boundariesOf__Words,
     isStep_Break: false
   }),
@@ -713,6 +1590,7 @@ interface _Api___steppedAlong__Lines_ {
   viewModel_TextEditor: _ViewModel_TextEditor_
   position_Drawn: _Position_Drawn_
   direction: _Direction_Move_
+  module_Words: _Module_Words_
   boundariesOf: (api_Boundaries: _Api___boundariesOf_) => Array<number>
   isStep_Break: boolean
 }
@@ -720,12 +1598,14 @@ interface _Api___steppedAlong__Lines_ {
 interface _Api___boundariesOf_ {
   text: string
   direction: _Direction_Move_
+  module_Words: _Module_Words_
 }
 
 function steppedAlong__Lines({
   viewModel_TextEditor,
   position_Drawn,
   direction,
+  module_Words,
   boundariesOf,
   isStep_Break
 }: _Api___steppedAlong__Lines_): _Position_Drawn_ | null {
@@ -738,7 +1618,8 @@ function steppedAlong__Lines({
     if (run_Lines === undefined || line_Run === undefined) return null
     const boundaries = boundariesOf({
       text: textOf__Line(line_Run),
-      direction
+      direction,
+      module_Words
     })
     const offset = position_At.position.offset
     const boundary = direction === "FORWARD"
@@ -795,22 +1676,18 @@ function boundariesOf__Graphemes({
 
 function boundariesOf__Words({
   text,
-  direction
+  direction,
+  module_Words
 }: _Api___boundariesOf_): Array<number> {
-  const segments_Word = Array.from(new Intl.Segmenter(
-    undefined,
-    {
-      granularity: "word"
-    }
-  ).segment(text)).filter((segment) => segment.isWordLike === true)
+  const words = module_Words.wordsOf(text)
   return direction === "FORWARD"
     ? [
-      ...segments_Word.map((segment) => segment.index + segment.segment.length),
+      ...words.map((word_Text) => word_Text.to),
       text.length
     ]
     : [
       0,
-      ...segments_Word.map((segment) => segment.index)
+      ...words.map((word_Text) => word_Text.from)
     ]
 }
 
@@ -930,5 +1807,13 @@ const HANDLERMAP__TEXTEDITOR: _HandlerMap__TextEditor_ = {
   DRAG: DRAG_stateAfter__Command,
   RELEASE: RELEASE_stateAfter__Command,
   MOVE: MOVE_stateAfter__Command,
-  EXTEND: EXTEND_stateAfter__Command
+  EXTEND: EXTEND_stateAfter__Command,
+  INSERT: INSERT_stateAfter__Command,
+  REPLACE: REPLACE_stateAfter__Command,
+  DELETE: DELETE_stateAfter__Command,
+  UNDO: UNDO_stateAfter__Command,
+  REDO: REDO_stateAfter__Command,
+  COPY: COPY_stateAfter__Command,
+  CUT: CUT_stateAfter__Command,
+  PASTE: PASTE_stateAfter__Command
 }

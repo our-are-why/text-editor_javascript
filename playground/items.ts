@@ -1,9 +1,11 @@
 import type { _Action_Item_ } from "../source/ViewModel_TextEditor.ts"
+import type { _Proposal_Host_ } from "../source/Projection_TextEditor.ts"
 
 export {
   actions_Review,
   actions_Reopen,
-  actions_Dismiss
+  actions_Dismiss,
+  proposal_Yours
 }
 
 // what the playground, as host, offers to do with each of its proposals, in
@@ -29,3 +31,17 @@ const actions_Reopen: Array<_Action_Item_> = [
 const actions_Dismiss: Array<_Action_Item_> = [
   { command: "dismiss", label: "Dismiss", stateAfter: null }
 ]
+
+// what the playground, as host, says of the proposal your own edits make,
+// typed among what a frame proposes: yours, open while you make it, nothing
+// to do with it yet but see it
+const proposal_Yours: _Proposal_Host_ = {
+  source: "yours",
+  title: "Your edits",
+  state: "OPEN",
+  status: "",
+  rationale: "",
+  request: "",
+  actions: [],
+  attributes: {}
+}

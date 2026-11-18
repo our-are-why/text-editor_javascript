@@ -34,6 +34,7 @@ export {
   type _DOCUMENT_Id_Text_,
   type _CHANGE_Id_Text_,
   type _CHANGE_Step_Transaction_,
+  type _SOURCE_Step_Transaction_,
   type _Applied_Transaction_,
   mapped__NonEmpty,
   carried__Position,
@@ -722,7 +723,7 @@ interface _Transaction_Model_ {
   steps: _NonEmpty_<_Step_Transaction_>
 }
 
-type _Step_Transaction_ = _TEXT_Step_Transaction_ | _CHANGE_Step_Transaction_
+type _Step_Transaction_ = _TEXT_Step_Transaction_ | _CHANGE_Step_Transaction_ | _SOURCE_Step_Transaction_
 
 interface __BASE_Step_Transaction_<Kind extends string> {
   kind: Kind
@@ -753,6 +754,11 @@ interface _CHANGE_Step_Transaction_ extends __BASE_Step_Transaction_<"CHANGE"> {
   change: _Change_
 }
 
+interface _SOURCE_Step_Transaction_ extends __BASE_Step_Transaction_<"SOURCE"> {
+  source: string
+  changes: Array<_Change_>
+}
+
 interface _Applied_Transaction_ {
   model_TextEditor: _Model_TextEditor_
   transaction_Inverse: _Transaction_Model_
@@ -767,15 +773,46 @@ function appliedOf__Step({
   model_TextEditor,
   step_Transaction
 }: _Api___appliedOf__Step_): _Applied_Step_ {
-  return step_Transaction.kind === "TEXT"
-    ? appliedOf__Step_Text({
-      model_TextEditor,
-      step_Text: step_Transaction
-    })
-    : appliedOf__Step_Change({
-      model_TextEditor,
-      step_Change: step_Transaction
-    })
+  return (APPLYMAP__KIND_STEP[step_Transaction.kind] as (api_Step: _Api___applied__Kind_Step_<_Step_Transaction_["kind"]>) => _Applied_Step_)({
+    model_TextEditor,
+    step_Transaction
+  })
+}
+
+interface _Api___applied__Kind_Step_<Kind extends _Step_Transaction_["kind"]> {
+  model_TextEditor: _Model_TextEditor_
+  step_Transaction: Extract<
+    _Step_Transaction_,
+    __BASE_Step_Transaction_<Kind>
+  >
+}
+
+type _ApplyMap__Kind_Step_ = {
+  [Kind in _Step_Transaction_["kind"]]: (api_Step: _Api___applied__Kind_Step_<Kind>) => _Applied_Step_
+}
+
+const APPLYMAP__KIND_STEP: _ApplyMap__Kind_Step_ = {
+  TEXT: ({
+    model_TextEditor,
+    step_Transaction
+  }) => appliedOf__Step_Text({
+    model_TextEditor,
+    step_Text: step_Transaction
+  }),
+  CHANGE: ({
+    model_TextEditor,
+    step_Transaction
+  }) => appliedOf__Step_Change({
+    model_TextEditor,
+    step_Change: step_Transaction
+  }),
+  SOURCE: ({
+    model_TextEditor,
+    step_Transaction
+  }) => appliedOf__Step_Source({
+    model_TextEditor,
+    step_Source: step_Transaction
+  })
 }
 
 interface _Applied_Step_ {
@@ -1505,6 +1542,59 @@ function appliedOf__Step_Change({
         source: step_Change.source,
         index: step_Change.index,
         change
+      }
+    ]
+  }
+}
+
+interface _Api___appliedOf__Step_Source_ {
+  model_TextEditor: _Model_TextEditor_
+  step_Source: _SOURCE_Step_Transaction_
+}
+
+function appliedOf__Step_Source({
+  model_TextEditor,
+  step_Source
+}: _Api___appliedOf__Step_Source_): _Applied_Step_ {
+  const changes_Before = model_TextEditor.proposed.find((changes_Each) => changes_Each.source === step_Source.source)?.changes ?? []
+  const [change_First, ...changes_Rest] = step_Source.changes
+  const changes_Source: _Changes_Source_ | null = change_First === undefined
+    ? null
+    : {
+      source: step_Source.source,
+      changes: [
+        change_First,
+        ...changes_Rest
+      ]
+    }
+  const proposed = changes_Source === null
+    ? model_TextEditor.proposed.filter((changes_Each) => changes_Each.source !== step_Source.source)
+    : model_TextEditor.proposed.some((changes_Each) => changes_Each.source === step_Source.source)
+      ? model_TextEditor.proposed.map((changes_Each) => changes_Each.source === step_Source.source ? changes_Source : changes_Each)
+      : [
+        ...model_TextEditor.proposed,
+        changes_Source
+      ]
+  const refusals = [
+    ...(changes_Source === null
+      ? []
+      : refusalsIn__Source({
+        document: model_TextEditor.document,
+        changes_Source
+      })),
+    ...refusalsAcross__Sources(proposed)
+  ]
+  if (refusals.length > 0) throw new Error(`a step can't set ${step_Source.source}'s changes: ${refusals.map((refusal) => `${refusal.source}: ${refusal.reason}`).join("; ")}`)
+  return {
+    model_TextEditor: {
+      document: model_TextEditor.document,
+      proposed
+    },
+    steps_Inverse: [
+      {
+        kind: "SOURCE",
+        source: step_Source.source,
+        changes: changes_Before
       }
     ]
   }

@@ -26,6 +26,8 @@ export {
   type _Module_Language_,
   type _Api___syntaxOf__Line_,
   type _Syntax_Line_,
+  type _Module_Words_,
+  type _Word_Text_,
   type _Group_Underlay_,
   type _Underlay_Text_,
   type __BASE_Underlay_Text_,
@@ -64,11 +66,15 @@ export {
   selectedAt__ViewModel,
   type _Selection_TextEditor_,
   type _End_Selection_,
+  isSame__Selection,
+  isSame__End,
   type _Selection_Drawn_,
   type _Place_Text_,
   type _Position_Drawn_,
   drawnOf__End,
   orderOf__Positions_Drawn,
+  sectionOf__Run,
+  type _Kind_Section_,
   positionIn__Run,
   placeIn__Line,
   textOf__Line,
@@ -805,6 +811,42 @@ interface _End_Selection_ {
   position: _Position_Text_
 }
 
+interface _Api___isSame__Selection_ {
+  selection: _Selection_TextEditor_
+  selection_Other: _Selection_TextEditor_
+}
+
+function isSame__Selection({
+  selection,
+  selection_Other
+}: _Api___isSame__Selection_): boolean {
+  return isSame__End({
+    end_Selection: selection.anchor,
+    end_Selection_Other: selection_Other.anchor
+  }) && isSame__End({
+    end_Selection: selection.head,
+    end_Selection_Other: selection_Other.head
+  })
+}
+
+interface _Api___isSame__End_ {
+  end_Selection: _End_Selection_
+  end_Selection_Other: _End_Selection_
+}
+
+function isSame__End({
+  end_Selection,
+  end_Selection_Other
+}: _Api___isSame__End_): boolean {
+  return end_Selection.id_Run === end_Selection_Other.id_Run
+    && isSame__Id_Text({
+      id_Text: end_Selection.id_Text,
+      id_Text_Other: end_Selection_Other.id_Text
+    })
+    && end_Selection.position.line === end_Selection_Other.position.line
+    && end_Selection.position.offset === end_Selection_Other.position.offset
+}
+
 interface _Api___selectedAt__ViewModel_ {
   viewModel_TextEditor: _ViewModel_TextEditor_
   selection_TextEditor: _Selection_TextEditor_ | null
@@ -958,12 +1000,14 @@ function textOf__Line(
 
 interface _Api___placeIn__Line_ {
   line_Run: _Line_Run_
+  line_Run_Next: _Line_Run_ | null
   offset: number
   id_Text: _Id_Text_ | null
 }
 
 function placeIn__Line({
   line_Run,
+  line_Run_Next,
   offset,
   id_Text
 }: _Api___placeIn__Line_): _Place_Text_ | null {
@@ -971,7 +1015,13 @@ function placeIn__Line({
     id_Text: origin_Line.id_Text,
     id_Text_Other: id_Text
   })))
+  const origin_Break = offset === textOf__Line(line_Run).length ? line_Run_Next?.origins[0] : undefined
+  const id_Text_Break = origin_Break !== undefined && origin_Break.position.offset === 0 && origin_Break.position.line > 0 ? origin_Break.id_Text : null
   const origin_Line = origins_Offset.find((origin_Each) => origin_Each.from <= offset && offset < origin_Each.to)
+    ?? origins_Offset.findLast((origin_Each) => id_Text_Break !== null && isSame__Id_Text({
+      id_Text: origin_Each.id_Text,
+      id_Text_Other: id_Text_Break
+    }))
     ?? origins_Offset.find((origin_Each) => origin_Each.from < origin_Each.to)
     ?? origins_Offset[0]
   return origin_Line === undefined
@@ -991,6 +1041,29 @@ function placeIn__Line({
 interface _Position_Drawn_ {
   id_Run: string
   position: _Position_Run_
+}
+
+interface _Api___sectionOf__Run_ {
+  viewModel_TextEditor: _ViewModel_TextEditor_
+  id_Run: string
+}
+
+type _Kind_Section_ = "LINES" | "CURRENT_LINES" | "PROPOSAL_LINES" | "FOLDED"
+
+function sectionOf__Run({
+  viewModel_TextEditor,
+  id_Run
+}: _Api___sectionOf__Run_): _Kind_Section_ | null {
+  for (const block_ViewModel of viewModel_TextEditor.blocks) {
+    if (block_ViewModel.kind !== "FRAME") {
+      if (block_ViewModel.run.id === id_Run) return block_ViewModel.kind
+      continue
+    }
+    for (const part_Frame of block_ViewModel.parts) {
+      if (part_Frame.kind !== "PROPOSAL_LIST" && part_Frame.run.id === id_Run) return part_Frame.kind
+    }
+  }
+  return null
 }
 
 interface _Api___orderOf__Positions_Drawn_ {
@@ -1080,6 +1153,15 @@ interface _Api___syntaxOf__Line_<State> {
 interface _Syntax_Line_<State> {
   stretches: Array<_Stretch_Line_>
   state_After: State
+}
+
+interface _Module_Words_ {
+  wordsOf: (text: string) => Array<_Word_Text_>
+}
+
+interface _Word_Text_ {
+  from: number
+  to: number
 }
 
 interface _Api___lineOf__Text_ {

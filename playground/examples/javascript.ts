@@ -6,9 +6,10 @@ import { MODULE_KEYBOARD } from "../../source/modules/keyboard.ts"
 import { parseTexts_Line, type _Range_Text_, type _Changes_Host_, type _Change_Host_ } from "../../source/Model_TextEditor.ts"
 import type { _Proposal_Host_ } from "../../source/Projection_TextEditor.ts"
 import type { _Range_Lines_ } from "../../source/ViewModel_TextEditor.ts"
+import { MODULE_WORDS_TEXT } from "../../source/words/text.ts"
 import { PERSPECTIVE_CHANGES } from "../../source/perspectives/changes.ts"
 import { modelOf } from "../projected.ts"
-import { actions_Review, actions_Reopen, actions_Dismiss } from "../items.ts"
+import { actions_Review, actions_Reopen, actions_Dismiss, proposal_Yours } from "../items.ts"
 import { module_JavaScript, type _State_JavaScript_ } from "../syntax.ts"
 
 export {
@@ -329,6 +330,7 @@ const proposal_Status: _Proposal_Host_ = {
 // the proposals, in the order a frame lists them, decided ones after the
 // rest whatever their place here
 const proposals_retry: Array<_Proposal_Host_> = [
+  proposal_Yours,
   proposal_Header,
   proposal_Sleep,
   proposal_Delay,
@@ -365,6 +367,7 @@ const setup_retry: _Setup_TextEditor_<_State_JavaScript_> = {
   componentMap: COMPONENTMAP__VIEW_TEXTEDITOR,
   modules: [MODULE_MOUSE, MODULE_KEYBOARD],
   module_Language: module_JavaScript,
+  module_Words: MODULE_WORDS_TEXT,
   perspectives: [PERSPECTIVE_CHANGES]
 }
 
@@ -382,6 +385,7 @@ const javascript: _Example_ = {
       setup: setup_retry,
       model_TextEditor: model_retry,
       proposals: proposals_retry,
+      source_Yours: proposal_Yours.source,
       ranges_Frame: ranges_retry
     })
   },
