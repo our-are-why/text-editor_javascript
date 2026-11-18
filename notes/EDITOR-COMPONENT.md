@@ -1679,19 +1679,20 @@ Then typing, the second of editing:
   asked. Copying gives what's drawn between the selection's ends.
 - **each section edits its own:** the document's lines outside frames, the
   document's text; a frame's lines as they are, the original, the hatched
-  ones, nothing, read only, and a folded frame nothing; a frame's lines as
-  proposed, all of them, never mirrored in the lines as they are. There, a
-  proposal's own words, whatever its state, open, a revision asked for or
-  under way, or accepted, are edited as they are, its text; anywhere else,
-  the document's words round a proposal's, a line no proposal changes, the
-  lines a move carries, an edit's a change of yours, a source the host
-  names, `source_Yours`, and describes as any proposal, "Your edits" in the
-  playground: made by a step of its own, `SOURCE`, setting a source's
-  changes, checked as parsing checks them, undone by setting them back. So
-  the document, and the lines as they are, never change for what's typed
-  among what's proposed. A frame whose lines as proposed are none, all
-  taken out or moved away, has nowhere to put a caret, and so nothing typed
-  there, yet.
+  ones, nothing, read only; a frame's lines as proposed, all of them,
+  folded too, as a folded frame shows them, never mirrored in the lines as
+  they are; folded, it stays folded as it's typed into, unringed, as a
+  folded frame is. There, a proposal's own words, whatever its state, open,
+  a revision asked for or under way, or accepted, are edited as they are,
+  its text; anywhere else, the document's words round a proposal's, a
+  line no proposal changes, the lines a move carries, an edit's a change
+  of yours, a source the host names, `source_Yours`, and describes as any
+  proposal, "Your edits" in the playground: made by a step of its own,
+  `SOURCE`, setting a source's changes, checked as parsing checks them,
+  undone by setting them back. So the document, and the lines as they are,
+  never change for what's typed among what's proposed. A frame whose
+  lines as proposed are none, all taken out or moved away, has nowhere to
+  put a caret, and so nothing typed there, yet.
 - **what a word is, the host says:** a words module, `_Module_Words_`,
   `wordsOf` a line's words, in the setup beside the language and the
   perspectives, `module_Words`; the editor's own, `MODULE_WORDS_TEXT`, in

@@ -326,3 +326,18 @@ test("a word step goes by the words the host's module says: as text, to the next
   expect(steppedWith(MODULE_WORDS_TEXT)).toBe("lines-2 document 3:4")
   expect(steppedWith({ wordsOf: (text) => text === "" ? [] : [{ from: 0, to: text.length }] })).toBe("lines-2 document 3:11")
 })
+
+test("a folded frame's lines, its lines as proposed, are edited as they are unfolded: typed into, among what's proposed, its words and the proposal's", () => {
+  const range_Frame = viewModel.blocks.flatMap((block) => block.kind === "FRAME" ? [block.range] : [])[0]
+  if (range_Frame === undefined) throw new Error("no frame")
+  const requestedFolded = (selection: _Selection_TextEditor_) => {
+    const requests: Array<_Request_Edit_> = []
+    HANDLERMAP__TEXTEDITOR.INSERT({ state: { ...stateOf(selection), ranges_Folded: [range_Frame] }, command: { kind: "INSERT", text: "x", isTyping: true }, layout_View, module_Words: MODULE_WORDS_TEXT, edit_View: (request_Edit) => {
+      requests.push(request_Edit)
+      return null
+    } })
+    return requests[0] ?? null
+  }
+  expect(saidOfRequest(requestedFolded(caretOf("frame-1-proposed", 0, 2)))).toBe('document 0:2-0:2 "x" typed proposed')
+  expect(saidOfRequest(requestedFolded(caretIn_Digit(1)))).toBe('digit#0 0:1-0:1 "x" typed proposed')
+})

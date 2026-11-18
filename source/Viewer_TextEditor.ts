@@ -1029,11 +1029,11 @@ function editedAt__State({
     })
     : null
   if (request_Edit.kind === "TEXT" && (section === null || !EDITABLEMAP__KIND_SECTION[section][request_Edit.id_Text.kind])) return state
-  if (request_Edit.kind === "ACROSS" && section !== "PROPOSAL_LINES") return state
+  if (request_Edit.kind === "ACROSS" && (section === null || !ISPROPOSEDMAP__KIND_SECTION[section])) return state
   const answer_Edit = edit_View(request_Edit.kind === "TEXT"
     ? {
       ...request_Edit,
-      isProposed: section === "PROPOSAL_LINES"
+      isProposed: section !== null && ISPROPOSEDMAP__KIND_SECTION[section]
     }
     : request_Edit)
   return answer_Edit === null
@@ -1067,9 +1067,20 @@ const EDITABLEMAP__KIND_SECTION: _EditableMap__Kind_Section_ = {
     CHANGE: true
   },
   FOLDED: {
-    DOCUMENT: false,
-    CHANGE: false
+    DOCUMENT: true,
+    CHANGE: true
   }
+}
+
+type _IsProposedMap__Kind_Section_ = {
+  [Kind in _Kind_Section_]: boolean
+}
+
+const ISPROPOSEDMAP__KIND_SECTION: _IsProposedMap__Kind_Section_ = {
+  LINES: false,
+  CURRENT_LINES: false,
+  PROPOSAL_LINES: true,
+  FOLDED: true
 }
 
 interface _Api___requestOf__Drawn_ {
