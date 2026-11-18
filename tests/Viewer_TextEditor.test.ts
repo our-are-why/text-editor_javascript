@@ -61,7 +61,7 @@ function after(
   state: _State__Viewer_TextEditor_,
   commands: Array<_Command_TextEditor_>
 ): _State__Viewer_TextEditor_ {
-  return commands.reduce((state_Each, command) => (HANDLERMAP__TEXTEDITOR[command.kind] as (api: { state: _State__Viewer_TextEditor_, command: _Command_TextEditor_, layout_View: _Layout_View_, module_Words: typeof MODULE_WORDS_TEXT, edit_View: () => null }) => _State__Viewer_TextEditor_)({ state: state_Each, command, layout_View, module_Words: MODULE_WORDS_TEXT, edit_View: () => null }), state)
+  return commands.reduce((state_Each, command) => (HANDLERMAP__TEXTEDITOR[command.kind] as (api: { state: _State__Viewer_TextEditor_, command: _Command_TextEditor_, layout_View: _Layout_View_, module_Words: typeof MODULE_WORDS_TEXT, ask_View: () => void, edit_View: () => null }) => _State__Viewer_TextEditor_)({ state: state_Each, command, layout_View, module_Words: MODULE_WORDS_TEXT, ask_View: () => {}, edit_View: () => null }), state)
 }
 
 // an end of a selection as text: its run, its text, where in it
@@ -166,7 +166,7 @@ function requestedFrom(
   command: _Command_TextEditor_
 ): _Request_Edit_ | null {
   const requests: Array<_Request_Edit_> = []
-  ;(HANDLERMAP__TEXTEDITOR[command.kind] as (api: { state: _State__Viewer_TextEditor_, command: _Command_TextEditor_, layout_View: _Layout_View_, module_Words: typeof MODULE_WORDS_TEXT, edit_View: (request_Edit: _Request_Edit_) => null }) => _State__Viewer_TextEditor_)({ state: stateOf(selection), command, layout_View, module_Words: MODULE_WORDS_TEXT, edit_View: (request_Edit) => {
+  ;(HANDLERMAP__TEXTEDITOR[command.kind] as (api: { state: _State__Viewer_TextEditor_, command: _Command_TextEditor_, layout_View: _Layout_View_, module_Words: typeof MODULE_WORDS_TEXT, ask_View: () => void, edit_View: (request_Edit: _Request_Edit_) => null }) => _State__Viewer_TextEditor_)({ state: stateOf(selection), command, layout_View, module_Words: MODULE_WORDS_TEXT, ask_View: () => {}, edit_View: (request_Edit) => {
     requests.push(request_Edit)
     return null
   } })
@@ -229,7 +229,7 @@ test("a selection all in one text, but not running on in it, as across a move's 
   const line_Run = viewModel_Move.runs.find((run_Lines) => run_Lines.id === "frame-1-proposed")?.lines[0]
   expect(line_Run === undefined ? "" : textOf__Line(line_Run)).toBe("betaalpha ")
   const requests: Array<_Request_Edit_> = []
-  HANDLERMAP__TEXTEDITOR.INSERT({ state: { ...stateOf({ anchor: { id_Run: "frame-1-proposed", id_Text: { kind: "DOCUMENT" }, position: { line: 0, offset: 8 } }, head: { id_Run: "frame-1-proposed", id_Text: { kind: "DOCUMENT" }, position: { line: 0, offset: 2 } } }), viewModel_TextEditor: viewModel_Move }, command: { kind: "INSERT", text: "x", isTyping: true }, layout_View, module_Words: MODULE_WORDS_TEXT, edit_View: (request_Edit) => {
+  HANDLERMAP__TEXTEDITOR.INSERT({ state: { ...stateOf({ anchor: { id_Run: "frame-1-proposed", id_Text: { kind: "DOCUMENT" }, position: { line: 0, offset: 8 } }, head: { id_Run: "frame-1-proposed", id_Text: { kind: "DOCUMENT" }, position: { line: 0, offset: 2 } } }), viewModel_TextEditor: viewModel_Move }, command: { kind: "INSERT", text: "x", isTyping: true }, layout_View, module_Words: MODULE_WORDS_TEXT, ask_View: () => {}, edit_View: (request_Edit) => {
     requests.push(request_Edit)
     return null
   } })
@@ -280,7 +280,7 @@ function afterIn(
   selection: _Selection_TextEditor_,
   commands: Array<_Command_TextEditor_>
 ): _State__Viewer_TextEditor_ {
-  return commands.reduce((state_Each, command) => (HANDLERMAP__TEXTEDITOR[command.kind] as (api: { state: _State__Viewer_TextEditor_, command: _Command_TextEditor_, layout_View: _Layout_View_, module_Words: typeof MODULE_WORDS_TEXT, edit_View: () => null }) => _State__Viewer_TextEditor_)({ state: state_Each, command, layout_View, module_Words: MODULE_WORDS_TEXT, edit_View: () => null }), { ...stateOf(selection), viewModel_TextEditor })
+  return commands.reduce((state_Each, command) => (HANDLERMAP__TEXTEDITOR[command.kind] as (api: { state: _State__Viewer_TextEditor_, command: _Command_TextEditor_, layout_View: _Layout_View_, module_Words: typeof MODULE_WORDS_TEXT, ask_View: () => void, edit_View: () => null }) => _State__Viewer_TextEditor_)({ state: state_Each, command, layout_View, module_Words: MODULE_WORDS_TEXT, ask_View: () => {}, edit_View: () => null }), { ...stateOf(selection), viewModel_TextEditor })
 }
 
 test("a caret's put where it's drawn back: after words of yours put in a blank line, where the blank line's place is drawn before them too, it's at their end, not the line's", () => {
@@ -296,7 +296,7 @@ function requestedIn(
   command: _Command_TextEditor_
 ): _Request_Edit_ | null {
   const requests: Array<_Request_Edit_> = []
-  ;(HANDLERMAP__TEXTEDITOR[command.kind] as (api: { state: _State__Viewer_TextEditor_, command: _Command_TextEditor_, layout_View: _Layout_View_, module_Words: typeof MODULE_WORDS_TEXT, edit_View: (request_Edit: _Request_Edit_) => null }) => _State__Viewer_TextEditor_)({ state: { ...stateOf(selection), viewModel_TextEditor }, command, layout_View, module_Words: MODULE_WORDS_TEXT, edit_View: (request_Edit) => {
+  ;(HANDLERMAP__TEXTEDITOR[command.kind] as (api: { state: _State__Viewer_TextEditor_, command: _Command_TextEditor_, layout_View: _Layout_View_, module_Words: typeof MODULE_WORDS_TEXT, ask_View: () => void, edit_View: (request_Edit: _Request_Edit_) => null }) => _State__Viewer_TextEditor_)({ state: { ...stateOf(selection), viewModel_TextEditor }, command, layout_View, module_Words: MODULE_WORDS_TEXT, ask_View: () => {}, edit_View: (request_Edit) => {
     requests.push(request_Edit)
     return null
   } })
@@ -322,7 +322,7 @@ test("typed at a caret where two texts meet, the request says what's drawn eithe
 
 test("a word step goes by the words the host's module says: as text, to the next word's end; with a line one word, to its end", () => {
   const caret = caretOf("lines-2", 3, 0)
-  const steppedWith = (module_Words: typeof MODULE_WORDS_TEXT) => said((HANDLERMAP__TEXTEDITOR.MOVE as (api: unknown) => _State__Viewer_TextEditor_)({ state: stateOf(caret), command: { kind: "MOVE", by: "WORD", direction: "FORWARD" }, layout_View, module_Words, edit_View: () => null }).selection)
+  const steppedWith = (module_Words: typeof MODULE_WORDS_TEXT) => said((HANDLERMAP__TEXTEDITOR.MOVE as (api: unknown) => _State__Viewer_TextEditor_)({ state: stateOf(caret), command: { kind: "MOVE", by: "WORD", direction: "FORWARD" }, layout_View, module_Words, ask_View: () => {}, edit_View: () => null }).selection)
   expect(steppedWith(MODULE_WORDS_TEXT)).toBe("lines-2 document 3:4")
   expect(steppedWith({ wordsOf: (text) => text === "" ? [] : [{ from: 0, to: text.length }] })).toBe("lines-2 document 3:11")
 })
@@ -332,7 +332,7 @@ test("a folded frame's lines, its lines as proposed, are edited as they are unfo
   if (range_Frame === undefined) throw new Error("no frame")
   const requestedFolded = (selection: _Selection_TextEditor_) => {
     const requests: Array<_Request_Edit_> = []
-    HANDLERMAP__TEXTEDITOR.INSERT({ state: { ...stateOf(selection), ranges_Folded: [range_Frame] }, command: { kind: "INSERT", text: "x", isTyping: true }, layout_View, module_Words: MODULE_WORDS_TEXT, edit_View: (request_Edit) => {
+    HANDLERMAP__TEXTEDITOR.INSERT({ state: { ...stateOf(selection), ranges_Folded: [range_Frame] }, command: { kind: "INSERT", text: "x", isTyping: true }, layout_View, module_Words: MODULE_WORDS_TEXT, ask_View: () => {}, edit_View: (request_Edit) => {
       requests.push(request_Edit)
       return null
     } })
@@ -340,4 +340,19 @@ test("a folded frame's lines, its lines as proposed, are edited as they are unfo
   }
   expect(saidOfRequest(requestedFolded(caretOf("frame-1-proposed", 0, 2)))).toBe('document 0:2-0:2 "x" typed proposed')
   expect(saidOfRequest(requestedFolded(caretIn_Digit(1)))).toBe('digit#0 0:1-0:1 "x" typed proposed')
+})
+
+test("a proposal's action pressed is asked of the host, its command, the viewer deciding nothing; a revision's notes sent, the same, its notes with it, and its draft closed", () => {
+  const id_Item = { source: "digit", range_Frame: { first: 1, last: 1 } }
+  const asked: Array<unknown> = []
+  const ask_View = (asked_Action: unknown) => {
+    asked.push(asked_Action)
+  }
+  const state = stateOf(null)
+  const acted = HANDLERMAP__TEXTEDITOR.ACT({ state, command: { kind: "ACT", id_Item, command: "accept" }, layout_View, module_Words: MODULE_WORDS_TEXT, edit_View: () => null, ask_View })
+  expect(acted).toBe(state)
+  const drafting = { ...state, items_Drafted: [id_Item] }
+  const sent = HANDLERMAP__TEXTEDITOR.SEND({ state: drafting, command: { kind: "SEND", id_Item, command: "revise", notes: "Say what it's for." }, layout_View, module_Words: MODULE_WORDS_TEXT, edit_View: () => null, ask_View })
+  expect(sent.items_Drafted).toEqual([])
+  expect(asked).toEqual([{ source: "digit", command: "accept", notes: null }, { source: "digit", command: "revise", notes: "Say what it's for." }])
 })

@@ -182,6 +182,7 @@ describe("beside it: what can't live in one document", () => {
         modules: [window.MODULE_MOUSE],
         module_Words: window.MODULE_WORDS_TEXT,
         edit: () => null,
+        ask: () => {},
         viewModel_TextEditor: window.viewModelOf__Blocks([{
           kind: "FRAME",
           range: { first: 1, last: 1 },
@@ -261,6 +262,7 @@ describe("beside it: what can't live in one document", () => {
         modules: [window.MODULE_MOUSE],
         module_Words: window.MODULE_WORDS_TEXT,
         edit: () => null,
+        ask: () => {},
         viewModel_TextEditor: window.viewModelOf__Blocks([{
           kind: "LINES",
           run: {
@@ -523,6 +525,7 @@ describe("beside it: what can't live in one document", () => {
         modules: [window.MODULE_MOUSE],
         module_Words: window.MODULE_WORDS_TEXT,
         edit: () => null,
+        ask: () => {},
         viewModel_TextEditor: window.viewModelOf__Blocks([{
           kind: "FRAME",
           range: { first: 1, last: 1 },
@@ -650,6 +653,7 @@ describe("beside it: what can't live in one document", () => {
         modules: [window.MODULE_MOUSE],
         module_Words: window.MODULE_WORDS_TEXT,
         edit: () => null,
+        ask: () => {},
         viewModel_TextEditor: window.viewModelOf__Blocks([
           { kind: "FRAME", range: { first: 1, last: 1 }, parts: [
             { kind: "CURRENT_LINES", run: { id: "first", lines, groups: [] } },
@@ -804,6 +808,7 @@ describe("beside it: what can't live in one document", () => {
         modules: [],
         module_Words: window.MODULE_WORDS_TEXT,
         edit: () => null,
+        ask: () => {},
         viewModel_TextEditor: window.viewModelOf__Blocks([{
           kind: "FRAME",
           range: { first: 1, last: 1 },
@@ -901,6 +906,7 @@ describe("beside it: what can't live in one document", () => {
         modules: [window.MODULE_MOUSE],
         module_Words: window.MODULE_WORDS_TEXT,
         edit: () => null,
+        ask: () => {},
         viewModel_TextEditor: window.viewModelOf__Blocks([
           { kind: "FRAME", range: { first: 1, last: 1 }, parts: [{ kind: "CURRENT_LINES", run: { id: "current-1", lines: lineOf("one"), groups: [] } }, { kind: "PROPOSAL_LIST", items: [itemOf("round", 1), itemOf("alone", 4)] }] },
           between("between-1"),
@@ -1191,6 +1197,7 @@ describe("beside it: what can't live in one document", () => {
         modules: [window.MODULE_MOUSE],
         module_Words: window.MODULE_WORDS_TEXT,
         edit: () => null,
+        ask: () => {},
         viewModel_TextEditor: window.viewModelOf__Blocks([{
           kind: "FRAME",
           range: { first: 1, last: 1 },
@@ -1860,6 +1867,7 @@ describe("beside it: what can't live in one document", () => {
         modules: [window.MODULE_MOUSE],
         module_Words: window.MODULE_WORDS_TEXT,
         edit: () => null,
+        ask: () => {},
         viewModel_TextEditor: window.viewModelOf__Blocks([{
           kind: "LINES",
           run: { id: "document", lines: marked, groups: [{ attributes: { "data-source": "move" }, underlays: [{ kind: "STRETCH" as const, from: { line: 0, offset: 0 }, to: { line: 0, offset: 6 }, attributes: moved("before") }, { kind: "STRETCH" as const, from: { line: lines.length - 1, offset: 0 }, to: { line: lines.length - 1, offset: 6 }, attributes: moved("after") }] }] }
@@ -1912,6 +1920,7 @@ describe("beside it: what can't live in one document", () => {
         modules: [window.MODULE_MOUSE],
         module_Words: window.MODULE_WORDS_TEXT,
         edit: () => null,
+        ask: () => {},
         viewModel_TextEditor: window.viewModelOf__Blocks([{
           kind: "LINES",
           run: { id: "document", lines: marked, groups: [{ attributes: { "data-source": "move" }, underlays: [{ kind: "STRETCH" as const, from: { line: 0, offset: 0 }, to: { line: 0, offset: 6 }, attributes: moved("before") }, { kind: "STRETCH" as const, from: { line: 2, offset: 0 }, to: { line: 2, offset: 6 }, attributes: moved("after") }] }] }
@@ -1980,6 +1989,7 @@ describe("beside it: what can't live in one document", () => {
         modules: [window.MODULE_MOUSE],
         module_Words: window.MODULE_WORDS_TEXT,
         edit: () => null,
+        ask: () => {},
         viewModel_TextEditor: window.viewModelOf__Blocks([
           { kind: "FRAME", range: { first: 1, last: 2 }, parts: [
             { kind: "CURRENT_LINES", run: runOf("before", "current", ["one", "two", "three"]) },
@@ -2076,6 +2086,7 @@ describe("beside it: what can't live in one document", () => {
         modules: [window.MODULE_MOUSE],
         module_Words: window.MODULE_WORDS_TEXT,
         edit: () => null,
+        ask: () => {},
         viewModel_TextEditor: window.viewModelOf__Blocks([
           { kind: "FRAME", range: { first: 1, last: 2 }, parts: [
             { kind: "CURRENT_LINES", run: runOf("before", "current", ["one", "two", "three"]) },
@@ -2170,6 +2181,7 @@ describe("beside it: what can't live in one document", () => {
         modules: [window.MODULE_MOUSE],
         module_Words: window.MODULE_WORDS_TEXT,
         edit: () => null,
+        ask: () => {},
         viewModel_TextEditor: window.viewModelOf__Blocks([{
           kind: "FRAME",
           range: { first: 1, last: 3 },
@@ -2292,6 +2304,7 @@ describe("beside it: what can't live in one document", () => {
         modules: [window.MODULE_MOUSE],
         module_Words: window.MODULE_WORDS_TEXT,
         edit: () => null,
+        ask: () => {},
         viewModel_TextEditor: window.viewModelOf__Blocks([{
           kind: "FRAME",
           range: { first: 1, last: 2 },
@@ -2359,6 +2372,7 @@ describe("beside it: what can't live in one document", () => {
         modules: [window.MODULE_MOUSE],
         module_Words: window.MODULE_WORDS_TEXT,
         edit: () => null,
+        ask: () => {},
         viewModel_TextEditor: window.viewModelOf__Blocks([{
           kind: "FRAME",
           range: { first: 1, last: 1 },
@@ -2498,6 +2512,7 @@ describe("beside it: what can't live in one document", () => {
         modules: [window.MODULE_MOUSE],
         module_Words: window.MODULE_WORDS_TEXT,
         edit: () => null,
+        ask: () => {},
         viewModel_TextEditor: window.viewModelOf__Blocks([{
           kind: "LINES",
           run: { id: "document", lines: [line], groups: [{ attributes: { "data-source": "long" }, underlays: [{ kind: "STRETCH" as const, from: { line: 0, offset: index_Wrap - 6 }, to: { line: 0, offset: index_Wrap + 3 }, attributes: change }] }] }

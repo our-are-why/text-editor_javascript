@@ -1,11 +1,15 @@
-import type { _Action_Item_ } from "../source/ViewModel_TextEditor.ts"
+import type {
+  _Action_Item_,
+  _State_Proposal_
+} from "../source/ViewModel_TextEditor.ts"
 import type { _Proposal_Host_ } from "../source/Projection_TextEditor.ts"
 
 export {
   actions_Review,
   actions_Reopen,
   actions_Dismiss,
-  proposal_Yours
+  proposal_Yours,
+  shownMap_State
 }
 
 // what the playground, as host, offers to do with each of its proposals, in
@@ -44,4 +48,42 @@ const proposal_Yours: _Proposal_Host_ = {
   request: "",
   actions: [],
   attributes: {}
+}
+
+// what the playground, as host, says of a proposal in each state, and offers
+// to do with it then, as its examples give them
+type _ShownMap__State_ = {
+  [State in _State_Proposal_]: _Shown_State_
+}
+
+interface _Shown_State_ {
+  status: string
+  actions: Array<_Action_Item_>
+}
+
+const shownMap_State: _ShownMap__State_ = {
+  OPEN: {
+    status: "",
+    actions: actions_Review
+  },
+  REQUESTED: {
+    status: "Revision requested",
+    actions: actions_Reopen
+  },
+  REVISING: {
+    status: "Revising",
+    actions: []
+  },
+  ACCEPTED: {
+    status: "Accepted",
+    actions: actions_Reopen
+  },
+  REJECTED: {
+    status: "Rejected",
+    actions: actions_Reopen
+  },
+  WITHDRAWN: {
+    status: "Withdrawn",
+    actions: actions_Dismiss
+  }
 }

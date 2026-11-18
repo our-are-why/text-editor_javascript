@@ -722,9 +722,10 @@ numbers and its signs. A rejected or withdrawn one's change is gone from the
 lines proposed, the projection leaving it out. Still to come: a frame whose
 proposals are all decided folding itself, the document's lines then,
 numbered again, a faint bar beside them, its handle to unfold it and reopen
-what's in it; pointing at an accepted one lighting the lines it changed; and
-the commands the actions send, the host's to carry out. The JavaScript
-example has a proposal in every state.
+what's in it; and pointing at an accepted one lighting the lines it changed.
+An action pressed is asked of the host, its command, which carries it out
+and sends back what it now has; the playground's host takes each at once.
+The JavaScript example has a proposal in every state.
 
 ## how it shows them
 
@@ -1331,8 +1332,9 @@ writing, each in its own item, kept as it is, what's written in it with it,
 as GitHub's inline comments are, where doctor kept to one open at a time, a
 written one kept and gone to instead of another opening. What's written is
 the box's own, kept as what's around it's drawn again, not yet the state's,
-and gone once it's closed; and Submit sends nothing yet: once the pipeline's
-built, it's the host's command for revising, with what was written. Later,
+and gone once it's closed; and Submit sends Revise's command, the host's for
+revising, with what was written, to the host, as the observers' `asked`.
+Later,
 as doctor's do, Accept and Reject off while something's written in the form,
 so it's sent or cleared before deciding, never thrown away by it, once
 what's written is the state's.
@@ -1799,9 +1801,10 @@ pipeline already made, held, not copied, since data is replaced, never
 changed; an observer that keeps them keeps old states alive, though states
 share most of what's in them.
 
-**So far, edits, applied:** the editor's `observers`, the host's, each an
-`_Observer_TextEditor_`, told `applied` once an edit's applied, typed,
-deleted, pasted, undone or redone, before it's drawn, an `_Applied_Edit_`:
+**So far, edits and what's asked, and what the host sends back:** the
+editor's `observers`, the host's, each an `_Observer_TextEditor_`, told
+`applied` once an edit's applied, typed, deleted, pasted, undone or redone,
+before it's drawn, an `_Applied_Edit_`:
 the request the command was resolved to, the edit's own transaction, a
 keystroke run into the one before it only its own, and its inverse, the
 model before and after, and, worked out from the transaction, whose
@@ -1809,10 +1812,24 @@ changes it changed, `sources_Changed`, each a proposal's next round, yours
 among them, and whether it changed the document, `isChanged_Document`. A
 host keeps what it's told as it likes: doctor, a proposal edited as its
 next round, once the caret leaves it, say; the document's edits written to
-the file, or kept with a task till it completes. The playground's host
-reports each edit, `playground/edits.ts`, what kind, whose, and the
-document or not. Not yet: commands that edit nothing, a caret moved, a
-selection made; the stage drawn; modules' observers.
+the file, or kept with a task till it completes. And told `asked`, an
+`_Asked_Action_`, once a proposal's action's pressed, `ACT`, or a
+revision's notes sent, `SEND`: the proposal's source, the action's
+command, the host's own, and what was written, or `null`; the editor
+decides nothing itself, a proposal's state being the host's. What the host
+has then it sends back, `update`, an `_Update_Host_`, the model and the
+proposals, which the editor draws, the caret kept where it can still be
+drawn, the history cleared, as above. Observers are told just after the
+command that made the edit or the asking's done, a microtask on, so a host
+sending back what it has as it's told, as the playground's does, never
+lands inside that command, its state written over as it finishes, which it
+once was; still before what's drawn. The playground's host,
+`playground/host.ts`, keeps the model each edit leaves, takes each action
+at once, a proposal's state the action's, its status and actions that
+state's, a revision's notes what you asked, a dismissed one gone with its
+changes, sends back what it has, and reports each edit and each asking.
+Not yet: commands that edit nothing, a caret moved, a selection made; the
+stage drawn; modules' observers.
 
 ## modules
 

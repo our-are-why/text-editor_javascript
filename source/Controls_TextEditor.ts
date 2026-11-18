@@ -1,4 +1,7 @@
-import type { _Adapter_Event_ } from "./Viewer_TextEditor.ts"
+import type {
+  _Adapter_Event_,
+  _SEND_Command_
+} from "./Viewer_TextEditor.ts"
 import type { _Id_Item_ } from "./ViewModel_TextEditor.ts"
 
 export {
@@ -95,6 +98,26 @@ const CONTROLS__TEXTEDITOR: Array<_Adapter_Event_> = [
   {
     event: "click",
     commandOf__Event: (event) => {
+      const element_Action = event.target instanceof Element ? event.target.closest(".action_htmlView[data-command]") : null
+      const command = element_Action?.getAttribute("data-command")
+      const isRevise = element_Action?.matches(".item_htmlView[data-state='OPEN'] .action_htmlView[data-command][data-state-after='REQUESTED']") === true
+      const id_Item = element_Action === null || element_Action === undefined || isRevise
+        ? null
+        : idOf__Item({
+          element: element_Action
+        })
+      return typeof command === "string" && id_Item !== null
+        ? {
+          kind: "ACT",
+          id_Item,
+          command
+        }
+        : null
+    }
+  },
+  {
+    event: "click",
+    commandOf__Event: (event) => {
       const element_Draft = event.target instanceof Element ? event.target.closest(".action_htmlView[data-draft]") : null
       const kind = element_Draft?.getAttribute("data-draft")
       const id_Item = element_Draft === null || element_Draft === undefined
@@ -102,12 +125,18 @@ const CONTROLS__TEXTEDITOR: Array<_Adapter_Event_> = [
         : idOf__Item({
           element: element_Draft
         })
-      return (kind === "SEND" || kind === "DISCARD") && id_Item !== null
-        ? {
-          kind,
+      if (element_Draft === null || element_Draft === undefined || id_Item === null) return null
+      return kind === "SEND"
+        ? sentOf__Item({
+          element: element_Draft,
           id_Item
-        }
-        : null
+        })
+        : kind === "DISCARD"
+          ? {
+            kind,
+            id_Item
+          }
+          : null
     }
   },
   {
@@ -154,15 +183,37 @@ const CONTROLS__TEXTEDITOR: Array<_Adapter_Event_> = [
           id_Item
         }
       }
-      return event.key === "Enter" && (event.metaKey || event.ctrlKey)
-        ? {
-          kind: "SEND",
+      return event.key === "Enter" && (event.metaKey || event.ctrlKey) && element_Notes !== null
+        ? sentOf__Item({
+          element: element_Notes,
           id_Item
-        }
+        })
         : null
     }
   }
 ]
+
+interface _Api___sentOf__Item_ {
+  element: Element
+  id_Item: _Id_Item_
+}
+
+function sentOf__Item({
+  element,
+  id_Item
+}: _Api___sentOf__Item_): _SEND_Command_ | null {
+  const element_Item = element.closest(".item_htmlView")
+  const command = element_Item?.querySelector(".action_htmlView[data-command][data-state-after='REQUESTED']")?.getAttribute("data-command")
+  const element_Notes = element_Item?.querySelector(".notes_htmlView")
+  return typeof command === "string" && element_Notes instanceof HTMLTextAreaElement
+    ? {
+      kind: "SEND",
+      id_Item,
+      command,
+      notes: element_Notes.value
+    }
+    : null
+}
 
 interface _Api___idOf__Item_ {
   element: Element

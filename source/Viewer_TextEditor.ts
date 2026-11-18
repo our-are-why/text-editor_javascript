@@ -53,6 +53,7 @@ export {
   type _JUMP_Command_,
   type _FOLD_Command_,
   type _DRAFT_Command_,
+  type _ACT_Command_,
   type _SEND_Command_,
   type _DISCARD_Command_,
   type _VISIT_Command_,
@@ -70,6 +71,7 @@ export {
   type _CUT_Command_,
   type _PASTE_Command_,
   type _Answer_Edit_,
+  type _Asked_Action_,
   type _Answer_Dispatch_,
   type _Unit_Move_,
   type _Direction_Move_,
@@ -87,6 +89,7 @@ class _Viewer_TextEditor_ {
   request_Draw: number | null
   point_Screen: _Point_Screen_ | null
   edit: (request_Edit: _Request_Edit_) => _Answer_Edit_ | null
+  ask: (asked_Action: _Asked_Action_) => void
   editContext: EditContext
   buffer: _Buffer_Edit_ | null
   isComposing: boolean
@@ -97,10 +100,12 @@ class _Viewer_TextEditor_ {
     modules,
     module_Words,
     viewModel_TextEditor,
-    edit
+    edit,
+    ask
   }: _Api__Viewer_TextEditor_) {
     this.containerElement = containerElement
     this.edit = edit
+    this.ask = ask
     this.editContext = new EditContext()
     this.buffer = null
     this.isComposing = false
@@ -246,10 +251,16 @@ class _Viewer_TextEditor_ {
   show(
     viewModel_TextEditor: _ViewModel_TextEditor_
   ): void {
+    const isDrawn_Selection = selectedAt__ViewModel({
+      viewModel_TextEditor,
+      selection_TextEditor: this.state.selection
+    }).selection !== null
     this.state = {
       ...this.state,
-      viewModel_TextEditor
+      viewModel_TextEditor,
+      selection: isDrawn_Selection ? this.state.selection : null
     }
+    this.tell()
     this.drawOnNextFrame()
   }
 
@@ -285,7 +296,8 @@ class _Viewer_TextEditor_ {
       command,
       layout_View: this.view,
       module_Words: this.module_Words,
-      edit_View: this.edit
+      edit_View: this.edit,
+      ask_View: this.ask
     })
     if (state !== this.state) {
       this.state = state
@@ -353,11 +365,18 @@ interface _Api__Viewer_TextEditor_ {
   module_Words: _Module_Words_
   viewModel_TextEditor: _ViewModel_TextEditor_
   edit: (request_Edit: _Request_Edit_) => _Answer_Edit_ | null
+  ask: (asked_Action: _Asked_Action_) => void
 }
 
 interface _Answer_Edit_ {
   viewModel_TextEditor: _ViewModel_TextEditor_
   selection: _Selection_TextEditor_
+}
+
+interface _Asked_Action_ {
+  source: string
+  command: string
+  notes: string | null
 }
 
 interface _Buffer_Edit_ {
@@ -383,7 +402,7 @@ interface _Adapter_Event_ {
   commandOf__Event: (event: Event) => _Command_TextEditor_ | null
 }
 
-type _Command_TextEditor_ = _POINT_Command_ | _JUMP_Command_ | _FOLD_Command_ | _DRAFT_Command_ | _SEND_Command_ | _DISCARD_Command_ | _VISIT_Command_ | _PLACE_Command_ | _DRAG_Command_ | _RELEASE_Command_ | _MOVE_Command_ | _EXTEND_Command_ | _INSERT_Command_ | _REPLACE_Command_ | _DELETE_Command_ | _UNDO_Command_ | _REDO_Command_ | _COPY_Command_ | _CUT_Command_ | _PASTE_Command_
+type _Command_TextEditor_ = _POINT_Command_ | _JUMP_Command_ | _FOLD_Command_ | _DRAFT_Command_ | _ACT_Command_ | _SEND_Command_ | _DISCARD_Command_ | _VISIT_Command_ | _PLACE_Command_ | _DRAG_Command_ | _RELEASE_Command_ | _MOVE_Command_ | _EXTEND_Command_ | _INSERT_Command_ | _REPLACE_Command_ | _DELETE_Command_ | _UNDO_Command_ | _REDO_Command_ | _COPY_Command_ | _CUT_Command_ | _PASTE_Command_
 
 interface __BASE_Command_<Kind extends string> {
   kind: Kind
@@ -406,8 +425,15 @@ interface _DRAFT_Command_ extends __BASE_Command_<"DRAFT"> {
   id_Item: _Id_Item_
 }
 
+interface _ACT_Command_ extends __BASE_Command_<"ACT"> {
+  id_Item: _Id_Item_
+  command: string
+}
+
 interface _SEND_Command_ extends __BASE_Command_<"SEND"> {
   id_Item: _Id_Item_
+  command: string
+  notes: string
 }
 
 interface _DISCARD_Command_ extends __BASE_Command_<"DISCARD"> {
@@ -525,6 +551,7 @@ interface _Api___stateAfter__Command_<Kind extends _Command_TextEditor_["kind"]>
   layout_View: _Layout_View_
   module_Words: _Module_Words_
   edit_View: (request_Edit: _Request_Edit_) => _Answer_Edit_ | null
+  ask_View: (asked_Action: _Asked_Action_) => void
 }
 
 function stateAfter__Command<Kind extends _Command_TextEditor_["kind"]>({
@@ -532,7 +559,8 @@ function stateAfter__Command<Kind extends _Command_TextEditor_["kind"]>({
   command,
   layout_View,
   module_Words,
-  edit_View
+  edit_View,
+  ask_View
 }: _Api___stateAfter__Command_<Kind>): _State__Viewer_TextEditor_ {
   const handle = HANDLERMAP__TEXTEDITOR[command.kind]
   return handle({
@@ -540,7 +568,8 @@ function stateAfter__Command<Kind extends _Command_TextEditor_["kind"]>({
     command,
     layout_View,
     module_Words,
-    edit_View
+    edit_View,
+    ask_View
   })
 }
 
@@ -615,10 +644,29 @@ function DRAFT_stateAfter__Command({
   }
 }
 
+function ACT_stateAfter__Command({
+  state,
+  command,
+  ask_View
+}: _Api___stateAfter__Command_<"ACT">): _State__Viewer_TextEditor_ {
+  ask_View({
+    source: command.id_Item.source,
+    command: command.command,
+    notes: null
+  })
+  return state
+}
+
 function SEND_stateAfter__Command({
   state,
-  command
+  command,
+  ask_View
 }: _Api___stateAfter__Command_<"SEND">): _State__Viewer_TextEditor_ {
+  ask_View({
+    source: command.id_Item.source,
+    command: command.command,
+    notes: command.notes
+  })
   return closedAt__State({
     state,
     id_Item: command.id_Item
@@ -1811,6 +1859,7 @@ const HANDLERMAP__TEXTEDITOR: _HandlerMap__TextEditor_ = {
   JUMP: JUMP_stateAfter__Command,
   FOLD: FOLD_stateAfter__Command,
   DRAFT: DRAFT_stateAfter__Command,
+  ACT: ACT_stateAfter__Command,
   SEND: SEND_stateAfter__Command,
   DISCARD: DISCARD_stateAfter__Command,
   VISIT: VISIT_stateAfter__Command,

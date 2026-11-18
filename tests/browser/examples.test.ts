@@ -410,3 +410,69 @@ test("each edit's told to the host as it's applied, as the playground reports it
   expect(edits.some((entry) => entry["edited"] === "UNDO")).toBe(true)
   expect(logged_JavaScript.filter((entry) => "edited" in entry)).toEqual([{ edited: "TEXT", proposals: "yours", document: false }])
 })
+
+// then, on the JavaScript example, its host the playground's: "Keep every
+// error" accepted; "Drop the onRetry hook" sent back to be revised, what
+// should change written under it; the withdrawn "Log each retry" dismissed;
+// each proposal's items, and what's drawn, after each; and typed into again
+const itemsOf = (source: string) => opened_JavaScript.page.evaluate(async (source) => {
+  await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)))
+  return [...document.querySelectorAll(`.item_htmlView[data-source="${source}"]`)].map((element) => ({
+    state: element.getAttribute("data-state"),
+    actions: [...element.querySelectorAll(".action_htmlView[data-command]")].map((button) => button.textContent),
+    asked: element.querySelector(".said_htmlView")?.textContent ?? null
+  }))
+}, source)
+const pressed = async (source: string, command: string) => {
+  const button = opened_JavaScript.page.locator(`.item_htmlView[data-source="${source}"] .action_htmlView[data-command="${command}"]`).first()
+  await button.scrollIntoViewIfNeeded()
+  await button.click()
+}
+await pressed("errors", "accept")
+const items_Accepted = await itemsOf("errors")
+await pressed("hook", "revise")
+await opened_JavaScript.page.locator(".item_htmlView[data-source=\"hook\"] .notes_htmlView").first().fill("Keep the hook, but call it after the delay.")
+await opened_JavaScript.page.locator(".item_htmlView[data-source=\"hook\"] .action_htmlView[data-draft=\"SEND\"]").first().click()
+const items_Requested = await itemsOf("hook")
+await pressed("log", "dismiss")
+const items_Dismissed = await itemsOf("log")
+const asked_JavaScript = (await opened_JavaScript.logged()).filter((entry) => "asked" in entry)
+const lineOf_Attempts = () => opened_JavaScript.page.evaluate(async () => {
+  await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)))
+  return [...document.querySelectorAll(".run_htmlView[data-run$=\"-proposed\"] > .line_htmlView > .text_htmlView")].map((element) => element.textContent ?? "").find((text) => text.includes("round === attemptss")) ?? ""
+})
+const line_Attempts = await lineOf_Attempts()
+const point_Attempts_After = await opened_JavaScript.page.evaluate(() => {
+  const element_Line = [...document.querySelectorAll(".run_htmlView[data-run$=\"-proposed\"] > .line_htmlView > .text_htmlView")].find((element) => (element.textContent ?? "").includes("round === attemptss"))
+  if (!(element_Line instanceof HTMLElement)) throw new Error("no condition as proposed")
+  element_Line.scrollIntoView({ block: "center" })
+  const walker = document.createTreeWalker(element_Line, NodeFilter.SHOW_TEXT)
+  for (let node = walker.nextNode(); node instanceof Text; node = walker.nextNode()) {
+    const index = node.data.indexOf("attemptss")
+    if (index === -1) continue
+    const range = document.createRange()
+    range.setStart(node, index + 8)
+    range.setEnd(node, index + 9)
+    const rect = range.getBoundingClientRect()
+    return { x: rect.right - 1, y: rect.top + rect.height / 2 }
+  }
+  throw new Error("no attemptss")
+})
+await opened_JavaScript.page.mouse.click(point_Attempts_After.x, point_Attempts_After.y)
+await opened_JavaScript.page.keyboard.type("x")
+const line_Attempts_Typed = await lineOf_Attempts()
+
+test("a proposal's action pressed is asked of the host, which sends back what it now has: accepted, it's drawn accepted, Reopen its one action; a revision sent, its notes asked with it, it's drawn as one requested, what you asked under it; dismissed, it's gone; and what's typed after goes on as before", () => {
+  expect(items_Accepted.length).toBeGreaterThan(0)
+  expect(items_Accepted.every((item) => item.state === "ACCEPTED" && item.actions.join() === "Reopen")).toBe(true)
+  expect(items_Requested.length).toBeGreaterThan(0)
+  expect(items_Requested.every((item) => item.state === "REQUESTED" && item.asked === "Keep the hook, but call it after the delay.")).toBe(true)
+  expect(items_Dismissed).toEqual([])
+  expect(asked_JavaScript).toEqual([
+    { asked: "accept", proposal: "errors", notes: null },
+    { asked: "revise", proposal: "hook", notes: "Keep the hook, but call it after the delay." },
+    { asked: "dismiss", proposal: "log", notes: null }
+  ])
+  expect(line_Attempts_Typed.length).toBe(line_Attempts.length + 1)
+  expect(opened_JavaScript.errors).toEqual([])
+})

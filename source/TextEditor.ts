@@ -17,7 +17,8 @@ import {
 import {
   _Viewer_TextEditor_,
   type _Module_TextEditor_,
-  type _Answer_Edit_
+  type _Answer_Edit_,
+  type _Asked_Action_
 } from "./Viewer_TextEditor.ts"
 import {
   editedOf__Request,
@@ -34,7 +35,8 @@ export {
   type _Perspective_TextEditor_,
   type _Look_TextEditor_,
   type _Observer_TextEditor_,
-  type _Applied_Edit_
+  type _Applied_Edit_,
+  type _Update_Host_
 }
 
 class _TextEditor_<State> {
@@ -74,7 +76,10 @@ class _TextEditor_<State> {
       modules: this.setup.modules,
       module_Words: this.setup.module_Words,
       viewModel_TextEditor: this.projected(),
-      edit: (request_Edit) => this.edited(request_Edit)
+      edit: (request_Edit) => this.edited(request_Edit),
+      ask: (asked_Action) => queueMicrotask(() => {
+        for (const observer of this.observers) observer.asked(asked_Action)
+      })
     })
   }
 
@@ -102,11 +107,22 @@ class _TextEditor_<State> {
       sources_Changed: sourcesOf__Transaction(edited.transaction),
       isChanged_Document: edited.transaction.steps.some((step_Transaction) => step_Transaction.kind === "TEXT" && step_Transaction.id_Text.kind === "DOCUMENT")
     }
-    for (const observer of this.observers) observer.applied(applied_Edit)
+    queueMicrotask(() => {
+      for (const observer of this.observers) observer.applied(applied_Edit)
+    })
     return {
       viewModel_TextEditor: this.projected(),
       selection: edited.selection
     }
+  }
+
+  update(
+    update_Host: _Update_Host_
+  ): void {
+    this.model_TextEditor = update_Host.model_TextEditor
+    this.proposals = update_Host.proposals
+    this.history = HISTORY_EMPTY
+    this.viewer.show(this.projected())
   }
 
   show(
@@ -141,6 +157,7 @@ interface _Api__TextEditor_<State> {
 
 interface _Observer_TextEditor_ {
   applied: (applied_Edit: _Applied_Edit_) => void
+  asked: (asked_Action: _Asked_Action_) => void
 }
 
 interface _Applied_Edit_ {
@@ -151,6 +168,11 @@ interface _Applied_Edit_ {
   model_After: _Model_TextEditor_
   sources_Changed: Array<string>
   isChanged_Document: boolean
+}
+
+interface _Update_Host_ {
+  model_TextEditor: _Model_TextEditor_
+  proposals: Array<_Proposal_Host_>
 }
 
 interface _Setup_TextEditor_<State> {

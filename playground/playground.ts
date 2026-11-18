@@ -182,7 +182,8 @@ function drawCase(
       modules: [MODULE_MOUSE, MODULE_KEYBOARD],
       module_Words: MODULE_WORDS_TEXT,
       viewModel_TextEditor: each.viewModel_TextEditor,
-      edit: () => null
+      edit: () => null,
+      ask: () => {}
     })
     const drawn = make("div", "drawn")
     drawn.append(containerElement)
@@ -237,7 +238,8 @@ function drawScene(
     modules: [MODULE_MOUSE, MODULE_KEYBOARD],
     module_Words: MODULE_WORDS_TEXT,
     viewModel_TextEditor: scene.viewModel_TextEditor,
-    edit: () => null
+    edit: () => null,
+    ask: () => {}
   })
   const overlay = make("div", "overlay")
   const drawn = make("div", "drawn")
