@@ -692,13 +692,13 @@ test("a proposal's action pressed is asked of the host, which sends back what it
 })
 
 test("the header over the document stays put as it scrolls, saying the host's task, its mark where it stands, the agent at work or your turn, its state in words for what reads it aloud, and the document, by its file's name, at its end, nothing between them; the task's card hidden until the task's hovered: its id and where it stands, what the agent says of it, how far its proposals have got across the documents it touches, and each document, this one marked, how far its own have got, each figure's breakdown when hovered, Add a request for the task as a whole, and the host's actions for it; the document's card, hovered, what the agent says the task does here, how far its proposals have got, and the host's action for them, how many revisions are queued and in progress, Revise, Start all and Stop all, saying how many when they're hovered; the task's Stop all putting what's in progress back in the queue; the document's Start setting every proposal's queued requests going at once, each proposal's round its own; nothing asked, nothing to start", () => {
-  expect(header_Working).toEqual({ task: ["Tidy the retry loop", "WORKING", "Working"], parts: [], spinners: 0, document: ["retry.js", "WORKING", "Working"], card: ["Accept all (11)", "Start all", "Stop all", "Revise"], card_Document: ["Accept all (8)", "Start all", "Stop all", "Revise"], isSticky: true })
+  expect(header_Working).toEqual({ task: ["Tidy the retry loop", "WORKING", "Working"], parts: [], spinners: 0, document: ["retry.js", "WORKING", "Working"], card: ["Accept all (11)", "Start all (1)", "Stop all (2)", "Revise"], card_Document: ["Accept all (8)", "Start all (1)", "Stop all (1)", "Revise"], isSticky: true })
   expect(card_Resting.isShown).toBe(false)
   expect(card_Hovered).toEqual({ isShown: true, head: "T-12Working...", summary: "Keeps every error, names the attempt counter round, caps the delay, and stops once the caller aborts; drops the onRetry hook and the opening comment.", id: "T-12", figures: ["Proposals: 5 of 20 decided (12 to review · 1 revision requested · 2 revising · 4 accepted · 1 rejected)", "Scope Revisions: 1 queued · 2 in progress", "Level Revisions: "], documents: ["retry.js (this document): 3 of 14 decided (9 to review · 1 revision requested · 1 revising · 2 accepted · 1 rejected)", "README.md: 2 of 6 decided (3 to review · 1 revising · 2 accepted)"], parts: ["head_Card_htmlView", "summary_Card_htmlView", "section_Card_htmlView", "section_Card_htmlView", "section_Card_htmlView"] })
   expect(card_Document).toEqual({ isShown: true, label: "retry.js", summary: "In retry.js: the loop's errors, its counter's name, its delays and its abort, and two things it no longer needs.", figures: ["Proposals: 3 of 14 decided (9 to review · 1 revision requested · 1 revising · 2 accepted · 1 rejected)", "Scope Revisions: 1 queued · 1 in progress", "Level Revisions: "], actions: ["Accept all (8)", "Starts all 1 request queued in this document, its own and its proposals'", "Stops all 1 in progress in this document, its own and its proposals', putting them back in the queue", "Revise"] })
-  expect(header_Stopped).toEqual({ task: ["Tidy the retry loop", "YOUR_TURN", "Your turn"], parts: [], spinners: 0, document: ["retry.js", "YOUR_TURN", "Your turn"], card: ["Accept all (11)", "Start all", "Revise"], card_Document: ["Accept all (8)", "Start all", "Revise"], isSticky: true })
-  expect(header_Started).toEqual({ task: ["Tidy the retry loop", "WORKING", "Working"], parts: [], spinners: 0, document: ["retry.js", "WORKING", "Working"], card: ["Accept all (11)", "Start all", "Stop all", "Revise"], card_Document: ["Accept all (8)", "Stop all", "Revise"], isSticky: true })
-  expect(header_Done).toEqual({ task: ["Tidy the retry loop", "YOUR_TURN", "Your turn"], parts: [], spinners: 0, document: ["retry.js", "YOUR_TURN", "Your turn"], card: ["Accept all (13)", "Start all", "Revise"], card_Document: ["Accept all (10)", "Revise"], isSticky: true })
+  expect(header_Stopped).toEqual({ task: ["Tidy the retry loop", "YOUR_TURN", "Your turn"], parts: [], spinners: 0, document: ["retry.js", "YOUR_TURN", "Your turn"], card: ["Accept all (11)", "Start all (3)", "Revise"], card_Document: ["Accept all (8)", "Start all (2)", "Revise"], isSticky: true })
+  expect(header_Started).toEqual({ task: ["Tidy the retry loop", "WORKING", "Working"], parts: [], spinners: 0, document: ["retry.js", "WORKING", "Working"], card: ["Accept all (11)", "Start all (1)", "Stop all (2)", "Revise"], card_Document: ["Accept all (8)", "Stop all (2)", "Revise"], isSticky: true })
+  expect(header_Done).toEqual({ task: ["Tidy the retry loop", "YOUR_TURN", "Your turn"], parts: [], spinners: 0, document: ["retry.js", "YOUR_TURN", "Your turn"], card: ["Accept all (13)", "Start all (1)", "Revise"], card_Document: ["Accept all (10)", "Revise"], isSticky: true })
   expect(logged_Stopped).toEqual([{ stopped: "TASK", requests: 1 }, { revising: "hook, timeout", requests: 2 }, { revised: "hook, timeout" }])
   expect(opened_JavaScript.errors).toEqual([])
 })
@@ -829,16 +829,19 @@ await pressedIn(opened_JavaScript.page.locator(".card_Document_htmlView .said_ht
 const requests_Removed = await requestsOf_Document()
 await opened_JavaScript.page.keyboard.press("Escape")
 
-test("a right-click on a proposal's selected words offers a note on them, or on the whole proposal, the first focused; chosen, a form, what it's on quoted, the keyboard in it; added, the host's told, which queues a revision of the proposal, the words quoted before what you asked, and underlined, dotted, where they're proposed; on the document's words, nothing selected, a request for a change to the document, Escape closing it, the menu key opening it again at the caret", () => {
-  expect(menu_Words).toEqual({ choices: ["Note on these words of “Stop retrying once the caller aborts”", "Note on “Stop retrying once the caller aborts”"], focused: "Note on these words of “Stop retrying once the caller aborts”" })
-  expect(form_Words).toEqual({ label: "Note on these words of “Stop retrying once the caller aborts”", quote: "aborted", isFocused: true })
+test("a right-click on a proposal's selected words offers a revision of them, then one of the whole proposal, the words for reference, the first focused; chosen, a form, what it's on quoted, the keyboard in it; added, the host's told, which queues a revision of the proposal, the words quoted before what you asked, and underlined, dotted, where they're proposed; on the document's words, nothing selected, a request for a change to the document, Escape closing it, the menu key opening it again at the caret", () => {
+  expect(menu_Words.choices.filter((choice) => choice?.includes(": Request")).slice(0, 2)).toEqual(["Selection: Request revision", "Proposal: Request revision, with selection"])
+  expect(menu_Words.focused).toBe("Selection: Request revision")
+  expect(form_Words).toEqual({ label: "Selection: Request revision", quote: "aborted", isFocused: true })
   expect(items_Aborted.length).toBeGreaterThan(0)
   expect(items_Aborted.every((item) => item.state === "REQUESTED" && item.asked.join("|") === "Check it before the delay too." && item.quoted.join("|") === "aborted")).toBe(true)
   expect(requested_Aborted.length).toBeGreaterThan(0)
   expect(requested_Aborted.join("")).toBe("aborted".repeat(requested_Aborted.join("").length / "aborted".length))
-  expect(menu_Document).toEqual({ choices: ["Request a change to this document"], focused: "Request a change to this document" })
+  expect(menu_Document.choices.filter((choice) => choice?.includes(": Request"))).toEqual(["Document: Request change", "Task: Request change"])
+  expect(menu_Document.focused).toBe("Document: Request change")
   expect(isClosed_Menu).toBe(true)
-  expect(menu_Keyboard).toEqual(menu_Document)
+  expect(menu_Keyboard.choices.filter((choice) => choice?.includes(": Request"))).toEqual(["Document: Request change", "Task: Request change"])
+  expect(menu_Keyboard.focused).toBe(menu_Document.focused)
   expect(asked_Menu).toEqual([
     { asked: "revise", proposal: "aborted", notes: "Check it before the delay too.", words: "aborted" },
     { requested: "Say why the delay doubles.", aimed: null }
@@ -1566,4 +1569,310 @@ test("a frame's head says its lines and how far its proposals have got; its Star
   expect(accepted_Frame).toEqual(opens_First.map((source) => ({ asked: "accept", proposal: source, notes: null, words: null })))
   expect(states_First).toEqual(["ACCEPTED"])
   expect(opened_Dense.errors).toEqual([])
+})
+
+// the menu's tiers, on a page of their own: "aborted" selected in a
+// proposal's change and right-clicked, the words' tier, the proposal's,
+// the document's and the task's, the narrowest first, a hairline between
+// each; the document's request chosen, the words go with it for
+// reference, "with" them in the form, and with them in the document's
+// card once added; the proposal's chosen, the words left out with ×, the
+// keyboard back in the box, and it's asked of the host with none
+const opened_Tiers = await openExample(
+  "javascript",
+  1
+)
+afterAll(() => opened_Tiers.close())
+await opened_Tiers.page.waitForSelector(".note_htmlView")
+const rightClickedOn_Tiers = async (needle: string, word: string) => {
+  const rect = await opened_Tiers.page.evaluate(({ needle, word }) => {
+    const element_Line = [...document.querySelectorAll(".run_htmlView[data-run$=\"-proposed\"] > .line_htmlView > .text_htmlView")].find((element) => (element.textContent ?? "").includes(needle))
+    if (!(element_Line instanceof HTMLElement)) throw new Error(`no line with ${needle}`)
+    element_Line.scrollIntoView({ block: "center" })
+    const walker = document.createTreeWalker(element_Line, NodeFilter.SHOW_TEXT)
+    for (let node = walker.nextNode(); node instanceof Text; node = walker.nextNode()) {
+      const index = node.data.indexOf(word)
+      if (index === -1) continue
+      const range = document.createRange()
+      range.setStart(node, index)
+      range.setEnd(node, index + word.length)
+      const box = range.getBoundingClientRect()
+      return { left: box.left, right: box.right, y: box.top + box.height / 2 }
+    }
+    throw new Error(`no ${word}`)
+  }, { needle, word })
+  await opened_Tiers.page.mouse.move(rect.left + 1, rect.y)
+  await opened_Tiers.page.mouse.down()
+  await opened_Tiers.page.mouse.move(rect.right - 1, rect.y, { steps: 5 })
+  await opened_Tiers.page.mouse.up()
+  await opened_Tiers.page.mouse.click(rect.left + 4, rect.y, { button: "right" })
+  return opened_Tiers.page.evaluate(async () => {
+    await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)))
+    return [...document.querySelectorAll(".menu_htmlView > *")].map((element) => element.matches(".divider_Menu_htmlView") ? "—" : `${element.getAttribute("data-tier")} ${element.textContent}`)
+  })
+}
+const formShown_Tiers = () => opened_Tiers.page.evaluate(async () => {
+  await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)))
+  const quote = document.querySelector(".asking_htmlView > .quote_Asking_htmlView")
+  return {
+    label: document.querySelector(".asking_htmlView > .label_Asking_htmlView")?.textContent ?? null,
+    subject: document.querySelector(".asking_htmlView > .subject_Asking_htmlView")?.textContent ?? null,
+    quote: quote === null ? null : [quote.querySelector(".role_Quote_htmlView")?.textContent ?? null, quote.querySelector(".words_Quote_htmlView")?.textContent ?? null, quote.querySelector(".drop_Quote_htmlView") !== null],
+    isFocused: document.activeElement?.matches(".asking_htmlView > .notes_htmlView") === true
+  }
+})
+const menu_Tiers = await rightClickedOn_Tiers("signal?.aborted) break", "aborted")
+const sections_Tiers = await opened_Tiers.page.evaluate(() => [...document.querySelectorAll(".menu_htmlView > .choice_htmlView")].map((element) => `${element.getAttribute("data-tier")} ${element.getAttribute("data-section")}`))
+const focused_Tiers = await opened_Tiers.page.evaluate(() => document.activeElement?.textContent ?? null)
+await opened_Tiers.page.locator(".menu_htmlView > .choice_htmlView[data-tier=\"DOCUMENT\"]", { hasText: "Request change" }).click()
+const form_Referring = await formShown_Tiers()
+await opened_Tiers.page.keyboard.type("Check for an abort everywhere it waits.")
+await opened_Tiers.page.keyboard.press("Control+Enter")
+const referred_Document = await opened_Tiers.page.evaluate(async () => {
+  await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)))
+  return [...document.querySelectorAll(".card_Document_htmlView .said_htmlView")].map((element) => [element.querySelector(".notes_Said_htmlView")?.textContent ?? null, element.querySelector(".reference_Said_htmlView")?.textContent ?? null])
+})
+await rightClickedOn_Tiers("signal?.aborted) break", "aborted")
+await opened_Tiers.page.locator(".menu_htmlView > .choice_htmlView[data-tier=\"PROPOSAL\"]", { hasText: "Request revision" }).click()
+await opened_Tiers.page.locator(".asking_htmlView .drop_Quote_htmlView").click()
+const form_Dropped = await formShown_Tiers()
+await opened_Tiers.page.keyboard.type("Say why it stops there.")
+await opened_Tiers.page.keyboard.press("Control+Enter")
+const asked_Tiers = (await opened_Tiers.logged()).filter((entry) => "requested" in entry || "asked" in entry)
+await opened_Tiers.page.waitForSelector(".asking_htmlView", { state: "detached" })
+const rect_Editor_Tiers = await opened_Tiers.page.evaluate(() => {
+  const rect = document.querySelector(".htmlView_editor")?.getBoundingClientRect()
+  if (rect === undefined) throw new Error("no editor")
+  return { left: rect.left, right: rect.right, top: rect.top, bottom: rect.bottom }
+})
+await opened_Tiers.page.mouse.click(rect_Editor_Tiers.right - 40, rect_Editor_Tiers.bottom - 40, { button: "right" })
+const placed_Tiers = await opened_Tiers.page.evaluate(async () => {
+  await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)))
+  const rect_Editor = document.querySelector(".htmlView_editor")?.getBoundingClientRect()
+  const rect_Menu = document.querySelector(".menu_htmlView")?.getBoundingClientRect()
+  const rect$_Divider = [...document.querySelectorAll(".menu_htmlView > .divider_Menu_htmlView")].map((element) => element.getBoundingClientRect())
+  if (rect_Editor === undefined || rect_Menu === undefined) return null
+  return {
+    isInEditor: rect_Menu.left >= rect_Editor.left && rect_Menu.right <= rect_Editor.right && rect_Menu.top >= rect_Editor.top && rect_Menu.bottom <= rect_Editor.bottom,
+    isAbove: rect_Menu.bottom <= rect_Editor.bottom - 40 + 1,
+    isLeft: rect_Menu.right <= rect_Editor.right - 4 + 0.5,
+    isDividerInset: rect$_Divider.length > 0 && rect$_Divider.every((rect) => rect.left >= rect_Menu.left + 8 && rect.right <= rect_Menu.right - 8)
+  }
+})
+const isLitAt_Focused_Tiers = () => opened_Tiers.page.evaluate(async () => {
+  await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)))
+  const element = document.activeElement
+  return element instanceof HTMLElement && element.matches(".choice_htmlView") ? getComputedStyle(element).backgroundColor !== "rgba(0, 0, 0, 0)" : null
+})
+const isLit_Pointer_Tiers = await isLitAt_Focused_Tiers()
+await opened_Tiers.page.keyboard.press("Escape")
+await opened_Tiers.page.keyboard.press("Shift+F10")
+const isLit_Keyboard_Tiers = await isLitAt_Focused_Tiers()
+await opened_Tiers.page.keyboard.press("Escape")
+await opened_Tiers.page.mouse.click(rect_Editor_Tiers.right - 40, rect_Editor_Tiers.bottom - 40, { button: "right" })
+const scrolledWith_Menu = async (x: number, y: number) => {
+  await opened_Tiers.page.mouse.move(x, y)
+  const top_Before = await opened_Tiers.page.evaluate(() => document.querySelector(".document_htmlView")?.scrollTop ?? 0)
+  await opened_Tiers.page.mouse.wheel(0, -240)
+  return opened_Tiers.page.evaluate(async (top_Before) => {
+    await new Promise((resolve) => setTimeout(resolve, 400))
+    return { isOpen: document.querySelector(".menu_htmlView") !== null, isScrolled: (document.querySelector(".document_htmlView")?.scrollTop ?? 0) !== top_Before }
+  }, top_Before)
+}
+const rect_Menu_Scrolled = await opened_Tiers.page.evaluate(async () => {
+  await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)))
+  const rect = document.querySelector(".menu_htmlView")?.getBoundingClientRect()
+  if (rect === undefined) throw new Error("no menu")
+  return { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 }
+})
+const wheeled_OverMenu = await scrolledWith_Menu(rect_Menu_Scrolled.x, rect_Menu_Scrolled.y)
+const rect_Document_Tiers = await opened_Tiers.page.evaluate(() => {
+  const rect = document.querySelector(".document_htmlView")?.getBoundingClientRect()
+  if (rect === undefined) throw new Error("no document")
+  return { x: rect.left + 120, y: rect.top + 120 }
+})
+const wheeled_OverDocument = await scrolledWith_Menu(rect_Document_Tiers.x, rect_Document_Tiers.y)
+const isFocused_Input_Scrolled = await opened_Tiers.page.evaluate(() => document.activeElement?.matches(".input_htmlView") === true)
+
+describe("the menu's tiers", () => {
+  test("a right-click on a proposal's selected words offers the words', the proposal's, the document's and the task's tiers, the narrowest first, a hairline between each, each its proposal actions first, then its revisions', the keyboard on the first request; below the words', each request has them for reference, which the form says, \"with\" them, and × leaves out; sent, the host's told what it's on and what it refers to, and the document's card lists it with them", () => {
+    expect(menu_Tiers.map((choice) => choice === "—" ? choice : choice.slice(0, choice.indexOf(" "))).filter((tier, index, tiers) => tier !== tiers[index - 1])).toEqual(["WORDS", "—", "PROPOSAL", "—", "DOCUMENT", "—", "TASK"])
+    expect(menu_Tiers.filter((choice) => choice !== "—").every((choice) => /^(WORDS Selection|PROPOSAL Proposal|DOCUMENT Document|TASK Task): /.test(choice))).toBe(true)
+    expect(sections_Tiers.filter((section, index, sections) => section !== sections[index - 1])).toEqual(["WORDS REVISIONS", "PROPOSAL PROPOSALS", "PROPOSAL REVISIONS", "DOCUMENT PROPOSALS", "DOCUMENT REVISIONS", "TASK PROPOSALS", "TASK REVISIONS"])
+    expect(focused_Tiers).toBe("Selection: Request revision")
+    expect(menu_Tiers.filter((choice) => choice.includes(": Request"))).toEqual([
+      "WORDS Selection: Request revision",
+      "PROPOSAL Proposal: Request revision, with selection",
+      "DOCUMENT Document: Request change, with selection",
+      "TASK Task: Request change, with selection"
+    ])
+    expect(menu_Tiers.filter((choice) => choice.startsWith("PROPOSAL ") && !choice.includes(": Request"))).toEqual(["PROPOSAL Proposal: Accept", "PROPOSAL Proposal: Reject"])
+    expect(menu_Tiers.filter((choice) => choice.startsWith("DOCUMENT ") && !choice.includes(": Request")).every((choice) => /^DOCUMENT Document: (Accept|Start|Stop) all \(\d+\)$/.test(choice))).toBe(true)
+    expect(menu_Tiers.filter((choice) => choice.startsWith("TASK ") && !choice.includes(": Request")).every((choice) => /^TASK Task: (Accept|Start|Stop) all \(\d+\)$/.test(choice))).toBe(true)
+    expect(menu_Tiers.some((choice) => /^DOCUMENT Document: Accept all \(\d+\)$/.test(choice))).toBe(true)
+    expect(form_Referring).toEqual({ label: "Document: Request change", subject: "retry.js", quote: ["with", "aborted", true], isFocused: true })
+    expect(referred_Document).toEqual([["Check for an abort everywhere it waits.", "with aborted"]])
+    expect(form_Dropped).toEqual({ label: "Proposal: Request revision", subject: "Stop retrying once the caller aborts", quote: null, isFocused: true })
+    expect(asked_Tiers).toEqual([
+      { requested: "Check for an abort everywhere it waits.", aimed: null, referred: "aborted" },
+      { asked: "revise", proposal: "aborted", notes: "Say why it stops there.", words: null }
+    ])
+    expect(opened_Tiers.errors).toEqual([])
+  })
+
+  test("a menu opened by the editor's bottom right corner is kept in the editor, opening above the pointer and slid left, its hairlines inset from its edges; the choice the keyboard's on unlit, as it was opened by a right-click, and lit when it's opened from the keyboard", () => {
+    expect(placed_Tiers).toEqual({ isInEditor: true, isAbove: true, isLeft: true, isDividerInset: true })
+    expect([isLit_Pointer_Tiers, isLit_Keyboard_Tiers]).toEqual([false, true])
+  })
+
+  test("a menu open, the document scrolled under it closes it, the keyboard back in the text, as an editor's menu is; the wheel over the menu itself leaves it open, the document still", () => {
+    expect(wheeled_OverMenu).toEqual({ isOpen: true, isScrolled: false })
+    expect(wheeled_OverDocument).toEqual({ isOpen: false, isScrolled: true })
+    expect(isFocused_Input_Scrolled).toBe(true)
+  })
+})
+
+// the form a menu's choice opens, a popover: on the JavaScript example's
+// "export function backoff", the document's request chosen, the form
+// empty; pressed on its heading, it stays, the keyboard in its box; a line
+// above it clicked, it closes, the keyboard in the text; chosen again and
+// written in, a line above clicked, it stays; a right-click on the text,
+// no menu, the keyboard back in its box; the document scrolled under it,
+// it moves with its text; Escape, it's gone, nothing asked; chosen again,
+// empty, the document scrolled, it closes
+const opened_Popover = await openExample(
+  "javascript",
+  1
+)
+afterAll(() => opened_Popover.close())
+await opened_Popover.page.waitForSelector(".note_htmlView")
+const page_Popover = opened_Popover.page
+const at_Popover = await page_Popover.evaluate(() => {
+  const element_Line = [...document.querySelectorAll(".run_htmlView > .line_htmlView > .text_htmlView")].find((element) => (element.textContent ?? "").includes("export function backoff"))
+  if (!(element_Line instanceof HTMLElement)) throw new Error("no line")
+  element_Line.scrollIntoView({ block: "center" })
+  const rect = element_Line.getBoundingClientRect()
+  return { x: rect.left + 60, y: rect.top + rect.height / 2 }
+})
+await page_Popover.waitForTimeout(300)
+const formOpened_Popover = async () => {
+  await page_Popover.mouse.click(at_Popover.x, at_Popover.y, { button: "right" })
+  await page_Popover.locator(".menu_htmlView > .choice_htmlView[data-tier=\"DOCUMENT\"]", { hasText: "Request change" }).click()
+  await page_Popover.waitForSelector(".asking_htmlView[data-place=\"POINT\"]")
+}
+const shown_Popover = () => page_Popover.evaluate(async () => {
+  await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)))
+  const element_Form = document.querySelector(".asking_htmlView[data-place=\"POINT\"]")
+  return {
+    isOpen: element_Form !== null,
+    isMenu: document.querySelector(".menu_htmlView") !== null,
+    focus: document.activeElement?.matches(".asking_htmlView > .notes_htmlView") === true ? "FORM" : document.activeElement?.matches(".input_htmlView") === true ? "TEXT" : "ELSEWHERE"
+  }
+})
+await page_Popover.mouse.click(at_Popover.x, at_Popover.y)
+await formOpened_Popover()
+await page_Popover.locator(".asking_htmlView > .label_Asking_htmlView").click()
+const headPressed_Popover = await shown_Popover()
+await page_Popover.mouse.click(at_Popover.x + 30, at_Popover.y - 64)
+const clickedAway_Empty_Popover = await shown_Popover()
+await formOpened_Popover()
+await page_Popover.keyboard.type("Keep this.")
+await page_Popover.mouse.click(at_Popover.x + 30, at_Popover.y - 64)
+const clickedAway_Written_Popover = await shown_Popover()
+await page_Popover.mouse.click(at_Popover.x + 30, at_Popover.y - 64, { button: "right" })
+const rightClicked_Written_Popover = await shown_Popover()
+const scrolledWith_Form_Popover = async () => {
+  const before = await page_Popover.evaluate(() => ({ top_Form: document.querySelector(".asking_htmlView")?.getBoundingClientRect().top ?? null, top_Scroller: document.querySelector(".document_htmlView")?.scrollTop ?? 0 }))
+  const rect_Document = await page_Popover.evaluate(() => {
+    const rect = document.querySelector(".document_htmlView")?.getBoundingClientRect()
+    if (rect === undefined) throw new Error("no document")
+    return { x: rect.left + 120, y: rect.top + 60 }
+  })
+  await page_Popover.mouse.move(rect_Document.x, rect_Document.y)
+  await page_Popover.mouse.wheel(0, 160)
+  await page_Popover.waitForTimeout(400)
+  const after = await page_Popover.evaluate(() => ({ top_Form: document.querySelector(".asking_htmlView")?.getBoundingClientRect().top ?? null, top_Scroller: document.querySelector(".document_htmlView")?.scrollTop ?? 0 }))
+  return {
+    isScrolled: after.top_Scroller !== before.top_Scroller,
+    isOpen: after.top_Form !== null,
+    isMovedWithText: before.top_Form !== null && after.top_Form !== null && Math.abs((after.top_Form - before.top_Form) + (after.top_Scroller - before.top_Scroller)) <= 1
+  }
+}
+const scrolled_Written_Popover = await scrolledWith_Form_Popover()
+await page_Popover.focus(".asking_htmlView > .notes_htmlView")
+await page_Popover.keyboard.press("Escape")
+const escaped_Written_Popover = await shown_Popover()
+await page_Popover.evaluate(() => {
+  const element_Line = [...document.querySelectorAll(".run_htmlView > .line_htmlView > .text_htmlView")].find((element) => (element.textContent ?? "").includes("export function backoff"))
+  if (element_Line instanceof HTMLElement) element_Line.scrollIntoView({ block: "center" })
+})
+await page_Popover.waitForTimeout(300)
+await formOpened_Popover()
+const scrolled_Empty_Popover = await scrolledWith_Form_Popover()
+const asked_Popover = (await opened_Popover.logged()).filter((entry) => "requested" in entry || "asked" in entry)
+const at_Lines_Popover = await page_Popover.evaluate(() => {
+  const element_Line = [...document.querySelectorAll(".run_htmlView > .line_htmlView > .text_htmlView")].find((element) => (element.textContent ?? "").includes("export function backoff"))
+  if (!(element_Line instanceof HTMLElement)) throw new Error("no line")
+  element_Line.scrollIntoView({ block: "center" })
+  const rect = element_Line.getBoundingClientRect()
+  return { x: rect.left + 60, y: rect.top + rect.height / 2, height: rect.height }
+})
+await page_Popover.waitForTimeout(300)
+await page_Popover.mouse.click(at_Lines_Popover.x, at_Lines_Popover.y)
+await page_Popover.mouse.move(at_Lines_Popover.x, at_Lines_Popover.y)
+await page_Popover.mouse.down()
+await page_Popover.mouse.move(at_Lines_Popover.x + 40, at_Lines_Popover.y + 2 * at_Lines_Popover.height, { steps: 6 })
+await page_Popover.mouse.up()
+await page_Popover.mouse.click(at_Lines_Popover.x + 4, at_Lines_Popover.y, { button: "right" })
+await page_Popover.locator(".menu_htmlView > .choice_htmlView[data-tier=\"WORDS\"]").click()
+await page_Popover.waitForSelector(".asking_htmlView .chip_Quote_htmlView")
+const litOf_Quoted_Popover = () => page_Popover.evaluate(async () => {
+  await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)))
+  const element$_Quoted = [...document.querySelectorAll(".text_htmlView > [data-quoted]")]
+  return element$_Quoted.length > 0 && element$_Quoted.every((element) => getComputedStyle(element).backgroundColor !== "rgba(0, 0, 0, 0)")
+})
+const chip_Popover = await page_Popover.evaluate(() => ({
+  head: document.querySelector(".asking_htmlView .words_Quote_htmlView")?.textContent ?? null,
+  size: document.querySelector(".asking_htmlView .size_Quote_htmlView")?.textContent ?? null,
+  isFolded: document.querySelector(".asking_htmlView .show_Quote_htmlView")?.getAttribute("aria-expanded") === "false" && document.querySelector(".whole_Quote_htmlView") === null
+}))
+const isLit_Unpointed_Popover = await litOf_Quoted_Popover()
+await page_Popover.hover(".asking_htmlView .chip_Quote_htmlView")
+const isLit_Pointed_Popover = await litOf_Quoted_Popover()
+await page_Popover.click(".asking_htmlView .show_Quote_htmlView")
+const whole_Popover = await page_Popover.evaluate(async () => {
+  await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)))
+  return document.querySelector(".asking_htmlView > .whole_Quote_htmlView")?.textContent ?? null
+})
+await page_Popover.click(".asking_htmlView .show_Quote_htmlView")
+const isRefolded_Popover = await page_Popover.evaluate(async () => {
+  await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)))
+  return document.querySelector(".whole_Quote_htmlView") === null && document.querySelector(".asking_htmlView") !== null
+})
+await page_Popover.keyboard.press("Escape")
+
+describe("the menu's form's words", () => {
+  test("words selected over three lines are shown in the form by their start, cut, and how many lines; pointed at, they're lit where they are in the document; pressed, shown in full, and pressed again, folded", () => {
+    expect(chip_Popover.size).toBe("3 lines")
+    expect(chip_Popover.head?.endsWith("…")).toBe(true)
+    expect(chip_Popover.isFolded).toBe(true)
+    expect([isLit_Unpointed_Popover, isLit_Pointed_Popover]).toEqual([false, true])
+    expect(whole_Popover?.split("\n").length).toBe(3)
+    expect(whole_Popover?.startsWith((chip_Popover.head ?? "").slice(0, -1))).toBe(true)
+    expect(isRefolded_Popover).toBe(true)
+  })
+})
+
+describe("the menu's form, a popover", () => {
+  test("empty, pressed on its heading it stays, the keyboard in its box; a click away closes it, the keyboard in the text; written, a click away leaves it open, and a right-click puts the keyboard back in it, no menu; scrolled, it moves with its text; Escape closes it, nothing asked; empty, a scroll closes it", () => {
+    expect(headPressed_Popover).toEqual({ isOpen: true, isMenu: false, focus: "FORM" })
+    expect(clickedAway_Empty_Popover).toEqual({ isOpen: false, isMenu: false, focus: "TEXT" })
+    expect(clickedAway_Written_Popover).toEqual({ isOpen: true, isMenu: false, focus: "TEXT" })
+    expect(rightClicked_Written_Popover).toEqual({ isOpen: true, isMenu: false, focus: "FORM" })
+    expect(scrolled_Written_Popover).toEqual({ isScrolled: true, isOpen: true, isMovedWithText: true })
+    expect(escaped_Written_Popover).toEqual({ isOpen: false, isMenu: false, focus: "TEXT" })
+    expect(scrolled_Empty_Popover).toEqual({ isScrolled: true, isOpen: false, isMovedWithText: false })
+    expect(asked_Popover).toEqual([])
+    expect(opened_Popover.errors).toEqual([])
+  })
 })

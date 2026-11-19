@@ -74,6 +74,7 @@ export {
   type _Point_Screen_,
   type _Layout_View_,
   type _Caret_Screen_,
+  type _Kind_Popover_,
   type _Focus_Draft_,
   type _Visit_Item_,
   type _Focus_Asking_,
@@ -93,6 +94,7 @@ class _View_TextEditor_ {
   room: _Room_View_
   isJumping: boolean
   top_Jumped: number
+  placed$: _Placed$_View_
 
   constructor({
     containerElement,
@@ -103,7 +105,7 @@ class _View_TextEditor_ {
     this.run$ = []
     this.selection = null
     this.ink$_Glyph = new Map()
-    this.resizeObserver_containerElement = new ResizeObserver(() => this.measure())
+    this.resizeObserver_containerElement = new ResizeObserver(() => this.resized())
     this.resizeObserver_containerElement.observe(this.containerElement)
     this.mutationObserver_containerElement = new MutationObserver(() => this.measure())
     this.mutationObserver_containerElement.observe(
@@ -124,6 +126,10 @@ class _View_TextEditor_ {
     }
     this.isJumping = false
     this.top_Jumped = 0
+    this.placed$ = {
+      MENU: null,
+      FORM: null
+    }
     this.containerElement.addEventListener(
       "scroll",
       () => this.scrolled(),
@@ -169,9 +175,19 @@ class _View_TextEditor_ {
     this.run$ = viewModel_TextEditor.runs
     this.selection = viewModel_TextEditor.selection
     this.measure()
-    keptInWindow__View_TextEditor({
-      containerElement_View: this.containerElement
+    this.keep()
+  }
+
+  keep(): void {
+    this.placed$ = keptInEditor__View_TextEditor({
+      containerElement_View: this.containerElement,
+      placed$_View: this.placed$
     })
+  }
+
+  resized(): void {
+    this.measure()
+    this.keep()
   }
 
   measure(): void {
@@ -200,6 +216,19 @@ class _View_TextEditor_ {
   ): void {
     const element = this.containerElement.querySelector(SELECTORMAP__FOCUS_ASKING[focus_Asking])
     if (element instanceof HTMLElement) element.focus()
+  }
+
+  isMoved(
+    kind_Popover: _Kind_Popover_
+  ): boolean {
+    const placed_Popover = this.placed$[kind_Popover]
+    const element_Scroller = this.containerElement.querySelector(".document_htmlView")
+    if (placed_Popover === null || !(element_Scroller instanceof HTMLElement)) return false
+    const shift = shiftOf__Popover({
+      placed_Popover,
+      element_Scroller
+    })
+    return Math.abs(shift.x) >= 1 || Math.abs(shift.y) >= 1
   }
 
   caretOf(
@@ -333,6 +362,7 @@ class _View_TextEditor_ {
   }
 
   scrolled(): void {
+    this.keep()
     if (this.isJumping) return
     released__Focus_Jump({
       containerElement_View: this.containerElement
@@ -766,7 +796,7 @@ function Action$_Scope__Html({
   revisions_Scope,
   scope_Work
 }: _Api___Action$_Scope__Html_): _Node_Jsx_ {
-  return revisions_Scope.title_Start === null && revisions_Scope.title_Stop === null && revisions_Scope.actions.length === 0
+  return revisions_Scope.start_All === null && revisions_Scope.stop_All === null && revisions_Scope.actions.length === 0
     ? null
     : (
       <Fold_Action$__Html>
@@ -775,27 +805,27 @@ function Action$_Scope__Html({
           role="group"
           aria-label="Scope revision actions"
         >
-          {revisions_Scope.title_Start !== null && (
+          {revisions_Scope.start_All !== null && (
             <button
               type="button"
               class="action_htmlView start_htmlView"
               data-scope={scope_Work}
               data-work="START"
               data-state-after="REVISING"
-              title={revisions_Scope.title_Start}
+              title={revisions_Scope.start_All.title}
             >
-              Start all
+              {revisions_Scope.start_All.label}
             </button>
           )}
-          {revisions_Scope.title_Stop !== null && (
+          {revisions_Scope.stop_All !== null && (
             <button
               type="button"
               class="action_htmlView stop_htmlView"
               data-scope={scope_Work}
               data-work="STOP"
-              title={revisions_Scope.title_Stop}
+              title={revisions_Scope.stop_All.title}
             >
-              Stop all
+              {revisions_Scope.stop_All.label}
             </button>
           )}
           {revisions_Scope.actions.map((action_Task) => (
@@ -986,21 +1016,32 @@ function Menu_TextEditor__Html({
       style={`left: ${menu_ViewModel.point_Screen.x}px; top: ${menu_ViewModel.point_Screen.y}px`}
       data-x={String(menu_ViewModel.point_Screen.x)}
       data-y={String(menu_ViewModel.point_Screen.y)}
+      data-focus-shown={menu_ViewModel.isFocusShown ? "" : undefined}
     >
       {menu_ViewModel.items.map((
         item_Menu,
         index
-      ) => (
+      ) => [
+        index > 0 && menu_ViewModel.items[index - 1]?.tier !== item_Menu.tier && (
+          <div
+            class="divider_Menu_htmlView"
+            role="separator"
+          />
+        ),
         <button
           type="button"
           class="choice_htmlView"
           role="menuitem"
           data-index={String(index)}
+          data-tier={item_Menu.tier}
+          data-section={item_Menu.section}
+          data-work={item_Menu.kind === "WORK" ? item_Menu.work : undefined}
           tabindex={index === menu_ViewModel.index_Focused ? "0" : "-1"}
         >
-          {item_Menu.label}
+          {`${item_Menu.label_Tier}: `}
+          <span class="label_Choice_htmlView">{item_Menu.label}</span>
         </button>
-      ))}
+      ])}
     </div>
   )
 }
@@ -1022,8 +1063,51 @@ function Request_TextEditor__Html({
       data-y={form_Request.place.kind === "POINT" ? String(form_Request.place.point_Screen.y) : undefined}
       data-place={form_Request.place.kind}
     >
-      <p class="label_Asking_htmlView">{form_Request.label}</p>
-      {form_Request.quote !== null && <p class="quote_Asking_htmlView">{form_Request.quote}</p>}
+      {form_Request.head === null
+        ? <p class="label_Asking_htmlView">{form_Request.label}</p>
+        : (
+          <p
+            class="label_Asking_htmlView"
+            data-head=""
+          >
+            {`${form_Request.head.label_Tier}: `}
+            <span class="action_Head_Asking_htmlView">{form_Request.head.label}</span>
+          </p>
+        )}
+      {form_Request.head !== null && <p class="subject_Asking_htmlView">{form_Request.head.subject}</p>}
+      {form_Request.quote !== null && (
+        <p class="quote_Asking_htmlView">
+          <span class="chip_Quote_htmlView">
+            {form_Request.quote.label !== "" && <span class="role_Quote_htmlView">{form_Request.quote.label}</span>}
+            {form_Request.quote.isExpandable
+              ? (
+                <button
+                  type="button"
+                  class="show_Quote_htmlView"
+                  data-request="SHOW"
+                  aria-expanded={String(form_Request.quote.isExpanded)}
+                  title={form_Request.quote.isExpanded ? "Hide the words in full" : "Show the words in full"}
+                >
+                  <q class="words_Quote_htmlView">{form_Request.quote.head}</q>
+                  {form_Request.quote.size !== null && <span class="size_Quote_htmlView">{form_Request.quote.size}</span>}
+                </button>
+              )
+              : <q class="words_Quote_htmlView">{form_Request.quote.head}</q>}
+            {form_Request.quote.isDroppable && (
+              <button
+                type="button"
+                class="drop_Quote_htmlView"
+                data-request="DROP"
+                aria-label="Leave these words out"
+                title="Leave these words out"
+              >
+                ×
+              </button>
+            )}
+          </span>
+        </p>
+      )}
+      {form_Request.quote?.isExpanded === true && <pre class="whole_Quote_htmlView">{form_Request.quote.text}</pre>}
       <textarea
         class="notes_htmlView"
         aria-label={form_Request.label}
@@ -1911,6 +1995,12 @@ function Request$__Html({
             {request_Item.isEditing
               ? <Edit_Said__Html request_Item={request_Item} />
               : <span class="notes_Said_htmlView">{request_Item.notes}</span>}
+            {request_Item.reference !== null && (
+              <span class="reference_Said_htmlView">
+                {"with "}
+                <q class="words_Reference_htmlView">{request_Item.reference}</q>
+              </span>
+            )}
             {request_Item.progress !== null && (
               <span class="progress_Said_htmlView">
                 {request_Item.progress}
@@ -3775,7 +3865,10 @@ interface _Layout_View_ {
   foldAt: (point_Screen: _Point_Screen_) => _Range_Lines_ | null
   positionAt: (point_Screen: _Point_Screen_) => _Position_Drawn_ | null
   caretOf: (position_Drawn: _Position_Drawn_) => _Caret_Screen_ | null
+  isMoved: (kind_Popover: _Kind_Popover_) => boolean
 }
+
+type _Kind_Popover_ = "MENU" | "FORM"
 
 interface _Caret_Screen_ {
   x: number
@@ -4662,19 +4755,190 @@ function keptOpen__Card({
   })
 }
 
-interface _Api___keptInWindow__View_TextEditor_ {
+interface _Api___keptInEditor__View_TextEditor_ {
   containerElement_View: HTMLElement
+  placed$_View: _Placed$_View_
 }
 
-function keptInWindow__View_TextEditor({
-  containerElement_View
-}: _Api___keptInWindow__View_TextEditor_): void {
-  const margin = 4
-  for (const element of containerElement_View.querySelectorAll(":is(.menu_htmlView, .asking_htmlView)[data-x][data-y]")) {
-    if (!(element instanceof HTMLElement)) continue
-    const rect = element.getBoundingClientRect()
-    const y = Number(element.dataset["y"])
-    if (rect.right > window.innerWidth - margin) element.style.left = `${Math.max(window.innerWidth - rect.width - margin, margin)}px`
-    if (rect.bottom > window.innerHeight - margin) element.style.top = `${Math.max(y - rect.height, margin)}px`
+type _Placed$_View_ = {
+  [Kind in _Kind_Popover_]: _Placed_Popover_ | null
+}
+
+interface _Placed_Popover_ {
+  element: HTMLElement
+  point_Placed: _Point_Screen_
+  element_Anchor: Element | null
+  point_Anchor: _Point_Screen_
+  point_Scrolled: _Point_Screen_
+}
+
+function keptInEditor__View_TextEditor({
+  containerElement_View,
+  placed$_View
+}: _Api___keptInEditor__View_TextEditor_): _Placed$_View_ {
+  const element_Editor = containerElement_View.querySelector(".htmlView_editor")
+  const element_Scroller = element_Editor?.querySelector(".document_htmlView")
+  if (!(element_Editor instanceof HTMLElement) || !(element_Scroller instanceof HTMLElement)) {
+    return {
+      MENU: null,
+      FORM: null
+    }
   }
+  const rect_Editor = element_Editor.getBoundingClientRect()
+  const rect_Scroller = element_Scroller.getBoundingClientRect()
+  const margin = 4
+  const left_Kept = Math.max(rect_Editor.left, 0) + margin
+  const right_Kept = Math.min(rect_Editor.right, window.innerWidth) - margin
+  const top_Kept = Math.max(rect_Editor.top, 0) + margin
+  const bottom_Kept = Math.min(rect_Editor.bottom, window.innerHeight) - margin
+  element_Editor.style.setProperty("--widthKept_htmlView", `${Math.max(right_Kept - left_Kept, 0)}px`)
+  element_Editor.style.setProperty("--heightKept_htmlView", `${Math.max(bottom_Kept - top_Kept, 0)}px`)
+  const element_Menu = element_Editor.querySelector(".menu_htmlView[data-x][data-y]")
+  const element_Form = element_Editor.querySelector(".asking_htmlView[data-x][data-y]")
+  return {
+    MENU: element_Menu instanceof HTMLElement
+      ? keptOf__Popover({
+        element: element_Menu,
+        placed_Popover_View: placed$_View.MENU,
+        element_Scroller,
+        isFollowing: false,
+        left_Kept,
+        right_Kept,
+        top_Kept,
+        bottom_Kept
+      })
+      : null,
+    FORM: element_Form instanceof HTMLElement
+      ? keptOf__Popover({
+        element: element_Form,
+        placed_Popover_View: placed$_View.FORM,
+        element_Scroller,
+        isFollowing: true,
+        left_Kept,
+        right_Kept,
+        top_Kept: Math.max(rect_Scroller.top, top_Kept),
+        bottom_Kept: Math.min(rect_Scroller.bottom, bottom_Kept)
+      })
+      : null
+  }
+}
+
+interface _Api___keptOf__Popover_ {
+  element: HTMLElement
+  placed_Popover_View: _Placed_Popover_ | null
+  element_Scroller: HTMLElement
+  isFollowing: boolean
+  left_Kept: number
+  right_Kept: number
+  top_Kept: number
+  bottom_Kept: number
+}
+
+function keptOf__Popover({
+  element,
+  placed_Popover_View,
+  element_Scroller,
+  isFollowing,
+  left_Kept,
+  right_Kept,
+  top_Kept,
+  bottom_Kept
+}: _Api___keptOf__Popover_): _Placed_Popover_ {
+  if (placed_Popover_View?.element !== element) {
+    const point_Placed = placedAt__Point({
+      element,
+      left_Kept,
+      right_Kept,
+      top_Kept,
+      bottom_Kept
+    })
+    const element_Anchor = document.elementsFromPoint(Number(element.dataset["x"]), Number(element.dataset["y"])).find((element_Each) => element_Each !== element_Scroller && element_Scroller.contains(element_Each)) ?? null
+    const rect_Anchor = element_Anchor?.getBoundingClientRect()
+    return {
+      element,
+      point_Placed,
+      element_Anchor,
+      point_Anchor: {
+        x: rect_Anchor?.left ?? 0,
+        y: rect_Anchor?.top ?? 0
+      },
+      point_Scrolled: {
+        x: element_Scroller.scrollLeft,
+        y: element_Scroller.scrollTop
+      }
+    }
+  }
+  const shift = isFollowing
+    ? shiftOf__Popover({
+      placed_Popover: placed_Popover_View,
+      element_Scroller
+    })
+    : {
+      x: 0,
+      y: 0
+    }
+  const rect = element.getBoundingClientRect()
+  const rect_Scroller = element_Scroller.getBoundingClientRect()
+  const top = placed_Popover_View.point_Placed.y + shift.y
+  const clip_Top = isFollowing ? Math.max(rect_Scroller.top - top, 0) : 0
+  const clip_Bottom = isFollowing ? Math.max(top + rect.height - rect_Scroller.bottom, 0) : 0
+  element.style.left = `${Math.max(Math.min(placed_Popover_View.point_Placed.x + shift.x, right_Kept - rect.width), left_Kept)}px`
+  element.style.top = `${top}px`
+  element.style.clipPath = clip_Top === 0 && clip_Bottom === 0 ? "" : `inset(${clip_Top}px 0 ${clip_Bottom}px 0)`
+  return placed_Popover_View
+}
+
+interface _Api___placedAt__Point_ {
+  element: HTMLElement
+  left_Kept: number
+  right_Kept: number
+  top_Kept: number
+  bottom_Kept: number
+}
+
+function placedAt__Point({
+  element,
+  left_Kept,
+  right_Kept,
+  top_Kept,
+  bottom_Kept
+}: _Api___placedAt__Point_): _Point_Screen_ {
+  const x = Number(element.dataset["x"])
+  const y = Number(element.dataset["y"])
+  element.style.left = `${left_Kept}px`
+  element.style.top = `${top_Kept}px`
+  element.style.clipPath = ""
+  const rect = element.getBoundingClientRect()
+  const point_Placed = {
+    x: Math.max(Math.min(x, right_Kept - rect.width), left_Kept),
+    y: y + rect.height <= bottom_Kept
+      ? y
+      : y - rect.height >= top_Kept
+        ? y - rect.height
+        : Math.max(bottom_Kept - rect.height, top_Kept)
+  }
+  element.style.left = `${point_Placed.x}px`
+  element.style.top = `${point_Placed.y}px`
+  return point_Placed
+}
+
+interface _Api___shiftOf__Popover_ {
+  placed_Popover: _Placed_Popover_
+  element_Scroller: HTMLElement
+}
+
+function shiftOf__Popover({
+  placed_Popover,
+  element_Scroller
+}: _Api___shiftOf__Popover_): _Point_Screen_ {
+  const rect_Anchor = placed_Popover.element_Anchor?.isConnected === true ? placed_Popover.element_Anchor.getBoundingClientRect() : null
+  return rect_Anchor === null
+    ? {
+      x: placed_Popover.point_Scrolled.x - element_Scroller.scrollLeft,
+      y: placed_Popover.point_Scrolled.y - element_Scroller.scrollTop
+    }
+    : {
+      x: rect_Anchor.left - placed_Popover.point_Anchor.x,
+      y: rect_Anchor.top - placed_Popover.point_Anchor.y
+    }
 }

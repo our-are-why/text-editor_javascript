@@ -218,6 +218,7 @@ const proposal_Timeout: _Proposal_Host_ = {
       id: "timeout-0",
       notes: "only when the request is safe to send twice, a GET or a PUT.",
       selected: null,
+      reference: null,
       status: "RUNNING"
     }
   ],
@@ -263,6 +264,7 @@ const proposal_Cap: _Proposal_Host_ = {
       id: "cap-0",
       notes: "make the cap an option, 30 seconds unless the caller gives another.",
       selected: null,
+      reference: null,
       status: "QUEUED"
     }
   ],

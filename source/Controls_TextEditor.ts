@@ -177,13 +177,19 @@ const CONTROLS__TEXTEDITOR: Array<_Adapter_Event_> = [
     commandOf__Event: (event) => {
       if (!(event instanceof MouseEvent) || !(event.target instanceof Element) || event.target.closest(".menu_htmlView, .asking_htmlView, textarea") !== null) return null
       event.preventDefault()
-      return {
-        kind: "OPEN_MENU",
-        point_Screen: {
-          x: event.clientX,
-          y: event.clientY
+      return isWritten__Form_Point({
+        element: event.target
+      })
+        ? {
+          kind: "FOCUS_REQUEST"
         }
-      }
+        : {
+          kind: "OPEN_MENU",
+          point_Screen: {
+            x: event.clientX,
+            y: event.clientY
+          }
+        }
     }
   },
   {
@@ -192,10 +198,23 @@ const CONTROLS__TEXTEDITOR: Array<_Adapter_Event_> = [
       const isMenuKey = event instanceof KeyboardEvent && (event.key === "ContextMenu" || (event.key === "F10" && event.shiftKey))
       if (!isMenuKey || !(event.target instanceof Element) || event.target.closest(".input_htmlView") === null) return null
       event.preventDefault()
-      return {
-        kind: "OPEN_MENU",
-        point_Screen: null
-      }
+      return isWritten__Form_Point({
+        element: event.target
+      })
+        ? {
+          kind: "FOCUS_REQUEST"
+        }
+        : {
+          kind: "OPEN_MENU",
+          point_Screen: null
+        }
+    }
+  },
+  {
+    event: "mousedown",
+    commandOf__Event: (event) => {
+      if (event.target instanceof Element && event.target.closest(".menu_htmlView, .asking_htmlView[data-place=\"POINT\"]") !== null && event.target.closest("textarea, button") === null) event.preventDefault()
+      return null
     }
   },
   {
@@ -229,6 +248,44 @@ const CONTROLS__TEXTEDITOR: Array<_Adapter_Event_> = [
     }
   },
   {
+    event: "scroll",
+    commandOf__Event: (event) => event.target instanceof Element && event.target.matches(".document_htmlView") && event.target.closest(".htmlView_editor")?.querySelector(".menu_htmlView, .asking_htmlView[data-place=\"POINT\"]") !== null
+      ? {
+        kind: "SCROLL",
+        isWritten_Form: isWritten__Form_Point({
+          element: event.target
+        })
+      }
+      : null
+  },
+  {
+    event: "focusout",
+    commandOf__Event: (event) => {
+      const element_Form = event.target instanceof Element ? event.target.closest(".asking_htmlView[data-place=\"POINT\"]") : null
+      const element_Notes = element_Form?.querySelector(":scope > .notes_htmlView")
+      if (!(event instanceof FocusEvent) || element_Form === null || element_Form === undefined || !(element_Notes instanceof HTMLTextAreaElement) || element_Notes.value.trim() !== "" || !document.hasFocus()) return null
+      return event.relatedTarget instanceof Node && element_Form.contains(event.relatedTarget)
+        ? null
+        : event.relatedTarget === null
+          ? event.target === element_Notes
+            ? {
+              kind: "CLOSE_REQUEST"
+            }
+            : null
+          : {
+            kind: "LEAVE_REQUEST"
+          }
+    }
+  },
+  {
+    event: "keydown",
+    commandOf__Event: (event) => event instanceof KeyboardEvent && event.key === "Escape" && event.target instanceof Element && event.target.closest(".asking_htmlView[data-place=\"POINT\"]") !== null && event.target.closest(".notes_htmlView") === null
+      ? {
+        kind: "CLOSE_REQUEST"
+      }
+      : null
+  },
+  {
     event: "focusout",
     commandOf__Event: (event) => {
       const element_Menu = event.target instanceof Element ? event.target.closest(".menu_htmlView") : null
@@ -255,7 +312,15 @@ const CONTROLS__TEXTEDITOR: Array<_Adapter_Event_> = [
           ? {
             kind: "CLOSE_REQUEST"
           }
-          : null
+          : kind === "DROP"
+            ? {
+              kind: "DROP_QUOTE"
+            }
+            : kind === "SHOW"
+              ? {
+                kind: "TOGGLE_QUOTE"
+              }
+              : null
     }
   },
   {
@@ -430,7 +495,8 @@ const CONTROLS__TEXTEDITOR: Array<_Adapter_Event_> = [
           ? {
             kind: "OPEN_REQUEST",
             target: {
-              kind
+              kind,
+              reference: null
             }
           }
           : null
@@ -560,6 +626,30 @@ const CONTROLS__TEXTEDITOR: Array<_Adapter_Event_> = [
       : null
   }
 ]
+
+interface _Api___isWritten__Form_Point_ {
+  element: Element
+}
+
+function isWritten__Form_Point({
+  element
+}: _Api___isWritten__Form_Point_): boolean {
+  const element_Notes = notesOf__Form_Point({
+    element
+  })
+  return element_Notes !== null && element_Notes.value.trim() !== ""
+}
+
+interface _Api___notesOf__Form_Point_ {
+  element: Element
+}
+
+function notesOf__Form_Point({
+  element
+}: _Api___notesOf__Form_Point_): HTMLTextAreaElement | null {
+  const element_Notes = element.closest(".htmlView_editor")?.querySelector(".asking_htmlView[data-place=\"POINT\"] > .notes_htmlView")
+  return element_Notes instanceof HTMLTextAreaElement ? element_Notes : null
+}
 
 interface _Api___sentOf__Request_ {
   element: Element

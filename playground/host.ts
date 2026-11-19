@@ -359,9 +359,11 @@ function hostedOf__Editor<State>({
         },
         asked: (asked_Host) => {
           if (asked_Host.kind === "REQUEST") {
+            const reference_Aim = asked_Host.aim.kind === "SELECTION" ? null : asked_Host.aim.reference
             log({
               requested: asked_Host.notes,
-              aimed: asked_Host.aim.kind === "SELECTION" ? asked_Host.aim.selected.text : null
+              aimed: asked_Host.aim.kind === "SELECTION" ? asked_Host.aim.selected.text : null,
+              ...(reference_Aim === null ? {} : { referred: reference_Aim.text })
             })
             count_Request += 1
             const id = `document-${count_Request}`
@@ -437,6 +439,7 @@ function hostedOf__Editor<State>({
                   id: `${source}-again`,
                   notes: "Again, on the document as it is now.",
                   selected: null,
+                  reference: null,
                   status: "QUEUED"
                 }
               ]
@@ -516,7 +519,8 @@ function hostedOf__Editor<State>({
               asked: asked_Action.command,
               proposal: asked_Action.source,
               notes: asked_Action.notes,
-              words: asked_Action.selected?.text ?? null
+              words: asked_Action.selected?.text ?? null,
+              ...(asked_Action.reference === null ? {} : { referred: asked_Action.reference.text })
             })
             const action_Item = proposals_Host.find((proposal_Host) => proposal_Host.source === asked_Action.source)?.actions.find((action_Each) => action_Each.command === asked_Action.command)
             if (action_Item === undefined) return
@@ -541,6 +545,7 @@ function hostedOf__Editor<State>({
                       id,
                       notes,
                       selected: asked_Action.selected,
+                      reference: asked_Action.reference,
                       status: "QUEUED"
                     }
                   ]

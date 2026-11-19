@@ -303,7 +303,7 @@ test("what's asked of a proposal: each request listed on its item, the words it'
   const viewModelIn = (state: _Decision_Proposal_, status: string, statuses: [_Status_Request_, _Status_Request_]) => viewModelOf__Model({
     model_TextEditor: parsed.model_TextEditor,
     name_Document: "notes/digits.txt",
-    proposals: [{ source: "digit", title: "Write two as a digit", state, status, rationale: "", requests: [{ id: "both", notes: "Both.", selected, status: statuses[0] }, { id: "this", notes: "And this.", selected: null, status: statuses[1] }], actions: actions_Review, attributes: {} }],
+    proposals: [{ source: "digit", title: "Write two as a digit", state, status, rationale: "", requests: [{ id: "both", notes: "Both.", selected, reference: null, status: statuses[0] }, { id: "this", notes: "And this.", selected: null, reference: null, status: statuses[1] }], actions: actions_Review, attributes: {} }],
     rounds_Landed: [],
     task: null,
     ranges_Frame: [],
@@ -316,8 +316,8 @@ test("what's asked of a proposal: each request listed on its item, the words it'
   const queued = viewModelIn("OPEN", "", ["QUEUED", "QUEUED"])
   expect(requestedIn(queued, "PROPOSAL_LINES")).toEqual(["one", "2"])
   expect(requestedIn(queued, "CURRENT_LINES")).toEqual([])
-  expect(itemsIn(queued)).toEqual([{ state: "REQUESTED", status: "Revision requested", isRunning: false, isStartable: true, requests: [{ id: "both", notes: "Both.", quote: "one 2", progress: null, isStartable: true, isRemovable: true, isEditing: false, isStoppable: false, detail_Progress: null, isDismissable: false }, { id: "this", notes: "And this.", quote: null, progress: null, isStartable: true, isRemovable: true, isEditing: false, isStoppable: false, detail_Progress: null, isDismissable: false }] }])
-  expect(itemsIn(viewModelIn("OPEN", "", ["RUNNING", "QUEUED"]))).toEqual([{ state: "REVISING", status: "Revising", isRunning: true, isStartable: false, requests: [{ id: "both", notes: "Both.", quote: "one 2", progress: "in progress", isStartable: false, isRemovable: false, isEditing: false, isStoppable: false, detail_Progress: null, isDismissable: false }, { id: "this", notes: "And this.", quote: null, progress: null, isStartable: false, isRemovable: true, isEditing: false, isStoppable: false, detail_Progress: null, isDismissable: false }] }])
+  expect(itemsIn(queued)).toEqual([{ state: "REQUESTED", status: "Revision requested", isRunning: false, isStartable: true, requests: [{ id: "both", notes: "Both.", quote: "one 2", reference: null, progress: null, isRunning: false, isStartable: true, isRemovable: true, isEditing: false, isStoppable: false, detail_Progress: null, isDismissable: false }, { id: "this", notes: "And this.", quote: null, reference: null, progress: null, isRunning: false, isStartable: true, isRemovable: true, isEditing: false, isStoppable: false, detail_Progress: null, isDismissable: false }] }])
+  expect(itemsIn(viewModelIn("OPEN", "", ["RUNNING", "QUEUED"]))).toEqual([{ state: "REVISING", status: "Revising", isRunning: true, isStartable: false, requests: [{ id: "both", notes: "Both.", quote: "one 2", reference: null, progress: "in progress", isRunning: true, isStartable: false, isRemovable: false, isEditing: false, isStoppable: false, detail_Progress: null, isDismissable: false }, { id: "this", notes: "And this.", quote: null, reference: null, progress: null, isRunning: false, isStartable: false, isRemovable: true, isEditing: false, isStoppable: false, detail_Progress: null, isDismissable: false }] }])
   expect(itemsIn(viewModelIn("ACCEPTED", "Accepted", ["QUEUED", "QUEUED"])).map((item) => [item.state, item.status, item.isStartable, item.requests.map((request) => request.isStartable)])).toEqual([["ACCEPTED", "Accepted", false, [false, false]]])
 })
 
@@ -333,15 +333,15 @@ test("the header over the document: how many of its proposals are decided, how m
   })
   if (parsed.kind === "REFUSED") throw new Error("refused")
   const task = (state: _State_Task_): _Task_Host_ => ({ id: "tidy", name: "Tidy", state, summary: "Tidies it.", reason: state === "CANCELED" ? "Not needed." : "", documents: [{ name: "digits.txt", counts_Proposals: { OPEN: 0, REQUESTED: 0, REVISING: 0, ACCEPTED: 0, REJECTED: 0, WITHDRAWN: 0 }, counts_Requests: { QUEUED: 0, RUNNING: 0 }, isShown: true, actions: [] }, { name: "README.md", counts_Proposals: { OPEN: 2, REQUESTED: 1, REVISING: 0, ACCEPTED: 1, REJECTED: 1, WITHDRAWN: 0 }, counts_Requests: { QUEUED: 1, RUNNING: 0 }, isShown: false, actions: [] }], summary_Document: "Here, the digits.", requests: [], actions: [], actions_Document: [{ command: "accept-here", label: "Accept the ones waiting here", section: "PROPOSALS" }] })
-  const header_Task = (state: _State_Task_, label_State: string, figure_Task: { value: string, more: string }, here: { value: string, more: string }) => ({ id: "tidy", name: "Tidy", state, label_State, summary: "Tidies it.", reason: state === "CANCELED" ? "Not needed." : "", proposals: { figure: figure_Task, documents: [{ folder: "", name: "digits.txt", ...here, isShown: true, isDecided: false, actions: [] }, { folder: "", name: "README.md", value: "2 of 5 decided", more: "2 to review · 1 revision requested · 1 accepted · 1 rejected", isShown: false, isDecided: false, actions: [] }], actions: [] }, revisions_Scope: { figure: { value: "1 queued", more: "" }, title_Start: "Starts everything queued in the task, in every document it touches", title_Stop: null, actions: [] }, revisions_Level: { requests: [], isStartable_Requests: false, isStoppable_Requests: false, ask: { label: "Revise", label_Form: "Revise the task" } } })
-  const header_Document = (figure_Here: { value: string, more: string }, value_Revisions: string | null, count_Startable: number, count_Running: number, isTasked: boolean, state: "YOUR_TURN" | "WORKING", label_State: string) => ({ folder: "notes/", name: "digits.txt", state, label_State, summary: isTasked ? "Here, the digits." : "", proposals: { figure: figure_Here, documents: [], actions: isTasked ? [{ command: "accept-here", label: "Accept the ones waiting here", section: "PROPOSALS" as const }] : [] }, revisions_Scope: { figure: value_Revisions === null ? null : { value: value_Revisions, more: "" }, title_Start: count_Startable === 0 ? null : `Starts all ${count_Startable} requests queued in this document, its own and its proposals'`, title_Stop: count_Running === 0 ? null : `Stops all ${count_Running} in progress in this document, its own and its proposals', putting them back in the queue`, actions: [] }, revisions_Level: { requests: [], isStartable_Requests: false, isStoppable_Requests: false, ask: { label: "Revise", label_Form: "Revise this document" } } })
+  const header_Task = (state: _State_Task_, label_State: string, figure_Task: { value: string, more: string }, here: { value: string, more: string }) => ({ id: "tidy", name: "Tidy", state, label_State, summary: "Tidies it.", reason: state === "CANCELED" ? "Not needed." : "", proposals: { figure: figure_Task, documents: [{ folder: "", name: "digits.txt", ...here, isShown: true, isDecided: false, actions: [] }, { folder: "", name: "README.md", value: "2 of 5 decided", more: "2 to review · 1 revision requested · 1 accepted · 1 rejected", isShown: false, isDecided: false, actions: [] }], actions: [] }, revisions_Scope: { figure: { value: "1 queued", more: "" }, start_All: { label: "Start all (1)", title: "Starts everything queued in the task, in every document it touches" }, stop_All: null, actions: [] }, revisions_Level: { requests: [], isStartable_Requests: false, isStoppable_Requests: false, ask: { label: "Revise", label_Form: "Revise the task" } } })
+  const header_Document = (figure_Here: { value: string, more: string }, value_Revisions: string | null, count_Startable: number, count_Running: number, isTasked: boolean, state: "YOUR_TURN" | "WORKING", label_State: string) => ({ folder: "notes/", name: "digits.txt", state, label_State, summary: isTasked ? "Here, the digits." : "", proposals: { figure: figure_Here, documents: [], actions: isTasked ? [{ command: "accept-here", label: "Accept the ones waiting here", section: "PROPOSALS" as const }] : [] }, revisions_Scope: { figure: value_Revisions === null ? null : { value: value_Revisions, more: "" }, start_All: count_Startable === 0 ? null : { label: `Start all (${count_Startable})`, title: `Starts all ${count_Startable} requests queued in this document, its own and its proposals'` }, stop_All: count_Running === 0 ? null : { label: `Stop all (${count_Running})`, title: `Stops all ${count_Running} in progress in this document, its own and its proposals', putting them back in the queue` }, actions: [] }, revisions_Level: { requests: [], isStartable_Requests: false, isStoppable_Requests: false, ask: { label: "Revise", label_Form: "Revise this document" } } })
   const headerOf = (statuses_Digit: Array<_Status_Request_>, decision_First: _Decision_Proposal_, task_Host: _Task_Host_ | null) => viewModelOf__Model({
     model_TextEditor: parsed.model_TextEditor,
     name_Document: "notes/digits.txt",
     proposals: [
-      { source: "digit", title: "Write two as a digit", state: "OPEN", status: "", rationale: "", requests: statuses_Digit.map((status, index) => ({ id: `digit-${index}`, notes: "Say it.", selected: null, status })), actions: actions_Review, attributes: {} },
+      { source: "digit", title: "Write two as a digit", state: "OPEN", status: "", rationale: "", requests: statuses_Digit.map((status, index) => ({ id: `digit-${index}`, notes: "Say it.", selected: null, reference: null, status })), actions: actions_Review, attributes: {} },
       { source: "first", title: "Write one as a digit", state: decision_First, status: "", rationale: "", requests: [], actions: actions_Review, attributes: {} },
-      { source: "unseen", title: "Nothing here", state: "OPEN", status: "", rationale: "", requests: [{ id: "unseen-0", notes: "Never drawn.", selected: null, status: "QUEUED" }], actions: actions_Review, attributes: {} }
+      { source: "unseen", title: "Nothing here", state: "OPEN", status: "", rationale: "", requests: [{ id: "unseen-0", notes: "Never drawn.", selected: null, reference: null, status: "QUEUED" }], actions: actions_Review, attributes: {} }
     ],
     task: task_Host,
     rounds_Landed: [],
@@ -396,7 +396,7 @@ test("a round that landed after your edits: each change of it written before the
   const viewModelOf = (indexes_Stale: Array<number>, count_Dropped: number, status: _Status_Request_ | null) => viewModelOf__Model({
     model_TextEditor: parsed.model_TextEditor,
     name_Document: "notes/digits.txt",
-    proposals: [{ source: "digits", title: "Write them as digits", state: "OPEN", status: "", rationale: "", requests: status === null ? [] : [{ id: "again", notes: "Again.", selected: null, status }], actions: actions_Review, attributes: {} }],
+    proposals: [{ source: "digits", title: "Write them as digits", state: "OPEN", status: "", rationale: "", requests: status === null ? [] : [{ id: "again", notes: "Again.", selected: null, reference: null, status }], actions: actions_Review, attributes: {} }],
     rounds_Landed: [{ source: "digits", indexes_Stale, count_Dropped }],
     task: null,
     ranges_Frame: [],
@@ -433,10 +433,10 @@ test("a task's own requests, on no proposal, aimed at what's selected, the whole
       summary: "",
       requests: [
         { id: "both", notes: "Say what they count.", aim: { kind: "SELECTION", selected: { pieces: [{ id_Text: { kind: "DOCUMENT" }, range: { from: { line: 0, offset: 0 }, to: { line: 0, offset: 3 } } }, { id_Text: { kind: "DOCUMENT" }, range: { from: { line: 1, offset: 0 }, to: { line: 1, offset: 4 } } }], text: "one four" } }, status: "QUEUED", sources_Answering: [] },
-        { id: "all", notes: "Number them all.", aim: { kind: "DOCUMENT" }, status: "RUNNING", sources_Answering: [] },
-        { id: "whole", notes: "Tidy it all.", aim: { kind: "TASK" }, status: "QUEUED", sources_Answering: [] },
+        { id: "all", notes: "Number them all.", aim: { kind: "DOCUMENT", reference: null }, status: "RUNNING", sources_Answering: [] },
+        { id: "whole", notes: "Tidy it all.", aim: { kind: "TASK", reference: null }, status: "QUEUED", sources_Answering: [] },
         { id: "digit", notes: "Write two as a digit.", aim: { kind: "SELECTION", selected: { pieces: [{ id_Text: { kind: "DOCUMENT" }, range: { from: { line: 1, offset: 5 }, to: { line: 1, offset: 9 } } }], text: "five" } }, status: "ADDRESSED", sources_Answering: ["digit"] },
-        { id: "none", notes: "Check the rest.", aim: { kind: "DOCUMENT" }, status: "ADDRESSED", sources_Answering: [] }
+        { id: "none", notes: "Check the rest.", aim: { kind: "DOCUMENT", reference: null }, status: "ADDRESSED", sources_Answering: [] }
       ],
       reason: "",
       documents: [{ name: "count.txt", counts_Proposals: { OPEN: 0, REQUESTED: 0, REVISING: 0, ACCEPTED: 0, REJECTED: 0, WITHDRAWN: 0 }, counts_Requests: { QUEUED: 0, RUNNING: 0 }, isShown: true, actions: [] }],
@@ -449,7 +449,7 @@ test("a task's own requests, on no proposal, aimed at what's selected, the whole
     module_Language: MODULE_PLAINTEXT,
     module_Reading: MODULE_READING_TEXT
   })
-  const request_Whole = { id: "whole", notes: "Tidy it all.", quote: null, progress: null, isStartable: true, isRemovable: true, isEditing: false, isStoppable: false, detail_Progress: null, isDismissable: false }
+  const request_Whole = { id: "whole", notes: "Tidy it all.", quote: null, reference: null, progress: null, isRunning: false, isStartable: true, isRemovable: true, isEditing: false, isStoppable: false, detail_Progress: null, isDismissable: false }
   expect(viewModel.header).toEqual({
     task: {
       id: "count",
@@ -461,8 +461,8 @@ test("a task's own requests, on no proposal, aimed at what's selected, the whole
       proposals: { figure: { value: "0 of 1 decided", more: "1 to review" }, documents: [], actions: [] },
       revisions_Scope: {
         figure: { value: "2 queued · 1 in progress", more: "" },
-        title_Start: "Starts everything queued in the task, in every document it touches",
-        title_Stop: "Stops everything in progress in the task, in every document it touches, putting it back in the queue",
+        start_All: { label: "Start all (2)", title: "Starts everything queued in the task, in every document it touches" },
+        stop_All: { label: "Stop all (1)", title: "Stops everything in progress in the task, in every document it touches, putting it back in the queue" },
         actions: []
       },
       revisions_Level: {
@@ -486,16 +486,16 @@ test("a task's own requests, on no proposal, aimed at what's selected, the whole
       },
       revisions_Scope: {
         figure: { value: "1 queued · 1 in progress", more: "" },
-        title_Start: "Starts all 1 request queued in this document, its own and its proposals'",
-        title_Stop: "Stops all 1 in progress in this document, its own and its proposals', putting them back in the queue",
+        start_All: { label: "Start all (1)", title: "Starts all 1 request queued in this document, its own and its proposals'" },
+        stop_All: { label: "Stop all (1)", title: "Stops all 1 in progress in this document, its own and its proposals', putting them back in the queue" },
         actions: []
       },
       revisions_Level: {
         requests: [
-          { id: "both", notes: "Say what they count.", quote: "one four", progress: null, isStartable: true, isRemovable: true, isEditing: false, isStoppable: false, detail_Progress: null, isDismissable: false },
-          { id: "all", notes: "Number them all.", quote: null, progress: "in progress", isStartable: false, isRemovable: false, isEditing: false, isStoppable: true, detail_Progress: null, isDismissable: false },
-          { id: "digit", notes: "Write two as a digit.", quote: "five", progress: "addressed", isStartable: false, isRemovable: false, isEditing: false, isStoppable: false, detail_Progress: "1 proposal", isDismissable: true },
-          { id: "none", notes: "Check the rest.", quote: null, progress: "addressed", isStartable: false, isRemovable: false, isEditing: false, isStoppable: false, detail_Progress: "nothing to change", isDismissable: true }
+          { id: "both", notes: "Say what they count.", quote: "one four", reference: null, progress: null, isRunning: false, isStartable: true, isRemovable: true, isEditing: false, isStoppable: false, detail_Progress: null, isDismissable: false },
+          { id: "all", notes: "Number them all.", quote: null, reference: null, progress: "in progress", isRunning: true, isStartable: false, isRemovable: false, isEditing: false, isStoppable: true, detail_Progress: null, isDismissable: false },
+          { id: "digit", notes: "Write two as a digit.", quote: "five", reference: null, progress: "addressed", isRunning: false, isStartable: false, isRemovable: false, isEditing: false, isStoppable: false, detail_Progress: "1 proposal", isDismissable: true },
+          { id: "none", notes: "Check the rest.", quote: null, reference: null, progress: "addressed", isRunning: false, isStartable: false, isRemovable: false, isEditing: false, isStoppable: false, detail_Progress: "nothing to change", isDismissable: true }
         ],
         isStartable_Requests: true,
         isStoppable_Requests: true,

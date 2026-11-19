@@ -59,6 +59,10 @@ import {
   parseLines_ViewModel,
   viewModelOf__Blocks,
   segmentsOf__Stretches,
+  stretchesOf__Segments,
+  markedIn__Blocks,
+  markedOf__Run,
+  headOf__Quote,
   type _Selected_Text_,
   type _Piece_Text_,
   isSame__Id_Text
@@ -152,7 +156,7 @@ function viewModelOf__Model<State>({
     )
   }
   return {
-    ...viewModelOf__Blocks(requestedIn__Blocks({
+    ...viewModelOf__Blocks(markedIn__Blocks({
       blocks_ViewModel: [
         ...blocks,
         ...blocksOf__Lines({
@@ -160,7 +164,10 @@ function viewModelOf__Model<State>({
           line_First: line_Next
         })
       ],
-      pieces: (task?.requests ?? []).flatMap((request_Task) => request_Task.status !== "ADDRESSED" && request_Task.aim.kind === "SELECTION" ? request_Task.aim.selected.pieces : [])
+      pieces: (task?.requests ?? []).flatMap((request_Task) => request_Task.status !== "ADDRESSED" && request_Task.aim.kind === "SELECTION" ? request_Task.aim.selected.pieces : []),
+      attributes: {
+        "data-requested": ""
+      }
     })),
     header: headerOf__Proposals({
       model_TextEditor,
@@ -169,41 +176,6 @@ function viewModelOf__Model<State>({
       task
     })
   }
-}
-
-interface _Api___requestedIn__Blocks_ {
-  blocks_ViewModel: Array<_Block_ViewModel_>
-  pieces: Array<_Piece_Text_>
-}
-
-function requestedIn__Blocks({
-  blocks_ViewModel,
-  pieces
-}: _Api___requestedIn__Blocks_): Array<_Block_ViewModel_> {
-  if (pieces.length === 0) return blocks_ViewModel
-  return blocks_ViewModel.map((block_ViewModel): _Block_ViewModel_ => block_ViewModel.kind === "FRAME"
-    ? {
-      ...block_ViewModel,
-      parts: mapped__NonEmpty({
-        items: block_ViewModel.parts,
-        map: (part_Frame): _Part_Frame_ => !isLines__Part_Frame(part_Frame)
-          ? part_Frame
-          : {
-            ...part_Frame,
-            run: requestedOf__Run({
-              run_Lines: part_Frame.run,
-              pieces
-            })
-          }
-      })
-    }
-    : {
-      ...block_ViewModel,
-      run: requestedOf__Run({
-        run_Lines: block_ViewModel.run,
-        pieces
-      })
-    })
 }
 
 interface _Api___headerOf__Proposals_ {
@@ -298,9 +270,9 @@ function headerOf__Proposals({
     QUEUED: requests_Whole.filter((request_Task) => request_Task.status === "QUEUED").length + documents_Task.reduce((sum, document_Task) => sum + document_Task.counts_Requests.QUEUED, 0),
     RUNNING: requests_Whole.filter((request_Task) => request_Task.status === "RUNNING").length + documents_Task.reduce((sum, document_Task) => sum + document_Task.counts_Requests.RUNNING, 0)
   }
-  const isStartable_Task = count_Startable_Here > 0
-    || requests_Whole.some((request_Task) => request_Task.status === "QUEUED")
-    || documents_Task.some((document_Task) => !document_Task.isShown && document_Task.counts_Requests.QUEUED > 0)
+  const count_Startable_Task = count_Startable_Here
+    + requests_Whole.filter((request_Task) => request_Task.status === "QUEUED").length
+    + documents_Task.filter((document_Task) => !document_Task.isShown).reduce((sum, document_Task) => sum + document_Task.counts_Requests.QUEUED, 0)
   return {
     task: task === null
       ? null
@@ -333,8 +305,18 @@ function headerOf__Proposals({
         },
         revisions_Scope: {
           figure: figureOf__Counts_Requests(counts_Requests_Task),
-          title_Start: isStartable_Task ? "Starts everything queued in the task, in every document it touches" : null,
-          title_Stop: counts_Requests_Task.RUNNING === 0 ? null : "Stops everything in progress in the task, in every document it touches, putting it back in the queue",
+          start_All: count_Startable_Task === 0
+            ? null
+            : {
+              label: `Start all (${count_Startable_Task})`,
+              title: "Starts everything queued in the task, in every document it touches"
+            },
+          stop_All: counts_Requests_Task.RUNNING === 0
+            ? null
+            : {
+              label: `Stop all (${counts_Requests_Task.RUNNING})`,
+              title: "Stops everything in progress in the task, in every document it touches, putting it back in the queue"
+            },
           actions: task.actions.filter((action_Task) => action_Task.section === "REVISIONS")
         },
         revisions_Level: {
@@ -371,8 +353,18 @@ function headerOf__Proposals({
       },
       revisions_Scope: {
         figure: figureOf__Counts_Requests(counts_Requests_Here),
-        title_Start: count_Startable_Here === 0 ? null : `Starts all ${count_Startable_Here} ${count_Startable_Here === 1 ? "request" : "requests"} queued in this document, its own and its proposals'`,
-        title_Stop: counts_Requests_Here.RUNNING === 0 ? null : `Stops all ${counts_Requests_Here.RUNNING} in progress in this document, its own and its proposals', putting them back in the queue`,
+        start_All: count_Startable_Here === 0
+          ? null
+          : {
+            label: `Start all (${count_Startable_Here})`,
+            title: `Starts all ${count_Startable_Here} ${count_Startable_Here === 1 ? "request" : "requests"} queued in this document, its own and its proposals'`
+          },
+        stop_All: counts_Requests_Here.RUNNING === 0
+          ? null
+          : {
+            label: `Stop all (${counts_Requests_Here.RUNNING})`,
+            title: `Stops all ${counts_Requests_Here.RUNNING} in progress in this document, its own and its proposals', putting them back in the queue`
+          },
         actions: (task?.actions_Document ?? []).filter((action_Task) => action_Task.section === "REVISIONS")
       },
       revisions_Level: {
@@ -455,9 +447,19 @@ function itemOf__Request_Task(
   return {
     id: request_Task.id,
     notes: request_Task.notes,
-    quote: request_Task.aim.kind === "SELECTION" ? request_Task.aim.selected.text : null,
+    quote: request_Task.aim.kind === "SELECTION"
+      ? headOf__Quote({
+        text: request_Task.aim.selected.text
+      })
+      : null,
+    reference: request_Task.aim.kind === "SELECTION" || request_Task.aim.reference === null
+      ? null
+      : headOf__Quote({
+        text: request_Task.aim.reference.text
+      }),
     progress: PROGRESSMAP__STATUS_REQUEST[request_Task.status],
     detail_Progress: request_Task.status === "ADDRESSED" ? detailOf__Request(request_Task) : null,
+    isRunning: request_Task.status === "RUNNING",
     isStartable: request_Task.status === "QUEUED",
     isRemovable: request_Task.status === "QUEUED",
     isEditing: false,
@@ -641,6 +643,7 @@ interface _Request_Host_ {
   id: string
   notes: string
   selected: _Selected_Text_ | null
+  reference: _Selected_Text_ | null
   status: _Status_Request_
 }
 
@@ -1868,22 +1871,6 @@ const OUTERMAP__KIND_OUTER: _OuterMap__Kind_Outer_ = {
   }
 }
 
-function stretchesOf__Segments(
-  segments: Array<_Segment_Line_>
-): Array<_Stretch_Line_> {
-  const stretches: Array<_Stretch_Line_> = []
-  let from = 0
-  for (const segment of segments) {
-    stretches.push({
-      from,
-      to: from + segment.text.length,
-      attributes: segment.attributes
-    })
-    from = from + segment.text.length
-  }
-  return stretches
-}
-
 interface _Api___groupsWith__Notches_ {
   groups: Array<_Group_Underlay_>
   underlays_Notch: Array<_Underlay_Text_>
@@ -2715,9 +2702,19 @@ function frameOf__Drawn({
         requests: proposal_Host.requests.map((request_Host) => ({
           id: request_Host.id,
           notes: request_Host.notes,
-          quote: request_Host.selected?.text ?? null,
+          quote: request_Host.selected === null
+            ? null
+            : headOf__Quote({
+              text: request_Host.selected.text
+            }),
+          reference: request_Host.reference === null
+            ? null
+            : headOf__Quote({
+              text: request_Host.reference.text
+            }),
           progress: PROGRESSMAP__STATUS_REQUEST[request_Host.status],
           detail_Progress: null,
+          isRunning: request_Host.status === "RUNNING",
           isStartable: isOpen && !isRunning && request_Host.status === "QUEUED",
           isRemovable: request_Host.status === "QUEUED",
           isEditing: false,
@@ -2739,11 +2736,14 @@ function frameOf__Drawn({
   if (item_First === undefined) throw new Error(`a frame at line ${frame_Drawn.frame_Model.first + 1} lists no proposal`)
   const part_Proposed: _Part_Frame_ = {
     kind: "PROPOSAL_LINES",
-    run: requestedOf__Run({
+    run: markedOf__Run({
       run_Lines: frame_Drawn.run_Proposed,
       pieces: proposals
         .filter((proposal_Host) => frame_Drawn.sources.includes(proposal_Host.source))
-        .flatMap((proposal_Host) => proposal_Host.requests.flatMap((request_Host) => request_Host.selected?.pieces ?? []))
+        .flatMap((proposal_Host) => proposal_Host.requests.flatMap((request_Host) => request_Host.selected?.pieces ?? [])),
+      attributes: {
+        "data-requested": ""
+      }
     })
   }
   const part_List: _Part_Frame_ = {
@@ -2848,8 +2848,18 @@ function headOf__Frame({
       },
     revisions_Scope: {
       figure: figureOf__Counts_Requests(counts_Requests),
-      title_Start: count_Startable === 0 ? null : `Starts all ${count_Startable} ${count_Startable === 1 ? "request" : "requests"} queued for the proposals listed in ${label_Range}`,
-      title_Stop: counts_Requests.RUNNING === 0 ? null : `Stops all ${counts_Requests.RUNNING} in progress for the proposals listed in ${label_Range}, putting them back in the queue`,
+      start_All: count_Startable === 0
+        ? null
+        : {
+          label: `Start all (${count_Startable})`,
+          title: `Starts all ${count_Startable} ${count_Startable === 1 ? "request" : "requests"} queued for the proposals listed in ${label_Range}`
+        },
+      stop_All: counts_Requests.RUNNING === 0
+        ? null
+        : {
+          label: `Stop all (${counts_Requests.RUNNING})`,
+          title: `Stops all ${counts_Requests.RUNNING} in progress for the proposals listed in ${label_Range}, putting them back in the queue`
+        },
       actions: []
     }
   }
@@ -2963,72 +2973,4 @@ function placesOf__Source({
       count_All,
       conditions
     }
-}
-
-interface _Api___requestedOf__Run_ {
-  run_Lines: _Run_Lines_
-  pieces: Array<_Piece_Text_>
-}
-
-function requestedOf__Run({
-  run_Lines,
-  pieces
-}: _Api___requestedOf__Run_): _Run_Lines_ {
-  if (pieces.length === 0) return run_Lines
-  return {
-    ...run_Lines,
-    lines: run_Lines.lines.map((line_Run) => {
-      const text = line_Run.segments.map((segment_Line) => segment_Line.text).join("")
-      const stretches_Requested = line_Run.origins.flatMap((origin_Line) => pieces.flatMap((piece_Text): Array<_Stretch_Line_> => {
-        const isSame = isSame__Id_Text({
-          id_Text: piece_Text.id_Text,
-          id_Text_Other: origin_Line.id_Text
-        })
-        const line = origin_Line.position.line
-        if (!isSame || line < piece_Text.range.from.line || piece_Text.range.to.line < line) return []
-        const codePoints_Origin = Array.from(text.slice(
-          origin_Line.from,
-          origin_Line.to
-        ))
-        const start = origin_Line.position.offset
-        const from = Math.max(
-          line === piece_Text.range.from.line ? piece_Text.range.from.offset : 0,
-          start
-        ) - start
-        const to = Math.min(
-          line === piece_Text.range.to.line ? piece_Text.range.to.offset : start + codePoints_Origin.length,
-          start + codePoints_Origin.length
-        ) - start
-        return from < to
-          ? [
-            {
-              from: origin_Line.from + codePoints_Origin.slice(
-                0,
-                from
-              ).join("").length,
-              to: origin_Line.from + codePoints_Origin.slice(
-                0,
-                to
-              ).join("").length,
-              attributes: {
-                "data-requested": ""
-              }
-            }
-          ]
-          : []
-      }))
-      return stretches_Requested.length === 0
-        ? line_Run
-        : {
-          ...line_Run,
-          segments: segmentsOf__Stretches({
-            text: parseTexts_Line(text)[0],
-            stretches: [
-              ...stretchesOf__Segments(line_Run.segments),
-              ...stretches_Requested
-            ]
-          })
-        }
-    })
-  }
 }

@@ -2894,3 +2894,97 @@ as deciding it would drop them, which asks first. Start all is the scope
 of a frame's lines, a group of its own, Revise and Add, and an aim at
 lines, were built and taken out the same day: not yet. The parts with lines
 are picked out by `isLines__Part_Frame`, as the head has none.
+
+Decided 2026-11-19: the menu's words are requests, never notes, and each
+choice is named for its tier first, then what it does, tersely: "Selection:
+Request revision" on a proposal's selected words, "Selection: Request
+change" on the document's, "Proposal: Accept", "Document: Start all",
+"Task: Request change"; the form a request opens says it in full,
+"Request a revision of “…”", the proposal's title there, not in the menu.
+And the menu is tiered, the narrowest first, a hairline
+between each, setting aside the one request without a choice of scope
+decided on 2026-11-18: the words', only with a selection; the
+proposal's, the one the words are in or the one pointed at; the
+document's; and the task's, while there's a task. No tier for a frame,
+which has no requests of its own. Each tier but the words' offers a
+request at its level, and its own quick actions, each only while it has
+something to act on, as its buttons elsewhere do: the proposal's own
+actions but Revise, "Proposal: Accept", "Proposal: Reject", `ACT`,
+asking first where it'd drop requests; the cards' host actions,
+"Document: Accept all (9)"; and Start all and Stop all, the
+scopes `PROPOSAL`, `DOCUMENT` and `TASK`. A choice is chosen by its
+kind, `CHOSENMAP__KIND_ITEM_MENU`: a request opens the form, the rest go
+through the command its button sends. In a tier, its choices are grouped
+as the cards group them, `section`: its proposals' first, Accept, Reject,
+Accept all, then its revisions', its request, Start all, Stop all, a
+host's own revision actions; the menu opens with the keyboard on its
+first request, not its first choice, so Enter asks, never accepts; the
+choice it's on lit only once the keyboard's in use, `isFocusShown`, the
+menu opened from the keyboard or an arrow pressed, as a native menu's is,
+a right-click's lighting only what's pointed at. The document scrolled
+under the menu closes it, by the wheel, the scrollbar or a touch, as
+Monaco's does, so it's never left over words that have moved on; the
+wheel over the menu, scrolling it where it's taller than the editor
+leaves room for, leaves it open, never scrolling what's behind it. Only
+what's under it moving closes it, not a scroll the browser makes to hold
+what's shown still as what's above it changes, a request sent filling a
+list: the view notes, as it places the menu or a form, the element under
+the point it opened at and where it was, `_Placed_Popover_`, and says
+whether it's moved, `isMoved`, the viewer asking it on a `SCROLL`. The
+viewer listens for the events that don't bubble, `scroll` and
+`scrollend`, as they're captured. The
+menu and the form it opens are kept in the editor, not only the window,
+`keptInEditor__View_TextEditor`: slid left from its right edge, opened
+above the point where there's no room below, as wide and as tall as the
+editor leaves room for, the menu scrolling inside past that; the tiers'
+hairlines inset as the choices' words are. A
+choice is drawn in its section's ink, the proposals' indigo or the
+revisions' plum, as the ellipsis each group folds behind in the cards
+is, what it does in full, its tier, `label_Tier`, faded, to 78%,
+each line one colour, set apart from what follows it without a second; Start all bold, what
+it does, not its tier, as every Start is. With a selection, the words go with
+every tier's request below theirs, ", with selection", for reference,
+not to change: an example, or what's meant, at that level. The target's
+and the aim's `reference`, `DOCUMENT`, `TASK` and `PROPOSAL`, an
+action's ask's too, beside `selected`, which a request is aimed at; the
+form quoting them "with" them, and × leaving them out, `DROP_QUOTE`; a
+request listed "with" them after what it says, muted, not ringed in the
+text, as what's ringed is what a request will change. The playground's
+log says what a request referred to, `referred`, where it did.
+
+Decided 2026-11-19: Start all and Stop all say how many, as Accept all
+does, everywhere they're offered: the document's and the task's cards,
+a frame's head, and the menu's tiers, "Document: Start all (2)". Start
+all counts what it would start, not all that's queued: a request on a
+proposal being revised waits its turn, so it's left out; for the task,
+the documents it touches beyond this one count what their host says is
+queued, as that's all that's known of them. Stop all counts what's in
+progress. The summary beside them, "2 queued · 1 in progress", stays:
+it's what's seen while they're folded behind their ellipsis, and the
+counts on the actions, seen once it's opened, can say more than it, one
+startable of two queued. A scope's Start and Stop are `start_All` and
+`stop_All`, each a label and a title or nothing, as `accept_All` is; a
+request listed says whether it's in progress, `isRunning`, which a
+proposal's Stop all in the menu counts. A list's own Start and Stop, over
+the requests listed under them, stay as they are.
+
+Decided 2026-11-19: the menu's form is a popover, by the rules a card's
+form already kept: empty, it's let go, written in, it's held. Empty, a
+click away closes it, the click doing what it would, the caret placed
+there, the keyboard in the text; and the document scrolled under it
+closes it, as the menu. Written in, a click away leaves it open, and the
+document scrolled moves it with what it's on, the element under where it
+opened, cut where it passes the document's edges, the keyboard still in
+it; a right-click, or the menu key, puts the keyboard back in it,
+`FOCUS_REQUEST`, no menu, so what's written can't be lost starting
+another. Escape closes it, written or not, as Cancel does, anywhere in
+it, not only its box; pressed on its words, not a control, it keeps the
+keyboard where it is, as the menu does. Either opened and the window or
+the editor resized, it's kept in the editor. It's headed by the choice
+that opened it, in the menu's words and inks, "Proposal: Request
+revision", what it's on under it, muted, cut where it runs out: the
+proposal's title, the document's name, the task's; the words it's on, or
+goes with, a quiet chip, quoted as they'll be listed, "with" them and ×
+in it where they're for reference; its hint only where it goes, "Added to
+T-12". A card's form, headed by nothing, keeps its hint's "for this
+document".

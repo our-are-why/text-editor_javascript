@@ -65,6 +65,12 @@ export {
   type _Action_Item_,
   viewModelOf__Blocks,
   segmentsOf__Stretches,
+  stretchesOf__Segments,
+  markedIn__Blocks,
+  markedOf__Run,
+  headOf__Quote,
+  sizeOf__Quote,
+  isExpandable__Quote,
   pointedAt__ViewModel,
   foldedAt__ViewModel,
   draftingAt__ViewModel,
@@ -78,6 +84,7 @@ export {
   type _Proposals_Card_,
   type _Figure_Card_,
   type _Revisions_Scope_,
+  type _Work_Scope_,
   type _Revisions_Level_,
   type _Ask_Card_,
   type _Document_Card_,
@@ -102,6 +109,17 @@ export {
   type _Menu_ViewModel_,
   type _Point_Screen_,
   type _Item_Menu_,
+  type __BASE_Item_Menu_,
+  type _Tier_Menu_,
+  type _REQUEST_Item_Menu_,
+  type _ACT_Item_Menu_,
+  type _WORK_Item_Menu_,
+  type _TASK_Item_Menu_,
+  type _Scope_Menu_,
+  type __BASE_Scope_Menu_,
+  type _PROPOSAL_Scope_Menu_,
+  type _DOCUMENT_Scope_Menu_,
+  type _TASK_Scope_Menu_,
   type _Target_Request_,
   type __BASE_Target_Request_,
   type _SELECTION_Target_Request_,
@@ -116,6 +134,8 @@ export {
   type _Selected_Text_,
   type _Piece_Text_,
   type _Form_Request_,
+  type _Head_Form_,
+  type _Quote_Form_,
   type _Place_Form_,
   type __BASE_Place_Form_,
   type _POINT_Place_Form_,
@@ -176,9 +196,14 @@ interface _Figure_Card_ {
 
 interface _Revisions_Scope_ {
   figure: _Figure_Card_ | null
-  title_Start: string | null
-  title_Stop: string | null
+  start_All: _Work_Scope_ | null
+  stop_All: _Work_Scope_ | null
   actions: Array<_Action_Task_>
+}
+
+interface _Work_Scope_ {
+  label: string
+  title: string
 }
 
 interface _Revisions_Level_ {
@@ -392,8 +417,10 @@ interface _Request_Item_ {
   id: string
   notes: string
   quote: string | null
+  reference: string | null
   progress: string | null
   detail_Progress: string | null
+  isRunning: boolean
   isStartable: boolean
   isRemovable: boolean
   isEditing: boolean
@@ -498,8 +525,8 @@ const HEADER_EMPTY: _Header_ViewModel_ = {
     },
     revisions_Scope: {
       figure: null,
-      title_Start: null,
-      title_Stop: null,
+      start_All: null,
+      stop_All: null,
       actions: []
     },
     revisions_Level: {
@@ -642,6 +669,129 @@ function runsOf__Blocks(
       ? block_ViewModel.parts.flatMap((part_Frame) => isLines__Part_Frame(part_Frame) ? [part_Frame.run] : [])
       : [block_ViewModel.run]
   )
+}
+
+interface _Api___markedIn__Blocks_ {
+  blocks_ViewModel: Array<_Block_ViewModel_>
+  pieces: Array<_Piece_Text_>
+  attributes: _Attributes_Element_
+}
+
+function markedIn__Blocks({
+  blocks_ViewModel,
+  pieces,
+  attributes
+}: _Api___markedIn__Blocks_): Array<_Block_ViewModel_> {
+  if (pieces.length === 0) return blocks_ViewModel
+  return blocks_ViewModel.map((block_ViewModel): _Block_ViewModel_ => block_ViewModel.kind === "FRAME"
+    ? {
+      ...block_ViewModel,
+      parts: mapped__NonEmpty({
+        items: block_ViewModel.parts,
+        map: (part_Frame): _Part_Frame_ => !isLines__Part_Frame(part_Frame)
+          ? part_Frame
+          : {
+            ...part_Frame,
+            run: markedOf__Run({
+              run_Lines: part_Frame.run,
+              pieces,
+              attributes
+            })
+          }
+      })
+    }
+    : {
+      ...block_ViewModel,
+      run: markedOf__Run({
+        run_Lines: block_ViewModel.run,
+        pieces,
+        attributes
+      })
+    })
+}
+
+interface _Api___markedOf__Run_ {
+  run_Lines: _Run_Lines_
+  pieces: Array<_Piece_Text_>
+  attributes: _Attributes_Element_
+}
+
+function markedOf__Run({
+  run_Lines,
+  pieces,
+  attributes
+}: _Api___markedOf__Run_): _Run_Lines_ {
+  if (pieces.length === 0) return run_Lines
+  return {
+    ...run_Lines,
+    lines: run_Lines.lines.map((line_Run) => {
+      const text = line_Run.segments.map((segment_Line) => segment_Line.text).join("")
+      const stretches_Marked = line_Run.origins.flatMap((origin_Line) => pieces.flatMap((piece_Text): Array<_Stretch_Line_> => {
+        const isSame = isSame__Id_Text({
+          id_Text: piece_Text.id_Text,
+          id_Text_Other: origin_Line.id_Text
+        })
+        const line = origin_Line.position.line
+        if (!isSame || line < piece_Text.range.from.line || piece_Text.range.to.line < line) return []
+        const codePoints_Origin = Array.from(text.slice(
+          origin_Line.from,
+          origin_Line.to
+        ))
+        const start = origin_Line.position.offset
+        const from = Math.max(
+          line === piece_Text.range.from.line ? piece_Text.range.from.offset : 0,
+          start
+        ) - start
+        const to = Math.min(
+          line === piece_Text.range.to.line ? piece_Text.range.to.offset : start + codePoints_Origin.length,
+          start + codePoints_Origin.length
+        ) - start
+        return from < to
+          ? [
+            {
+              from: origin_Line.from + codePoints_Origin.slice(
+                0,
+                from
+              ).join("").length,
+              to: origin_Line.from + codePoints_Origin.slice(
+                0,
+                to
+              ).join("").length,
+              attributes
+            }
+          ]
+          : []
+      }))
+      return stretches_Marked.length === 0
+        ? line_Run
+        : {
+          ...line_Run,
+          segments: segmentsOf__Stretches({
+            text: parseTexts_Line(text)[0],
+            stretches: [
+              ...stretchesOf__Segments(line_Run.segments),
+              ...stretches_Marked
+            ]
+          })
+        }
+    })
+  }
+}
+
+function stretchesOf__Segments(
+  segments: Array<_Segment_Line_>
+): Array<_Stretch_Line_> {
+  const stretches: Array<_Stretch_Line_> = []
+  let from = 0
+  for (const segment of segments) {
+    stretches.push({
+      from,
+      to: from + segment.text.length,
+      attributes: segment.attributes
+    })
+    from = from + segment.text.length
+  }
+  return stretches
 }
 
 interface _Api___segmentsOf__Stretches_ {
@@ -1173,19 +1323,28 @@ function askingAt__ViewModel({
   menu,
   request
 }: _Api___askingAt__ViewModel_): _ViewModel_TextEditor_ {
-  return menu === null && request === null
-    ? viewModel_TextEditor
-    : {
-      ...viewModel_TextEditor,
-      menu,
-      request
+  if (menu === null && request === null) return viewModel_TextEditor
+  const blocks_Quoted = markedIn__Blocks({
+    blocks_ViewModel: viewModel_TextEditor.blocks,
+    pieces: request?.quote?.pieces ?? [],
+    attributes: {
+      "data-quoted": ""
     }
+  })
+  return {
+    ...viewModel_TextEditor,
+    blocks: blocks_Quoted,
+    runs: blocks_Quoted === viewModel_TextEditor.blocks ? viewModel_TextEditor.runs : runsOf__Blocks(blocks_Quoted),
+    menu,
+    request
+  }
 }
 
 interface _Menu_ViewModel_ {
   point_Screen: _Point_Screen_
   items: _NonEmpty_<_Item_Menu_>
   index_Focused: number
+  isFocusShown: boolean
 }
 
 interface _Point_Screen_ {
@@ -1193,10 +1352,51 @@ interface _Point_Screen_ {
   y: number
 }
 
-interface _Item_Menu_ {
+type _Item_Menu_ = _REQUEST_Item_Menu_ | _ACT_Item_Menu_ | _WORK_Item_Menu_ | _TASK_Item_Menu_
+
+interface __BASE_Item_Menu_<Kind extends string> {
+  kind: Kind
+  label_Tier: string
   label: string
-  quote: string | null
+  tier: _Tier_Menu_
+  section: _Section_Action_
+}
+
+type _Tier_Menu_ = "WORDS" | "PROPOSAL" | "DOCUMENT" | "TASK"
+
+interface _REQUEST_Item_Menu_ extends __BASE_Item_Menu_<"REQUEST"> {
+  label_Form: string
+  head: _Head_Form_
+  quote: _Quote_Form_ | null
   target: _Target_Request_
+}
+
+interface _ACT_Item_Menu_ extends __BASE_Item_Menu_<"ACT"> {
+  id_Item: _Id_Item_
+  command: string
+}
+
+interface _WORK_Item_Menu_ extends __BASE_Item_Menu_<"WORK"> {
+  work: "START" | "STOP"
+  scope: _Scope_Menu_
+}
+
+type _Scope_Menu_ = _PROPOSAL_Scope_Menu_ | _DOCUMENT_Scope_Menu_ | _TASK_Scope_Menu_
+
+interface __BASE_Scope_Menu_<Kind extends string> {
+  kind: Kind
+}
+
+interface _PROPOSAL_Scope_Menu_ extends __BASE_Scope_Menu_<"PROPOSAL"> {
+  source: string
+}
+
+interface _DOCUMENT_Scope_Menu_ extends __BASE_Scope_Menu_<"DOCUMENT"> {}
+
+interface _TASK_Scope_Menu_ extends __BASE_Scope_Menu_<"TASK"> {}
+
+interface _TASK_Item_Menu_ extends __BASE_Item_Menu_<"TASK"> {
+  command: string
 }
 
 type _Target_Request_ = _SELECTION_Target_Request_ | _DOCUMENT_Target_Request_ | _TASK_Target_Request_ | _PROPOSAL_Target_Request_
@@ -1209,9 +1409,13 @@ interface _SELECTION_Target_Request_ extends __BASE_Target_Request_<"SELECTION">
   selected: _Selected_Text_
 }
 
-interface _DOCUMENT_Target_Request_ extends __BASE_Target_Request_<"DOCUMENT"> {}
+interface _DOCUMENT_Target_Request_ extends __BASE_Target_Request_<"DOCUMENT"> {
+  reference: _Selected_Text_ | null
+}
 
-interface _TASK_Target_Request_ extends __BASE_Target_Request_<"TASK"> {}
+interface _TASK_Target_Request_ extends __BASE_Target_Request_<"TASK"> {
+  reference: _Selected_Text_ | null
+}
 
 type _Aim_Request_ = _SELECTION_Aim_Request_ | _DOCUMENT_Aim_Request_ | _TASK_Aim_Request_
 
@@ -1223,14 +1427,19 @@ interface _SELECTION_Aim_Request_ extends __BASE_Aim_Request_<"SELECTION"> {
   selected: _Selected_Text_
 }
 
-interface _DOCUMENT_Aim_Request_ extends __BASE_Aim_Request_<"DOCUMENT"> {}
+interface _DOCUMENT_Aim_Request_ extends __BASE_Aim_Request_<"DOCUMENT"> {
+  reference: _Selected_Text_ | null
+}
 
-interface _TASK_Aim_Request_ extends __BASE_Aim_Request_<"TASK"> {}
+interface _TASK_Aim_Request_ extends __BASE_Aim_Request_<"TASK"> {
+  reference: _Selected_Text_ | null
+}
 
 interface _PROPOSAL_Target_Request_ extends __BASE_Target_Request_<"PROPOSAL"> {
   source: string
   command: string
   selected: _Selected_Text_ | null
+  reference: _Selected_Text_ | null
 }
 
 interface _Selected_Text_ {
@@ -1246,11 +1455,65 @@ interface _Piece_Text_ {
 interface _Form_Request_ {
   place: _Place_Form_
   label: string
-  quote: string | null
+  head: _Head_Form_ | null
+  quote: _Quote_Form_ | null
   hint: string
   isStartable: boolean
   target: _Target_Request_
 }
+
+interface _Head_Form_ {
+  label_Tier: string
+  label: string
+  subject: string
+}
+
+interface _Quote_Form_ {
+  text: string
+  head: string
+  size: string | null
+  label: string
+  isDroppable: boolean
+  isExpandable: boolean
+  isExpanded: boolean
+  pieces: Array<_Piece_Text_>
+}
+
+interface _Api___headOf__Quote_ {
+  text: string
+}
+
+function headOf__Quote({
+  text
+}: _Api___headOf__Quote_): string {
+  const lines = parseTexts_Line(text)
+  const index_First = Math.max(0, lines.findIndex((line) => line.trim() !== ""))
+  const line_First = lines[index_First]?.trim() ?? ""
+  return lines.length - 1 > index_First ? `${line_First}…` : line_First
+}
+
+interface _Api___sizeOf__Quote_ {
+  text: string
+}
+
+function sizeOf__Quote({
+  text
+}: _Api___sizeOf__Quote_): string | null {
+  const count = parseTexts_Line(text).length
+  return count < 2 ? null : `${count} lines`
+}
+
+interface _Api___isExpandable__Quote_ {
+  text: string
+}
+
+function isExpandable__Quote({
+  text
+}: _Api___isExpandable__Quote_): boolean {
+  return parseTexts_Line(text).length > 1 || Array.from(text).length > LENGTH_SHOWN__QUOTE
+}
+
+const LENGTH_SHOWN__QUOTE = 36
 
 type _Place_Form_ = _POINT_Place_Form_ | _TASK_Place_Form_ | _DOCUMENT_Place_Form_
 
