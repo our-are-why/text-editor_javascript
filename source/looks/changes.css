@@ -5,6 +5,7 @@
    and its syntax's: a change is a ring round its words, red where they go,
    yellow where they're replaced, green where they're new, brown where
    they're moved, at both ends, dashed where only their look changes,
+   dotted where they're replaced and their look changes too,
    ghosted, at half strength, where they're inside another proposal's
    removal, so apply only if it's rejected; and a line in a frame says what
    it becomes in its gutter, its label in the same colours, never with a
@@ -59,13 +60,42 @@
   --edge: var(--view-moved-edge, light-dark(#a2733f, #977254));
 }
 
-/* only its look: dashed; replaced and restyled both: dashed, but less */
+/* every dashed path, a ring's or a cut side's, whatever its dash, its
+   dashes fitted by the view one way: an element on each of its corners,
+   bent round it, shared by the two sides meeting there, and along each
+   side, evenly spaced, as near the look's own pattern as a whole number
+   of them comes, so every side's symmetric; half an element at an end
+   with no side beyond it. The element is what the look's dash and cap
+   draw: a dash, a dash of none round, a dot, of none square, a square.
+   The view takes the pattern over, drawing the elements themselves, as a
+   browser would start it again at every part of a ring a wrap cuts */
+
+/* only its look: dashed; replaced and restyled both: dotted, its dashes
+   round dots, none long, so it reads as neither a restyle nor a
+   replacement alone, the line heavier, so the dots are seen. Not where
+   it's latent, solid at half strength as every latent ring is, or written
+   before your edits, dashed as every such ring is; its cut sides dashed,
+   as every ring's are */
 [data-look~="changes"] :is(.underlay_htmlView, .seam_htmlView)[data-change="restyled"] {
   stroke-dasharray: 3 2;
 }
 
-[data-look~="changes"] :is(.underlay_htmlView, .seam_htmlView)[data-change="replacedRestyled"] {
-  stroke-dasharray: 6 2;
+[data-look~="changes"] .underlay_htmlView[data-change="replacedRestyled"]:not([data-within], [data-stale]) {
+  stroke-width: 2px;
+  stroke-dasharray: 0 4;
+  stroke-linecap: round;
+}
+
+/* pointed at, heavier, as every ring is, from its own heavier start, its
+   dots spaced further apart as they grow, so they stay dots */
+[data-look~="changes"] .group_htmlView[data-pointed] > .underlay_htmlView[data-change="replacedRestyled"]:not([data-within], [data-stale]) {
+  stroke-width: 2.75px;
+  stroke-dasharray: 0 5;
+}
+
+[data-look~="changes"] .group_htmlView[data-pointed] > .underlay_htmlView[data-pointed][data-change="replacedRestyled"]:not([data-within], [data-stale]) {
+  stroke-width: 3.5px;
+  stroke-dasharray: 0 6;
 }
 
 /* inside another proposal's removal, `data-within` its source: it applies
@@ -78,9 +108,9 @@
 
 /* where a wrap, or a line break, cuts a ring in two, its sides at the cut,
    `seam_htmlView`, the first part's right side and the next part's left,
-   which aren't its ends: dashed, so its two parts read as one; the view
-   fits the dashes to each side, a dash at each end, flush with the outer
-   edges of the ring's top and bottom */
+   which aren't its ends: dashed, so its two parts read as one, corner to
+   corner, fitted as every dashed path is, each end's half dash the cut
+   side's share of its corner's */
 [data-look~="changes"] .seam_htmlView[data-change] {
   stroke-dasharray: 2 2;
 }

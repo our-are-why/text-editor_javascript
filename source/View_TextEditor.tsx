@@ -1939,7 +1939,7 @@ function drawTextUnderlay$__View_TextEditor({
         </g>
       ))
     })
-    fit__Seam$({
+    fit__Dash$({
       svgElement_underlay$
     })
   }
@@ -3340,50 +3340,189 @@ function lengthOf__Corner$(
   )
 }
 
-interface _Api___fit__Seam$_ {
+interface _Api___fit__Dash$_ {
   svgElement_underlay$: Element
 }
 
-function fit__Seam$({
+function fit__Dash$({
   svgElement_underlay$
-}: _Api___fit__Seam$_): void {
-  for (const pathElement_seam of svgElement_underlay$.querySelectorAll(".seam_htmlView")) {
-    if (!(pathElement_seam instanceof SVGPathElement)) continue
-    const style = getComputedStyle(pathElement_seam)
-    const length = pathElement_seam.getTotalLength()
-    if (length <= 0) continue
-    const point_Start = pathElement_seam.getPointAtLength(0)
-    const point_End = pathElement_seam.getPointAtLength(length)
-    const reach = lengthOf__Value(style.strokeWidth) / 2 / length
-    const x_Reach = (point_End.x - point_Start.x) * reach
-    const y_Reach = (point_End.y - point_Start.y) * reach
-    pathElement_seam.setAttribute(
+}: _Api___fit__Dash$_): void {
+  for (const pathElement of svgElement_underlay$.querySelectorAll(":is(.underlay_htmlView, .seam_htmlView):not([data-notch])")) {
+    if (!(pathElement instanceof SVGPathElement)) continue
+    const [
+      length_Dash,
+      length_Gap
+    ] = length$Of__Dasharray(getComputedStyle(pathElement).strokeDasharray)
+    if (length_Dash === undefined || length_Gap === undefined || length_Dash + length_Gap <= 0) continue
+    pathElement.setAttribute(
       "d",
-      `M ${point_Start.x - x_Reach} ${point_Start.y - y_Reach} L ${point_End.x + x_Reach} ${point_End.y + y_Reach}`
+      dOf__Dash$({
+        piece$: piece$Of__D(pathElement.getAttribute("d") ?? ""),
+        length_Dash,
+        pitch: length_Dash + length_Gap
+      })
     )
-    const length$_Dash = length$Of__Dasharray(style.strokeDasharray)
-    const length_First = length$_Dash[0]
-    const period = length$_Dash.reduce(
-      (
-        sum,
-        length
-      ) => sum + length,
-      0
+    pathElement.style.setProperty(
+      "stroke-dasharray",
+      "none"
     )
-    if (length_First === undefined || period <= 0) continue
-    const count = Math.max(
-      0,
-      Math.round((pathElement_seam.getTotalLength() - length_First) / period)
-    )
-    const length_Path = count * period + length_First
-    if (length_Path > 0) {
-      pathElement_seam.setAttribute(
-        "pathLength",
-        String(length_Path)
-      )
-    }
   }
 }
+
+function piece$Of__D(
+  d: string
+): Array<_Piece_Dash_> {
+  return d
+    .split("M")
+    .map((part) => part.trim())
+    .filter((part) => part !== "")
+    .map((part) => {
+      const number$ = (part.match(REGEXP_NUMBER) ?? []).map(Number)
+      return {
+        point$: Array.from(
+          {
+            length: Math.floor(number$.length / 2)
+          },
+          (
+            _,
+            index
+          ) => ({
+            x: number$[2 * index] ?? 0,
+            y: number$[2 * index + 1] ?? 0
+          })
+        ),
+        isClosed: part.endsWith("Z")
+      }
+    })
+}
+
+interface _Piece_Dash_ {
+  point$: Array<_Corner_Path_>
+  isClosed: boolean
+}
+
+const REGEXP_NUMBER = /-?\d*\.?\d+(?:e[-+]?\d+)?/gi
+
+interface _Api___dOf__Dash$_ {
+  piece$: Array<_Piece_Dash_>
+  length_Dash: number
+  pitch: number
+}
+
+function dOf__Dash$({
+  piece$,
+  length_Dash,
+  pitch
+}: _Api___dOf__Dash$_): string {
+  const reach = Math.max(
+    length_Dash / 2,
+    REACH_LEAST__DASH
+  )
+  const pointAt = (
+    edge: _Edge_Dash_,
+    along: number
+  ) => `${edge.from.x + edge.x_Unit * along} ${edge.from.y + edge.y_Unit * along}`
+  const cornerOf = (
+    edge_In: _Edge_Dash_,
+    edge_Out: _Edge_Dash_
+  ) => `M ${pointAt(edge_In, edge_In.length - Math.min(reach, edge_In.length))} L ${pointAt(edge_Out, 0)} L ${pointAt(edge_Out, Math.min(reach, edge_Out.length))}`
+  return piece$.flatMap((piece) => {
+    const edge$ = edge$Of__Piece_Dash(piece)
+    const edge_First = edge$[0]
+    const edge_Last = edge$.at(-1)
+    if (edge_First === undefined || edge_Last === undefined) return []
+    return [
+      ...edge$.flatMap((
+        edge,
+        index
+      ) => {
+        const edge_Before = edge$[index - 1]
+        return edge_Before === undefined
+          ? []
+          : [
+            cornerOf(
+              edge_Before,
+              edge
+            )
+          ]
+      }),
+      ...piece.isClosed
+        ? [
+          cornerOf(
+            edge_Last,
+            edge_First
+          )
+        ]
+        : [
+          `M ${pointAt(edge_First, 0)} L ${pointAt(edge_First, Math.min(reach, edge_First.length))}`,
+          `M ${pointAt(edge_Last, edge_Last.length - Math.min(reach, edge_Last.length))} L ${pointAt(edge_Last, edge_Last.length)}`
+        ],
+      ...edge$.flatMap((edge) => {
+        const count = Math.max(
+          1,
+          Math.round(edge.length / pitch)
+        )
+        return Array.from(
+          {
+            length: count - 1
+          },
+          (
+            _,
+            index
+          ) => {
+            const along = (index + 1) * edge.length / count
+            return `M ${pointAt(edge, along - reach)} L ${pointAt(edge, along + reach)}`
+          }
+        )
+      })
+    ]
+  }).join(" ")
+}
+
+function edge$Of__Piece_Dash(
+  piece: _Piece_Dash_
+): Array<_Edge_Dash_> {
+  const point$_To = piece.isClosed
+    ? [
+      ...piece.point$.slice(1),
+      ...piece.point$.slice(
+        0,
+        1
+      )
+    ]
+    : piece.point$.slice(1)
+  return point$_To.flatMap((
+    to,
+    index
+  ) => {
+    const from = piece.point$[index]
+    const length = from === undefined
+      ? 0
+      : Math.hypot(
+        to.x - from.x,
+        to.y - from.y
+      )
+    return from === undefined || length < REACH_LEAST__DASH
+      ? []
+      : [
+        {
+          from,
+          length,
+          x_Unit: (to.x - from.x) / length,
+          y_Unit: (to.y - from.y) / length
+        }
+      ]
+  })
+}
+
+interface _Edge_Dash_ {
+  from: _Corner_Path_
+  length: number
+  x_Unit: number
+  y_Unit: number
+}
+
+const REACH_LEAST__DASH = 0.01
 
 interface _Api___fit__Lap$_ {
   containerElement_View: HTMLElement

@@ -1,5 +1,5 @@
 import { parseModel_TextEditor, type _Mark_Text_, type _Changes_Host_, type _Model_TextEditor_ } from "../source/Model_TextEditor.ts"
-import { viewModelOf__Model, type _Proposal_Host_, type _Module_Reading_ } from "../source/Projection_TextEditor.ts"
+import { viewModelOf__Model, type _Proposal_Host_, type _Landed_Round_, type _Module_Reading_ } from "../source/Projection_TextEditor.ts"
 import type { _Module_Language_, _Range_Lines_, _ViewModel_TextEditor_ } from "../source/ViewModel_TextEditor.ts"
 
 export {
@@ -33,16 +33,19 @@ interface _Api___projectedOf_<State> {
   module_Reading: _Module_Reading_
   proposed: Array<_Changes_Host_>
   proposals: Array<_Proposal_Host_>
+  rounds_Landed: Array<_Landed_Round_>
   ranges_Frame: Array<_Range_Lines_>
 }
 
 // a document's view model, as the editor draws it from its model, its
 // changes read as the reading given reads them, what the playground, as
-// host, says of each proposal, and the lines it frames, a function's say,
-// beyond what the changes touch: for the pages that show what's drawn, the
-// changes document's cases and the gallery's scenes, which the viewer draws
-// as it's given them, where an example has the editor draw its model; a
-// document named nothing, with no task, as these pages draw no header
+// host, says of each proposal, how their last rounds landed, which of
+// their changes were written before your edits, and the lines it frames,
+// a function's say, beyond what the changes touch: for the pages that show
+// what's drawn, the changes document's cases and the gallery's scenes,
+// which the viewer draws as it's given them, where an example has the
+// editor draw its model; a document named nothing, with no task, as these
+// pages draw no header
 function projectedOf<State>({
   multilineText,
   marks,
@@ -50,7 +53,8 @@ function projectedOf<State>({
   module_Reading,
   proposed,
   proposals,
+  rounds_Landed,
   ranges_Frame
 }: _Api___projectedOf_<State>): _ViewModel_TextEditor_ {
-  return viewModelOf__Model({ model_TextEditor: modelOf({ multilineText, marks, proposed }), name_Document: "", proposals, rounds_Landed: [], task: null, ranges_Frame, module_Language, module_Reading })
+  return viewModelOf__Model({ model_TextEditor: modelOf({ multilineText, marks, proposed }), name_Document: "", proposals, rounds_Landed, task: null, ranges_Frame, module_Language, module_Reading })
 }

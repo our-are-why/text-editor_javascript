@@ -85,9 +85,7 @@ const CONTROLS__TEXTEDITOR: Array<_Adapter_Event_> = [
           element: element_Revise
         })
       if (id_Item === null) return null
-      const element_Notes = element_Revise?.closest(".item_htmlView")?.querySelector(".notes_htmlView")
-      const isWritten = element_Notes instanceof HTMLTextAreaElement && element_Notes.value.trim() !== ""
-      return element_Revise?.getAttribute("aria-expanded") === "true" && !isWritten
+      return element_Revise?.getAttribute("aria-expanded") === "true"
         ? {
           kind: "DISCARD",
           id_Item
@@ -419,15 +417,20 @@ const CONTROLS__TEXTEDITOR: Array<_Adapter_Event_> = [
   {
     event: "click",
     commandOf__Event: (event) => {
-      const kind = event.target instanceof Element ? event.target.closest(".header_htmlView [data-ask]")?.getAttribute("data-ask") : null
-      return kind === "DOCUMENT" || kind === "TASK"
+      const element_Ask = event.target instanceof Element ? event.target.closest(".header_htmlView [data-ask]") : null
+      const kind = element_Ask?.getAttribute("data-ask")
+      return element_Ask?.getAttribute("aria-expanded") === "true"
         ? {
-          kind: "OPEN_REQUEST",
-          target: {
-            kind
-          }
+          kind: "CLOSE_REQUEST"
         }
-        : null
+        : kind === "DOCUMENT" || kind === "TASK"
+          ? {
+            kind: "OPEN_REQUEST",
+            target: {
+              kind
+            }
+          }
+          : null
     }
   },
   {

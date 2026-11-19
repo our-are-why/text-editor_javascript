@@ -42,6 +42,7 @@ const proposalsCode: _Scene_ = {
       { source: "check", title: "Drop the check on wordsPerMinute", state: "OPEN", status: "", rationale: "Every caller passes a positive whole number, so the check only ever throws in tests.", requests: [], actions: actions_Review, attributes: {} },
       { source: "minutes", title: "Name the minutes before rounding them", state: "OPEN", status: "", rationale: "With a name, the rounding reads as one step on a value you already understand.", requests: [], actions: actions_Review, attributes: {} }
     ],
+    rounds_Landed: [],
     ranges_Frame: [{ first: 11, last: 17 }]
   }),
 }

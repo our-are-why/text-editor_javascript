@@ -52,6 +52,7 @@ const proposalsProse: _Scene_ = {
       { source: "most", title: "Most of the orders sent out, not half finished", state: "OPEN", status: "", rationale: "The lathe holds up most of the orders, not half, and what's held up is getting them to customers, not finishing them.", requests: [], actions: actions_Review, attributes: {} },
       { source: "weeks", title: "Two weeks, in bold", state: "OPEN", status: "", rationale: "There's two weeks of slack, not one, and it's the number people will plan around.", requests: [], actions: actions_Review, attributes: {} }
     ],
+    rounds_Landed: [],
     ranges_Frame: []
   }),
 }

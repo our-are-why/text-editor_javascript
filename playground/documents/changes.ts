@@ -18,12 +18,13 @@ export {
 // projection working out the rest, so a case shows one thing
 
 // what a ring says: its colour, what the change does; its dash, whether
-// only the look changes; its strength, whether it applies only if another
-// proposal's rejected
+// only the look changes, or it was written before your edits, dotted,
+// whether the words change too; its strength, whether it applies only if
+// another proposal's rejected
 const kinds: _Section_Document_ = {
   name: "kinds",
   title: "What a ring says",
-  about: "A ring's colour says what the change does: red taken out, yellow replaced, green put in, brown moved. Its dash says only the look changes; half strength, that it applies only if another proposal's rejected.",
+  about: "A ring's colour says what the change does: red taken out, yellow replaced, green put in, brown moved. Its dash says only the look changes, or that its round wrote it before your edits; dotted, that the words change as well as their look; half strength, that it applies only if another proposal's rejected.",
   cases: [
     {
       name: "kinds-removed",
@@ -46,6 +47,7 @@ const kinds: _Section_Document_ = {
         proposals: [
           proposalOf({ source: "unit", title: "Drop the unit comment", rationale: "DELAY_MS says its unit in its name." })
         ],
+        rounds_Landed: [],
         ranges_Frame: []
       })
     },
@@ -67,6 +69,7 @@ const kinds: _Section_Document_ = {
         proposals: [
           proposalOf({ source: "aborted", title: "Stop once the caller aborts", rationale: "Otherwise the loop sleeps a whole delay before it notices." })
         ],
+        rounds_Landed: [],
         ranges_Frame: []
       })
     },
@@ -88,6 +91,7 @@ const kinds: _Section_Document_ = {
         proposals: [
           proposalOf({ source: "round", title: "Call the attempt counter round", rationale: "n says nothing; round says what it counts." })
         ],
+        rounds_Landed: [],
         ranges_Frame: []
       })
     },
@@ -96,7 +100,7 @@ const kinds: _Section_Document_ = {
       title: "Only the look changed",
       status: "normal",
       size: "wide",
-      drawn: "Dashed yellow on both sides: the words are the same, and only their look changes, here to bold.",
+      drawn: "Dashed yellow on both sides: the words are the same, and only their look changes, here to bold. A dash bent round each corner, shared by the sides meeting there, and the dashes along each side evenly spaced, so every side's symmetric, as every dashed ring's are.",
       open: null,
       viewModel_TextEditor: projectedOf({
         multilineText: "The delay doubles each round, and never grows past thirty seconds.",
@@ -109,6 +113,7 @@ const kinds: _Section_Document_ = {
         proposals: [
           proposalOf({ source: "bold", title: "Stress the cap", rationale: "It's the promise the caller relies on." })
         ],
+        rounds_Landed: [],
         ranges_Frame: []
       })
     },
@@ -117,7 +122,7 @@ const kinds: _Section_Document_ = {
       title: "Replaced, and its look changed",
       status: "normal",
       size: "wide",
-      drawn: "Dashed yellow, its dashes longer than a restyle's: the words change, and their look too.",
+      drawn: "Dotted yellow, its dashes round dots, a dot on each corner and the rest evenly spaced along each side, its line a little heavier so they're seen: the words change, and their look too, so it's neither a restyle's dashes nor a replacement's solid line. Pointed at, heavier still, its dots spaced further apart as they grow.",
       open: null,
       viewModel_TextEditor: projectedOf({
         multilineText: "Between attempts it waits a second at most.",
@@ -130,6 +135,7 @@ const kinds: _Section_Document_ = {
         proposals: [
           proposalOf({ source: "wait", title: "Say the longer wait, and stress it", rationale: "The cap went up to two seconds." })
         ],
+        rounds_Landed: [],
         ranges_Frame: []
       })
     },
@@ -151,6 +157,7 @@ const kinds: _Section_Document_ = {
         proposals: [
           proposalOf({ source: "status", title: "Work out the status first", rationale: "Then the function reads as its answers, top to bottom." })
         ],
+        rounds_Landed: [],
         ranges_Frame: [{ first: 2, last: 3 }]
       })
     },
@@ -174,6 +181,7 @@ const kinds: _Section_Document_ = {
           proposalOf({ source: "hook", title: "Drop the onRetry hook", rationale: "Nothing passes onRetry any more." }),
           proposalOf({ source: "round", title: "Call the attempt counter round", rationale: "n says nothing; round says what it counts." })
         ],
+        rounds_Landed: [],
         ranges_Frame: [{ first: 1, last: 2 }]
       })
     },
@@ -197,6 +205,32 @@ const kinds: _Section_Document_ = {
           proposalOf({ source: "sleep", title: "Move sleep up, beside the delays", rationale: "Read from the top, sleep comes before what waits on it." }),
           proposalOf({ source: "delay", title: "Call sleep's ms delayMs", rationale: "The unit in the name, as DELAY_MS has it." })
         ],
+        rounds_Landed: [],
+        ranges_Frame: [{ first: 1, last: 2 }]
+      })
+    },
+    {
+      name: "kinds-stale",
+      title: "Written before your edits",
+      status: "normal",
+      size: "wide",
+      drawn: "Dashed, in its kind's colour: a change its last round wrote before your edits touched what it was written on, as it may not say what it would now. Here the round took out the unit comment and renamed the attempts, and you'd edited the comment since: the removal's ring is dashed red, the rename's solid yellow, written on what you hadn't touched. Its item says how many, \"1 change written before your edits\", and offers Run again, starting the round's requests over from now, so the agent sees your edits.",
+      open: {
+        question: "A stale ring takes the restyled ring's dash, 3 2, whatever its kind: a stale restyle reads as any restyle, a stale replaced-and-restyled one, losing its dots, as only restyled, and a stale latent one is dashed, where latent rings never are.",
+        recommend: "A dash of its own for stale, one no other ring has, so each dash says one thing."
+      },
+      viewModel_TextEditor: projectedOf({
+        multilineText: "const ATTEMPTS = 5;\nconst DELAY_MS = 100; // in milliseconds",
+        marks: [],
+        module_Language: module_JavaScript,
+        module_Reading: MODULE_READING_TEXT,
+        proposed: [
+          { source: "names", changes: [replacing([0, 6], [0, 14], "MAX_ATTEMPTS"), replacing([1, 21], [1, 40], "")] }
+        ],
+        proposals: [
+          proposalOf({ source: "names", title: "Say the cap, drop the unit comment", rationale: "MAX_ATTEMPTS says it's a cap, and DELAY_MS says its unit in its name." })
+        ],
+        rounds_Landed: [{ source: "names", indexes_Stale: [1], count_Dropped: 0 }],
         ranges_Frame: [{ first: 1, last: 2 }]
       })
     },
@@ -228,6 +262,7 @@ const shape: _Section_Document_ = {
         proposals: [
           proposalOf({ source: "base", title: "Call it the base delay", rationale: "It's where the doubling starts." })
         ],
+        rounds_Landed: [],
         ranges_Frame: []
       })
     },
@@ -249,6 +284,7 @@ const shape: _Section_Document_ = {
         proposals: [
           proposalOf({ source: "round", title: "Call the attempt counter round", rationale: "n says nothing; round says what it counts." })
         ],
+        rounds_Landed: [],
         ranges_Frame: []
       })
     },
@@ -272,6 +308,7 @@ const shape: _Section_Document_ = {
           proposalOf({ source: "abort", title: "Call it abortSignal", rationale: "As the DOM does." }),
           proposalOf({ source: "chain", title: "Drop the optional call", rationale: "signal is always given." })
         ],
+        rounds_Landed: [],
         ranges_Frame: []
       })
     },
@@ -293,6 +330,7 @@ const shape: _Section_Document_ = {
         proposals: [
           proposalOf({ source: "bounds", title: "Name the bounds floor and ceiling", rationale: "They bound the delay, not the attempts." })
         ],
+        rounds_Landed: [],
         ranges_Frame: []
       })
     },
@@ -314,6 +352,7 @@ const shape: _Section_Document_ = {
         proposals: [
           proposalOf({ source: "jitter", title: "Use the shared jitter", rationale: "Every client backs off the same way." })
         ],
+        rounds_Landed: [],
         ranges_Frame: []
       })
     },
@@ -335,6 +374,7 @@ const shape: _Section_Document_ = {
         proposals: [
           proposalOf({ source: "hook", title: "Drop the onRetry hook", rationale: "Nothing passes onRetry any more." })
         ],
+        rounds_Landed: [],
         ranges_Frame: []
       })
     },
@@ -358,6 +398,7 @@ const shape: _Section_Document_ = {
           proposalOf({ source: "order", title: "Ask about the error before the round", rationale: "An error that can't be retried ends the loop in any round." }),
           proposalOf({ source: "round", title: "Call the attempt counter round", rationale: "n says nothing; round says what it counts." })
         ],
+        rounds_Landed: [],
         ranges_Frame: []
       })
     },
@@ -379,6 +420,7 @@ const shape: _Section_Document_ = {
         proposals: [
           proposalOf({ source: "private", title: "Keep backoff to the module", rationale: "Nothing else calls it." })
         ],
+        rounds_Landed: [],
         ranges_Frame: []
       })
     },
@@ -409,6 +451,7 @@ const moves: _Section_Document_ = {
         proposals: [
           proposalOf({ source: "sleep", title: "Move sleep up, beside the delays", rationale: "Read from the top, sleep comes before what waits on it." })
         ],
+        rounds_Landed: [],
         ranges_Frame: []
       })
     },
@@ -430,6 +473,7 @@ const moves: _Section_Document_ = {
         proposals: [
           proposalOf({ source: "order", title: "Ask about the error before the round", rationale: "An error that can't be retried ends the loop in any round." })
         ],
+        rounds_Landed: [],
         ranges_Frame: []
       })
     },
@@ -460,6 +504,7 @@ const lines: _Section_Document_ = {
         proposals: [
           proposalOf({ source: "hook", title: "Drop the onRetry hook", rationale: "Nothing passes onRetry any more." })
         ],
+        rounds_Landed: [],
         ranges_Frame: [{ first: 1, last: 3 }]
       })
     },
@@ -481,6 +526,7 @@ const lines: _Section_Document_ = {
         proposals: [
           proposalOf({ source: "cap", title: "Cap the delay at 30 seconds", rationale: "A long outage never goes quiet for longer than half a minute." })
         ],
+        rounds_Landed: [],
         ranges_Frame: [{ first: 1, last: 2 }]
       })
     },
@@ -502,6 +548,7 @@ const lines: _Section_Document_ = {
         proposals: [
           proposalOf({ source: "gap", title: "One blank line between constants", rationale: "As everywhere else in the file." })
         ],
+        rounds_Landed: [],
         ranges_Frame: [{ first: 2, last: 3 }]
       })
     },
@@ -523,6 +570,7 @@ const lines: _Section_Document_ = {
         proposals: [
           proposalOf({ source: "check", title: "Drop the range check", rationale: "Every caller counts from 1." })
         ],
+        rounds_Landed: [],
         ranges_Frame: []
       })
     },
@@ -553,6 +601,7 @@ const threads: _Section_Document_ = {
         proposals: [
           proposalOf({ source: "round", title: "Call the attempt counter round", rationale: "n says nothing; round says what it counts." })
         ],
+        rounds_Landed: [],
         ranges_Frame: []
       })
     },
@@ -585,6 +634,7 @@ const pointing: _Section_Document_ = {
           proposalOf({ source: "round", title: "Call the attempt counter round", rationale: "n says nothing; round says what it counts." }),
           proposalOf({ source: "cap", title: "Cap the delay at 30 seconds", rationale: "A long outage never goes quiet for longer than half a minute." })
         ],
+        rounds_Landed: [],
         ranges_Frame: [{ first: 1, last: 3 }]
       })
     },
@@ -617,6 +667,7 @@ const folding: _Section_Document_ = {
           proposalOf({ source: "round", title: "Call the attempt counter round", rationale: "n says nothing; round says what it counts." }),
           proposalOf({ source: "cap", title: "Cap the delay at 30 seconds", rationale: "A long outage never goes quiet for longer than half a minute." })
         ],
+        rounds_Landed: [],
         ranges_Frame: [{ first: 1, last: 3 }]
       })
     },
@@ -638,6 +689,7 @@ const folding: _Section_Document_ = {
         proposals: [
           proposalOf({ source: "header", title: "Drop the opening comment", rationale: "The doc comment says it, where it's read." })
         ],
+        rounds_Landed: [],
         ranges_Frame: []
       })
     },
@@ -670,6 +722,7 @@ const marks: _Section_Document_ = {
         proposals: [
           proposalOf({ source: "signal", title: "Don't pass the signal to sleep", rationale: "The loop checks it itself." })
         ],
+        rounds_Landed: [],
         ranges_Frame: []
       })
     },
@@ -691,6 +744,7 @@ const marks: _Section_Document_ = {
         proposals: [
           proposalOf({ source: "hook", title: "Drop the onRetry hook", rationale: "Nothing passes onRetry any more." })
         ],
+        rounds_Landed: [],
         ranges_Frame: [{ first: 1, last: 3 }]
       })
     },
@@ -714,6 +768,7 @@ const marks: _Section_Document_ = {
           proposalOf({ source: "options", title: "Drop the options", rationale: "Every caller uses the defaults." }),
           proposalOf({ source: "legacy", title: "Drop the legacy flag", rationale: "The old path is gone." })
         ],
+        rounds_Landed: [],
         ranges_Frame: []
       })
     },
@@ -737,6 +792,7 @@ const marks: _Section_Document_ = {
           proposalOf({ source: "abort", title: "Call it abortSignal", rationale: "As the DOM does." }),
           proposalOf({ source: "chain", title: "Drop the optional call", rationale: "signal is always given." })
         ],
+        rounds_Landed: [],
         ranges_Frame: []
       })
     },
@@ -760,6 +816,7 @@ const marks: _Section_Document_ = {
           proposalOf({ source: "sleep", title: "Move sleep up, beside the delays", rationale: "Read from the top, sleep comes before what waits on it." }),
           proposalOf({ source: "signal", title: "Drop sleep's signal", rationale: "The loop checks it itself." })
         ],
+        rounds_Landed: [],
         ranges_Frame: [{ first: 1, last: 2 }]
       })
     },
@@ -781,6 +838,7 @@ const marks: _Section_Document_ = {
         proposals: [
           proposalOf({ source: "header", title: "Drop the opening comment", rationale: "The doc comment says it, where it's read." })
         ],
+        rounds_Landed: [],
         ranges_Frame: []
       })
     },
@@ -802,6 +860,7 @@ const marks: _Section_Document_ = {
         proposals: [
           proposalOf({ source: "exports", title: "Drop the export", rationale: "sleep is the module's own." })
         ],
+        rounds_Landed: [],
         ranges_Frame: [{ first: 1, last: 3 }]
       })
     },
@@ -835,6 +894,7 @@ const marks: _Section_Document_ = {
         proposals: [
           proposalOf({ source: "indent", title: "Indent by two", rationale: "As the rest of the file is." })
         ],
+        rounds_Landed: [],
         ranges_Frame: []
       })
     },
@@ -859,6 +919,7 @@ const marks: _Section_Document_ = {
         proposals: [
           proposalOf({ source: "words", title: "Shorten the comment", rationale: "The numbers are in the code." })
         ],
+        rounds_Landed: [],
         ranges_Frame: []
       })
     },
@@ -882,6 +943,7 @@ const marks: _Section_Document_ = {
           proposalOf({ source: "comment", title: "Drop the comment", rationale: "The name says it." }),
           proposalOf({ source: "private", title: "Keep backoff to the module", rationale: "Nothing else calls it." })
         ],
+        rounds_Landed: [],
         ranges_Frame: [{ first: 1, last: 2 }]
       })
     },

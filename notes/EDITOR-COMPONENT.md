@@ -1347,12 +1347,13 @@ item alone, its proposal in its frame, `_Id_Item_`, among the editor's
 item says it's the one, `isDrafting`, a host giving `false`, as a gutter
 says it's pointed at. `DRAFT` opens it, from Revise; `SEND`, from Add, Revise
 now, or ⌘ or Ctrl with Enter, which adds, and `DISCARD`, from Cancel or Escape, deliberately
-throwing away what's in it, or Revise pressed again with nothing written in
-it, close it, the keyboard back on Revise, the editor asking for that once
-it's drawn, `focus_Draft`, as it asks for a note's target to be revealed;
-Revise pressed again with something written puts the keyboard back in it, as
-doctor's Amend does, so what's written is never thrown away by the button
-that opened it; all three the editor's own controls', which work with no
+throwing away what's in it, or Revise pressed again, close it, the keyboard
+back on Revise, the editor asking for that once it's drawn, `focus_Draft`,
+as it asks for a note's target to be revealed; Revise pressed again is the
+form's Cancel, what's written in it or not, decided 2026-11-19, where it
+had put the keyboard back in a form with something written, as doctor's
+Amend does, so the button that opened it never threw it away; a card's
+Revise and Add the same, `CLOSE_REQUEST` while their form's open; all three the editor's own controls', which work with no
 module in. Revise on another item opens its form too, as many open as you're
 writing, each in its own item, kept as it is, what's written in it with it,
 as GitHub's inline comments are, where doctor kept to one open at a time, a
@@ -2778,3 +2779,22 @@ always where the eye expects, as the caret, the selection and where a click
 lands all differ there. Every other writing system is in, as it costs little:
 the browser lays them out, and `Intl.Segmenter` finds their characters and
 words, which English needs anyway, for emoji and accents.
+
+Decided 2026-11-19: a ring replaced and restyled is dotted, its dashes
+round dots, `0 4` with round caps on a 2px line, heavier pointed at, not
+the longer dashes it had, nor dots at its corners and sides' middles over
+its dashes, which were tried and let go; latent, it's solid at half
+strength, and written before your edits, dashed, as every such ring is.
+Every dashed path, a ring's or a cut side's, has its dashes fitted by one
+formula, `fit__Dash$`: an element on each corner, bent round it, shared
+by the sides meeting there, and along each side evenly spaced, as near
+the look's pattern as a whole number comes, so every side's symmetric;
+half an element at an end with no side beyond. The element is what the
+look's dash and cap draw, a dash, a dot, a square; a star or another
+shape would need the view to draw a shape at each spot, not done. The view
+draws the elements as the path's pieces, the look's `stroke-dasharray`
+read and set to none on the path, as Chromium starts a dash pattern again
+at each piece of a path, so a ring a wrap cuts, or open at a side, can't
+be fitted with one pattern; a draw puts the look's back, and it's fitted
+again. The cut sides' own fitting, `pathLength` scaled, a dash at each
+end reaching half a stroke past the ring, is gone with it.

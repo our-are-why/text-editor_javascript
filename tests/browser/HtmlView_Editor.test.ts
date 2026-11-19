@@ -646,7 +646,7 @@ describe("beside it: what can't live in one document", () => {
     await opened.page.evaluate(() => document.getElementById("lit")?.remove())
   })
 
-  test("Revise asks for your notes: a box under its item's words and actions, the keyboard in it, Add, in the revision's plum, then Start, set apart, bold and plum, nothing before its word, on a ground tinted plum, and Cancel, neutral, under it, in that item alone, though its proposal's in another frame too, Revise pressed, open; what's written kept as the pointer moves; Add, with something written, Cancel, Escape, ⌘ or Ctrl with Enter, adding, or Revise again with nothing written, close it, the keyboard back on Revise, and Revise again with something written puts the keyboard back in it; Revise on another item opens its form too, the first kept, what's written in it with it", async () => {
+  test("Revise asks for your notes: a box under its item's words and actions, the keyboard in it, Add, in the revision's plum, then Start, set apart, bold and plum, nothing before its word, on a ground tinted plum, and Cancel, neutral, under it, in that item alone, though its proposal's in another frame too, Revise pressed, open; what's written kept as the pointer moves; Add, with something written, Cancel, Escape, ⌘ or Ctrl with Enter, adding, or Revise again, as Cancel, what's written or not, close it, the keyboard back on Revise; Revise on another item opens its form too, the first kept, what's written in it with it", async () => {
     await opened.page.mouse.move(1270, 715)
     await opened.page.evaluate(() => {
       const containerElement = document.createElement("div")
@@ -802,15 +802,12 @@ describe("beside it: what can't live in one document", () => {
     const both = await looks()
     expect([both.drafted, both.expanded, both.focused]).toEqual([["1 round", "3 round"], ["1 round true", "1 cap false", "3 round true"], "3 round notes"])
     expect(await opened.page.evaluate((selector) => document.querySelector<HTMLTextAreaElement>(`${selector} .notes_htmlView`)?.value, item(1, "round"))).toBe("keep this")
-    // Revise again on one with something written in it: kept open, the
-    // keyboard back in it
+    // Revise again on one with something written in it, as its Cancel:
+    // that one alone closed, what's written gone, the keyboard on its
+    // Revise
     await press(`${item(1, "round")} .action_htmlView[data-command="revise"]`)
-    const kept = await looks()
-    expect([kept.drafted, kept.focused, kept.written]).toEqual([["1 round", "3 round"], "1 round notes", "keep this"])
-    // Escape closes that one alone
-    await opened.page.keyboard.press("Escape")
     const one = await looks()
-    expect([one.drafted, one.focused]).toEqual([["3 round"], "1 round Revise"])
+    expect([one.drafted, one.focused, one.written]).toEqual([["3 round"], "1 round Revise", null])
     // Cancel, then Add, by the mouse: with nothing written, nothing added,
     // the form kept open; with something, added, closed
     await press(`${item(3, "round")} [data-draft="DISCARD"]`)
@@ -1493,6 +1490,99 @@ describe("beside it: what can't live in one document", () => {
     expect(gaps).toEqual({ given: [3, 3], none: [2, 2], pressed: { gaps: [3, 3, 3], clearOfWord: true } })
   })
 
+  test("in the changes look, a ring replaced and restyled is dotted, its dashes round dots, heavier than a restyle's dashed ring, but solid at half strength where it's latent and dashed where it was written before your edits, as every ring is; and every dashed ring's dashes fitted by one formula, an element on each corner, its sides' elements evenly spaced, near the look's own pattern", async () => {
+    const rings = await opened.page.evaluate(async () => {
+      const containerElement = document.createElement("div")
+      containerElement.style.width = "40rem"
+      containerElement.dataset["look"] = "changes"
+      document.body.append(containerElement)
+      const ringOf = (
+        from: number,
+        to: number,
+        attributes: Record<string, string>
+      ) => ({ kind: "STRETCH" as const, from: { line: 0, offset: from }, to: { line: 0, offset: to }, attributes: { "data-side": "before", "data-source": "most", ...attributes } })
+      new window._View_TextEditor_({
+        containerElement,
+        componentMap: window.COMPONENTMAP__VIEW_TEXTEDITOR
+      }).draw(window.viewModelOf__Blocks([{
+        kind: "LINES",
+        run: {
+          id: "document",
+          lines: window.parseLines_ViewModel({ multilineText: "one two three four", module_Language: window.MODULE_PLAINTEXT }),
+          groups: [{
+            attributes: { "data-source": "most" },
+            underlays: [
+              ringOf(0, 3, { "data-change": "restyled" }),
+              ringOf(4, 7, { "data-change": "replacedRestyled" }),
+              ringOf(8, 13, { "data-change": "replacedRestyled", "data-within": "other" }),
+              ringOf(14, 18, { "data-change": "replacedRestyled", "data-stale": "" })
+            ]
+          }]
+        }
+      }]))
+      await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)))
+      // a ring's pieces, each its points; a solid ring one piece, its
+      // dashes' and dots' many, an element on each of its corners, bent
+      // round it, three points, and those along its sides, two
+      const piecesOf = (element: Element) => (element.getAttribute("d") ?? "").split("M").filter((part) => part.trim() !== "").map((part) => {
+        const numbers = (part.match(/-?[\d.]+(?:e[-+]?\d+)?/gi) ?? []).map(Number)
+        return Array.from({ length: Math.floor(numbers.length / 2) }, (_, index) => ({ x: numbers[2 * index] ?? 0, y: numbers[2 * index + 1] ?? 0 }))
+      })
+      const round = (length: number) => Math.round(length * 100) / 100
+      const drawn = [...containerElement.querySelectorAll(".underlay_htmlView")].map((element) => {
+        const style = getComputedStyle(element)
+        const pieces = piecesOf(element)
+        const along = [...new Set(pieces.filter((piece) => piece.length === 2).map(([from, to]) => round(Math.hypot((to?.x ?? 0) - (from?.x ?? 0), (to?.y ?? 0) - (from?.y ?? 0)))))]
+        return `${element.getAttribute("data-change")}${element.hasAttribute("data-within") ? " latent" : ""}${element.hasAttribute("data-stale") ? " stale" : ""}: ${style.strokeWidth} ${style.strokeLinecap} ${style.strokeOpacity} ${pieces.length === 1 ? "solid" : `elements ${along.join(" ")}`}`
+      })
+      // the formula, on the restyle's ring and the dotted one: an element
+      // on each of the four corners, its arms half an element each; each
+      // side's corners and the middles of its elements evenly spaced, no
+      // more than a third from the look's own pitch
+      const fitted = [[0, 5], [1, 4]].map(([index = 0, pitch = 0]) => {
+        const element = containerElement.querySelectorAll(".underlay_htmlView")[index]
+        if (!(element instanceof SVGPathElement)) return null
+        const box = element.getBBox()
+        const pieces = piecesOf(element)
+        const corners = pieces.filter((piece) => piece.length === 3)
+        const isCorner = (x: number, y: number) => [box.x, box.x + box.width].some((each) => Math.abs(each - x) < 0.01) && [box.y, box.y + box.height].some((each) => Math.abs(each - y) < 0.01)
+        const arms = [...new Set(corners.flatMap(([from, at, to]) => [Math.hypot((at?.x ?? 0) - (from?.x ?? 0), (at?.y ?? 0) - (from?.y ?? 0)), Math.hypot((to?.x ?? 0) - (at?.x ?? 0), (to?.y ?? 0) - (at?.y ?? 0))].map(round)))]
+        const middles = pieces.filter((piece) => piece.length === 2).map(([from, to]) => ({ x: ((from?.x ?? 0) + (to?.x ?? 0)) / 2, y: ((from?.y ?? 0) + (to?.y ?? 0)) / 2 }))
+        const sides = [
+          { on: (y: number) => Math.abs(y - box.y) < 0.01, ofPoint: (point: { x: number, y: number }) => point.y, along: (point: { x: number, y: number }) => point.x, ends: [box.x, box.x + box.width] },
+          { on: (y: number) => Math.abs(y - box.y - box.height) < 0.01, ofPoint: (point: { x: number, y: number }) => point.y, along: (point: { x: number, y: number }) => point.x, ends: [box.x, box.x + box.width] },
+          { on: (x: number) => Math.abs(x - box.x) < 0.01, ofPoint: (point: { x: number, y: number }) => point.x, along: (point: { x: number, y: number }) => point.y, ends: [box.y, box.y + box.height] },
+          { on: (x: number) => Math.abs(x - box.x - box.width) < 0.01, ofPoint: (point: { x: number, y: number }) => point.x, along: (point: { x: number, y: number }) => point.y, ends: [box.y, box.y + box.height] }
+        ]
+        const isEven = sides.every((side) => {
+          const spots = [...side.ends, ...middles.filter((middle) => side.on(side.ofPoint(middle))).map(side.along)].sort((a, b) => a - b)
+          const spacings = spots.slice(1).map((spot, at) => spot - (spots[at] ?? 0))
+          const spacing = spacings[0] ?? 0
+          return Math.max(...spacings) - Math.min(...spacings) < 0.01 && spacing > pitch * 2 / 3 && spacing < pitch * 4 / 3
+        })
+        return {
+          corners: corners.filter(([, at]) => isCorner(at?.x ?? 0, at?.y ?? 0)).length,
+          arms,
+          isEven
+        }
+      })
+      containerElement.remove()
+      return { drawn, fitted }
+    })
+    expect(rings).toEqual({
+      drawn: [
+        "restyled: 1px butt 1 elements 3",
+        "replacedRestyled: 2px round 1 elements 0.02",
+        "replacedRestyled latent: 1px butt 0.5 solid",
+        "replacedRestyled stale: 1px butt 1 elements 3"
+      ],
+      fitted: [
+        { corners: 4, arms: [1.5], isEven: true },
+        { corners: 4, arms: [0.01], isEven: true }
+      ]
+    })
+  })
+
   test("switching the look on, after drawing, measures the underlays again; with it on, a change pressed on by punctuation has room made, its ring reaching past its word's ink the same on both sides", async () => {
     const widths = await opened.page.evaluate(async () => {
       const containerElement = document.createElement("div")
@@ -1654,7 +1744,7 @@ describe("beside it: what can't live in one document", () => {
     })
   })
 
-  test("a ring a line break or a wrap cuts in two, its parts not one over the other, has its sides at the cut drawn apart from it, as seams, a path each: the first part's right side and the next part's left, the ring open there, reaching half a stroke past its top and bottom, flush with their outer edges, their dashes fitted to them, whole, one at each end; one whose parts are one over the other is one shape, with none", async () => {
+  test("a ring a line break or a wrap cuts in two, its parts not one over the other, has its sides at the cut drawn apart from it, as seams, a path each: the first part's right side and the next part's left, the ring open there, each running corner to corner, its dashes fitted as every dashed path's are, half a dash at each end, its share of the corner's, the rest whole, evenly spaced, near the look's own; one whose parts are one over the other is one shape, with none", async () => {
     const cuts = await opened.page.evaluate(async () => {
       const containerElement = document.createElement("div")
       containerElement.style.width = "20rem"
@@ -1691,48 +1781,68 @@ describe("beside it: what can't live in one document", () => {
       draw([stretch(0, 25, 1, 3), stretch(2, wrap - 5, 2, wrap + 4), stretch(2, 5, 2, wrap + 9)])
       await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)))
       const numbersOf = (element: Element | undefined) => (element?.getAttribute("d") ?? "").match(/-?[\d.]+/g)?.map(Number) ?? []
-      // a seam's dashes, as the look gives them, fitted: a whole
-      // number of the pattern, and its first dash again, so a dash at each
-      // end, each dash scaled no more than a third from its own length
-      const isFitted = (seamElement: Element) => {
-        if (!(seamElement instanceof SVGPathElement)) return false
-        const lengths = (getComputedStyle(seamElement).strokeDasharray.match(/\d*\.?\d+/g) ?? []).map(Number)
-        const period = lengths.reduce((sum, length) => sum + length, 0)
-        const length_Path = Number(seamElement.getAttribute("pathLength"))
-        const repeats = (length_Path - (lengths[0] ?? 0)) / period
-        const scale = seamElement.getTotalLength() / length_Path
-        return lengths.length > 0 && Math.abs(repeats - Math.round(repeats)) < 0.001 && scale > 0.75 && scale < 1.34
+      // the look's own dash pattern for a path, read from a copy the view
+      // hasn't fitted
+      const patternOf = (element: Element) => {
+        const copy = element.cloneNode()
+        if (!(copy instanceof Element)) return []
+        copy.removeAttribute("style")
+        element.parentElement?.append(copy)
+        const lengths = (getComputedStyle(copy).strokeDasharray.match(/\d*\.?\d+/g) ?? []).map(Number)
+        copy.remove()
+        return lengths
       }
+      // a seam's dashes fitted: half a dash at each end, its share of the
+      // corner's, the rest whole, their middles and the ends evenly
+      // spaced, no more than a third from the look's own pattern
+      const isFitted = (seamElement: Element) => {
+        const [dash = 0, gap = 0] = patternOf(seamElement)
+        const pieces = (seamElement.getAttribute("d") ?? "").split("M").filter((part) => part.trim() !== "").map((part) => {
+          const numbers = (part.match(/-?[\d.]+(?:e[-+]?\d+)?/gi) ?? []).map(Number)
+          return [numbers[1] ?? 0, numbers[3] ?? 0].sort((a, b) => a - b)
+        }).sort((a, b) => (a[0] ?? 0) - (b[0] ?? 0))
+        const first = pieces[0]
+        const last = pieces.at(-1)
+        if (first === undefined || last === undefined || pieces.length < 2) return false
+        const middles = [first[0] ?? 0, ...pieces.slice(1, -1).map(([from = 0, to = 0]) => (from + to) / 2), last[1] ?? 0]
+        const spacings = middles.slice(1).map((middle, index) => middle - (middles[index] ?? 0))
+        const spacing = spacings[0] ?? 0
+        return Math.max(...spacings) - Math.min(...spacings) < 0.01
+          && spacing > (dash + gap) * 2 / 3 && spacing < (dash + gap) * 4 / 3
+          && Math.abs((first[1] ?? 0) - (first[0] ?? 0) - dash / 2) < 0.01 && Math.abs((last[1] ?? 0) - (last[0] ?? 0) - dash / 2) < 0.01
+          && pieces.slice(1, -1).every(([from = 0, to = 0]) => Math.abs(to - from - dash) < 0.01)
+      }
+      const xsOf = (element: Element | undefined) => numbersOf(element).filter((_, index) => index % 2 === 0)
+      const ysOf = (element: Element | undefined) => numbersOf(element).filter((_, index) => index % 2 === 1)
       return [...containerElement.querySelectorAll(".underlay_htmlView")].map((ringElement) => {
         const box = ringElement instanceof SVGPathElement ? ringElement.getBBox() : new DOMRect()
         const seamElements: Array<Element> = []
         for (let element = ringElement.nextElementSibling; element?.classList.contains("seam_htmlView"); element = element.nextElementSibling) seamElements.push(element)
-        const [x1, y1, x2, y2] = numbersOf(seamElements[0])
-        const [x3, y3, x4, y4] = numbersOf(seamElements[1])
+        const xs_First = xsOf(seamElements[0])
+        const xs_Next = xsOf(seamElements[1])
+        const ys_First = ysOf(seamElements[0])
+        const ys_Next = ysOf(seamElements[1])
         return {
           wrapped: wrap > 0,
           ringShapes: (ringElement.getAttribute("d")?.match(/M/g) ?? []).length,
           ringClosed: ringElement.getAttribute("d")?.includes("Z") ?? false,
-          seams: seamElements.map((seamElement) => (seamElement.getAttribute("d")?.match(/M/g) ?? []).length),
-          seamsUpright: seamElements.length === 0 || (x1 === x2 && x3 === x4),
-          firstAtRingsRight: seamElements.length === 0 || x1 === box.x + box.width,
-          nextAtRingsLeft: seamElements.length === 0 || x3 === box.x,
-          nextBelowFirst: seamElements.length === 0 || Math.min(y3 ?? 0, y4 ?? 0) > Math.max(y1 ?? 0, y2 ?? 0) - 0.01,
-          flush: seamElements.length === 0 || (() => {
-            const halfStroke = Number.parseFloat(getComputedStyle(seamElements[0] ?? ringElement).strokeWidth) / 2
-            return halfStroke > 0 && Math.abs(Math.min(y1 ?? 0, y2 ?? 0) - (box.y - halfStroke)) < 0.01 && Math.abs(Math.max(y3 ?? 0, y4 ?? 0) - (box.y + box.height + halfStroke)) < 0.01
-          })(),
+          seams: seamElements.length,
+          seamsUpright: seamElements.length === 0 || (new Set(xs_First).size === 1 && new Set(xs_Next).size === 1),
+          firstAtRingsRight: seamElements.length === 0 || xs_First[0] === box.x + box.width,
+          nextAtRingsLeft: seamElements.length === 0 || xs_Next[0] === box.x,
+          nextBelowFirst: seamElements.length === 0 || Math.min(...ys_Next) > Math.max(...ys_First) - 0.01,
+          cornerToCorner: seamElements.length === 0 || Math.abs(Math.min(...ys_First) - box.y) < 0.01 && Math.abs(Math.max(...ys_Next) - (box.y + box.height)) < 0.01,
           dashesFitted: seamElements.every(isFitted),
           seamAttributes: seamElements.map((seamElement) => [...seamElement.attributes].map((attribute) => attribute.name).filter((name) => name.startsWith("data-")))
         }
       })
     })
     const attributes = ["data-change", "data-side", "data-source"]
-    const cut = { wrapped: true, ringShapes: 2, ringClosed: false, seams: [1, 1], seamsUpright: true, firstAtRingsRight: true, nextAtRingsLeft: true, nextBelowFirst: true, flush: true, dashesFitted: true, seamAttributes: [attributes, attributes] }
+    const cut = { wrapped: true, ringShapes: 2, ringClosed: false, seams: 2, seamsUpright: true, firstAtRingsRight: true, nextAtRingsLeft: true, nextBelowFirst: true, cornerToCorner: true, dashesFitted: true, seamAttributes: [attributes, attributes] }
     expect(cuts).toEqual([
       cut,
       cut,
-      { wrapped: true, ringShapes: 1, ringClosed: true, seams: [], seamsUpright: true, firstAtRingsRight: true, nextAtRingsLeft: true, nextBelowFirst: true, flush: true, dashesFitted: true, seamAttributes: [] }
+      { wrapped: true, ringShapes: 1, ringClosed: true, seams: 0, seamsUpright: true, firstAtRingsRight: true, nextAtRingsLeft: true, nextBelowFirst: true, cornerToCorner: true, dashesFitted: true, seamAttributes: [] }
     ])
   })
 

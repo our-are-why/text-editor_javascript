@@ -33,6 +33,7 @@ const proposalsThread: _Scene_ = {
     module_Reading: MODULE_READING_TEXT,
     proposed: proposed_retry.filter((changes_Host) => sources_Thread.includes(changes_Host.source)),
     proposals: proposals_retry.filter((proposal_Host) => sources_Thread.includes(proposal_Host.source)),
+    rounds_Landed: [],
     ranges_Frame: [{ first: 13, last: 27 }, { first: 31, last: 34 }]
   }),
 }

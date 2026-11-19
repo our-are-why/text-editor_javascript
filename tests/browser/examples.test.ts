@@ -468,7 +468,9 @@ const revisedWith = async (source: string, notes: string, draft: "ADD" | "START"
 }
 // a proposal's Revise form first: its Add and Start there from the
 // outset, not to be pressed till something's written in it, pressable
-// once it is, and not again once it's only blank, put away by its Cancel
+// once it is, and not again once it's only blank; written in again, put
+// away by Revise pressed again, as its Cancel would, the keyboard back on
+// Revise
 await pressed("hook", "revise")
 const buttonsOf_Draft = () => opened_JavaScript.page.evaluate(async () => {
   await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)))
@@ -480,12 +482,21 @@ await notes_Held.fill("Say why.")
 const draft_Written = await buttonsOf_Draft()
 await notes_Held.fill("   ")
 const draft_Blank = await buttonsOf_Draft()
-await opened_JavaScript.page.locator(".item_htmlView[data-source=\"hook\"] [data-draft=\"DISCARD\"]").first().click()
+await notes_Held.fill("Say why.")
+await pressed("hook", "revise")
+const draft_Toggled = await opened_JavaScript.page.evaluate(async () => {
+  await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)))
+  return {
+    drafts: document.querySelectorAll(".item_htmlView[data-source=\"hook\"] .draft_htmlView").length,
+    isReviseFocused: document.activeElement?.matches(".item_htmlView[data-source=\"hook\"] [data-command=\"revise\"]") === true
+  }
+})
 
-test("a proposal's Revise form: Add and Start there from the outset, pressable only while something's written in it", () => {
+test("a proposal's Revise form: Add and Start there from the outset, pressable only while something's written in it; Revise pressed again putting it away, what's written and all", () => {
   expect(draft_Opened).toEqual(["Add disabled", "Start disabled"])
   expect(draft_Written).toEqual(["Add enabled", "Start enabled"])
   expect(draft_Blank).toEqual(["Add disabled", "Start disabled"])
+  expect(draft_Toggled).toEqual({ drafts: 0, isReviseFocused: true })
 })
 
 await pressed("errors", "accept")
@@ -602,7 +613,7 @@ const staleOf_Header = () => opened_JavaScript.page.evaluate(async () => {
   return {
     state: item?.getAttribute("data-state") ?? null,
     stale: item?.querySelector(".stale_htmlView")?.textContent ?? null,
-    dashes: [...new Set(rings.map((ring) => getComputedStyle(ring).strokeDasharray))]
+    dashes: [...new Set(rings.flatMap((ring) => (ring.getAttribute("d") ?? "").split("M").map((part) => (part.match(/-?[\d.]+(?:e[-+]?\d+)?/gi) ?? []).map(Number)).filter((numbers) => numbers.length === 4).map(([x1 = 0, y1 = 0, x2 = 0, y2 = 0]) => Math.round(Math.hypot(x2 - x1, y2 - y1) * 100) / 100)))]
   }
 })
 const stale_Landed = await staleOf_Header()
@@ -687,8 +698,8 @@ test("the header over the document stays put as it scrolls, saying the host's ta
 })
 
 test("a round that landed after your edits: its changes written before them ringed dashed, its item saying how many, with Run again; pressed, asked of the host, which starts it again, the proposal revising, nothing to run again while it's under way; its round back, written on the document as it is now, nothing marked", () => {
-  expect(stale_Landed).toEqual({ state: "OPEN", stale: "1 change written before your editsRun again", dashes: ["3px, 2px"] })
-  expect(stale_Rerunning).toEqual({ state: "REVISING", stale: "1 change written before your edits", dashes: ["3px, 2px"] })
+  expect(stale_Landed).toEqual({ state: "OPEN", stale: "1 change written before your editsRun again", dashes: [3] })
+  expect(stale_Rerunning).toEqual({ state: "REVISING", stale: "1 change written before your edits", dashes: [3] })
   expect(stale_Again).toEqual({ state: "OPEN", stale: null, dashes: [] })
   expect(logged_Rerun).toEqual([{ rerun: "header", requests: 1 }, { revising: "header", requests: 1 }])
   expect(opened_JavaScript.errors).toEqual([])
@@ -1214,5 +1225,33 @@ const hugged_Card = await opened_JavaScript.page.evaluate(async () => {
 
 test("the document's card hugs the editor's right edge, no edge of its own there, its top on the header's edge, level with the task's", () => {
   expect(hugged_Card).toEqual({ gap_Right: 0, gap_Top: 0, edge_Right: "0px", isLevel: true })
+  expect(opened_JavaScript.errors).toEqual([])
+})
+
+// then a card's Revise or Add pressed again while its form's open, with
+// something written in it: the form put away, as its Cancel would, what's
+// written dropped, nothing asked, the keyboard back on it, the card open
+await opened_JavaScript.page.hover(".trigger_Document_htmlView")
+const ask_Document = opened_JavaScript.page.locator(".card_Document_htmlView [data-ask=\"DOCUMENT\"]").first()
+await pressedAt(ask_Document)
+await opened_JavaScript.page.evaluate(() => new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve))))
+await opened_JavaScript.page.keyboard.type("Drop me.")
+const form_Before = await opened_JavaScript.page.evaluate(() => document.querySelectorAll(".card_Document_htmlView .asking_htmlView").length)
+await pressedAt(ask_Document)
+await opened_JavaScript.page.waitForTimeout(250)
+const toggled_Card = await opened_JavaScript.page.evaluate(async () => {
+  await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)))
+  const card = document.querySelector(".card_Document_htmlView")
+  return {
+    forms: card?.querySelectorAll(".asking_htmlView").length ?? null,
+    isAskFocused: document.activeElement?.matches(".card_Document_htmlView [data-ask=\"DOCUMENT\"]") === true,
+    isCardShown: card !== null && getComputedStyle(card).visibility === "visible",
+    isAdded: [...document.querySelectorAll(".notes_Said_htmlView")].some((element) => element.textContent === "Drop me.")
+  }
+})
+
+test("a card's Revise or Add pressed again while its form's open puts it away, as its Cancel would, what's written and all, the keyboard back on it", () => {
+  expect(form_Before).toBe(1)
+  expect(toggled_Card).toEqual({ forms: 0, isAskFocused: true, isCardShown: true, isAdded: false })
   expect(opened_JavaScript.errors).toEqual([])
 })

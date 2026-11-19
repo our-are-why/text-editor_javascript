@@ -1967,3 +1967,27 @@ FRAME 22-22
     "30" none none: "yard while we're there."
       ⟵ document 29:0 [0,23)"
 `;
+
+exports[`the changes document's kinds-stale draws as it was drawn by hand 1`] = `
+"label width 1
+header {"document":{"folder":"","name":"","proposals":{"actions":[],"documents":[],"figure":{"more":"1 to review","value":"0 of 1 decided"}},"revisions_Level":{"ask":{"label":"Revise","label_Form":"Revise this document"},"isStartable_Requests":false,"isStoppable_Requests":false,"requests":[]},"revisions_Scope":{"actions":[],"figure":null,"title_Start":null,"title_Stop":null},"summary":""},"parts":[{"isBusy":false,"text":"0 of 1 decided"}],"task":null}
+FRAME 1-2
+  CURRENT_LINES run 1
+    "1" changed none: "const"{data-syntax=keyword} " " "ATTEMPTS"{data-change=replaced data-side=before data-source=names data-state=OPEN} " = " "5"{data-syntax=number} ";"
+      ⟵ document 0:0 [0,19)
+    "2" changed none: "const"{data-syntax=keyword} " DELAY_MS = " "100"{data-syntax=number} ";" " "{data-change=removed data-side=before data-source=names data-state=OPEN} "// in milliseconds"{data-change=removed data-side=before data-source=names data-state=OPEN data-syntax=comment}
+      ⟵ document 1:0 [0,40)
+    ring {data-source=names data-state=OPEN}
+      STRETCH 0:6-0:14 {data-change=replaced data-place=1 data-side=before data-source=names}
+      STRETCH 1:22-1:40 {data-change=removed data-place=2 data-side=before data-source=names data-stale=}
+  PROPOSAL_LINES run 2
+    "~" changed none: "const"{data-syntax=keyword} " " "MAX_ATTEMPTS"{data-change=replaced data-side=after data-source=names data-state=OPEN} " = " "5"{data-syntax=number} ";"
+      ⟵ document 0:0 [0,6) | names#0 0:0 [6,18) | document 0:14 [18,23)
+    "" none none: "const"{data-syntax=keyword} " DELAY_MS = " "100"{data-syntax=number} ";"
+      ⟵ document 1:0 [0,21) | names#1 0:0 [21,21)
+    ring {data-source=names data-state=OPEN}
+      STRETCH 0:6-0:18 {data-change=replaced data-place=1 data-side=after data-source=names}
+      POINT 1:21 {data-change=removed data-place=2 data-side=after data-source=names}
+  PROPOSAL_LIST
+    {"actions":[{"command":"accept","label":"Accept","stateAfter":"ACCEPTED"},{"command":"reject","label":"Reject","stateAfter":"REJECTED"},{"command":"revise","label":"Revise","stateAfter":"REQUESTED"}],"attributes":{},"confirming":null,"isDrafting":false,"isRunning":false,"isStartable":false,"neighbors":{"range_Next":null,"range_Previous":null},"places":{"kind":"NONE"},"rationale":"MAX_ATTEMPTS says it's a cap, and DELAY_MS says its unit in its name.","requests":[],"source":"names","stale":{"isRerunnable":true,"label":"1 change written before your edits"},"state":"OPEN","status":"","title":"Say the cap, drop the unit comment"}"
+`;
