@@ -1908,7 +1908,13 @@ hovered, its status, "in progress", "addressed", the one thing on its
 line in plum. Every Start is bold, wherever it is, a card's Start all, a
 group's, a form's, and a request's own, grey as the rest of its actions
 are but bold, what everything queued waits on; Stop and the rest stay
-regular. Start all was made regular for a moment, and made bold again. An unfolded set of actions
+regular. Start all was made regular for a moment, and made bold again. A
+form's Add and Start, the card's and a proposal's Revise, are there from
+the outset, not hidden till something's written, but disabled while what's
+written is blank, faded, with no hover; the view keeps `disabled` in step
+with the text, on its own `input` listener and after every draw, the text
+being the textarea's alone, not the view model's, and a draw taking off
+any attribute it doesn't name. An unfolded set of actions
 opening into a pill of its ellipsis's ground was tried too, and let go:
 they unfold plain, as they were. A group's actions unfold with nothing
 between them and its heading, the rule gone, their ink and weight

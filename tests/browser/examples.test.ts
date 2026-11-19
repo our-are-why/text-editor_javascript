@@ -466,6 +466,28 @@ const revisedWith = async (source: string, notes: string, draft: "ADD" | "START"
   await opened_JavaScript.page.locator(`.item_htmlView[data-source="${source}"] .notes_htmlView`).first().fill(notes)
   await opened_JavaScript.page.locator(`.item_htmlView[data-source="${source}"] .action_htmlView[data-draft="${draft}"]`).first().click()
 }
+// a proposal's Revise form first: its Add and Start there from the
+// outset, not to be pressed till something's written in it, pressable
+// once it is, and not again once it's only blank, put away by its Cancel
+await pressed("hook", "revise")
+const buttonsOf_Draft = () => opened_JavaScript.page.evaluate(async () => {
+  await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)))
+  return [...document.querySelectorAll(".item_htmlView[data-source=\"hook\"] .draft_htmlView :is([data-draft=\"ADD\"], [data-draft=\"START\"])")].map((element) => `${element.textContent?.trim()} ${element instanceof HTMLButtonElement && element.disabled ? "disabled" : "enabled"}`)
+})
+const draft_Opened = await buttonsOf_Draft()
+const notes_Held = opened_JavaScript.page.locator(".item_htmlView[data-source=\"hook\"] .draft_htmlView .notes_htmlView").first()
+await notes_Held.fill("Say why.")
+const draft_Written = await buttonsOf_Draft()
+await notes_Held.fill("   ")
+const draft_Blank = await buttonsOf_Draft()
+await opened_JavaScript.page.locator(".item_htmlView[data-source=\"hook\"] [data-draft=\"DISCARD\"]").first().click()
+
+test("a proposal's Revise form: Add and Start there from the outset, pressable only while something's written in it", () => {
+  expect(draft_Opened).toEqual(["Add disabled", "Start disabled"])
+  expect(draft_Written).toEqual(["Add enabled", "Start enabled"])
+  expect(draft_Blank).toEqual(["Add disabled", "Start disabled"])
+})
+
 await pressed("errors", "accept")
 const items_Accepted = await itemsOf("errors")
 await revisedWith("hook", "Keep the hook, but call it after the delay.", "ADD")
@@ -844,7 +866,7 @@ const cardShown = () => opened_JavaScript.page.evaluate(async () => {
     isLast: form !== null && form.nextElementSibling === null,
     isFocused: document.activeElement?.matches(".card_Task_htmlView .asking_htmlView > .notes_htmlView") === true,
     isAskFocused: document.activeElement?.matches(".card_Task_htmlView [data-ask=\"TASK\"]") === true,
-    isStartShown: form !== null && [...form.querySelectorAll("[data-request=\"START\"]")].some((element) => getComputedStyle(element).display !== "none"),
+    buttons: [...form?.querySelectorAll(":is([data-request=\"ADD\"], [data-request=\"START\"])") ?? []].filter((element) => element instanceof HTMLButtonElement && getComputedStyle(element).display !== "none").map((element) => `${element.textContent?.trim()} ${element instanceof HTMLButtonElement && element.disabled ? "disabled" : "enabled"}`),
     forms_Elsewhere: document.querySelectorAll(".asking_htmlView:not([data-place=\"TASK\"])").length
   }
 })
@@ -885,11 +907,11 @@ await opened_JavaScript.page.waitForFunction(() => {
 const form_Left = await cardShown()
 
 test("the task's card: Add a request, a form for the task as a whole, in the card, at its foot, saying where what's written goes, the card held open while it's there; added, the keyboard back on Add a request, the card still open; opened again and left empty, put away by a click in the text; added, listed in the task's card, not the document's; the host's action for the document, in its card, the proposals waiting on nothing but you accepted at once, nothing left waiting to offer it for", () => {
-  expect(form_Task).toEqual({ isCardShown: true, label: "Revise the task", hint: "Added to T-12, for the whole task", isLast: true, isFocused: true, isAskFocused: false, isStartShown: false, forms_Elsewhere: 0 })
-  expect(card_Added).toEqual({ isCardShown: true, label: null, hint: null, isLast: false, isFocused: false, isAskFocused: true, isStartShown: false, forms_Elsewhere: 0 })
+  expect(form_Task).toEqual({ isCardShown: true, label: "Revise the task", hint: "Added to T-12, for the whole task", isLast: true, isFocused: true, isAskFocused: false, buttons: ["Add disabled", "Start disabled"], forms_Elsewhere: 0 })
+  expect(card_Added).toEqual({ isCardShown: true, label: null, hint: null, isLast: false, isFocused: false, isAskFocused: true, buttons: [], forms_Elsewhere: 0 })
   expect([form_Again.label, form_Again.isFocused]).toEqual(["Revise the task", true])
-  expect(form_Typed.isStartShown).toBe(true)
-  expect(form_Left).toEqual({ isCardShown: false, label: null, hint: null, isLast: false, isFocused: false, isAskFocused: false, isStartShown: false, forms_Elsewhere: 0 })
+  expect(form_Typed.buttons).toEqual(["Add enabled", "Start enabled"])
+  expect(form_Left).toEqual({ isCardShown: false, label: null, hint: null, isLast: false, isFocused: false, isAskFocused: false, buttons: [], forms_Elsewhere: 0 })
   expect(parts_Added[0]).toEqual(["Keep the README in step."])
   expect(parts_Added[1]).not.toContain("Keep the README in step.")
   expect(waiting_After.accepted).toBeGreaterThan(waiting_Before)

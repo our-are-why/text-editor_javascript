@@ -108,6 +108,12 @@ class _View_TextEditor_ {
         attributes: true
       }
     )
+    this.containerElement.addEventListener(
+      "input",
+      () => heldTillWritten__Form({
+        containerElement_View: this.containerElement
+      })
+    )
   }
 
   draw(
@@ -120,6 +126,9 @@ class _View_TextEditor_ {
       containerElement_View: this.containerElement,
       componentMap_View: this.componentMap,
       viewModel_TextEditor
+    })
+    heldTillWritten__Form({
+      containerElement_View: this.containerElement
     })
     keptOpen__Card({
       containerElement_View: this.containerElement,
@@ -261,6 +270,21 @@ class _View_TextEditor_ {
 interface _Api__View_TextEditor_ {
   containerElement: HTMLElement
   componentMap: _ComponentMap__View_TextEditor_
+}
+
+interface _Api___heldTillWritten__Form_ {
+  containerElement_View: HTMLElement
+}
+
+function heldTillWritten__Form({
+  containerElement_View
+}: _Api___heldTillWritten__Form_): void {
+  for (const element_Notes of containerElement_View.querySelectorAll<HTMLTextAreaElement>(":is(.asking_htmlView, .draft_htmlView) > .notes_htmlView")) {
+    const isWritten = element_Notes.value.trim() !== ""
+    for (const element_Button of element_Notes.parentElement?.querySelectorAll<HTMLButtonElement>(":scope > .actions_htmlView > :is([data-request=ADD], [data-request=START], [data-draft=ADD], [data-draft=START])") ?? []) {
+      element_Button.disabled = !isWritten
+    }
+  }
 }
 
 interface _Api___classOf__Card_Focused_ {

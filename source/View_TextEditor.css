@@ -703,10 +703,12 @@
   font-style: normal;
 }
 
-/* a form's Start, only once something's written in it: before, there'd
-   be nothing for it to start */
-.htmlView_editor :is(.asking_htmlView:has(> .notes_htmlView:placeholder-shown) [data-request="START"], .draft_htmlView:has(> .notes_htmlView:placeholder-shown) [data-draft="START"]) {
-  display: none;
+/* a form's Add and Start, there from the start, but not to be pressed
+   till something's written in it, there being nothing before to add or
+   start: faded, no hover, as a neighbour's arrow with nowhere to go is */
+.htmlView_editor .actions_htmlView > .action_htmlView:disabled {
+  opacity: 0.4;
+  cursor: default;
 }
 
 .htmlView_editor .list_Request_htmlView {
@@ -1029,7 +1031,7 @@
   color: var(--view-action-ink, light-dark(#3b3b3b, #cccccc));
 }
 
-.htmlView_editor .action_htmlView:hover {
+.htmlView_editor .action_htmlView:hover:not(:disabled) {
   background: var(--view-action-hover-ground, light-dark(#d6d6d6, #3d3d3d));
 }
 
@@ -1146,7 +1148,7 @@
   font-weight: 600;
 }
 
-.htmlView_editor .start_htmlView:hover {
+.htmlView_editor .start_htmlView:hover:not(:disabled) {
   background: var(--view-action-start-hover-ground, color-mix(in srgb, var(--ink_state_htmlView) 26%, var(--view-action-ground, light-dark(#e5e5e5, #313131))));
 }
 
