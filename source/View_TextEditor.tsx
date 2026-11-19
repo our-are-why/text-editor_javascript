@@ -183,6 +183,9 @@ class _View_TextEditor_ {
       containerElement_View: this.containerElement,
       placed$_View: this.placed$
     })
+    peekedIf__Unseen_Quoted({
+      containerElement_View: this.containerElement
+    })
   }
 
   resized(): void {
@@ -1079,20 +1082,13 @@ function Request_TextEditor__Html({
         <p class="quote_Asking_htmlView">
           <span class="chip_Quote_htmlView">
             {form_Request.quote.label !== "" && <span class="role_Quote_htmlView">{form_Request.quote.label}</span>}
-            {form_Request.quote.isExpandable
-              ? (
-                <button
-                  type="button"
-                  class="show_Quote_htmlView"
-                  data-request="SHOW"
-                  aria-expanded={String(form_Request.quote.isExpanded)}
-                  title={form_Request.quote.isExpanded ? "Hide the words in full" : "Show the words in full"}
-                >
-                  <q class="words_Quote_htmlView">{form_Request.quote.head}</q>
-                  {form_Request.quote.size !== null && <span class="size_Quote_htmlView">{form_Request.quote.size}</span>}
-                </button>
-              )
-              : <q class="words_Quote_htmlView">{form_Request.quote.head}</q>}
+            <q
+              class="words_Quote_htmlView"
+              tabindex={form_Request.quote.peek === null ? undefined : "0"}
+            >
+              {form_Request.quote.head}
+            </q>
+            {form_Request.quote.size !== null && <span class="size_Quote_htmlView">{form_Request.quote.size}</span>}
             {form_Request.quote.isDroppable && (
               <button
                 type="button"
@@ -1104,10 +1100,18 @@ function Request_TextEditor__Html({
                 ×
               </button>
             )}
+            {form_Request.quote.peek !== null && (
+              <span
+                class="peek_Quote_htmlView"
+                role="tooltip"
+              >
+                <span class="text_Peek_htmlView">{form_Request.quote.peek.text}</span>
+                {form_Request.quote.peek.more !== null && <span class="more_Peek_htmlView">{form_Request.quote.peek.more}</span>}
+              </span>
+            )}
           </span>
         </p>
       )}
-      {form_Request.quote?.isExpanded === true && <pre class="whole_Quote_htmlView">{form_Request.quote.text}</pre>}
       <textarea
         class="notes_htmlView"
         aria-label={form_Request.label}
@@ -1115,7 +1119,6 @@ function Request_TextEditor__Html({
         rows="3"
       />
       <div class="actions_htmlView">
-        {form_Request.hint !== "" && <span class="hint_Asking_htmlView">{form_Request.hint}</span>}
         <button
           type="button"
           class="action_htmlView"
@@ -4795,6 +4798,9 @@ function keptInEditor__View_TextEditor({
   element_Editor.style.setProperty("--heightKept_htmlView", `${Math.max(bottom_Kept - top_Kept, 0)}px`)
   const element_Menu = element_Editor.querySelector(".menu_htmlView[data-x][data-y]")
   const element_Form = element_Editor.querySelector(".asking_htmlView[data-x][data-y]")
+  const rect$_Quoted = [...element_Scroller.querySelectorAll(".text_htmlView > [data-quoted]")]
+    .flatMap((element_Quoted) => [...element_Quoted.getClientRects()])
+    .filter((rect_Quoted) => rect_Quoted.bottom > rect_Scroller.top && rect_Quoted.top < rect_Scroller.bottom)
   return {
     MENU: element_Menu instanceof HTMLElement
       ? keptOf__Popover({
@@ -4802,6 +4808,7 @@ function keptInEditor__View_TextEditor({
         placed_Popover_View: placed$_View.MENU,
         element_Scroller,
         isFollowing: false,
+        span_Avoided: null,
         left_Kept,
         right_Kept,
         top_Kept,
@@ -4814,6 +4821,12 @@ function keptInEditor__View_TextEditor({
         placed_Popover_View: placed$_View.FORM,
         element_Scroller,
         isFollowing: true,
+        span_Avoided: rect$_Quoted.length === 0
+          ? null
+          : {
+            top: Math.max(Math.min(...rect$_Quoted.map((rect_Quoted) => rect_Quoted.top)), rect_Scroller.top),
+            bottom: Math.min(Math.max(...rect$_Quoted.map((rect_Quoted) => rect_Quoted.bottom)), rect_Scroller.bottom)
+          },
         left_Kept,
         right_Kept,
         top_Kept: Math.max(rect_Scroller.top, top_Kept),
@@ -4828,6 +4841,7 @@ interface _Api___keptOf__Popover_ {
   placed_Popover_View: _Placed_Popover_ | null
   element_Scroller: HTMLElement
   isFollowing: boolean
+  span_Avoided: _Span_Screen_ | null
   left_Kept: number
   right_Kept: number
   top_Kept: number
@@ -4839,6 +4853,7 @@ function keptOf__Popover({
   placed_Popover_View,
   element_Scroller,
   isFollowing,
+  span_Avoided,
   left_Kept,
   right_Kept,
   top_Kept,
@@ -4847,6 +4862,7 @@ function keptOf__Popover({
   if (placed_Popover_View?.element !== element) {
     const point_Placed = placedAt__Point({
       element,
+      span_Avoided,
       left_Kept,
       right_Kept,
       top_Kept,
@@ -4890,14 +4906,21 @@ function keptOf__Popover({
 
 interface _Api___placedAt__Point_ {
   element: HTMLElement
+  span_Avoided: _Span_Screen_ | null
   left_Kept: number
   right_Kept: number
   top_Kept: number
   bottom_Kept: number
 }
 
+interface _Span_Screen_ {
+  top: number
+  bottom: number
+}
+
 function placedAt__Point({
   element,
+  span_Avoided,
   left_Kept,
   right_Kept,
   top_Kept,
@@ -4911,15 +4934,41 @@ function placedAt__Point({
   const rect = element.getBoundingClientRect()
   const point_Placed = {
     x: Math.max(Math.min(x, right_Kept - rect.width), left_Kept),
-    y: y + rect.height <= bottom_Kept
-      ? y
-      : y - rect.height >= top_Kept
-        ? y - rect.height
-        : Math.max(bottom_Kept - rect.height, top_Kept)
+    y: span_Avoided === null
+      ? y + rect.height <= bottom_Kept
+        ? y
+        : y - rect.height >= top_Kept
+          ? y - rect.height
+          : Math.max(bottom_Kept - rect.height, top_Kept)
+      : span_Avoided.bottom + GAP_AVOIDED + rect.height <= bottom_Kept
+        ? span_Avoided.bottom + GAP_AVOIDED
+        : span_Avoided.top - GAP_AVOIDED - rect.height >= top_Kept
+          ? span_Avoided.top - GAP_AVOIDED - rect.height
+          : bottom_Kept - span_Avoided.bottom >= span_Avoided.top - top_Kept
+            ? Math.max(bottom_Kept - rect.height, top_Kept)
+            : top_Kept
   }
   element.style.left = `${point_Placed.x}px`
   element.style.top = `${point_Placed.y}px`
   return point_Placed
+}
+
+const GAP_AVOIDED = 6
+
+interface _Api___peekedIf__Unseen_Quoted_ {
+  containerElement_View: HTMLElement
+}
+
+function peekedIf__Unseen_Quoted({
+  containerElement_View
+}: _Api___peekedIf__Unseen_Quoted_): void {
+  const element_Peek = containerElement_View.querySelector(".asking_htmlView .peek_Quote_htmlView")
+  const rect_Form = element_Peek?.closest(".asking_htmlView")?.getBoundingClientRect()
+  const rect_Scroller = containerElement_View.querySelector(".document_htmlView")?.getBoundingClientRect()
+  if (!(element_Peek instanceof HTMLElement) || rect_Form === undefined || rect_Scroller === undefined) return
+  const rect$_Quoted = [...containerElement_View.querySelectorAll(".document_htmlView .text_htmlView > [data-quoted]")].flatMap((element_Quoted) => [...element_Quoted.getClientRects()])
+  const isSeen = rect$_Quoted.length > 0 && rect$_Quoted.every((rect_Quoted) => rect_Quoted.top >= rect_Scroller.top && rect_Quoted.bottom <= rect_Scroller.bottom && rect_Quoted.left >= rect_Scroller.left && rect_Quoted.right <= rect_Scroller.right && (rect_Quoted.bottom <= rect_Form.top || rect_Quoted.top >= rect_Form.bottom || rect_Quoted.right <= rect_Form.left || rect_Quoted.left >= rect_Form.right))
+  element_Peek.hidden = isSeen
 }
 
 interface _Api___shiftOf__Popover_ {

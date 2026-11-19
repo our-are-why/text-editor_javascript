@@ -808,7 +808,6 @@ const form_Header = await opened_JavaScript.page.evaluate(async () => {
     isReviseGone: document.querySelector(".card_Document_htmlView .actions_Card_htmlView > [data-ask]") === null,
     isCardShown: card === null ? false : getComputedStyle(card).visibility === "visible",
     label: document.querySelector(".asking_htmlView > .label_Asking_htmlView")?.textContent ?? null,
-    hint: document.querySelector(".asking_htmlView .hint_Asking_htmlView")?.textContent ?? null,
     actions: [...document.querySelectorAll(".asking_htmlView .action_htmlView")].map((element) => element.textContent),
     isFocused: document.activeElement?.matches(".asking_htmlView > .notes_htmlView") === true,
     isUnder: button !== undefined && form !== undefined && form.top >= button.bottom
@@ -852,7 +851,7 @@ test("a right-click on a proposal's selected words offers a revision of them, th
 test("a request on no proposal, the document's own, queued and listed in the document's card, as a proposal's are under its item, its heading and its rule in the same plum; Add, at the foot of the document's requests, Revise gone, there being some, a form for the whole document there, under it, the card held open, the keyboard in it, Add and Cancel, no Start, the group having its own, the keyboard back on Add after; added, then started by its own Start, in progress, the rest still queued; addressed, still listed, saying by how many proposals, here none, nothing to remove; a queued one removed, gone", () => {
   expect(requests_Added).toEqual(["Say why the delay doubles."])
   expect(isAskFocused_Document).toBe(true)
-  expect(form_Header).toEqual({ isInCard: true, isReviseGone: true, isCardShown: true, label: "Revise this document", hint: "Added to T-12, for this document", actions: ["Add", "Cancel"], isFocused: true, isUnder: true })
+  expect(form_Header).toEqual({ isInCard: true, isReviseGone: true, isCardShown: true, label: "Revise this document", actions: ["Add", "Cancel"], isFocused: true, isUnder: true })
   expect(requests_Added_Inline).toEqual(["Say why the delay doubles.", "Name the module's exports."])
   expect(label_Requests).toEqual(["Requests", true, "solid"])
   expect(requests_Started).toEqual(["Say why the delay doubles.", "Name the module's exports. (in progress)"])
@@ -882,7 +881,6 @@ const cardShown = () => opened_JavaScript.page.evaluate(async () => {
   return {
     isCardShown: card === null ? false : getComputedStyle(card).visibility === "visible",
     label: form?.querySelector(".label_Asking_htmlView")?.textContent ?? null,
-    hint: form?.querySelector(".hint_Asking_htmlView")?.textContent ?? null,
     isLast: form !== null && form.nextElementSibling === null,
     isFocused: document.activeElement?.matches(".card_Task_htmlView .asking_htmlView > .notes_htmlView") === true,
     isAskFocused: document.activeElement?.matches(".card_Task_htmlView [data-ask=\"TASK\"]") === true,
@@ -926,12 +924,12 @@ await opened_JavaScript.page.waitForFunction(() => {
 }, undefined, { timeout: 2000 })
 const form_Left = await cardShown()
 
-test("the task's card: Add a request, a form for the task as a whole, in the card, at its foot, saying where what's written goes, the card held open while it's there; added, the keyboard back on Add a request, the card still open; opened again and left empty, put away by a click in the text; added, listed in the task's card, not the document's; the host's action for the document, in its card, the proposals waiting on nothing but you accepted at once, nothing left waiting to offer it for", () => {
-  expect(form_Task).toEqual({ isCardShown: true, label: "Revise the task", hint: "Added to T-12, for the whole task", isLast: true, isFocused: true, isAskFocused: false, buttons: ["Add disabled", "Start disabled"], forms_Elsewhere: 0 })
-  expect(card_Added).toEqual({ isCardShown: true, label: null, hint: null, isLast: false, isFocused: false, isAskFocused: true, buttons: [], forms_Elsewhere: 0 })
+test("the task's card: Add a request, a form for the task as a whole, in the card, at its foot, the card held open while it's there; added, the keyboard back on Add a request, the card still open; opened again and left empty, put away by a click in the text; added, listed in the task's card, not the document's; the host's action for the document, in its card, the proposals waiting on nothing but you accepted at once, nothing left waiting to offer it for", () => {
+  expect(form_Task).toEqual({ isCardShown: true, label: "Revise the task", isLast: true, isFocused: true, isAskFocused: false, buttons: ["Add disabled", "Start disabled"], forms_Elsewhere: 0 })
+  expect(card_Added).toEqual({ isCardShown: true, label: null, isLast: false, isFocused: false, isAskFocused: true, buttons: [], forms_Elsewhere: 0 })
   expect([form_Again.label, form_Again.isFocused]).toEqual(["Revise the task", true])
   expect(form_Typed.buttons).toEqual(["Add enabled", "Start enabled"])
-  expect(form_Left).toEqual({ isCardShown: false, label: null, hint: null, isLast: false, isFocused: false, isAskFocused: false, buttons: [], forms_Elsewhere: 0 })
+  expect(form_Left).toEqual({ isCardShown: false, label: null, isLast: false, isFocused: false, isAskFocused: false, buttons: [], forms_Elsewhere: 0 })
   expect(parts_Added[0]).toEqual(["Keep the README in step."])
   expect(parts_Added[1]).not.toContain("Keep the README in step.")
   expect(waiting_After.accepted).toBeGreaterThan(waiting_Before)
@@ -1813,7 +1811,7 @@ const asked_Popover = (await opened_Popover.logged()).filter((entry) => "request
 const at_Lines_Popover = await page_Popover.evaluate(() => {
   const element_Line = [...document.querySelectorAll(".run_htmlView > .line_htmlView > .text_htmlView")].find((element) => (element.textContent ?? "").includes("export function backoff"))
   if (!(element_Line instanceof HTMLElement)) throw new Error("no line")
-  element_Line.scrollIntoView({ block: "center" })
+  element_Line.scrollIntoView({ block: "start" })
   const rect = element_Line.getBoundingClientRect()
   return { x: rect.left + 60, y: rect.top + rect.height / 2, height: rect.height }
 })
@@ -1834,32 +1832,58 @@ const litOf_Quoted_Popover = () => page_Popover.evaluate(async () => {
 const chip_Popover = await page_Popover.evaluate(() => ({
   head: document.querySelector(".asking_htmlView .words_Quote_htmlView")?.textContent ?? null,
   size: document.querySelector(".asking_htmlView .size_Quote_htmlView")?.textContent ?? null,
-  isFolded: document.querySelector(".asking_htmlView .show_Quote_htmlView")?.getAttribute("aria-expanded") === "false" && document.querySelector(".whole_Quote_htmlView") === null
+  isPeekHidden: document.querySelector(".asking_htmlView .peek_Quote_htmlView")?.hasAttribute("hidden") === true
 }))
 const isLit_Unpointed_Popover = await litOf_Quoted_Popover()
+const placed_Quoted_Popover = await page_Popover.evaluate(() => {
+  const rect_Form = document.querySelector(".asking_htmlView")?.getBoundingClientRect()
+  const rect$_Quoted = [...document.querySelectorAll(".text_htmlView > [data-quoted]")].flatMap((element) => [...element.getClientRects()])
+  if (rect_Form === undefined || rect$_Quoted.length === 0) return null
+  const top_Quoted = Math.min(...rect$_Quoted.map((rect) => rect.top))
+  const bottom_Quoted = Math.max(...rect$_Quoted.map((rect) => rect.bottom))
+  return { isClear: rect_Form.top >= bottom_Quoted || rect_Form.bottom <= top_Quoted, isBelow: rect_Form.top >= bottom_Quoted && rect_Form.top - bottom_Quoted < 12 }
+})
 await page_Popover.hover(".asking_htmlView .chip_Quote_htmlView")
 const isLit_Pointed_Popover = await litOf_Quoted_Popover()
-await page_Popover.click(".asking_htmlView .show_Quote_htmlView")
-const whole_Popover = await page_Popover.evaluate(async () => {
-  await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)))
-  return document.querySelector(".asking_htmlView > .whole_Quote_htmlView")?.textContent ?? null
+await page_Popover.waitForTimeout(600)
+const peekShown_Popover = () => page_Popover.evaluate(() => {
+  const element_Peek = document.querySelector(".asking_htmlView .peek_Quote_htmlView")
+  return element_Peek instanceof HTMLElement && element_Peek.checkVisibility({ visibilityProperty: true }) ? element_Peek.querySelector(".text_Peek_htmlView")?.textContent ?? null : null
 })
-await page_Popover.click(".asking_htmlView .show_Quote_htmlView")
-const isRefolded_Popover = await page_Popover.evaluate(async () => {
-  await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)))
-  return document.querySelector(".whole_Quote_htmlView") === null && document.querySelector(".asking_htmlView") !== null
+const peek_Seen_Popover = await peekShown_Popover()
+await page_Popover.mouse.move(5, 5)
+await page_Popover.focus(".asking_htmlView > .notes_htmlView")
+await page_Popover.keyboard.type("Hm.")
+const rect_Document_Peek = await page_Popover.evaluate(() => {
+  const rect = document.querySelector(".document_htmlView")?.getBoundingClientRect()
+  if (rect === undefined) throw new Error("no document")
+  return { x: rect.right - 60, y: rect.bottom - 40 }
+})
+await page_Popover.mouse.move(rect_Document_Peek.x, rect_Document_Peek.y)
+await page_Popover.mouse.wheel(0, 1.5 * at_Lines_Popover.height)
+await page_Popover.waitForTimeout(400)
+await page_Popover.hover(".asking_htmlView .words_Quote_htmlView")
+await page_Popover.waitForTimeout(600)
+const peek_Unseen_Popover = await peekShown_Popover()
+await page_Popover.mouse.move(5, 5)
+await page_Popover.waitForTimeout(300)
+const isPeekGone_Popover = await page_Popover.evaluate(() => {
+  const element_Peek = document.querySelector(".asking_htmlView .peek_Quote_htmlView")
+  return element_Peek instanceof HTMLElement && !element_Peek.checkVisibility({ visibilityProperty: true })
 })
 await page_Popover.keyboard.press("Escape")
 
 describe("the menu's form's words", () => {
-  test("words selected over three lines are shown in the form by their start, cut, and how many lines; pointed at, they're lit where they are in the document; pressed, shown in full, and pressed again, folded", () => {
+  test("the form opened for words selected over three lines opens just below them, clear of them; they're shown in it by their start, cut, and how many lines; pointed at, they're lit where they are in the document, not peeked at while they can all be seen there; the first of them scrolled away, a moment after pointing, peeked at, gone when the pointer leaves", () => {
+    expect(placed_Quoted_Popover).toEqual({ isClear: true, isBelow: true })
     expect(chip_Popover.size).toBe("3 lines")
     expect(chip_Popover.head?.endsWith("…")).toBe(true)
-    expect(chip_Popover.isFolded).toBe(true)
+    expect(chip_Popover.isPeekHidden).toBe(true)
     expect([isLit_Unpointed_Popover, isLit_Pointed_Popover]).toEqual([false, true])
-    expect(whole_Popover?.split("\n").length).toBe(3)
-    expect(whole_Popover?.startsWith((chip_Popover.head ?? "").slice(0, -1))).toBe(true)
-    expect(isRefolded_Popover).toBe(true)
+    expect(peek_Seen_Popover).toBe(null)
+    expect(peek_Unseen_Popover?.split("\n").length).toBe(3)
+    expect(peek_Unseen_Popover?.startsWith((chip_Popover.head ?? "").slice(0, -1))).toBe(true)
+    expect(isPeekGone_Popover).toBe(true)
   })
 })
 

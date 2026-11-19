@@ -316,11 +316,7 @@ const CONTROLS__TEXTEDITOR: Array<_Adapter_Event_> = [
             ? {
               kind: "DROP_QUOTE"
             }
-            : kind === "SHOW"
-              ? {
-                kind: "TOGGLE_QUOTE"
-              }
-              : null
+            : null
     }
   },
   {

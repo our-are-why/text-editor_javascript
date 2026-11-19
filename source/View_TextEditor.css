@@ -880,13 +880,9 @@
 }
 
 /* Add's new request, the list's last, as an edited one is: its box and
-   its actions under it, Add and Cancel; no hint, the list saying whose */
+   its actions under it, Add and Cancel */
 .htmlView_editor .said_htmlView[data-adding] > :is(.draft_htmlView, .asking_htmlView) {
   margin-top: 0.15rem;
-}
-
-.htmlView_editor .said_htmlView[data-adding] .hint_Asking_htmlView {
-  display: none;
 }
 
 /* a request's own actions, all quiet, in the muted ink, the page's when
@@ -2212,24 +2208,11 @@
 }
 
 /* words too long for the chip shown by their start, cut, and how many
-   lines they run to; pressed, shown in full under it, in the text's
-   font, a few lines high, scrolling past that; pointed at, or the
-   keyboard on it, the words lit where they are in the document */
-.htmlView_editor .show_Quote_htmlView {
-  display: inline-flex;
-  align-items: baseline;
-  gap: 0.35em;
-  min-width: 0;
-  padding: 0;
-  border: none;
-  background: none;
-  color: inherit;
-  font: inherit;
-  text-align: start;
-  cursor: pointer;
-}
-
-.htmlView_editor .show_Quote_htmlView:focus-visible {
+   lines they run to; pointed at, or the keyboard on them, lit where they
+   are in the document, and, a moment after, where some of them can't be
+   seen there, scrolled away or under the form, peeked at under the chip:
+   their first few lines in the text's font, wrapped, and how many more */
+.htmlView_editor .words_Quote_htmlView:focus-visible {
   outline: 2px solid var(--accent_revision_htmlView);
   outline-offset: 2px;
   border-radius: 2px;
@@ -2243,20 +2226,63 @@
   content: "· ";
 }
 
-.htmlView_editor .whole_Quote_htmlView {
-  max-height: calc(1.5em * 6);
-  margin: 0;
-  padding: 0.4em 0.6em;
-  overflow: auto;
+.htmlView_editor .chip_Quote_htmlView {
+  position: relative;
+}
+
+.htmlView_editor .peek_Quote_htmlView {
+  position: absolute;
+  top: calc(100% + 0.4rem);
+  left: 0;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.3em;
+  width: max-content;
+  max-width: min(24rem, var(--widthKept_htmlView, 24rem));
+  padding: 0.45em 0.65em;
+  border: 1px solid var(--view-menu-edge, color-mix(in srgb, CanvasText 16%, transparent));
   border-radius: 3px;
-  background: color-mix(in srgb, CanvasText 5%, transparent);
+  background: var(--view-ground, Canvas);
+  box-shadow: 0 0.3rem 0.9rem color-mix(in srgb, CanvasText 14%, transparent);
+  color: var(--view-ink, CanvasText);
+  pointer-events: none;
+  visibility: hidden;
+  opacity: 0;
+  transition: opacity 120ms ease, visibility 0s linear 120ms;
+}
+
+.htmlView_editor .chip_Quote_htmlView:is(:hover, :has(> .words_Quote_htmlView:focus-visible)) > .peek_Quote_htmlView {
+  visibility: visible;
+  opacity: 1;
+  transition: opacity 120ms ease 350ms, visibility 0s linear 350ms;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .htmlView_editor .peek_Quote_htmlView {
+    transition: none;
+  }
+}
+
+.htmlView_editor .peek_Quote_htmlView[hidden] {
+  display: none;
+}
+
+.htmlView_editor .text_Peek_htmlView {
+  max-height: calc(1.5em * 8);
+  overflow: hidden;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
   font-family: var(--view-font, ui-monospace, "SF Mono", Menlo, Consolas, monospace);
-  font-size: 0.88em;
   line-height: 1.5;
   tab-size: var(--view-tab-size, 4);
 }
 
-.htmlView_editor:has(.asking_htmlView :is(.chip_Quote_htmlView:hover, .show_Quote_htmlView:focus-visible, .whole_Quote_htmlView:hover)) .text_htmlView > [data-quoted] {
+.htmlView_editor .more_Peek_htmlView {
+  color: var(--view-placeholder-ink, color-mix(in srgb, CanvasText 58%, transparent));
+}
+
+.htmlView_editor:has(.asking_htmlView :is(.chip_Quote_htmlView:hover, .words_Quote_htmlView:focus-visible)) .text_htmlView > [data-quoted] {
   border-radius: 2px;
   background: color-mix(in srgb, var(--accent_revision_htmlView) 22%, transparent);
 }
@@ -2287,22 +2313,9 @@
   gap: 0.4rem;
 }
 
-/* where what's written goes, as doctor's form said, beside its actions,
-   muted, cut where it runs out of room: the task it's added to, and what
-   of it, these words, this document, or the whole task */
-.htmlView_editor .hint_Asking_htmlView {
-  flex: 1;
-  min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  color: var(--view-placeholder-ink, color-mix(in srgb, CanvasText 58%, transparent));
-  font-size: 0.85em;
-}
-
 /* Revise's form, in a card, under the link that opened it, or Add's, at
    the foot of the requests, as a proposal's is: the box and its actions,
-   nothing round them, no heading, its hint saying where it goes */
+   nothing round them, no heading, the card saying where it goes */
 .htmlView_editor .card_htmlView .asking_htmlView {
   position: static;
   z-index: auto;

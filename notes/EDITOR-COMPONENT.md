@@ -2985,6 +2985,32 @@ that opened it, in the menu's words and inks, "Proposal: Request
 revision", what it's on under it, muted, cut where it runs out: the
 proposal's title, the document's name, the task's; the words it's on, or
 goes with, a quiet chip, quoted as they'll be listed, "with" them and ×
-in it where they're for reference; its hint only where it goes, "Added to
+in it where they're for reference, ones too long for it by their start,
+cut, and how many lines they run to, "· 3 lines"; pointed at, or the
+keyboard on them, lit where they are in the document, and a moment
+after, only where some of them can't be seen there, scrolled past the
+document's edge or under the form, peeked at under the chip, the view
+deciding as it keeps the form, `peekedIf__Unseen_Quoted`, by its own
+`hidden`, not a data attribute, which would have the form drawn anew; lit only in the runs the selection
+was made across, `ids_Run`, from its anchor's to its head's, not in every
+run showing the same text, as a frame shows the document's unchanged
+words twice, as it is and as proposed, where lighting both read as the
+selection mirrored; a queued request's words, `data-requested`, still
+marked wherever they're shown: their first six lines in the text's
+font, wrapped, and how many more, "… 14 more lines", gone as the pointer
+leaves, not shown in full in the form, which was tried and taken out the
+same day, the form opening beside them and their light in the document
+showing them better; its hint only where it goes, "Added to
 T-12". A card's form, headed by nothing, keeps its hint's "for this
-document".
+document". It opens out of the way of the words it quotes, as best it
+can, there being no placing that always can: just below where they're
+shown, or, with no room there, just above, or, with room for neither, as
+the words fill the view, against the editor's edge with more room,
+covering as little of them as it may; across, where the menu was. One
+quoting nothing opens where the menu was.
+
+Decided 2026-11-19: the forms say nothing under their box of where what's
+written goes, "Added to T-12, for this document", as doctor's form did:
+the menu's is headed by what it's on, "Document: Request change" and the
+document's name, and a card's sits in the card it's for, the task's card
+naming the task. Its actions alone under the box, on the right.

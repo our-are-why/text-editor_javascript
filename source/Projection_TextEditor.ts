@@ -165,6 +165,7 @@ function viewModelOf__Model<State>({
         })
       ],
       pieces: (task?.requests ?? []).flatMap((request_Task) => request_Task.status !== "ADDRESSED" && request_Task.aim.kind === "SELECTION" ? request_Task.aim.selected.pieces : []),
+      ids_Run: null,
       attributes: {
         "data-requested": ""
       }
@@ -2741,6 +2742,7 @@ function frameOf__Drawn({
       pieces: proposals
         .filter((proposal_Host) => frame_Drawn.sources.includes(proposal_Host.source))
         .flatMap((proposal_Host) => proposal_Host.requests.flatMap((request_Host) => request_Host.selected?.pieces ?? [])),
+      ids_Run: null,
       attributes: {
         "data-requested": ""
       }

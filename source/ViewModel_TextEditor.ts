@@ -70,7 +70,8 @@ export {
   markedOf__Run,
   headOf__Quote,
   sizeOf__Quote,
-  isExpandable__Quote,
+  peekOf__Quote,
+  type _Peek_Quote_,
   pointedAt__ViewModel,
   foldedAt__ViewModel,
   draftingAt__ViewModel,
@@ -674,12 +675,14 @@ function runsOf__Blocks(
 interface _Api___markedIn__Blocks_ {
   blocks_ViewModel: Array<_Block_ViewModel_>
   pieces: Array<_Piece_Text_>
+  ids_Run: Array<string> | null
   attributes: _Attributes_Element_
 }
 
 function markedIn__Blocks({
   blocks_ViewModel,
   pieces,
+  ids_Run,
   attributes
 }: _Api___markedIn__Blocks_): Array<_Block_ViewModel_> {
   if (pieces.length === 0) return blocks_ViewModel
@@ -695,6 +698,7 @@ function markedIn__Blocks({
             run: markedOf__Run({
               run_Lines: part_Frame.run,
               pieces,
+              ids_Run,
               attributes
             })
           }
@@ -705,6 +709,7 @@ function markedIn__Blocks({
       run: markedOf__Run({
         run_Lines: block_ViewModel.run,
         pieces,
+        ids_Run,
         attributes
       })
     })
@@ -713,15 +718,17 @@ function markedIn__Blocks({
 interface _Api___markedOf__Run_ {
   run_Lines: _Run_Lines_
   pieces: Array<_Piece_Text_>
+  ids_Run: Array<string> | null
   attributes: _Attributes_Element_
 }
 
 function markedOf__Run({
   run_Lines,
   pieces,
+  ids_Run,
   attributes
 }: _Api___markedOf__Run_): _Run_Lines_ {
-  if (pieces.length === 0) return run_Lines
+  if (pieces.length === 0 || (ids_Run !== null && !ids_Run.includes(run_Lines.id))) return run_Lines
   return {
     ...run_Lines,
     lines: run_Lines.lines.map((line_Run) => {
@@ -1327,6 +1334,7 @@ function askingAt__ViewModel({
   const blocks_Quoted = markedIn__Blocks({
     blocks_ViewModel: viewModel_TextEditor.blocks,
     pieces: request?.quote?.pieces ?? [],
+    ids_Run: request?.quote?.ids_Run ?? [],
     attributes: {
       "data-quoted": ""
     }
@@ -1457,7 +1465,6 @@ interface _Form_Request_ {
   label: string
   head: _Head_Form_ | null
   quote: _Quote_Form_ | null
-  hint: string
   isStartable: boolean
   target: _Target_Request_
 }
@@ -1474,9 +1481,14 @@ interface _Quote_Form_ {
   size: string | null
   label: string
   isDroppable: boolean
-  isExpandable: boolean
-  isExpanded: boolean
+  peek: _Peek_Quote_ | null
   pieces: Array<_Piece_Text_>
+  ids_Run: Array<string>
+}
+
+interface _Peek_Quote_ {
+  text: string
+  more: string | null
 }
 
 interface _Api___headOf__Quote_ {
@@ -1503,17 +1515,26 @@ function sizeOf__Quote({
   return count < 2 ? null : `${count} lines`
 }
 
-interface _Api___isExpandable__Quote_ {
+interface _Api___peekOf__Quote_ {
   text: string
 }
 
-function isExpandable__Quote({
+function peekOf__Quote({
   text
-}: _Api___isExpandable__Quote_): boolean {
-  return parseTexts_Line(text).length > 1 || Array.from(text).length > LENGTH_SHOWN__QUOTE
+}: _Api___peekOf__Quote_): _Peek_Quote_ | null {
+  const lines = parseTexts_Line(text)
+  const count_More = lines.length - LINES_PEEKED__QUOTE
+  return lines.length < 2 && Array.from(text).length <= LENGTH_SHOWN__QUOTE
+    ? null
+    : {
+      text: lines.slice(0, LINES_PEEKED__QUOTE).join("\n"),
+      more: count_More < 1 ? null : `… ${count_More} more ${count_More === 1 ? "line" : "lines"}`
+    }
 }
 
 const LENGTH_SHOWN__QUOTE = 36
+
+const LINES_PEEKED__QUOTE = 6
 
 type _Place_Form_ = _POINT_Place_Form_ | _TASK_Place_Form_ | _DOCUMENT_Place_Form_
 

@@ -2,7 +2,7 @@ import { expect, test } from "bun:test"
 import { parseModel_TextEditor, type _Changes_Host_ } from "../source/Model_TextEditor.ts"
 import { viewModelOf__Model } from "../source/Projection_TextEditor.ts"
 import { MODULE_READING_TEXT } from "../source/readings/text.ts"
-import { MODULE_PLAINTEXT, confirmingAt__ViewModel, editingAt__ViewModel, askingAt__ViewModel, headOf__Quote, sizeOf__Quote, isExpandable__Quote, placeIn__Line, positionIn__Run, textOf__Line, type _Selection_TextEditor_, type _End_Selection_ } from "../source/ViewModel_TextEditor.ts"
+import { MODULE_PLAINTEXT, confirmingAt__ViewModel, editingAt__ViewModel, askingAt__ViewModel, headOf__Quote, sizeOf__Quote, peekOf__Quote, placeIn__Line, positionIn__Run, textOf__Line, type _Selection_TextEditor_, type _End_Selection_ } from "../source/ViewModel_TextEditor.ts"
 import { HANDLERMAP__TEXTEDITOR, type _State__Viewer_TextEditor_, type _Command_TextEditor_ } from "../source/Viewer_TextEditor.ts"
 import type { _Request_Edit_ } from "../source/Editing_TextEditor.ts"
 import type { _Layout_View_ } from "../source/View_TextEditor.tsx"
@@ -408,7 +408,7 @@ test("a right-click's menu offers what can be asked there, in tiers, the narrowe
   }
   const chosen = HANDLERMAP__TEXTEDITOR.CHOOSE_MENU({ state: menuOf(over_Digit), command: { kind: "CHOOSE_MENU", index: 0 }, layout_View, module_Words: MODULE_WORDS_TEXT, edit_View: () => null, ask_View })
   expect(chosen.menu).toBe(null)
-  expect(chosen.request).toMatchObject({ place: { kind: "POINT", point_Screen: { x: 40, y: 40 } }, label: "Request a revision of these words", quote: { text: "2", label: "", isDroppable: false }, hint: "" })
+  expect(chosen.request).toMatchObject({ place: { kind: "POINT", point_Screen: { x: 40, y: 40 } }, label: "Request a revision of these words", quote: { text: "2", label: "", isDroppable: false } })
   expect(HANDLERMAP__TEXTEDITOR.DROP_QUOTE({ state: chosen, command: { kind: "DROP_QUOTE" }, layout_View, module_Words: MODULE_WORDS_TEXT, edit_View: () => null, ask_View })).toBe(chosen)
   const unsent = HANDLERMAP__TEXTEDITOR.SEND_REQUEST({ state: chosen, command: { kind: "SEND_REQUEST", notes: "  ", isStarting: false }, layout_View, module_Words: MODULE_WORDS_TEXT, edit_View: () => null, ask_View })
   expect(unsent).toBe(chosen)
@@ -467,7 +467,9 @@ test("a right-click on a proposal, nothing selected, offers its tier and the doc
   const marked = askingAt__ViewModel({ viewModel_TextEditor: viewModel, menu: null, request: referring.request })
   expect(marked.runs.flatMap((run_Lines) => run_Lines.lines.flatMap((line_Run) => line_Run.segments.filter((segment_Line) => "data-quoted" in segment_Line.attributes).map((segment_Line) => `${run_Lines.id} ${segment_Line.text}`)))).toEqual(["frame-1-proposed 2"])
   expect(askingAt__ViewModel({ viewModel_TextEditor: viewModel, menu: null, request: dropped.request }).runs).toBe(viewModel.runs)
-  expect(HANDLERMAP__TEXTEDITOR.TOGGLE_QUOTE({ state: referring, command: { kind: "TOGGLE_QUOTE" }, ...handlerOf(layout_View) })).toBe(referring)
+  const over_One_Current: _Selection_TextEditor_ = { anchor: caretOf("frame-1-current", 0, 0).anchor, head: caretOf("frame-1-current", 0, 3).head }
+  const chosen_Current = choose(menuAt(over_One_Current, layout_View), 0)
+  expect(askingAt__ViewModel({ viewModel_TextEditor: viewModel, menu: null, request: chosen_Current.request }).runs.flatMap((run_Lines) => run_Lines.lines.flatMap((line_Run) => line_Run.segments.filter((segment_Line) => "data-quoted" in segment_Line.attributes).map((segment_Line) => `${run_Lines.id} ${segment_Line.text}`)))).toEqual(["frame-1-current one"])
   const returned = HANDLERMAP__TEXTEDITOR.FOCUS_REQUEST({ state: { ...referring, focus_Asking: null }, command: { kind: "FOCUS_REQUEST" }, ...handlerOf(layout_View) })
   expect([returned.request, returned.focus_Asking]).toEqual([referring.request, "REQUEST"])
   expect(HANDLERMAP__TEXTEDITOR.FOCUS_REQUEST({ state: stateOf(null), command: { kind: "FOCUS_REQUEST" }, ...handlerOf(layout_View) })).toEqual(stateOf(null))
@@ -494,12 +496,15 @@ test("a right-click on a proposal, nothing selected, offers its tier and the doc
   expect(asked).toEqual([{ kind: "ACTION", source: "digit", command: "accept", notes: null, selected: null, reference: null }])
 })
 
-test("words quoted in a form are shown by their start, cut where there's more, and how many lines they run to; ones too long for the chip can be shown in full", () => {
-  expect([headOf__Quote({ text: "aborted" }), sizeOf__Quote({ text: "aborted" }), isExpandable__Quote({ text: "aborted" })]).toEqual(["aborted", null, false])
+test("words quoted in a form are shown by their start, cut where there's more, and how many lines they run to; ones too long for the chip peeked at, their first six lines and how many more", () => {
+  expect([headOf__Quote({ text: "aborted" }), sizeOf__Quote({ text: "aborted" }), peekOf__Quote({ text: "aborted" })]).toEqual(["aborted", null, null])
   const text_Lines = "  if (signal?.aborted) break\n  await sleep(delay)\n}"
-  expect([headOf__Quote({ text: text_Lines }), sizeOf__Quote({ text: text_Lines }), isExpandable__Quote({ text: text_Lines })]).toEqual(["if (signal?.aborted) break…", "3 lines", true])
+  expect([headOf__Quote({ text: text_Lines }), sizeOf__Quote({ text: text_Lines }), peekOf__Quote({ text: text_Lines })]).toEqual(["if (signal?.aborted) break…", "3 lines", { text: text_Lines, more: null }])
   expect([headOf__Quote({ text: "\n  next()" }), sizeOf__Quote({ text: "\n  next()" })]).toEqual(["next()", "2 lines"])
-  expect(isExpandable__Quote({ text: "x".repeat(37) })).toBe(true)
+  expect(peekOf__Quote({ text: "x".repeat(37) })).toEqual({ text: "x".repeat(37), more: null })
+  const lines_Many = Array.from({ length: 13 }, (_, index) => `line ${index + 1}`)
+  expect(peekOf__Quote({ text: lines_Many.join("\n") })).toEqual({ text: lines_Many.slice(0, 6).join("\n"), more: "… 7 more lines" })
+  expect(peekOf__Quote({ text: lines_Many.slice(0, 7).join("\n") })?.more).toBe("… 1 more line")
 })
 
 test("revisions queued: a revision's notes added, asked of the host, its draft closed; with Start, its proposal's queued requests started after them, and with nothing written, Start alone; with nothing written, not now, nothing; from the menu's form, a note on a proposal queued the same, and a request for a change, on what's selected or the document, queued the same, the document's own, Start asked with it, as the host starts it at once", () => {
@@ -573,7 +578,7 @@ test("an action that would drop revisions queued is asked first: pressed, nothin
   expect(handled(state_Queued, { kind: "DISMISS", source: null, id: "done" })).toBe(state_Queued)
   expect(handled(state_Queued, { kind: "START", scope: { kind: "REQUEST", source: null, id: "all" } })).toBe(state_Queued)
   const opened = handled(state_Queued, { kind: "OPEN_REQUEST", target: { kind: "DOCUMENT", reference: null } })
-  expect([opened.menu, opened.request, opened.focus_Asking]).toEqual([null, { place: { kind: "DOCUMENT" }, label: "Revise this document", head: null, quote: null, hint: "", isStartable: true, target: { kind: "DOCUMENT", reference: null } }, "REQUEST"])
+  expect([opened.menu, opened.request, opened.focus_Asking]).toEqual([null, { place: { kind: "DOCUMENT" }, label: "Revise this document", head: null, quote: null, isStartable: true, target: { kind: "DOCUMENT", reference: null } }, "REQUEST"])
   expect(handled(state_Queued, { kind: "OPEN_REQUEST", target: { kind: "TASK", reference: null } })).toBe(state_Queued)
   const closed = handled(opened, { kind: "CLOSE_REQUEST" })
   expect([closed.request, closed.focus_Asking, closed.isFocusing_Input]).toEqual([null, "ASK_DOCUMENT", false])
@@ -587,9 +592,8 @@ test("an action that would drop revisions queued is asked first: pressed, nothin
       }
     }
   }
-  expect(handled(state_Task, { kind: "OPEN_REQUEST", target: { kind: "DOCUMENT", reference: null } }).request?.hint).toBe("Added to T-3, for this document")
   const opened_Task = handled(state_Task, { kind: "OPEN_REQUEST", target: { kind: "TASK", reference: null } })
-  expect(opened_Task.request).toEqual({ place: { kind: "TASK" }, label: "Revise the task", head: null, quote: null, hint: "Added to T-3, for the whole task", isStartable: true, target: { kind: "TASK", reference: null } })
+  expect(opened_Task.request).toEqual({ place: { kind: "TASK" }, label: "Revise the task", head: null, quote: null, isStartable: true, target: { kind: "TASK", reference: null } })
   const sent_Task = handled(opened_Task, { kind: "SEND_REQUEST", notes: "Tidy it all.", isStarting: false })
   expect([sent_Task.request, sent_Task.focus_Asking, sent_Task.isFocusing_Input]).toEqual([null, "ASK_TASK", false])
   const closed_Task = handled(opened_Task, { kind: "CLOSE_REQUEST" })
