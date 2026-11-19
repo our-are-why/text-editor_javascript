@@ -1911,10 +1911,15 @@ are but bold, what everything queued waits on; Stop and the rest stay
 regular. Start all was made regular for a moment, and made bold again. A
 form's Add and Start, the card's and a proposal's Revise, are there from
 the outset, not hidden till something's written, but disabled while what's
-written is blank, faded, with no hover; the view keeps `disabled` in step
+written is blank, faded, with no hover, and an edit's Save the same, though
+it opens enabled, holding the request's words, till they're cleared; the view keeps `disabled` in step
 with the text, on its own `input` listener and after every draw, the text
 being the textarea's alone, not the view model's, and a draw taking off
-any attribute it doesn't name. An unfolded set of actions
+any attribute it doesn't name. The document's card hugs the editor's right
+edge: placed from the header, `top: 100%; right: 0`, not from its file
+name, which had left it 0.75rem in, a guess at the header's padding; no
+right border of its own, the editor's edge, the host's border in the
+playground, being its edge, so the line isn't doubled. An unfolded set of actions
 opening into a pill of its ellipsis's ground was tried too, and let go:
 they unfold plain, as they were. A group's actions unfold with nothing
 between them and its heading, the rule gone, their ink and weight

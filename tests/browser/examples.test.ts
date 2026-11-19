@@ -983,7 +983,8 @@ test("each scope's Start: a request's own actions behind an ellipsis till it's p
 
 // then a request's Edit, on the JavaScript example: a queued one of the
 // document's, its words its own box, the keyboard in it, Save and Cancel
-// under it; saved, the host told, its words the new ones, the keyboard back
+// under it, Save disabled while the box is blank, enabled again once it
+// isn't; saved, the host told, its words the new ones, the keyboard back
 // on its Edit; opened again, Escape, nothing asked
 await asked_Card(".trigger_Document_htmlView", ".card_Document_htmlView", "DOCUMENT", "Say it once.")
 await opened_JavaScript.page.hover(".trigger_Document_htmlView")
@@ -999,7 +1000,16 @@ const editing_Shown = await opened_JavaScript.page.evaluate(async () => {
   }
 })
 const count_Edited = (await opened_JavaScript.logged()).length
+const saveOf_Edit = () => opened_JavaScript.page.evaluate(async () => {
+  await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)))
+  const element = document.querySelector(".card_Document_htmlView .actions_Edit_htmlView > [data-edit-action=\"SAVE\"]")
+  return element instanceof HTMLButtonElement && element.disabled ? "disabled" : "enabled"
+})
+const save_Opened = await saveOf_Edit()
+await opened_JavaScript.page.locator(".card_Document_htmlView .notes_Edit_htmlView").fill("   ")
+const save_Blank = await saveOf_Edit()
 await opened_JavaScript.page.locator(".card_Document_htmlView .notes_Edit_htmlView").fill("Say it twice.")
+const save_Written = await saveOf_Edit()
 await opened_JavaScript.page.locator(".card_Document_htmlView [data-edit-action=\"SAVE\"]").click()
 const edited = await opened_JavaScript.page.evaluate(async () => {
   await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)))
@@ -1020,6 +1030,15 @@ const logged_Cancelled = (await opened_JavaScript.logged()).slice(count_Edited).
 
 test("a queued request's Edit: its words its own box, the keyboard in it, Save and Cancel; saved, the host told, the request saying the new words, the keyboard back on its Edit; Escape closing it, nothing asked", () => {
   expect(editing_Shown).toEqual({ box: "Say it once.", isFocused: true, actions: ["Save", "Cancel"] })
+  expect([
+    save_Opened,
+    save_Blank,
+    save_Written
+  ]).toEqual([
+    "enabled",
+    "disabled",
+    "enabled"
+  ])
   expect(edited).toEqual({ words: ["Say it twice."], isEditFocused: true })
   expect(logged_Edit).toEqual([expect.objectContaining({ proposal: null, notes: "Say it twice." })])
   expect(cancelled_Edit).toBe(0)
@@ -1170,5 +1189,30 @@ const folded_Clicked = await opened_JavaScript.page.evaluate(async () => {
 
 test("a group's actions after a click: the focus a click left on its Add not holding them open once the pointer's gone", () => {
   expect(folded_Clicked).toEqual({ isFocusedOnAdd: true, isFolded: true })
+  expect(opened_JavaScript.errors).toEqual([])
+})
+
+// then where the document's card opens: hugging the editor's right edge,
+// the header's, with no edge of its own there, and its top on the
+// header's bottom edge, level with the task's card's
+await opened_JavaScript.page.keyboard.press("Escape")
+await opened_JavaScript.page.mouse.move(700, 700)
+await opened_JavaScript.page.hover(".trigger_Document_htmlView")
+const hugged_Card = await opened_JavaScript.page.evaluate(async () => {
+  await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)))
+  const header = document.querySelector(".header_htmlView")
+  const card = document.querySelector(".card_Document_htmlView")
+  const card_Task = document.querySelector(".card_Task_htmlView")
+  if (header === null || card === null || card_Task === null) return null
+  return {
+    gap_Right: header.getBoundingClientRect().right - card.getBoundingClientRect().right,
+    gap_Top: header.getBoundingClientRect().bottom - parseFloat(getComputedStyle(header).borderBottomWidth) - card.getBoundingClientRect().top,
+    edge_Right: getComputedStyle(card).borderRightWidth,
+    isLevel: card.getBoundingClientRect().top === card_Task.getBoundingClientRect().top
+  }
+})
+
+test("the document's card hugs the editor's right edge, no edge of its own there, its top on the header's edge, level with the task's", () => {
+  expect(hugged_Card).toEqual({ gap_Right: 0, gap_Top: 0, edge_Right: "0px", isLevel: true })
   expect(opened_JavaScript.errors).toEqual([])
 })

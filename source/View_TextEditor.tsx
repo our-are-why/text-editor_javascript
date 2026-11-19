@@ -279,9 +279,9 @@ interface _Api___heldTillWritten__Form_ {
 function heldTillWritten__Form({
   containerElement_View
 }: _Api___heldTillWritten__Form_): void {
-  for (const element_Notes of containerElement_View.querySelectorAll<HTMLTextAreaElement>(":is(.asking_htmlView, .draft_htmlView) > .notes_htmlView")) {
+  for (const element_Notes of containerElement_View.querySelectorAll<HTMLTextAreaElement>(":is(.asking_htmlView, .draft_htmlView) > .notes_htmlView, .said_htmlView > .notes_Edit_htmlView")) {
     const isWritten = element_Notes.value.trim() !== ""
-    for (const element_Button of element_Notes.parentElement?.querySelectorAll<HTMLButtonElement>(":scope > .actions_htmlView > :is([data-request=ADD], [data-request=START], [data-draft=ADD], [data-draft=START])") ?? []) {
+    for (const element_Button of element_Notes.parentElement?.querySelectorAll<HTMLButtonElement>(":scope > :is(.actions_htmlView, .actions_Edit_htmlView) > :is([data-request=ADD], [data-request=START], [data-draft=ADD], [data-draft=START], [data-edit-action=SAVE])") ?? []) {
       element_Button.disabled = !isWritten
     }
   }

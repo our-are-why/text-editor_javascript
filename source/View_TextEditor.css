@@ -703,10 +703,11 @@
   font-style: normal;
 }
 
-/* a form's Add and Start, there from the start, but not to be pressed
-   till something's written in it, there being nothing before to add or
-   start: faded, no hover, as a neighbour's arrow with nowhere to go is */
-.htmlView_editor .actions_htmlView > .action_htmlView:disabled {
+/* a form's Add and Start, there from the start, and an edit's Save, but
+   not to be pressed while what's written in it is blank, there being
+   nothing to add, start or save: faded, no hover, as a neighbour's arrow
+   with nowhere to go is */
+.htmlView_editor :is(.actions_htmlView, .actions_Edit_htmlView) > .action_htmlView:disabled {
   opacity: 0.4;
   cursor: default;
 }
@@ -754,7 +755,7 @@
   color: var(--view-action-main-ink, #ffffff);
 }
 
-.htmlView_editor .actions_Edit_htmlView > [data-edit-action="SAVE"]:hover {
+.htmlView_editor .actions_Edit_htmlView > [data-edit-action="SAVE"]:hover:not(:disabled) {
   background: var(--view-action-revision-hover-ground, light-dark(#782b7b, #b252af));
 }
 
@@ -1463,7 +1464,6 @@
    font, which opens its card under it as the task's does, the card's right
    edge under its own; the document's actions there, not on the header */
 .htmlView_editor .document_Header_htmlView {
-  position: relative;
   display: flex;
   flex: none;
   align-self: stretch;
@@ -1591,8 +1591,14 @@
   left: -0.75rem;
 }
 
+/* the document's card hugging the editor's right edge, placed from the
+   header, not from its file name, its top on the header's edge as the
+   task's is; no edge of its own on the right, where the editor's is, so
+   not doubled */
 .htmlView_editor .card_Document_htmlView {
-  right: -0.75rem;
+  top: 100%;
+  right: 0;
+  border-right: none;
 }
 
 /* shown while its trigger's hovered, or the focus is in it, and held open
