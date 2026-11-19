@@ -41,7 +41,8 @@ interface _Api___projectedOf_<State> {
 // host, says of each proposal, and the lines it frames, a function's say,
 // beyond what the changes touch: for the pages that show what's drawn, the
 // changes document's cases and the gallery's scenes, which the viewer draws
-// as it's given them, where an example has the editor draw its model
+// as it's given them, where an example has the editor draw its model; a
+// document named nothing, with no task, as these pages draw no header
 function projectedOf<State>({
   multilineText,
   marks,
@@ -51,5 +52,5 @@ function projectedOf<State>({
   proposals,
   ranges_Frame
 }: _Api___projectedOf_<State>): _ViewModel_TextEditor_ {
-  return viewModelOf__Model({ model_TextEditor: modelOf({ multilineText, marks, proposed }), proposals, rounds_Landed: [], task: null, ranges_Frame, module_Language, module_Reading })
+  return viewModelOf__Model({ model_TextEditor: modelOf({ multilineText, marks, proposed }), name_Document: "", proposals, rounds_Landed: [], task: null, ranges_Frame, module_Language, module_Reading })
 }

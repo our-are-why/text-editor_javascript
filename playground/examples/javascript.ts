@@ -416,22 +416,31 @@ const javascript: _Example_ = {
       containerElement,
       setup: setup_retry,
       model_TextEditor: model_retry,
+      name_Document: "retry.js",
       proposals: proposals_retry,
       rounds_Landed: rounds_retry,
       about_Task: {
-        id: "retry-tidy",
+        id: "T-12",
         name: "Tidy the retry loop",
         summary: "Keeps every error, names the attempt counter round, caps the delay, and stops once the caller aborts; drops the onRetry hook and the opening comment.",
         summary_Document: "In retry.js: the loop's errors, its counter's name, its delays and its abort, and two things it no longer needs.",
-        counts_Elsewhere: {
-          OPEN: 3,
-          REQUESTED: 0,
-          REVISING: 1,
-          ACCEPTED: 2,
-          REJECTED: 0,
-          WITHDRAWN: 0
-        },
-        count_Documents: 2
+        documents_Elsewhere: [
+          {
+            name: "README.md",
+            counts_Proposals: {
+              OPEN: 3,
+              REQUESTED: 0,
+              REVISING: 1,
+              ACCEPTED: 2,
+              REJECTED: 0,
+              WITHDRAWN: 0
+            },
+            counts_Requests: {
+              QUEUED: 0,
+              RUNNING: 1
+            }
+          }
+        ]
       },
       ranges_Frame: ranges_retry,
       log

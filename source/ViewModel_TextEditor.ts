@@ -67,11 +67,20 @@ export {
   foldedAt__ViewModel,
   draftingAt__ViewModel,
   confirmingAt__ViewModel,
+  editingAt__ViewModel,
+  type _Editing_Request_,
   type _Header_ViewModel_,
+  type _Document_Header_,
+  type _Proposals_Card_,
   type _Figure_Card_,
+  type _Revisions_Scope_,
+  type _Revisions_Level_,
+  type _Ask_Card_,
+  type _Document_Card_,
   type _Task_Header_,
   type _State_Task_,
   type _Action_Task_,
+  type _Section_Action_,
   type _Part_Header_,
   type _Pending_Confirm_,
   type _Request_Item_,
@@ -103,6 +112,11 @@ export {
   type _Selected_Text_,
   type _Piece_Text_,
   type _Form_Request_,
+  type _Place_Form_,
+  type __BASE_Place_Form_,
+  type _POINT_Place_Form_,
+  type _TASK_Place_Form_,
+  type _DOCUMENT_Place_Form_,
   drawnOf__End,
   orderOf__Positions_Drawn,
   sectionOf__Run,
@@ -129,14 +143,56 @@ interface _ViewModel_TextEditor_ {
 interface _Header_ViewModel_ {
   task: _Task_Header_ | null
   parts: Array<_Part_Header_>
-  isStartable: boolean
-  requests: Array<_Request_Item_>
+  document: _Document_Header_
+}
+
+interface _Document_Header_ {
+  folder: string
+  name: string
+  summary: string
+  proposals: _Proposals_Card_
+  revisions_Scope: _Revisions_Scope_
+  revisions_Level: _Revisions_Level_
+}
+
+interface _Proposals_Card_ {
+  figure: _Figure_Card_ | null
+  documents: Array<_Document_Card_>
+  actions: Array<_Action_Task_>
 }
 
 interface _Figure_Card_ {
-  label: string
   value: string
   more: string
+}
+
+interface _Revisions_Scope_ {
+  figure: _Figure_Card_ | null
+  title_Start: string | null
+  title_Stop: string | null
+  actions: Array<_Action_Task_>
+}
+
+interface _Revisions_Level_ {
+  requests: Array<_Request_Item_>
+  isStartable_Requests: boolean
+  isStoppable_Requests: boolean
+  ask: _Ask_Card_
+}
+
+interface _Ask_Card_ {
+  label: string
+  label_Form: string
+}
+
+interface _Document_Card_ {
+  folder: string
+  name: string
+  value: string
+  more: string
+  isShown: boolean
+  isDecided: boolean
+  actions: Array<_Action_Task_>
 }
 
 interface _Task_Header_ {
@@ -146,12 +202,9 @@ interface _Task_Header_ {
   label_State: string
   summary: string
   reason: string
-  figures: Array<_Figure_Card_>
-  figures_Document: Array<_Figure_Card_>
-  summary_Document: string
-  requests: Array<_Request_Item_>
-  actions: Array<_Action_Task_>
-  actions_Document: Array<_Action_Task_>
+  proposals: _Proposals_Card_
+  revisions_Scope: _Revisions_Scope_
+  revisions_Level: _Revisions_Level_
 }
 
 type _State_Task_ = "DRAFT" | "WORKING" | "YOUR_TURN" | "DONE" | "CANCELED"
@@ -159,7 +212,10 @@ type _State_Task_ = "DRAFT" | "WORKING" | "YOUR_TURN" | "DONE" | "CANCELED"
 interface _Action_Task_ {
   command: string
   label: string
+  section: _Section_Action_
 }
+
+type _Section_Action_ = "PROPOSALS" | "REVISIONS"
 
 interface _Part_Header_ {
   text: string
@@ -317,8 +373,12 @@ interface _Request_Item_ {
   notes: string
   quote: string | null
   progress: string | null
+  detail_Progress: string | null
   isStartable: boolean
   isRemovable: boolean
+  isEditing: boolean
+  isStoppable: boolean
+  isDismissable: boolean
 }
 
 type _Status_Request_ = "QUEUED" | "RUNNING" | "ADDRESSED"
@@ -405,8 +465,31 @@ function viewModelOf__Blocks(
 const HEADER_EMPTY: _Header_ViewModel_ = {
   task: null,
   parts: [],
-  isStartable: false,
-  requests: []
+  document: {
+    folder: "",
+    name: "",
+    summary: "",
+    proposals: {
+      figure: null,
+      documents: [],
+      actions: []
+    },
+    revisions_Scope: {
+      figure: null,
+      title_Start: null,
+      title_Stop: null,
+      actions: []
+    },
+    revisions_Level: {
+      requests: [],
+      isStartable_Requests: false,
+      isStoppable_Requests: false,
+      ask: {
+        label: "Add a request",
+        label_Form: "Request a change to this document"
+      }
+    }
+  }
 }
 
 function neighboredOf__Blocks(
@@ -839,6 +922,77 @@ function draftingAt__ViewModel({
   }))
 }
 
+interface _Api___editingAt__ViewModel_ {
+  viewModel_TextEditor: _ViewModel_TextEditor_
+  editing_Request: _Editing_Request_ | null
+}
+
+interface _Editing_Request_ {
+  id_Item: _Id_Item_ | null
+  id: string
+}
+
+function editingAt__ViewModel({
+  viewModel_TextEditor,
+  editing_Request
+}: _Api___editingAt__ViewModel_): _ViewModel_TextEditor_ {
+  if (editing_Request === null) return viewModel_TextEditor
+  const id_Item = editing_Request.id_Item
+  const editedOf = (request$_Item: Array<_Request_Item_>) => request$_Item.map((request_Item) => ({
+    ...request_Item,
+    isEditing: request_Item.id === editing_Request.id
+  }))
+  const header = viewModel_TextEditor.header
+  return id_Item === null
+    ? {
+      ...viewModel_TextEditor,
+      header: {
+        ...header,
+        task: header.task === null
+          ? null
+          : {
+            ...header.task,
+            revisions_Level: {
+              ...header.task.revisions_Level,
+              requests: editedOf(header.task.revisions_Level.requests)
+            }
+          },
+        document: {
+          ...header.document,
+          revisions_Level: {
+            ...header.document.revisions_Level,
+            requests: editedOf(header.document.revisions_Level.requests)
+          }
+        }
+      }
+    }
+    : {
+      ...viewModel_TextEditor,
+      blocks: viewModel_TextEditor.blocks.map((block_ViewModel): _Block_ViewModel_ => block_ViewModel.kind !== "FRAME" || block_ViewModel.range.first !== id_Item.range_Frame.first || block_ViewModel.range.last !== id_Item.range_Frame.last
+        ? block_ViewModel
+        : {
+          ...block_ViewModel,
+          parts: mapped__NonEmpty({
+            items: block_ViewModel.parts,
+            map: (part_Frame): _Part_Frame_ => part_Frame.kind === "PROPOSAL_LIST"
+              ? {
+                ...part_Frame,
+                items: mapped__NonEmpty({
+                  items: part_Frame.items,
+                  map: (item_Proposals) => item_Proposals.source === id_Item.source
+                    ? {
+                      ...item_Proposals,
+                      requests: editedOf(item_Proposals.requests)
+                    }
+                    : item_Proposals
+                })
+              }
+              : part_Frame
+          })
+        })
+    }
+}
+
 interface _Api___confirmingAt__ViewModel_ {
   viewModel_TextEditor: _ViewModel_TextEditor_
   confirm_Item: _Pending_Confirm_ | null
@@ -1060,12 +1214,27 @@ interface _Piece_Text_ {
 }
 
 interface _Form_Request_ {
-  point_Screen: _Point_Screen_ | null
+  place: _Place_Form_
   label: string
   quote: string | null
+  hint: string
   isStartable: boolean
   target: _Target_Request_
 }
+
+type _Place_Form_ = _POINT_Place_Form_ | _TASK_Place_Form_ | _DOCUMENT_Place_Form_
+
+interface __BASE_Place_Form_<Kind extends string> {
+  kind: Kind
+}
+
+interface _POINT_Place_Form_ extends __BASE_Place_Form_<"POINT"> {
+  point_Screen: _Point_Screen_
+}
+
+interface _TASK_Place_Form_ extends __BASE_Place_Form_<"TASK"> {}
+
+interface _DOCUMENT_Place_Form_ extends __BASE_Place_Form_<"DOCUMENT"> {}
 
 interface _Api___selectedAt__ViewModel_ {
   viewModel_TextEditor: _ViewModel_TextEditor_

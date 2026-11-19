@@ -351,22 +351,15 @@ const markdown: _Example_ = {
       containerElement,
       setup: setup_readme,
       model_TextEditor: model_readme,
+      name_Document: "README.md",
       proposals: proposals_readme,
       rounds_Landed: [],
       about_Task: {
-        id: "readme",
+        id: "T-7",
         name: "Bring the README up to date",
         summary: "Says what retry retries and how long it waits, with the module's cap and its options.",
         summary_Document: "In the README: what's retried, the delays, and the options, moved before the example.",
-        counts_Elsewhere: {
-          OPEN: 0,
-          REQUESTED: 0,
-          REVISING: 0,
-          ACCEPTED: 0,
-          REJECTED: 0,
-          WITHDRAWN: 0
-        },
-        count_Documents: 1
+        documents_Elsewhere: []
       },
       ranges_Frame: ranges_readme,
       log

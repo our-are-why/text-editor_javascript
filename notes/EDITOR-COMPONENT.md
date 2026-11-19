@@ -1410,7 +1410,7 @@ with one queued requested, in the editor's words, the view model's
 proposal can have a round under way and more asked of it, queued for the
 next. Starting is scoped, a filter over what's queued, not a group a
 request belongs to, as a test runner runs a test, a file or all of them:
-`_Scope_Start_`, one request, its own Start, a quiet word after it, a
+`_Scope_Work_`, one request, its own Start, a quiet word after it, a
 proposal's, Start under its list or in a form, or the document's, Start in
 its header; a task's the host's, its own action in the header; a frame's
 left out, as a proposal runs through frames and a frame holds parts of
@@ -1557,6 +1557,350 @@ in a box an icon's size, each state's shape drawn in it; the text's inset
 worked out once, on the view, in the lines' font, `--textInset_htmlView`,
 so the header, the items and a docked form start their words at the same
 point, where the header, in the interface's font, had been a pixel out.
+
+**the header, leaner, decided 2026-11-18:** with a task, the header says
+its mark and its name and nothing more beside them: what's decided is in
+its card, what's queued is said by Start, "Start 2", how many of the
+requests aimed at this document it starts, `count_Startable`, those aimed
+at the task as a whole started from their own Start in the card, and
+what's under way by the mark; with no task, the document's counts stand
+where its name would. The card's heading, under the name, is the task's
+id and where it stands, its name not said again. A task's id's the
+host's, and best mechanical, a counter, as doctor's `T-12` was, not a slug
+of its name: the name says what it's about, and can change as its scope
+does; the id stays put, short, unique, in order, to say or paste anywhere.
+The playground's are `T-12` and `T-7`. Where a task stands is said in a word, as its
+kind is, and capitalized, as a proposal's status is, "Draft", "Working",
+"Your turn", "Done", "Canceled", Working's three dots waving after it on
+the beat its mark turns on, as a revising proposal's do,
+`LABELMAP__STATE_TASK`, in the card's heading and, for what reads the
+header aloud, after its name. A task's mark and its word are in one ink,
+by where it stands, as a proposal's icon and its status word are, the
+proposals' own colours meaning the same here: the agent at work, the
+revision's plum; your turn, or done, decided, the proposals' indigo; a
+draft, or canceled, nothing under way, the grey a withdrawn proposal's
+in, canceled's cross fainter than its word, as withdrawn's is;
+`--ink_Task_htmlView`, a host's own `--view-state-*` colours taken where
+it gives them.
+
+**the document's requests in the header, and the task's files in its card,
+decided 2026-11-18:** the requests aimed at this document, or at some words
+of it, came out of the card, where they were out of sight till it was
+hovered, and are listed under the header's line, as a proposal's are under
+its item's words: "Requests" over them, the plum rule beside them, each
+with its own Start and Remove; scrolling in themselves past a third of the
+view's height, so the header never takes the document's room. Those aimed
+at the task as a whole stay in the card's task part. The card says how far
+the task's proposals have got across its files, "Proposals: 5 of 20
+decided", and, where it touches more than one, lists them, each its name,
+"this file" by the one shown, and how far its own have got, "3 of 14
+decided", its breakdown when hovered, where it had said how many files and
+framed this one as the task's share: the task's `documents`, the host's,
+each its name, its proposals counted by where they stand, and whether it's
+the one shown, whose counts the editor takes from its own, so its row
+always says what's drawn; the task's figure their sum. The document's part
+keeps what the agent says of it and the host's actions for it, its figures
+gone, its row in the list saying them. One file, the list would say the
+figure again, so it's left out. Not yet: a file in the list opening it,
+which is the host's to do, an action on the row.
+
+**each request said by what it's for, files at tens, and the task's form in
+its card, decided 2026-11-18:** the document's requests, under the header,
+under the task's name, read as the task's; in doctor's model, and ours,
+every request is the task's, and they differ only in what they're aimed
+at, so each list and each form says it: "Requests for this document" under
+the header, "Requests for the whole task" in the card, each list's label
+given it, `label`; and each form, where there's a task, saying where
+what's written goes, beside its actions, as doctor's did, "Added to T-12,
+for this document", "for these words", "for the whole task", `hint`, by
+its target's aim, `AIMMAP__KIND_TARGET`, a proposal's own revisions saying
+nothing, theirs being the proposal's. Each form opens where what it adds
+is listed, `_Place_Form_`: at the pointer, from the menu, `POINT`; docked
+under the header, Request a change's, `HEADER`; and in the card, Add a
+request's, `CARD`, at the foot of the task's part, under its requests, a
+band out to the card's edges, the plum bar beside it, as doctor's composer
+was at the foot of its, the card held open while it's there, whatever the
+pointer does, `:has(.asking_htmlView)`, its link saying it's open,
+`aria-expanded`. Sent or put away, Add a request's form gives the keyboard
+back to the link, the card still open, what was added in sight, where the
+others give it back to the text, `FOCUSMAP__KIND_PLACE`; left empty, the
+focus gone elsewhere in the editor, it's put away where the focus went,
+`LEAVE_REQUEST`, as doctor's was by a click outside it, and kept, the
+card with it, while something's written in it. The card's files, at tens:
+the one shown first, the rest in the host's order, so none moves as
+proposals are decided; past six or so, the list scrolls in itself, the
+card never past the window; each path in two, its folder, `folder`, muted
+and cut from its start, its file's name whole; "Files · 24", how many,
+`label_Documents`; a file with nothing left to decide muted, `isDecided`,
+so those still to review stand out.
+
+**one word for what the editor shows, and requests named by what they're
+for, decided 2026-11-18:** the interface says "document", never "file":
+"Documents · 24" over the card's list, "this document" by the one shown,
+as its part's heading, Request a change's form and the hints already said;
+a host's own words, its summaries and its actions, are its own. The lists
+are "Document requests", under the header, and "Task requests", in the
+card, a proposal's still "Requests", it being plain whose they are there.
+
+**the document's own card, decided 2026-11-18:** the task's card said
+what the task was and what it did here, in two parts; what's the
+document's is now the document's, a card of its own, the header's last
+thing, opened as the task's is, by its trigger, the document's file's
+name, in the editor's font, its path in its card when it's in a folder;
+the header's own buttons gone, Request a change and Start, into it. Its
+card: what the agent says the task does here, the document's proposals,
+how far they've got, and its actions, as links, as the task's are: Add a
+request, its form in the card, at its foot, as the task's is in its,
+"Add a request" for both, the form saying what it's for; Start, plum,
+saying how many it starts, the requests aimed here and the proposals'
+queued; and the host's actions for the task here, Accept the ones
+waiting here. The task's card keeps the task's alone, its requests
+"Requests", it being the task's card, its documents listed. Nothing's
+docked under the header now, every card form in its card, `_Place_Form_`
+`TASK` or `DOCUMENT`, the keyboard back on its link after, `ASK_TASK`,
+`ASK_DOCUMENT`; the one the pointer's on over the other. The document's
+name is the host's, given the editor with its model, `name_Document`, on
+its own, not the task's, as there's a document with no task, its card
+there whatever: `_Document_Header_`, the header's `document`. The
+pages that draw no header, the changes document's cases and the gallery's
+scenes, name theirs nothing.
+
+**each card's requests in it, as a proposal's are, decided 2026-11-18:**
+the document's requests, aimed at it or at some words of it, are in its
+card, `_Document_Header_`'s `requests`, no longer under the header,
+which is one line again; "Requests" over them, as over the task's in its
+card, the card saying whose. In both cards they're drawn as a proposal's
+are under its item, not quieted: the heading in the revision's plum, its
+rule beside them, each bulleted, its own Start and Remove. A card's held
+under seven tenths of the window, scrolling in itself past that, as a
+document's requests can run long.
+
+**Revise, once the task's proposals are in, decided 2026-11-18:** what
+asks for a change in each card says Revise once the task's put proposals
+in front of you, in any document it touches, as a proposal's Revise
+does, what's asked then revising what's been proposed; and Add a request
+till then, a draft with nothing proposed, what's asked adding to it. One
+decision for both cards, the task's, `isPresented`; with no task, this
+document's proposals decide it. The view model says it, each card's
+`ask`, `_Ask_Card_`, the link's word and its form's, "Revise the task",
+"Revise this document", or "Add a request to the task", "Request a change
+to this document", the viewer taking the form's from it, `ASKMAP__KIND_TARGET`,
+and opening none for a task there isn't. The link in the revision's plum,
+as a proposal's Revise is, whichever it says. The menu's choice for the
+whole document keeps "Request a change to this document".
+
+**the cards' links and form, smaller things, decided 2026-11-18:** a
+card's link, hovered, is underlined whole, a line drawn under the button,
+not the text's own underline, which skipped Revise's chevron and the gap
+before what followed a word. The document's Start says "Start all", no
+count after it: the count, what it'd start, the document's requests and
+its proposals' queued revisions, read as a number with no meaning, and
+didn't match the requests listed over it, which are only the document's
+own; how many is said when it's hovered. The form in a card keeps its
+band, out to the card's edges, but not the plum bar beside it, the
+requests' plum rule just above it being the card's one bar; a neutral
+bar, tried, is a line added back.
+
+**every Start starts what's queued within its scope, decided 2026-11-18:**
+a ladder, narrowest first. A request: its own Start, and Remove, after
+it, shown while it's pointed at or the keyboard's in it, faded, not
+gone, otherwise, so the keyboard still finds them and shows them, and
+where nothing can be pointed at always shown; they keep their room
+faded, so nothing moves as they show, an empty line where a long
+request's would wrap. A group, a list of requests: Start beside its
+heading, "Requests  Start", shown while the group's pointed at or
+focused, a proposal's starting that proposal's, as the Start under its
+list had, now gone, the document's card's the document's own requests,
+`DOCUMENT_REQUESTS`, the task's card's the task's own, `TASK_REQUESTS`.
+A whole scope: Start all, among a card's links, the document's for
+everything queued in it, its own requests and its proposals' revisions,
+`DOCUMENT`, how many in its title, and the task's for everything queued
+in it, in every document, `TASK`, offered while anything's known to be:
+its own requests, this document's, or a proposal requested in another,
+as the host counts them. Each Start names its scope, `data-scope`, one
+control taking them all, `SCOPEMAP__KIND_WORK`, where the header's
+Start had been taken for the document's wherever it was in the header.
+The host starts all that's queued within the scope it's given, a
+proposal mid-round still waiting for its round to end.
+
+**each card in two sections, Revise until there's a group, and requests
+edited, decided 2026-11-18:** a card's actions had sat in one row, the
+proposals' beside the revisions'. Each card is two sections now, each
+holding what's its own: Proposals, how far they've got, the host's
+actions for them, Accept the ones waiting here, and, in the task's, its
+documents; Revisions, how many are queued and in progress, the requests,
+Start all, and the host's actions for the work, Stop. Each its muted
+label, its figure, its actions after it on the line. The host says which
+section an action's for, `section`, PROPOSALS or REVISIONS, on each, as
+the editor can't tell. The Revisions figure counts the scope's requests,
+queued and in progress, the proposals' with the document's own, the
+task's across its documents, the host counting those elsewhere,
+`counts_Requests`, as it counts their proposals. Revise starts a group:
+it's there while a level has no requests, a proposal's among its
+actions, a card's on its Revisions line, its form with Add, Start and
+Cancel, there being no group's Start yet; once there's one, Revise goes,
+and Add, at the foot of the group, opens its form there, Add and Cancel
+only, the group's Start, by its heading, starting them; the keyboard back
+on whichever opened it. A queued request's Edit, beside its Start and
+Remove, shown with them, makes it its own box, what it says in it, Save
+and Cancel under it; saved, the host's asked, `EDIT`, its id and its new
+words, trimmed; Escape or Cancel closing it, nothing asked; the keyboard
+back on its Edit. The request being edited is the viewer's,
+`editing_Request`, a proposal's by its frame's item, as a drafted one
+is, or a card's, layered on the view model, `isEditing`. A card's form
+lost its band: in the Revisions section, or a group's foot, it's the box
+and its actions, as a proposal's is.
+
+**a Stop beside every Start, and the group's actions together, decided
+2026-11-18:** wherever there's a Start there's a Stop, for what's in
+progress within its scope, putting it back in the queue: a document's
+or the task's own request in progress, Stop after it, as its Start was,
+a proposal's requests running together as one round, so its Stop is its
+group's; a group, Stop by its heading while any of it is in progress;
+a card, Stop all beside Start all while anything in its scope is, in the
+revision's plum, as the Starts are, its title saying how many. Shown
+wherever something's in progress, however it was started, as which Start
+began a round would be one more thing to remember for a rule harder to
+foresee. The host's asked `STOP` with a scope, as it's asked `START`,
+the scope `_Scope_Work_`, no longer the Start's alone; the task's Stop,
+the host's own action, became the editor's Stop all, as Start all is.
+The playground stops by scope, its rounds each knowing their own
+requests, so a round stopped, or stopped and started again, leaves them
+be when its time's up. A group's own actions sit together after its
+heading, a dot before each, as the card's heading's parts are, "Requests
+· Start · Stop · Add", shown while the group's pointed at or focused;
+Add, there now, not at the foot, puts a new request at the list's end,
+its box and its actions as an edited one's, Add and Cancel, its hint
+left out, the list saying whose.
+
+**the group's actions apart from its heading, a request's status, and a
+card that stays, decided 2026-11-18:** a dot between "Requests" and its
+actions read as more of the heading, so a faint rule sets them apart,
+and nothing between the actions themselves, side by side; they're the
+heading's plum and size, not bold, the heading's the one bold thing, the
+rule fading with them. A request's status says what it came to in
+brackets, "addressed (nothing to change)", "addressed (1 proposal)", the
+bracket in the text's muted ink, the status alone plum, `detail_Progress`
+apart from `progress`, where a dot had joined them. Start and Stop are
+offered only where there's something to start or stop; a form's Start,
+before anything's written in it, would have nothing, so it shows once
+something is. Pressing a button in a card that takes the button away,
+Start, Stop, Remove, had let the card close, the focus gone with the
+button and the pointer, the card a line shorter, no longer over it: the
+view gives the focus back to the card when what had it went in the draw,
+`keptOpen__Card`, the card holding focus, `tabindex="-1"`, so it stays
+till you click elsewhere or press Escape. The playground's action for the
+document says "Accept all (9)".
+
+**an addressed request dismissed, decided 2026-11-18:** a proposal's
+requests go once its round lands, what they asked for in what it now
+proposes; the document's and the task's own stay, "addressed (…)", and
+would pile up, so each, once addressed, offers Dismiss, where Remove is on
+a queued one, shown as the rest are, as quiet. Dismissed, the host's asked
+`DISMISS`, its id, apart from `REMOVE`, as the one is done with and the
+other done without, a host free to keep it in a history; the playground
+drops it. Not yet: a group's own Dismiss, for all of its addressed at
+once, if they grow many. The group's actions, hovered, are underlined
+whole, as a card's links are, Add's chevron and all.
+
+**the task's Proposals one section, its documents and their total, and
+Cancel neutral, decided 2026-11-18:** the task card's figure, "5 of 20
+decided", and its documents, under their own label, read as two things;
+they're one now, Proposals, the documents its rows, each how far its own
+have got, and under them, a faint rule over it, their total, said as what
+it sums, "2 documents", "24 documents", how far all of them have got, its
+breakdown when hovered, staying put as tens of documents scroll above it;
+with one document, the figure alone, as before. `_Proposals_Card_` holds
+them, `label_Documents` and `documents`, the document card's empty. The
+document card keeps its own figure. Every Cancel is neutral, the page's
+ink on the plain ground, a proposal's form's, a card's, an edit's, an
+action asked first's, where most had taken the plum or indigo they sat
+beside.
+
+**the task's sections each its figure, then its documents, decided
+2026-11-18:** the total under a hairline, "2 documents", is gone; each of
+the task's sections reads as the document's does, its figure on its line
+with its actions, the total, and under it, where the task touches more
+than one document and there's something to break down, the documents,
+each its own share: Proposals, how far each's proposals have got;
+Revisions, modelled on it, how many of each's revisions are queued and in
+progress, the task's own requests counted in its figure and listed under
+them, Revise, Start all and Stop all on its line. A document with nothing
+in the section muted, `isSettled`, nothing to decide or nothing queued or
+under way, where `isDecided` had been the proposals' alone.
+`_Revisions_Card_` has its `documents`, as `_Proposals_Card_` does, the
+document card's empty; one list, `Document$_Card__Html`, draws either.
+
+**the revisions' documents undone, revisions by scope and by level, and a
+request's actions behind an ellipsis, decided 2026-11-18:** the
+Revisions' documents, modelled on the Proposals', were the wrong way to
+go, and are gone, `isDecided` back for the Proposals' alone; the
+Proposals keep their figure and their documents under it. Each card's
+revisions are two sections now. Scope Revisions: everything in its scope,
+nested however deep, the document's own requests and its proposals', or
+the task's own and every document's, how many are queued and in
+progress, Start all and Stop all, `_Revisions_Scope_`. Level Revisions:
+that level's own, the card's group of requests, or Revise while it has
+none, `_Revisions_Level_`. A group's actions, Start, Stop and Add, are
+always shown now, not only when it's pointed at; a request's own, Edit,
+Start, Stop, Dismiss and Remove, whichever it has, are behind a
+horizontal ellipsis, "…", the ellipsis becoming them while the request's
+pointed at, or the keyboard's on one of them, folded to nothing at rest,
+not gone, so the keyboard still reaches them; always shown where nothing
+can be pointed at. The ellipsis is an icon: three dots drawn, centred on a
+faint disc of the muted ink, no ring, where the character's sat on its
+baseline, the "…" kept in the markup, unseen.
+
+**the task's documents each with its figure by its name and its own
+actions, decided 2026-11-18:** under the task's Proposals figure, a faint
+rule, fading at its ends, then the documents, each its name, "this
+document" by the one shown, and, a dot between, how far its proposals have
+got, so the right of the line is free for its own actions: Accept all, for
+what's waiting there, each document's, the host's, `_Document_Task_`'s
+`actions`, carried to `_Document_Card_`. The playground's: this document's
+as its card has it; another's, `accept-in:` and its name, deciding what's
+open there. The task's figure sits by its label, "Proposals · 5 of 20
+decided", where it lists its documents, and opposite it, the task's own
+Accept all, for what's waiting in every document, the host's,
+`accept-task` in the playground. The document this editor has open isn't
+said in words, "this document" gone: its row is set apart, a faint wash of
+the proposals' indigo behind it, out a little past its words, its name
+bold, as a list marks what's selected, `aria-current` saying it to what
+reads aloud.
+
+**actions folded throughout the cards, and proportions in chips, decided
+2026-11-18:** every set of actions beside something, a card's line by its
+figure, a document's row, a group's heading, a request, is folded behind
+the ellipsis, unfolded while what it's beside is pointed at or the
+keyboard's on one of them; folded, it's visually hidden and out of the
+layout, `folded_htmlView`, where it had been squeezed to no width, which
+left the lines' gaps behind; still focusable. A line of nothing but its
+actions, Revise alone, stays as it is. The ellipsis, `More_Action$__Html`,
+`more_htmlView`, one for all of them, takes the ink of what it folds, the
+revision's plum for requests and revisions, the proposals' indigo for
+proposals. Every proportion of proposals, the task's, a document's, the
+document card's, sits in a quiet chip, a faint ground, so it reads apart
+from the label or the name to its left, the dot before it no longer
+needed; the task's, by its label, at the label's size; the rule under it
+gone.
+
+**the task's total its documents' last row, and the ellipsis's ink by
+what it folds, decided 2026-11-18:** the task's figure, by its label, is
+the last of its documents' rows now, its name a wildcard, `*`, every
+document, muted, in the files' font, its chip, and its actions, Accept all
+for every document, folded as a row's are; a hairline over it, solid at
+the right, fading out to the left, gone three quarters of the way across;
+outside the documents' scroll, so it stays as they scroll. With one
+document, the figure alone, on its line, as before. The ellipsis's ink:
+a request's own neutral, its actions being quiet ones; a group's heading's
+the revision's plum; the revisions' plum; the proposals' indigo. The
+total's name is "all (*)"; its hairline comes in from the right over a
+short stretch, a fifth or so of the way, and fades out slowly to the
+left, gone three quarters of the way across. Folded actions unfold while
+what they're beside is pointed at, or the keyboard's focus is on one of
+them, `:has(:focus-visible)`, not the focus a click leaves on one, which
+had kept a group's "| Start Add" out after Add was used, till the focus
+moved on.
 
 **the document's own requests, decided 2026-11-18:** a request for a change
 on no proposal, about what's selected or the whole document, is queued as

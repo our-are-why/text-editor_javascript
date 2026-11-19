@@ -1,7 +1,9 @@
 import type {
   _Adapter_Event_,
   _SEND_Command_,
-  _SEND_REQUEST__Command_
+  _SEND_REQUEST__Command_,
+  _SAVE_EDIT__Command_,
+  _Scope_Work_
 } from "./Viewer_TextEditor.ts"
 import type { _Id_Item_ } from "./ViewModel_TextEditor.ts"
 
@@ -76,7 +78,7 @@ const CONTROLS__TEXTEDITOR: Array<_Adapter_Event_> = [
   {
     event: "click",
     commandOf__Event: (event) => {
-      const element_Revise = event.target instanceof Element ? event.target.closest(".action_htmlView[data-command][aria-expanded]") : null
+      const element_Revise = event.target instanceof Element ? event.target.closest(":is(.action_htmlView, .add_Request_htmlView)[data-command][aria-expanded]") : null
       const id_Item = element_Revise === null
         ? null
         : idOf__Item({
@@ -274,6 +276,67 @@ const CONTROLS__TEXTEDITOR: Array<_Adapter_Event_> = [
     }
   },
   {
+    event: "click",
+    commandOf__Event: (event) => {
+      const element_Edit = event.target instanceof Element ? event.target.closest(".edit_Said_htmlView[data-edit]") : null
+      const id = element_Edit?.getAttribute("data-edit")
+      return element_Edit === null || element_Edit === undefined || typeof id !== "string"
+        ? null
+        : {
+          kind: "EDIT",
+          id_Item: idOf__Item({
+            element: element_Edit
+          }),
+          id
+        }
+    }
+  },
+  {
+    event: "click",
+    commandOf__Event: (event) => {
+      const element_Button = event.target instanceof Element ? event.target.closest(".said_htmlView [data-edit-action]") : null
+      const kind = element_Button?.getAttribute("data-edit-action")
+      if (element_Button === null || element_Button === undefined) return null
+      return kind === "SAVE"
+        ? savedOf__Edit({
+          element: element_Button
+        })
+        : kind === "CANCEL"
+          ? {
+            kind: "CLOSE_EDIT"
+          }
+          : null
+    }
+  },
+  {
+    event: "keydown",
+    commandOf__Event: (event) => {
+      const element_Notes = event.target instanceof Element ? event.target.closest(".notes_Edit_htmlView") : null
+      if (!(event instanceof KeyboardEvent) || element_Notes === null) return null
+      if (event.key === "Escape") {
+        return {
+          kind: "CLOSE_EDIT"
+        }
+      }
+      return event.key === "Enter" && (event.metaKey || event.ctrlKey)
+        ? savedOf__Edit({
+          element: element_Notes
+        })
+        : null
+    }
+  },
+  {
+    event: "focusin",
+    commandOf__Event: (event) => {
+      const element_Notes = event.target instanceof Element ? event.target.closest(".htmlView_editor")?.querySelector(".card_htmlView .asking_htmlView > .notes_htmlView") : null
+      return element_Notes instanceof HTMLTextAreaElement && element_Notes.value.trim() === "" && event.target instanceof Node && element_Notes.closest(".card_htmlView")?.contains(event.target) !== true
+        ? {
+          kind: "LEAVE_REQUEST"
+        }
+        : null
+    }
+  },
+  {
     event: "keydown",
     commandOf__Event: (event) => {
       const element_Notes = event.target instanceof Element ? event.target.closest(".notes_htmlView") : null
@@ -320,6 +383,25 @@ const CONTROLS__TEXTEDITOR: Array<_Adapter_Event_> = [
   {
     event: "click",
     commandOf__Event: (event) => {
+      const element_Dismiss = event.target instanceof Element ? event.target.closest(".dismiss_Said_htmlView[data-dismiss]") : null
+      const id = element_Dismiss?.getAttribute("data-dismiss")
+      const asked = element_Dismiss === null || element_Dismiss === undefined
+        ? null
+        : askedOf__Request({
+          element: element_Dismiss
+        })
+      return asked !== null && typeof id === "string"
+        ? {
+          kind: "DISMISS",
+          source: asked.source,
+          id
+        }
+        : null
+    }
+  },
+  {
+    event: "click",
+    commandOf__Event: (event) => {
       const element_Rerun = event.target instanceof Element ? event.target.closest(".stale_htmlView > .rerun_htmlView") : null
       const id_Item = element_Rerun === null
         ? null
@@ -350,20 +432,9 @@ const CONTROLS__TEXTEDITOR: Array<_Adapter_Event_> = [
   },
   {
     event: "keydown",
-    commandOf__Event: (event) => event instanceof KeyboardEvent && event.key === "Escape" && event.target instanceof Element && event.target.closest(".task_Header_htmlView") !== null
+    commandOf__Event: (event) => event instanceof KeyboardEvent && event.key === "Escape" && event.target instanceof Element && event.target.closest(".task_Header_htmlView, .document_Header_htmlView") !== null
       ? {
         kind: "CLOSE_CARD"
-      }
-      : null
-  },
-  {
-    event: "click",
-    commandOf__Event: (event) => event.target instanceof Element && event.target.closest(".header_htmlView .start_htmlView") !== null
-      ? {
-        kind: "START",
-        scope: {
-          kind: "DOCUMENT"
-        }
       }
       : null
   },
@@ -382,21 +453,44 @@ const CONTROLS__TEXTEDITOR: Array<_Adapter_Event_> = [
   {
     event: "click",
     commandOf__Event: (event) => {
-      const element_Start = event.target instanceof Element ? event.target.closest(".request_htmlView > .start_htmlView") : null
-      const id_Item = element_Start === null
+      const element_Work = event.target instanceof Element ? event.target.closest("[data-scope][data-work]") : null
+      const kind = element_Work?.getAttribute("data-scope")
+      const scope = element_Work === null || element_Work === undefined || typeof kind !== "string" || !isKind__Scope_Work(kind)
         ? null
-        : idOf__Item({
-          element: element_Start
+        : SCOPEMAP__KIND_WORK[kind](element_Work)
+      return scope === null
+        ? null
+        : element_Work?.getAttribute("data-work") === "STOP"
+          ? {
+            kind: "STOP",
+            scope
+          }
+          : {
+            kind: "START",
+            scope
+          }
+    }
+  },
+  {
+    event: "click",
+    commandOf__Event: (event) => {
+      const element_Stop = event.target instanceof Element ? event.target.closest(".stop_Said_htmlView[data-stop]") : null
+      const id = element_Stop?.getAttribute("data-stop")
+      const asked = element_Stop === null || element_Stop === undefined
+        ? null
+        : askedOf__Request({
+          element: element_Stop
         })
-      return id_Item === null
-        ? null
-        : {
-          kind: "START",
+      return asked !== null && typeof id === "string"
+        ? {
+          kind: "STOP",
           scope: {
-            kind: "PROPOSAL",
-            source: id_Item.source
+            kind: "REQUEST",
+            source: asked.source,
+            id
           }
         }
+        : null
     }
   },
   {
@@ -463,6 +557,22 @@ function sentOf__Request({
     : null
 }
 
+interface _Api___savedOf__Edit_ {
+  element: Element
+}
+
+function savedOf__Edit({
+  element
+}: _Api___savedOf__Edit_): _SAVE_EDIT__Command_ | null {
+  const element_Notes = element.closest(".said_htmlView")?.querySelector(":scope > .notes_Edit_htmlView")
+  return element_Notes instanceof HTMLTextAreaElement
+    ? {
+      kind: "SAVE_EDIT",
+      notes: element_Notes.value
+    }
+    : null
+}
+
 interface _Api___sentOf__Item_ {
   element: Element
   id_Item: _Id_Item_
@@ -475,7 +585,7 @@ function sentOf__Item({
   isStarting
 }: _Api___sentOf__Item_): _SEND_Command_ | null {
   const element_Item = element.closest(".item_htmlView")
-  const command = element_Item?.querySelector(".action_htmlView[data-command][aria-expanded]")?.getAttribute("data-command")
+  const command = element_Item?.querySelector("[data-command][aria-expanded]")?.getAttribute("data-command")
   const element_Notes = element_Item?.querySelector(".notes_htmlView")
   return typeof command === "string" && element_Notes instanceof HTMLTextAreaElement
     ? {
@@ -499,7 +609,7 @@ interface _Asked_Request_ {
 function askedOf__Request({
   element
 }: _Api___askedOf__Request_): _Asked_Request_ | null {
-  if (element.closest(".card_Task_htmlView") !== null) {
+  if (element.closest(".card_htmlView") !== null) {
     return {
       source: null
     }
@@ -512,6 +622,42 @@ function askedOf__Request({
     : {
       source: id_Item.source
     }
+}
+
+function isKind__Scope_Work(
+  kind: string
+): kind is keyof _ScopeMap__Kind_Work_ {
+  return Object.hasOwn(SCOPEMAP__KIND_WORK, kind)
+}
+
+type _ScopeMap__Kind_Work_ = {
+  [Kind in Exclude<_Scope_Work_["kind"], "REQUEST">]: (element: Element) => _Scope_Work_ | null
+}
+
+const SCOPEMAP__KIND_WORK: _ScopeMap__Kind_Work_ = {
+  PROPOSAL: (element) => {
+    const id_Item = idOf__Item({
+      element
+    })
+    return id_Item === null
+      ? null
+      : {
+        kind: "PROPOSAL",
+        source: id_Item.source
+      }
+  },
+  DOCUMENT_REQUESTS: () => ({
+    kind: "DOCUMENT_REQUESTS"
+  }),
+  DOCUMENT: () => ({
+    kind: "DOCUMENT"
+  }),
+  TASK_REQUESTS: () => ({
+    kind: "TASK_REQUESTS"
+  }),
+  TASK: () => ({
+    kind: "TASK"
+  })
 }
 
 interface _Api___idOf__Item_ {

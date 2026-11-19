@@ -46,6 +46,7 @@ class _TextEditor_<State> {
   containerElement: HTMLElement
   setup: _Setup_TextEditor_<State>
   model_TextEditor: _Model_TextEditor_
+  name_Document: string
   proposals: Array<_Proposal_Host_>
   task: _Task_Host_ | null
   rounds_Landed: Array<_Landed_Round_>
@@ -60,6 +61,7 @@ class _TextEditor_<State> {
     containerElement,
     setup,
     model_TextEditor,
+    name_Document,
     proposals,
     task,
     rounds_Landed,
@@ -70,6 +72,7 @@ class _TextEditor_<State> {
     this.containerElement = containerElement
     this.setup = setup
     this.model_TextEditor = model_TextEditor
+    this.name_Document = name_Document
     this.proposals = proposals
     this.task = task
     this.rounds_Landed = rounds_Landed
@@ -129,6 +132,7 @@ class _TextEditor_<State> {
     update_Host: _Update_Host_
   ): void {
     this.model_TextEditor = update_Host.model_TextEditor
+    this.name_Document = update_Host.name_Document
     this.proposals = update_Host.proposals
     this.task = update_Host.task
     this.rounds_Landed = update_Host.rounds_Landed
@@ -148,6 +152,7 @@ class _TextEditor_<State> {
   projected(): _ViewModel_TextEditor_ {
     return viewModelOf__Model({
       model_TextEditor: this.model_TextEditor,
+      name_Document: this.name_Document,
       proposals: this.proposals,
       task: this.task,
       rounds_Landed: this.rounds_Landed,
@@ -162,6 +167,7 @@ interface _Api__TextEditor_<State> {
   containerElement: HTMLElement
   setup: _Setup_TextEditor_<State>
   model_TextEditor: _Model_TextEditor_
+  name_Document: string
   proposals: Array<_Proposal_Host_>
   task: _Task_Host_ | null
   rounds_Landed: Array<_Landed_Round_>
@@ -187,6 +193,7 @@ interface _Applied_Edit_ {
 
 interface _Update_Host_ {
   model_TextEditor: _Model_TextEditor_
+  name_Document: string
   proposals: Array<_Proposal_Host_>
   task: _Task_Host_ | null
   rounds_Landed: Array<_Landed_Round_>

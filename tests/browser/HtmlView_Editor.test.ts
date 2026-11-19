@@ -690,7 +690,7 @@ describe("beside it: what can't live in one document", () => {
       const item_Focused = focused?.closest("#drafting .item_htmlView")
       return {
         drafted: [...document.querySelectorAll("#drafting .item_htmlView[data-drafting]")].map((each) => `${frameOf(each)} ${each.getAttribute("data-source")}`),
-        expanded: [...document.querySelectorAll("#drafting .action_htmlView[aria-expanded]")].map((each) => `${frameOf(each)} ${each.closest(".item_htmlView")?.getAttribute("data-source")} ${each.getAttribute("aria-expanded")}`),
+        expanded: [...document.querySelectorAll("#drafting .item_htmlView .action_htmlView[aria-expanded]")].map((each) => `${frameOf(each)} ${each.closest(".item_htmlView")?.getAttribute("data-source")} ${each.getAttribute("aria-expanded")}`),
         actions: [...document.querySelectorAll("#drafting .item_htmlView")].map((each) => `${frameOf(each)} ${each.getAttribute("data-source")}: ${[...each.querySelectorAll(".action_htmlView")].map((action) => action.textContent?.trim()).join(" ")}`),
         focused: item_Focused === null || item_Focused === undefined || focused === null ? "elsewhere" : `${frameOf(item_Focused)} ${item_Focused.getAttribute("data-source")} ${focused.classList.contains("notes_htmlView") ? "notes" : focused.textContent?.trim()}`,
         written: focused instanceof HTMLTextAreaElement ? focused.value : null
@@ -895,7 +895,7 @@ describe("beside it: what can't live in one document", () => {
         range: { first: 1, last: 1 },
         parts: [
           { kind: "CURRENT_LINES", run: { id: "current", lines: window.parseLines_ViewModel({ multilineText: "one", module_Language: window.MODULE_PLAINTEXT }), groups: [] } },
-          { kind: "PROPOSAL_LIST", items: [{ source: "round", title: "Rename", state: "REQUESTED" as const, status: "Revision requested", places: { kind: "COUNT" as const, count_Here: 6, count_All: 9, conditions: [{ kind: "WITHIN" as const, count: 1, source: "hook", title: "Drop the hook" }, { kind: "CARRIED" as const, count: 1, source: "order", title: "Ask first" }] }, rationale: "Why.", requests: [{ id: "option", notes: "make it an option.", quote: null, progress: null, isStartable: true, isRemovable: true }], actions: [], isRunning: false, isStartable: true, stale: null, isDrafting: false, confirming: null, neighbors: { range_Previous: null, range_Next: null }, attributes: {} }] }
+          { kind: "PROPOSAL_LIST", items: [{ source: "round", title: "Rename", state: "REQUESTED" as const, status: "Revision requested", places: { kind: "COUNT" as const, count_Here: 6, count_All: 9, conditions: [{ kind: "WITHIN" as const, count: 1, source: "hook", title: "Drop the hook" }, { kind: "CARRIED" as const, count: 1, source: "order", title: "Ask first" }] }, rationale: "Why.", requests: [{ id: "option", notes: "make it an option.", quote: null, progress: null, isStartable: true, isRemovable: true, isEditing: false, isStoppable: false, detail_Progress: null, isDismissable: false }], actions: [], isRunning: false, isStartable: true, stale: null, isDrafting: false, confirming: null, neighbors: { range_Previous: null, range_Next: null }, attributes: {} }] }
         ]
       }]))
       const lines = [...containerElement.querySelectorAll(".places_htmlView > *")].map((line) => line.getBoundingClientRect())
@@ -1067,7 +1067,7 @@ describe("beside it: what can't live in one document", () => {
               { source: "taken", title: "Taken already", state: "ACCEPTED" as const, status: "Accepted", places: { kind: "NONE" as const }, rationale: "It was right.", requests: [], actions: [{ command: "reopen", label: "Reopen", stateAfter: "OPEN" as const }], isRunning: false, isStartable: false, stale: null, isDrafting: false, confirming: null, neighbors: { range_Previous: null, range_Next: null }, attributes: {} },
               { source: "most", title: "Most of the orders", state: "OPEN" as const, status: "", places: { kind: "COUNT" as const, count_Here: 2, count_All: 5, conditions: [{ kind: "WITHIN" as const, count: 1, source: "lathe", title: "Cut the lathe" }, { kind: "CARRIED" as const, count: 1, source: "shift", title: "Shift it down" }] }, rationale: "Most of them need the lathe.", requests: [], actions: [{ command: "accept", label: "Accept", stateAfter: "ACCEPTED" as const }, { command: "reject", label: "Reject", stateAfter: "REJECTED" as const }], isRunning: false, isStartable: false, stale: null, isDrafting: false, confirming: null, neighbors: { range_Previous: null, range_Next: null }, attributes: {} },
               { source: "all", title: "All of them", state: "OPEN" as const, status: "", places: { kind: "NONE" as const }, rationale: "", requests: [], actions: [{ command: "accept", label: "Take it", stateAfter: "ACCEPTED" as const }], isRunning: false, isStartable: false, stale: null, isDrafting: false, confirming: null, neighbors: { range_Previous: null, range_Next: null }, attributes: {} },
-              { source: "capped", title: "Cap it", state: "REQUESTED" as const, status: "Revision requested", places: { kind: "NONE" as const }, rationale: "", requests: [{ id: "option", notes: "make it an option.", quote: null, progress: null, isStartable: true, isRemovable: true }], actions: [{ command: "reopen", label: "Reopen", stateAfter: "OPEN" as const }], isRunning: false, isStartable: true, stale: null, isDrafting: false, confirming: null, neighbors: { range_Previous: null, range_Next: null }, attributes: {} }
+              { source: "capped", title: "Cap it", state: "REQUESTED" as const, status: "Revision requested", places: { kind: "NONE" as const }, rationale: "", requests: [{ id: "option", notes: "make it an option.", quote: null, progress: null, isStartable: true, isRemovable: true, isEditing: false, isStoppable: false, detail_Progress: null, isDismissable: false }], actions: [{ command: "reopen", label: "Reopen", stateAfter: "OPEN" as const }], isRunning: false, isStartable: true, stale: null, isDrafting: false, confirming: null, neighbors: { range_Previous: null, range_Next: null }, attributes: {} }
             ]
           }
         ]
@@ -1094,7 +1094,7 @@ describe("beside it: what can't live in one document", () => {
       { source: "taken", state: "ACCEPTED", shown: ["heading_htmlView", "rationale_htmlView", "actions_htmlView"], heading: "Taken already · Accepted", places: [], references: [], rationale: "It was right.", request: [], actions: ["button reopen: Reopen"], main: false },
       { source: "most", state: "OPEN", shown: ["heading_htmlView", "places_htmlView", "rationale_htmlView", "actions_htmlView"], heading: "Most of the orders", places: ["2 of 5 changes here", "1 of them only if Cut the lathe is rejected", "1 of them moved with Shift it down"], references: ["lathe normal", "shift normal"], rationale: "Most of them need the lathe.", request: [], actions: ["button accept: Accept", "button reject: Reject"], main: true },
       { source: "all", state: "OPEN", shown: ["heading_htmlView", "actions_htmlView"], heading: "All of them", places: [], references: [], rationale: "", request: [], actions: ["button accept: Take it"], main: true },
-      { source: "capped", state: "REQUESTED", shown: ["heading_htmlView", "request_htmlView", "actions_htmlView"], heading: "Cap it · Revision requested", places: [], references: [], rationale: "", request: ["Requests", "make it an option.StartRemove", "Start"], actions: ["button reopen: Reopen"], main: false }
+      { source: "capped", state: "REQUESTED", shown: ["heading_htmlView", "request_htmlView", "actions_htmlView"], heading: "Cap it · Revision requested", places: [], references: [], rationale: "", request: ["Requests…Start", "make it an option.…EditStartRemove"], actions: ["button reopen: Reopen"], main: false }
     ])
   })
 
@@ -1930,9 +1930,16 @@ describe("beside it: what can't live in one document", () => {
   test("pointing at a move's note marks its other end, data-targeted on its rings, which the look draws heavier, from either end; its own end it leaves as it is; and pointing away marks none", async () => {
     // the pointer away from where the test before left it, over its first
     // note, where this one's is drawn: the browser may send a move of its own
-    // as what's under a resting pointer changes
+    // as what's under a resting pointer changes. The page at its top at once,
+    // ending the smooth scroll the test before may have left running, which
+    // would move the notes as they're pointed at, and could put the first
+    // under this view's header, stuck over it
     await opened.page.mouse.move(1270, 715)
     await opened.page.evaluate(() => {
+      scrollTo({
+        top: 0,
+        behavior: "instant"
+      })
       const containerElement = document.createElement("div")
       containerElement.id = "targeting"
       containerElement.style.width = "40rem"
@@ -2703,7 +2710,7 @@ describe("beside it: what can't live in one document", () => {
     expect(rows.narrow.rows).toBe(rows.lines)
   })
 
-  test("a document of no lines draws a view with nothing in its document: its input, the element text input goes to, its header, saying nothing but offering Request a change, its document, empty, and its footer", async () => {
+  test("a document of no lines draws a view with nothing in its document: its input, the element text input goes to, its header, saying nothing but the document's name, its card offering Add a request, its document, empty, and its footer", async () => {
     const children = await opened.page.evaluate(() => {
       const containerElement = document.createElement("div")
       document.body.append(containerElement)
@@ -2714,6 +2721,57 @@ describe("beside it: what can't live in one document", () => {
       return [...containerElement.querySelector(".htmlView_editor")?.childNodes ?? []].map((node) => node instanceof Element ? `${node.className} ${node.childNodes.length}` : "#text")
     })
     expect(children).toEqual(["input_htmlView 0", "header_htmlView 2", "document_htmlView 0", "footer_htmlView 0"])
+  })
+
+  test("a task's card, in its Proposals, lists the documents it touches, their total the last row, every document's, tens of them scrolling in the list, not past the window: the one shown first, as it's given, each path's folder muted and cut from its start, its file's name whole, and the files with nothing left to decide muted", async () => {
+    const files = await opened.page.evaluate(() => {
+      const containerElement = document.createElement("div")
+      document.body.append(containerElement)
+      const documents = Array.from({ length: 24 }, (_, index) => ({
+        folder: "source/a/folder/nested/deep/enough/to/run/past/the/card/",
+        name: `file-${index}.ts`,
+        value: `${index % 3 === 0 ? 2 : 0} of 2 decided`,
+        more: "",
+        isShown: index === 0,
+        isDecided: index % 3 === 0,
+        actions: []
+      }))
+      new window._View_TextEditor_({
+        containerElement,
+        componentMap: window.COMPONENTMAP__VIEW_TEXTEDITOR
+      }).draw({
+        ...window.viewModelOf__Blocks([]),
+        header: {
+          task: { id: "T-40", name: "Rename the retries", state: "WORKING", label_State: "Working", summary: "Renames them.", reason: "", proposals: { figure: { value: "16 of 48 decided", more: "" }, documents, actions: [] }, revisions_Scope: { figure: null, title_Start: null, title_Stop: null, actions: [] }, revisions_Level: { requests: [], isStartable_Requests: false, isStoppable_Requests: false, ask: { label: "Revise", label_Form: "Revise the task" } } },
+          parts: [],
+          document: { folder: "source/", name: "retry.ts", summary: "", proposals: { figure: null, documents: [], actions: [] }, revisions_Scope: { figure: null, title_Start: null, title_Stop: null, actions: [] }, revisions_Level: { requests: [], isStartable_Requests: false, isStoppable_Requests: false, ask: { label: "Revise", label_Form: "Revise this document" } } }
+        }
+      })
+      const card = containerElement.querySelector(".card_Task_htmlView")
+      const list = containerElement.querySelector(".list_Document_Card_htmlView")
+      const rows = [...containerElement.querySelectorAll(".list_Document_Card_htmlView > .document_Card_htmlView")]
+      const first = rows[0]
+      const folder = first?.querySelector(".folder_Document_Card_htmlView")
+      const name = first?.querySelector(".name_Document_Card_htmlView")
+      const inkOf = (element: Element | undefined) => element === undefined ? null : getComputedStyle(element).color
+      return {
+        figure: containerElement.querySelector(".card_Task_htmlView .total_Document_Card_htmlView .value_Document_Card_htmlView")?.textContent ?? null,
+        rows: rows.length,
+        rowsSeen: list === null || first === undefined ? 0 : list.clientHeight / first.getBoundingClientRect().height,
+        isScrolling: list !== null && list.scrollHeight > list.clientHeight,
+        height_Card: card?.getBoundingClientRect().height ?? 0,
+        isFirstShown: first?.getAttribute("aria-current") === "true",
+        isFolderCut: folder !== null && folder !== undefined && folder.scrollWidth > folder.clientWidth,
+        isNameWhole: name !== null && name !== undefined && name.scrollWidth <= name.clientWidth,
+        isDecidedMuted: inkOf(rows[3]) !== inkOf(rows[1])
+      }
+    })
+    expect(files.figure).toBe("16 of 48 decided")
+    expect(files.rows).toBe(24)
+    expect(files.rowsSeen).toBeGreaterThan(5)
+    expect(files.rowsSeen).toBeLessThan(8)
+    expect(files.height_Card).toBeLessThan(400)
+    expect(files).toMatchObject({ isScrolling: true, isFirstShown: true, isFolderCut: true, isNameWhole: true, isDecidedMuted: true })
   })
 
   test("its look comes from variables a host sets above it, or else its own defaults", async () => {

@@ -330,7 +330,7 @@
    after the frame. Where the lines' text starts, worked out once, on the
    view, in the lines' font, as the gutter's label is measured in it, and
    handed down a length, so an item, in the interface's font, starts its
-   words there too, as the header's task does, and a docked form's. */
+   words there too, as the header's task does. */
 @property --textInset_htmlView {
   syntax: "<length>";
   inherits: true;
@@ -542,11 +542,174 @@
   color: var(--view-rationale-ink, color-mix(in srgb, CanvasText 84%, transparent));
 }
 
-.htmlView_editor .label_Request_htmlView {
+.htmlView_editor .head_Request_htmlView {
+  display: flex;
+  align-items: baseline;
+  gap: 0.6rem;
   margin: 0;
+}
+
+.htmlView_editor .label_Request_htmlView {
   font-size: 0.82em;
   font-weight: 600;
   color: var(--ink_state_htmlView);
+}
+
+/* the group's own actions, after its heading, folded behind a plum
+   ellipsis, unfolding, a faint rule setting them apart from it, not a
+   dot, which would read as more of the heading: Start, starting every
+   request in it, a proposal's all of that proposal's, the document's or the task's
+   its own; Stop, while any of them is in progress, putting it back in
+   the queue; and Add, a chevron after it as Revise has, a new request
+   the list's last, in its box. In the plum, the heading's size, not bold,
+   as the heading is; links, no ground of their own */
+.htmlView_editor .actions_Request_htmlView {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.75rem;
+  padding-left: 0.6rem;
+  border-left: 1px solid color-mix(in srgb, var(--ink_state_htmlView) 40%, transparent);
+}
+
+.htmlView_editor .actions_Request_htmlView:empty {
+  display: none;
+}
+
+.htmlView_editor .actions_Request_htmlView > button {
+  padding: 0;
+  border: none;
+  background: none;
+  color: var(--ink_state_htmlView);
+  font: inherit;
+  font-size: 0.82em;
+  cursor: pointer;
+}
+
+/* hovered, a line drawn under the whole button, as a card's links have,
+   Add's chevron and all, where the text's own underline would skip it */
+.htmlView_editor .actions_Request_htmlView > button:hover {
+  background: linear-gradient(currentColor, currentColor) left calc(100% - 0.1em) / 100% 1px no-repeat;
+}
+
+.htmlView_editor .actions_Request_htmlView > button[aria-expanded] {
+  padding-right: 0.15em;
+}
+
+.htmlView_editor .actions_Request_htmlView > button:focus-visible {
+  outline: 2px solid var(--view-focus-ring, CanvasText);
+  outline-offset: 2px;
+}
+
+/* actions folded behind an ellipsis, wherever they sit beside something,
+   a request's own, Stop, Edit, Start, Dismiss, Remove, a group's, by its
+   heading, a card's, on a line by its figure, or a document's, on its
+   row: unfolded while what they're beside is pointed at, or the keyboard's
+   on one of them, the ellipsis stepping aside for them, not left unfolded
+   by the focus a click leaves on one, so they fold once the pointer's
+   gone; folded, hidden
+   and out of the way, not gone, so the keyboard still reaches them, and
+   unfolds them as it does; always unfolded where nothing can be pointed
+   at. A line of nothing but its actions, Revise alone, isn't folded */
+.htmlView_editor .folded_htmlView {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.htmlView_editor :is(.said_htmlView, .head_Request_htmlView, .line_Card_htmlView, .document_Card_htmlView):is(:hover, :has(:focus-visible)) > .folded_htmlView {
+  position: static;
+  width: auto;
+  height: auto;
+  overflow: visible;
+  clip-path: none;
+}
+
+.htmlView_editor :is(.said_htmlView, .head_Request_htmlView, .line_Card_htmlView, .document_Card_htmlView):is(:hover, :has(:focus-visible)) > .more_htmlView,
+.htmlView_editor .head_Request_htmlView:has(> .actions_Request_htmlView:empty) > .more_htmlView {
+  display: none;
+}
+
+@media (hover: none) {
+  .htmlView_editor .folded_htmlView {
+    position: static;
+    width: auto;
+    height: auto;
+    overflow: visible;
+    clip-path: none;
+  }
+
+  .htmlView_editor .more_htmlView {
+    display: none;
+  }
+}
+
+/* the ellipsis, an icon: three dots, drawn, centred, where the text's own
+   would sit on its baseline, on a faint disc, no ring, in the ink of what
+   it folds: the revision's plum for a group's and the revisions', the
+   proposals' indigo for the proposals', a request's own neutral, as its
+   own actions are quiet; the character kept, unseen, for what's written
+   out */
+.htmlView_editor .more_htmlView {
+  --ink_More_htmlView: var(--accent_revision_htmlView);
+  display: inline-block;
+  flex: none;
+  box-sizing: border-box;
+  width: 1.2em;
+  height: 1.2em;
+  overflow: hidden;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 28% 50%, var(--ink_More_htmlView) 0.065em, transparent 0.08em),
+    radial-gradient(circle at 50% 50%, var(--ink_More_htmlView) 0.065em, transparent 0.08em),
+    radial-gradient(circle at 72% 50%, var(--ink_More_htmlView) 0.065em, transparent 0.08em),
+    color-mix(in srgb, var(--ink_More_htmlView) 13%, transparent);
+  color: transparent;
+  font-size: 0.82em;
+  line-height: 1;
+  vertical-align: middle;
+}
+
+.htmlView_editor .section_Card_htmlView[aria-label="Proposals"] .more_htmlView {
+  --ink_More_htmlView: var(--accent_proposals_htmlView);
+}
+
+.htmlView_editor .said_htmlView > .more_htmlView {
+  --ink_More_htmlView: var(--view-placeholder-ink, color-mix(in srgb, CanvasText 58%, transparent));
+}
+
+.htmlView_editor .said_htmlView > .more_htmlView,
+.htmlView_editor .said_htmlView:is(:hover, :has(:focus-visible)) > .actions_Said_htmlView {
+  margin-left: 0.5em;
+}
+
+.htmlView_editor .actions_Said_htmlView {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.5em;
+}
+
+.htmlView_editor .actions_Said_htmlView > button {
+  margin-left: 0;
+}
+
+.htmlView_editor :is(.value_Card_htmlView ~ .more_htmlView, .value_Card_htmlView ~ .actions_Card_htmlView, .document_Card_htmlView > .more_htmlView) {
+  margin-left: auto;
+}
+
+/* what a request came to, after its status, in brackets, in the text's
+   muted ink, not the status's plum: "addressed (nothing to change)" */
+.htmlView_editor .detail_Said_htmlView {
+  color: var(--view-placeholder-ink, color-mix(in srgb, CanvasText 58%, transparent));
+  font-style: normal;
+}
+
+/* a form's Start, only once something's written in it: before, there'd
+   be nothing for it to start */
+.htmlView_editor :is(.asking_htmlView:has(> .notes_htmlView:placeholder-shown) [data-request="START"], .draft_htmlView:has(> .notes_htmlView:placeholder-shown) [data-draft="START"]) {
+  display: none;
 }
 
 .htmlView_editor .list_Request_htmlView {
@@ -573,7 +736,10 @@
   color: var(--view-placeholder-ink, color-mix(in srgb, CanvasText 58%, transparent));
 }
 
-.htmlView_editor .remove_htmlView {
+/* Edit, beside a queued request's Start and Remove, as quiet as Remove;
+   pressed, the request its own box, what it says in it, Save, plum, as
+   Add is, and Cancel, under it, on the right */
+.htmlView_editor .edit_Said_htmlView {
   margin-left: 0.5em;
   padding: 0;
   border: none;
@@ -584,7 +750,61 @@
   cursor: pointer;
 }
 
-.htmlView_editor :is(.start_Said_htmlView, .progress_Said_htmlView) {
+.htmlView_editor .edit_Said_htmlView:hover {
+  color: inherit;
+  text-decoration: underline;
+}
+
+.htmlView_editor .edit_Said_htmlView:focus-visible {
+  outline: 2px solid var(--view-focus-ring, CanvasText);
+  outline-offset: 2px;
+}
+
+.htmlView_editor .said_htmlView > .notes_Edit_htmlView {
+  display: block;
+  margin-top: 0.2rem;
+}
+
+.htmlView_editor .actions_Edit_htmlView {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.4rem;
+  margin-top: 0.35rem;
+}
+
+.htmlView_editor .actions_Edit_htmlView > [data-edit-action="SAVE"] {
+  background: var(--view-action-revision-ground, light-dark(#8e3591, #a2449f));
+  color: var(--view-action-main-ink, #ffffff);
+}
+
+.htmlView_editor .actions_Edit_htmlView > [data-edit-action="SAVE"]:hover {
+  background: var(--view-action-revision-hover-ground, light-dark(#782b7b, #b252af));
+}
+
+/* Add's new request, the list's last, as an edited one is: its box and
+   its actions under it, Add and Cancel; no hint, the list saying whose */
+.htmlView_editor .said_htmlView[data-adding] > :is(.draft_htmlView, .asking_htmlView) {
+  margin-top: 0.15rem;
+}
+
+.htmlView_editor .said_htmlView[data-adding] .hint_Asking_htmlView {
+  display: none;
+}
+
+/* Remove, for a queued request, done without, and Dismiss, for one
+   addressed, done with, as quiet as each other, shown as the rest are */
+.htmlView_editor :is(.remove_htmlView, .dismiss_Said_htmlView) {
+  margin-left: 0.5em;
+  padding: 0;
+  border: none;
+  background: none;
+  color: var(--view-placeholder-ink, color-mix(in srgb, CanvasText 58%, transparent));
+  font: inherit;
+  font-size: 0.82em;
+  cursor: pointer;
+}
+
+.htmlView_editor :is(.start_Said_htmlView, .stop_Said_htmlView, .progress_Said_htmlView) {
   margin-left: 0.5em;
   padding: 0;
   border: none;
@@ -594,15 +814,15 @@
   font-size: 0.82em;
 }
 
-.htmlView_editor .start_Said_htmlView {
+.htmlView_editor :is(.start_Said_htmlView, .stop_Said_htmlView) {
   cursor: pointer;
 }
 
-.htmlView_editor .start_Said_htmlView:hover {
+.htmlView_editor :is(.start_Said_htmlView, .stop_Said_htmlView):hover {
   text-decoration: underline;
 }
 
-.htmlView_editor .start_Said_htmlView:focus-visible {
+.htmlView_editor :is(.start_Said_htmlView, .stop_Said_htmlView):focus-visible {
   outline: 2px solid var(--view-focus-ring, CanvasText);
   outline-offset: 2px;
 }
@@ -611,17 +831,12 @@
   font-style: italic;
 }
 
-.htmlView_editor .request_htmlView > .start_htmlView {
-  display: block;
-  margin-top: 0.55rem;
-}
-
-.htmlView_editor .remove_htmlView:hover {
+.htmlView_editor :is(.remove_htmlView, .dismiss_Said_htmlView):hover {
   color: inherit;
   text-decoration: underline;
 }
 
-.htmlView_editor .remove_htmlView:focus-visible {
+.htmlView_editor :is(.remove_htmlView, .dismiss_Said_htmlView):focus-visible {
   outline: 2px solid var(--view-focus-ring, CanvasText);
   outline-offset: 2px;
 }
@@ -889,7 +1104,7 @@
 /* the action that opens the form, a disclosure: a chevron after its words,
    pointing down while the form's closed, up and the button pressed while
    it's open under it, pressing it again closing it */
-.htmlView_editor .action_htmlView[aria-expanded]::after {
+.htmlView_editor :is(.action_htmlView, .add_Request_htmlView)[aria-expanded]::after {
   content: "";
   display: inline-block;
   width: 0.3em;
@@ -900,7 +1115,7 @@
   transform: translateY(-0.2em) rotate(45deg);
 }
 
-.htmlView_editor .action_htmlView[aria-expanded="true"]::after {
+.htmlView_editor :is(.action_htmlView, .add_Request_htmlView)[aria-expanded="true"]::after {
   transform: translateY(0.05em) rotate(-135deg);
 }
 
@@ -908,7 +1123,7 @@
   background: var(--view-action-pressed-ground, light-dark(#cfcfcf, #454545));
 }
 
-.htmlView_editor .notes_htmlView {
+.htmlView_editor :is(.notes_htmlView, .notes_Edit_htmlView) {
   grid-column: 1;
   box-sizing: border-box;
   width: 100%;
@@ -924,14 +1139,14 @@
   resize: none;
 }
 
-.htmlView_editor .notes_htmlView::placeholder {
+.htmlView_editor :is(.notes_htmlView, .notes_Edit_htmlView)::placeholder {
   color: var(--view-placeholder-ink, color-mix(in srgb, CanvasText 58%, transparent));
 }
 
 /* the box written in, focused: its own edge a step nearer the page's
    ink than it was, no ring round it, no colour, as each colour here says
    where a proposal stands */
-.htmlView_editor .notes_htmlView:focus-visible {
+.htmlView_editor :is(.notes_htmlView, .notes_Edit_htmlView):focus-visible {
   outline: none;
   border-color: var(--view-focus-edge, color-mix(in srgb, CanvasText 72%, transparent));
 }
@@ -945,12 +1160,15 @@
   background: var(--view-action-revision-hover-ground, light-dark(#782b7b, #b252af));
 }
 
-.htmlView_editor .item_htmlView[data-drafting] .action_htmlView[data-draft="DISCARD"] {
+/* every Cancel neutral, wherever it is, a proposal's form, a card's, a
+   request's edit or an action asked first, as it decides nothing; its
+   ground the plain one, its words the page's, not the plum or indigo of
+   what it's beside */
+.htmlView_editor .action_htmlView:is([data-draft="DISCARD"], [data-request="CLOSE"], [data-edit-action="CANCEL"], [data-confirm="NO"]) {
   color: var(--view-action-ink, light-dark(#3b3b3b, #cccccc));
 }
 
-/* Start, wherever it is, under what's queued or in a form: what all of
-   this waits on, as nothing's revised till it's pressed, so set apart from
+/* Start, in a form, or a card's Start all: what all of this waits on, as nothing's revised till it's pressed, so set apart from
    every other action, though not the main one, as Add is in a form: its
    words bold, in the revision's plum, on a ground tinted with that plum, a
    step deeper hovered, no mark before them, tried and dropped; a host's
@@ -1052,19 +1270,18 @@
 
 /* the header over the document, for the whole of it, as doctor's is:
    always there, at the top as the document scrolls under it, across the
-   editor's width, on
-   the proposals' band, a faint edge under it, flat, no shadow, in the
-   interface's font. On its left, where the text starts, how it stands, its
-   parts plain words apart by dots: the host's task, if it gives one, its
-   mark and its name in the page's ink; how many of the document's proposals are decided; how many
-   requests are queued; how many are in progress, in the revision's plum,
-   a spinner turning, still where motion's asked to be reduced, unless the
-   task's mark already says the agent's at work; in as few words as say it, the last cut
-   short where there's no room, never wrapping. On its
-   right, Request a change, neutral, docking a request for the whole
-   document under it, as a right-click with nothing selected asks; and
-   Start, the document's, starting every request queued in it, set apart
-   as every Start is; the host's actions for its task in its card */
+   editor's width, on the proposals' band, a faint edge under it, flat, no
+   shadow, in the interface's font. On its left, where the text starts, the
+   host's task, its mark in the gutter and its name in the page's ink, and
+   nothing more, what's decided, what's queued and what's under way said
+   by the cards and the task's mark; with no task, how the document
+   stands, its parts plain words apart by dots, how many of its proposals
+   are decided, how many requests are queued, how many are in progress, a
+   spinner turning in the revision's plum, still where motion's asked to be
+   reduced, in as few words as say it, the last cut short where there's no
+   room, never wrapping. On its right, the document, by its file's name,
+   opening its card, where its requests and its actions are, as the task's
+   are in its */
 .htmlView_editor .document_htmlView {
   flex: 1 1 auto;
   min-height: 0;
@@ -1146,9 +1363,11 @@
 /* the task's mark, in the gutter beside its name, where a proposal's icon
    is beside its item, so the name starts where the text does; by where it
    stands: a draft, a dotted
-   ring; the agent at work on it, a spinner turning, still where motion's
-   asked to be reduced; your turn, a dot in the revision's plum, as what's
-   yours is; done, a check; canceled, a cross, faint */
+   ring; the agent at work on it, a spinner turning, as a proposal being
+   revised turns its arc, still where motion's asked to be reduced; your
+   turn, a dot, what's yours to decide; done, a check; canceled, a cross,
+   fainter than its word, as a withdrawn proposal's is; each in the task's
+   ink */
 .htmlView_editor .mark_Task_htmlView {
   position: absolute;
   top: 50%;
@@ -1169,18 +1388,59 @@
   border-radius: 50%;
 }
 
+/* the task's ink, by where it stands, as a proposal's is, its mark and
+   its word in the card in it: the agent at work, the revision's plum; your
+   turn, or done, decided, the proposals' indigo; a draft, or canceled,
+   nothing under way, the grey a withdrawn proposal's in */
+.htmlView_editor .task_Header_htmlView {
+  --ink_Task_htmlView: var(--view-state-withdrawn, var(--view-status-ink, color-mix(in srgb, CanvasText 60%, transparent)));
+}
+
+.htmlView_editor .task_Header_htmlView[data-state="WORKING"] {
+  --ink_Task_htmlView: var(--view-state-revising, var(--view-status-ink, var(--accent_revision_htmlView)));
+}
+
+.htmlView_editor .task_Header_htmlView:is([data-state="YOUR_TURN"], [data-state="DONE"]) {
+  --ink_Task_htmlView: var(--view-status-ink, var(--accent_proposals_htmlView));
+}
+
 .htmlView_editor .task_Header_htmlView[data-state="DRAFT"] .mark_Task_htmlView::before {
-  border: 1.5px dotted currentColor;
+  border: 1.5px dotted var(--ink_Task_htmlView);
 }
 
 .htmlView_editor .task_Header_htmlView[data-state="WORKING"] .mark_Task_htmlView::before {
-  border: 1.5px solid currentColor;
+  border: 1.5px solid var(--ink_Task_htmlView);
   border-right-color: transparent;
 }
 
+/* working, the dots after its word in the card, as a revising proposal's
+   are after its, waving on the beat its mark turns on, one rhythm, as a
+   revising proposal's arc and dots keep; still, all three there, where
+   motion's asked to be reduced */
+.htmlView_editor .task_Header_htmlView[data-state="WORKING"] .dots_htmlView {
+  display: inline;
+  color: var(--ink_Task_htmlView);
+}
+
 @media (prefers-reduced-motion: no-preference) {
+  .htmlView_editor .task_Header_htmlView[data-state="WORKING"] {
+    --time_revising_htmlView: 1.5s;
+  }
+
   .htmlView_editor .task_Header_htmlView[data-state="WORKING"] .mark_Task_htmlView::before {
-    animation: revising_htmlView 0.9s linear infinite;
+    animation: revising_htmlView var(--time_revising_htmlView) linear infinite;
+  }
+
+  .htmlView_editor .task_Header_htmlView[data-state="WORKING"] .dot_htmlView {
+    animation: wave_htmlView var(--time_revising_htmlView) ease-in-out infinite;
+  }
+
+  .htmlView_editor .task_Header_htmlView[data-state="WORKING"] .dot_htmlView:nth-child(2) {
+    animation-delay: calc(var(--time_revising_htmlView) * -2 / 3);
+  }
+
+  .htmlView_editor .task_Header_htmlView[data-state="WORKING"] .dot_htmlView:nth-child(3) {
+    animation-delay: calc(var(--time_revising_htmlView) / -3);
   }
 }
 
@@ -1188,12 +1448,12 @@
   width: 0.55em;
   height: 0.55em;
   margin: 0 0.125em;
-  background: var(--accent_revision_htmlView);
+  background: var(--ink_Task_htmlView);
 }
 
 .htmlView_editor .task_Header_htmlView:is([data-state="DONE"], [data-state="CANCELED"]) .mark_Task_htmlView::before {
   border-radius: 0;
-  background: currentColor;
+  background: var(--ink_Task_htmlView);
   mask: var(--icon_Task_htmlView) center / contain no-repeat;
 }
 
@@ -1206,7 +1466,7 @@
 }
 
 .htmlView_editor .task_Header_htmlView[data-state="CANCELED"] .mark_Task_htmlView::before {
-  opacity: 0.6;
+  background: color-mix(in srgb, var(--ink_Task_htmlView) 75%, transparent);
 }
 
 .htmlView_editor .part_Header_htmlView[data-busy] {
@@ -1229,14 +1489,35 @@
   }
 }
 
-.htmlView_editor .actions_Header_htmlView {
+/* the document, at the header's end: its file's name, in the editor's
+   font, which opens its card under it as the task's does, the card's right
+   edge under its own; the document's actions there, not on the header */
+.htmlView_editor .document_Header_htmlView {
+  position: relative;
   display: flex;
   flex: none;
-  gap: 0.4rem;
+  align-self: stretch;
+  align-items: center;
+  min-width: 0;
 }
 
-.htmlView_editor .actions_Header_htmlView > .action_htmlView:not(.start_htmlView) {
-  color: var(--view-action-ink, light-dark(#3b3b3b, #cccccc));
+.htmlView_editor .trigger_Document_htmlView {
+  min-width: 0;
+  padding: 0;
+  overflow: hidden;
+  border: none;
+  background: none;
+  color: var(--view-ink, CanvasText);
+  font-family: var(--view-font, ui-monospace, "SF Mono", Menlo, Consolas, monospace);
+  font-size: 0.92em;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  cursor: default;
+}
+
+.htmlView_editor .trigger_Document_htmlView:focus-visible {
+  outline: 2px solid var(--view-focus-ring, CanvasText);
+  outline-offset: 2px;
 }
 
 /* the footer under the document, always there, as the header is: on the
@@ -1260,20 +1541,19 @@
    in the card, as doctor's did, a dot after it before what's counted; the
    card hidden, not gone, so the keyboard can go on into it, lingering a
    moment once the pointer's left, so it can cross to the card and keep it.
-   The card on the menu's band, solid over the text, a faint edge round it,
-   flat, no shadow, in two parts, as doctor's was, a faint rule between: the
-   task's, its id in the editor's font, its name and where it stands, in
-   words, what the agent says of it, why it was canceled, if it was, its
-   proposals across its documents, how far they've got and how many stand
-   where, the requests aimed at it as a whole, and Add a request, with the
-   host's actions for it; and this document's, its proposals, what the
-   agent says of it here, the requests aimed here, each listed as a
-   proposal's are, with its own Start and Remove, and the host's actions for
-   it. Escape in it sends the keyboard back to the text, and it closes */
+   Each card, the task's and the document's, on the menu's band, solid over
+   the text, a faint edge round it, flat, no shadow. The task's: its id in
+   the editor's font and where it stands, in words, what the agent says of
+   it, why it was canceled, if it was, then its Proposals and its
+   Revisions, each section holding its own figure, actions and details.
+   The document's: its path, if it's in a folder, what the agent says the
+   task does here, then its Proposals and its Revisions. Escape in either
+   sends the keyboard back to the text, and it closes */
 .htmlView_editor .task_Header_htmlView {
   position: relative;
   display: flex;
   flex: none;
+  align-self: stretch;
   align-items: center;
   gap: 0.4rem;
   min-width: 0;
@@ -1303,11 +1583,12 @@
   outline-offset: 2px;
 }
 
-.htmlView_editor .card_Task_htmlView {
+/* each card's top on the header's edge, the triggers filling the header's
+   line, so both open from the same place whatever their text's size */
+.htmlView_editor .card_htmlView {
   --ink_state_htmlView: var(--accent_revision_htmlView);
   position: absolute;
-  top: calc(100% + 0.55rem);
-  left: -0.75rem;
+  top: calc(100% + 0.35rem);
   z-index: 6;
   box-sizing: border-box;
   display: flex;
@@ -1321,37 +1602,142 @@
     linear-gradient(var(--view-proposals-shade, color-mix(in srgb, CanvasText 5%, transparent)), var(--view-proposals-shade, color-mix(in srgb, CanvasText 5%, transparent))),
     linear-gradient(var(--view-proposed, color-mix(in srgb, CanvasText 4%, transparent)), var(--view-proposed, color-mix(in srgb, CanvasText 4%, transparent))),
     var(--view-ground, Canvas);
+  max-height: 70vh;
+  overflow-y: auto;
+  overscroll-behavior: contain;
   white-space: normal;
   visibility: hidden;
   opacity: 0;
   transition: visibility 0s linear 0.25s, opacity 0.1s linear 0.15s;
 }
 
-.htmlView_editor .task_Header_htmlView:is(:hover, :focus-within) > .card_Task_htmlView {
+/* a card given the focus back, its button gone with what it did, keeping
+   itself open by it, as it's kept by the focus in it; no ring of its own */
+.htmlView_editor .card_htmlView:focus {
+  outline: none;
+}
+
+.htmlView_editor .card_Task_htmlView {
+  left: -0.75rem;
+}
+
+.htmlView_editor .card_Document_htmlView {
+  right: -0.75rem;
+}
+
+/* shown while its trigger's hovered, or the focus is in it, and held open
+   while Add a request's form is in it, as doctor's was, whatever the
+   pointer does, till it's put away; the one pointed at over the other */
+.htmlView_editor :is(.task_Header_htmlView, .document_Header_htmlView):is(:hover, :focus-within, :has(.asking_htmlView)) > .card_htmlView {
   visibility: visible;
   opacity: 1;
   transition-delay: 0s;
 }
 
-.htmlView_editor .part_Card_htmlView {
-  display: flex;
-  flex-direction: column;
-  gap: 0.4rem;
+.htmlView_editor :is(.task_Header_htmlView, .document_Header_htmlView):hover > .card_htmlView {
+  z-index: 7;
 }
 
-.htmlView_editor .part_Card_htmlView + .part_Card_htmlView {
-  margin-top: 0.15rem;
-  padding-top: 0.55rem;
-  border-top: 1px solid var(--view-menu-edge, color-mix(in srgb, CanvasText 14%, transparent));
-}
-
-.htmlView_editor :is(.head_Card_htmlView, .summary_Card_htmlView, .reason_Card_htmlView, .heading_Card_htmlView, .figure_Card_htmlView) {
+.htmlView_editor :is(.head_Card_htmlView, .summary_Card_htmlView, .reason_Card_htmlView, .label_Card_htmlView) {
   margin: 0;
 }
 
-/* its heading: its name, then its id, in the editor's font, then where it
-   stands, a floating dot between each, after the one before it, so a
-   heading that wraps never starts a line with one */
+/* the document's path, when it's in a folder, the trigger saying only its
+   file's name: in the editor's font, muted, as the task's id is */
+.htmlView_editor .path_Card_htmlView {
+  overflow-wrap: anywhere;
+  color: var(--view-placeholder-ink, color-mix(in srgb, CanvasText 58%, transparent));
+  font-family: var(--view-font, ui-monospace, "SF Mono", Menlo, Consolas, monospace);
+  font-size: 0.92em;
+}
+
+/* the task's Proposals, where it touches more than one document: under its
+   figure, a faint rule fading at its ends, then the documents, each on a
+   line, the one shown first, its path in the editor's font, and, a dot
+   between, how far its own proposals have got, how many stand where when
+   it's hovered; its own actions on the right, Accept all for what's
+   waiting there; one with nothing left to decide muted, so the rest stand
+   out. Past six or so, the documents scroll in themselves, so tens of
+   them never take the card past the window */
+.htmlView_editor .list_Document_Card_htmlView {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+  max-height: calc(6.5lh + 0.6rem);
+  margin: 0.1rem -0.4rem 0;
+  padding: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  list-style: none;
+}
+
+.htmlView_editor .document_Card_htmlView {
+  display: flex;
+  flex: none;
+  align-items: baseline;
+  gap: 0.5rem;
+  min-width: 0;
+  padding: 0.05rem 0.4rem;
+  border-radius: 3px;
+}
+
+/* the document this editor has open, said by its row, not in words: a
+   faint wash of the proposals' indigo behind it, out a little past its
+   words, its name bold, as a list marks what's selected */
+.htmlView_editor .document_Card_htmlView[aria-current] {
+  background: color-mix(in srgb, var(--accent_proposals_htmlView) 11%, transparent);
+}
+
+.htmlView_editor .document_Card_htmlView[data-decided] {
+  color: var(--view-placeholder-ink, color-mix(in srgb, CanvasText 58%, transparent));
+}
+
+/* a path, its folder muted and cut from its start, an ellipsis where it's
+   cut, so the file's own name is always there whole */
+.htmlView_editor .path_Document_Card_htmlView {
+  display: flex;
+  min-width: 0;
+  font-family: var(--view-font, ui-monospace, "SF Mono", Menlo, Consolas, monospace);
+  font-size: 0.92em;
+  white-space: nowrap;
+}
+
+.htmlView_editor .folder_Document_Card_htmlView {
+  flex: 0 1 auto;
+  min-width: 1.5ch;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  direction: rtl;
+  color: var(--view-placeholder-ink, color-mix(in srgb, CanvasText 58%, transparent));
+}
+
+.htmlView_editor .name_Document_Card_htmlView {
+  flex: none;
+}
+
+.htmlView_editor .document_Card_htmlView[aria-current] .name_Document_Card_htmlView {
+  font-weight: 600;
+}
+
+.htmlView_editor .value_Document_Card_htmlView {
+  flex: none;
+  font-variant-numeric: tabular-nums;
+}
+
+.htmlView_editor .actions_Document_Card_htmlView {
+  display: flex;
+  flex: none;
+  gap: 0.25rem 1rem;
+  margin-left: auto;
+}
+
+.htmlView_editor .document_Card_htmlView {
+  position: relative;
+}
+
+/* its heading: its id, in the editor's font, then where it stands, a
+   floating dot between, after the one before it, so a heading that wraps
+   never starts a line with one; its name's the header's, just above */
 .htmlView_editor .head_Card_htmlView {
   display: flex;
   flex-wrap: wrap;
@@ -1377,8 +1763,12 @@
   font-weight: 600;
 }
 
-.htmlView_editor :is(.state_Card_htmlView, .heading_Card_htmlView, .label_Card_htmlView) {
+.htmlView_editor .label_Card_htmlView {
   color: var(--view-placeholder-ink, color-mix(in srgb, CanvasText 58%, transparent));
+}
+
+.htmlView_editor .state_Card_htmlView {
+  color: var(--ink_Task_htmlView);
 }
 
 /* what the agent says, of the task or of this document, cut at three
@@ -1394,49 +1784,88 @@
   color: var(--view-rationale-ink, color-mix(in srgb, CanvasText 84%, transparent));
 }
 
-.htmlView_editor :is(.heading_Card_htmlView, .label_Card_htmlView) {
+.htmlView_editor .label_Card_htmlView {
   font-size: 0.85em;
 }
 
-/* figures side by side, each under its muted label, in the text's own
-   ink, as doctor's were; how many stand where when one's hovered */
-.htmlView_editor .figures_Card_htmlView {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.3rem 1.4rem;
-  margin-top: 0.1rem;
-}
-
-.htmlView_editor .figure_Card_htmlView {
+/* a card in sections, each holding what's its own: Proposals, how far
+   they've got and what's to be done with them, the host's actions for
+   them, as Accept all, and, in the task's, its documents; Scope
+   Revisions, everything queued or in progress within the card's scope,
+   nested however deep, Start all and Stop all; Level Revisions, the
+   card's own level, its group of requests, or Revise while there's none.
+   Each its muted label over a line, its figure in the text's own ink, how
+   many stand where when it's hovered, its actions after it, to the right
+   when there's a figure */
+.htmlView_editor .section_Card_htmlView {
   display: flex;
   flex-direction: column;
-  gap: 0.15rem;
+  gap: 0.2rem;
 }
 
-/* the task's requests, or this document's, as the card lists them: no rule
-   beside them, no ink of their own, their heading as quiet as the card's */
-.htmlView_editor .card_Task_htmlView .request_htmlView {
-  margin: 0;
-  padding-left: 0;
-  border-left: none;
+.htmlView_editor .section_Card_htmlView + .section_Card_htmlView {
+  margin-top: 0.2rem;
 }
 
-.htmlView_editor .card_Task_htmlView .label_Request_htmlView {
+.htmlView_editor .line_Card_htmlView {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.2rem 1rem;
+}
+
+
+
+/* every proportion of proposals, the task's, a document's, a quiet chip,
+   so it stands apart from what it's the proportion of, the label or the
+   document's name to its left, as a figure of it: a faint ground, its
+   words a touch smaller, in the text's ink; the task's, by its label, at
+   the label's size */
+.htmlView_editor .section_Card_htmlView[aria-label="Proposals"] :is(.value_Card_htmlView, .value_Document_Card_htmlView) {
+  padding: 0.05em 0.5em;
+  border-radius: 999px;
+  background: color-mix(in srgb, CanvasText 7%, transparent);
+  font-size: 0.88em;
+}
+
+/* the task's own total, the last of its documents' rows, its name "all
+   (*)", every document, in the files' font, muted; a hairline over it,
+   coming in quickly from the right, then fading out slowly to the left,
+   gone three quarters of the way across; its actions, Accept all for
+   every document, folded as a row's are */
+.htmlView_editor .total_Document_Card_htmlView {
+  margin: 0.15rem -0.4rem 0;
+  padding-top: 0.25rem;
+  border-top: 1px solid;
+  border-image: linear-gradient(to left, transparent, var(--view-menu-edge, color-mix(in srgb, CanvasText 16%, transparent)) 18%, transparent 75%) 1;
+  border-radius: 0;
+}
+
+.htmlView_editor .total_Document_Card_htmlView .name_Document_Card_htmlView {
   color: var(--view-placeholder-ink, color-mix(in srgb, CanvasText 58%, transparent));
-  font-size: 0.85em;
-  font-weight: normal;
 }
 
-.htmlView_editor .card_Task_htmlView .list_Request_htmlView {
-  margin-top: 0.15rem;
+.htmlView_editor .line_Card_htmlView > .actions_Card_htmlView {
+  margin-top: 0;
 }
 
-.htmlView_editor .card_Task_htmlView .said_htmlView + .said_htmlView {
-  margin-top: 0.15rem;
+/* the requests in a card, the task's or the document's, as a proposal's
+   are under its item: "Requests" over them, in the revision's plum, its
+   rule beside them, each bulleted, with its own Start and Remove */
+.htmlView_editor .section_Card_htmlView > .request_htmlView {
+  margin-top: 0.2rem;
 }
 
-/* a part's actions as links, side by side, as doctor's were, in the
-   proposals' indigo, underlined when hovered, wrapping as the card narrows */
+/* a card's actions as links, side by side, as doctor's were, in the
+   proposals' indigo, wrapping as the card narrows; underlined when
+   hovered, the line drawn under the whole link, unbroken, Revise's chevron
+   and all, where the text's own underline would skip what isn't text;
+   what asks for a change, Revise once the task's proposals are in front of
+   you, Add a request till then, in the revision's plum, as a proposal's
+   Revise is; Start all, plum too, and bold, as Start is wherever it is,
+   with no ground of its own here, for everything queued in its scope, and
+   Stop all, plum, for everything in progress there, how many said when
+   either's hovered */
 .htmlView_editor .actions_Card_htmlView {
   display: flex;
   flex-wrap: wrap;
@@ -1444,38 +1873,25 @@
   margin-top: 0.1rem;
 }
 
-.htmlView_editor .actions_Card_htmlView > .action_htmlView {
+.htmlView_editor :is(.actions_Card_htmlView, .actions_Document_Card_htmlView) > .action_htmlView {
   padding: 0;
   background: none;
   color: var(--accent_proposals_htmlView);
   font-size: 0.92em;
 }
 
-.htmlView_editor .actions_Card_htmlView > .action_htmlView:hover {
-  background: none;
-  text-decoration: underline;
-  text-underline-offset: 2px;
+.htmlView_editor :is(.actions_Card_htmlView, .actions_Document_Card_htmlView) > .action_htmlView:hover {
+  background: linear-gradient(currentColor, currentColor) left calc(100% - 0.1em) / 100% 1px no-repeat;
 }
 
-/* while Request a change's form, or Add a request's, is docked under the
-   header, the card stays hidden, so it never lies over what's being
-   written */
-.htmlView_editor:has(> .asking_htmlView[data-docked]) .card_Task_htmlView {
-  visibility: hidden;
+.htmlView_editor .actions_Card_htmlView > .action_htmlView[aria-expanded] {
+  padding-right: 0.15em;
 }
 
-/* Request a change's form, docked under the header, not floating, as
-   doctor's was: flush with it, across the editor's width, a faint edge
-   under it, what's written starting where the text does */
-.htmlView_editor .asking_htmlView[data-docked] {
-  position: static;
-  flex: none;
-  box-sizing: border-box;
-  width: auto;
-  padding: 0.6rem var(--view-padding-inline, 1rem) 0.7rem var(--textInset_htmlView);
-  border-width: 0 0 1px;
-  border-radius: 0;
+.htmlView_editor .actions_Card_htmlView > :is(.start_htmlView, .stop_htmlView, [data-ask]) {
+  color: var(--accent_revision_htmlView);
 }
+
 
 /* what a right-click opens, or the menu key, over the text: what you can
    ask, a request for a change, aimed at what's selected or the whole
@@ -1552,8 +1968,40 @@
 
 .htmlView_editor .asking_htmlView > .actions_htmlView {
   display: flex;
+  align-items: center;
   justify-content: flex-end;
   gap: 0.4rem;
+}
+
+/* where what's written goes, as doctor's form said, beside its actions,
+   muted, cut where it runs out of room: the task it's added to, and what
+   of it, these words, this document, or the whole task */
+.htmlView_editor .hint_Asking_htmlView {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--view-placeholder-ink, color-mix(in srgb, CanvasText 58%, transparent));
+  font-size: 0.85em;
+}
+
+/* Revise's form, in a card, under the link that opened it, or Add's, at
+   the foot of the requests, as a proposal's is: the box and its actions,
+   nothing round them, no heading, its hint saying where it goes */
+.htmlView_editor .card_htmlView .asking_htmlView {
+  position: static;
+  z-index: auto;
+  width: auto;
+  margin: 0.2rem 0 0;
+  padding: 0;
+  border: none;
+  border-radius: 0;
+  background: none;
+}
+
+.htmlView_editor .card_htmlView .asking_htmlView > .label_Asking_htmlView {
+  display: none;
 }
 
 .htmlView_editor .asking_htmlView .action_htmlView[data-request="SEND"] {
