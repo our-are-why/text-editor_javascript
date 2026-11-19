@@ -508,10 +508,7 @@ function Task_Header__Html({
   form_Request
 }: _Api___Task_Header__Html_): JSX.Element {
   return (
-    <div
-      class="task_Header_htmlView"
-      data-state={task_Header.state}
-    >
+    <div class="task_Header_htmlView">
       <button
         type="button"
         class="trigger_Task_htmlView"
@@ -519,6 +516,7 @@ function Task_Header__Html({
       >
         <span
           class="mark_Task_htmlView"
+          data-state={task_Header.state}
           aria-hidden="true"
         />
         <span class="name_Task_htmlView">{task_Header.name}</span>
@@ -532,7 +530,10 @@ function Task_Header__Html({
       >
         <p class="head_Card_htmlView">
           <span class="id_Card_htmlView">{task_Header.id}</span>
-          <span class="state_Card_htmlView">
+          <span
+            class="state_Card_htmlView"
+            data-state={task_Header.state}
+          >
             {task_Header.label_State}
             <span
               class="dots_htmlView"
@@ -888,7 +889,13 @@ function Document_Header__Html({
         aria-haspopup="dialog"
         title={`${document_Header.folder}${document_Header.name}`}
       >
-        {document_Header.name}
+        <span class="name_Document_htmlView">{document_Header.name}</span>
+        <span
+          class="mark_Document_htmlView"
+          data-state={document_Header.state}
+          aria-hidden="true"
+        />
+        {document_Header.label_State !== "" && <span class="state_Document_htmlView">{document_Header.label_State}</span>}
       </button>
       <div
         class="card_htmlView card_Document_htmlView"
@@ -896,7 +903,27 @@ function Document_Header__Html({
         tabindex="-1"
         aria-label={document_Header.name}
       >
-        {document_Header.folder !== "" && <p class="head_Card_htmlView path_Card_htmlView">{`${document_Header.folder}${document_Header.name}`}</p>}
+        {(document_Header.folder !== "" || document_Header.label_State !== "") && (
+          <p class="head_Card_htmlView">
+            <span class="path_Card_htmlView">{`${document_Header.folder}${document_Header.name}`}</span>
+            {document_Header.label_State !== "" && (
+              <span
+                class="state_Card_htmlView"
+                data-state={document_Header.state}
+              >
+                {document_Header.label_State}
+                <span
+                  class="dots_htmlView"
+                  aria-hidden="true"
+                >
+                  <span class="dot_htmlView">.</span>
+                  <span class="dot_htmlView">.</span>
+                  <span class="dot_htmlView">.</span>
+                </span>
+              </span>
+            )}
+          </p>
+        )}
         {document_Header.summary !== "" && (
           <p
             class="summary_Card_htmlView"

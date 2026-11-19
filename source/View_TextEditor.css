@@ -1377,9 +1377,10 @@
   color: var(--view-ink, CanvasText);
 }
 
-/* the task's state in words, for what reads the page aloud; shown by its
-   mark, which says it at a glance, as doctor's did, no word beside it */
-.htmlView_editor .state_Task_htmlView {
+/* the task's state in words, and the document's, for what reads the page
+   aloud; shown by its mark, which says it at a glance, as doctor's did, no
+   word beside it */
+.htmlView_editor :is(.state_Task_htmlView, .state_Document_htmlView) {
   position: absolute;
   width: 1px;
   height: 1px;
@@ -1408,7 +1409,27 @@
   translate: 0 -50%;
 }
 
-.htmlView_editor .mark_Task_htmlView::before {
+/* the document's mark, after its file's name, on the header's right as
+   the document is, nearer it than the task's mark is to the task's name,
+   about half as far, the header's own gap between its parts, so the two
+   read as a pair, not a reflection; as big as the task's, in the header's
+   own font, not the file name's; centred on it; the task's marks, by where the document
+   stands: its requests, or
+   its proposals', under way, a spinner; something here yours, a proposal
+   to decide or a request to start, a dot; every proposal decided, nothing
+   queued, a check; nothing proposed, none. Working first, then yours */
+.htmlView_editor .mark_Document_htmlView {
+  display: flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: 1em;
+  height: 1em;
+  margin-left: 0.75rem;
+  font-size: var(--view-ui-font-size, 13px);
+}
+
+.htmlView_editor :is(.mark_Task_htmlView, .mark_Document_htmlView)::before {
   content: "";
   box-sizing: border-box;
   width: 0.8em;
@@ -1416,28 +1437,35 @@
   border-radius: 50%;
 }
 
-/* the task's ink, by where it stands, as a proposal's is, its mark and
-   its word in the card in it: the agent at work, the revision's plum; your
+/* the ink of where the task, or the document, stands, as a proposal's is,
+   on what says it, its mark and its word in the card, each carrying the
+   state, `data-state`, not the part of the header holding its card,
+   which, drawn again for a new state, would close the card open under the
+   pointer or the keyboard: the agent at work, the revision's plum; your
    turn, or done, decided, the proposals' indigo; a draft, or canceled,
    nothing under way, the grey a withdrawn proposal's in */
-.htmlView_editor .task_Header_htmlView {
-  --ink_Task_htmlView: var(--view-state-withdrawn, var(--view-status-ink, color-mix(in srgb, CanvasText 60%, transparent)));
+.htmlView_editor :is(.mark_Task_htmlView, .mark_Document_htmlView, .state_Card_htmlView) {
+  --ink_Mark_htmlView: var(--view-state-withdrawn, var(--view-status-ink, color-mix(in srgb, CanvasText 60%, transparent)));
 }
 
-.htmlView_editor .task_Header_htmlView[data-state="WORKING"] {
-  --ink_Task_htmlView: var(--view-state-revising, var(--view-status-ink, var(--accent_revision_htmlView)));
+.htmlView_editor :is(.mark_Task_htmlView, .mark_Document_htmlView, .state_Card_htmlView)[data-state="WORKING"] {
+  --ink_Mark_htmlView: var(--view-state-revising, var(--view-status-ink, var(--accent_revision_htmlView)));
 }
 
-.htmlView_editor .task_Header_htmlView:is([data-state="YOUR_TURN"], [data-state="DONE"]) {
-  --ink_Task_htmlView: var(--view-status-ink, var(--accent_proposals_htmlView));
+.htmlView_editor :is(.mark_Task_htmlView, .mark_Document_htmlView, .state_Card_htmlView):is([data-state="YOUR_TURN"], [data-state="DONE"]) {
+  --ink_Mark_htmlView: var(--view-status-ink, var(--accent_proposals_htmlView));
 }
 
-.htmlView_editor .task_Header_htmlView[data-state="DRAFT"] .mark_Task_htmlView::before {
-  border: 1.5px dotted var(--ink_Task_htmlView);
+.htmlView_editor .mark_Document_htmlView[data-state="NONE"] {
+  display: none;
 }
 
-.htmlView_editor .task_Header_htmlView[data-state="WORKING"] .mark_Task_htmlView::before {
-  border: 1.5px solid var(--ink_Task_htmlView);
+.htmlView_editor .mark_Task_htmlView[data-state="DRAFT"]::before {
+  border: 1.5px dotted var(--ink_Mark_htmlView);
+}
+
+.htmlView_editor :is(.mark_Task_htmlView, .mark_Document_htmlView)[data-state="WORKING"]::before {
+  border: 1.5px solid var(--ink_Mark_htmlView);
   border-right-color: transparent;
 }
 
@@ -1445,56 +1473,56 @@
    are after its, waving on the beat its mark turns on, one rhythm, as a
    revising proposal's arc and dots keep; still, all three there, where
    motion's asked to be reduced */
-.htmlView_editor .task_Header_htmlView[data-state="WORKING"] .dots_htmlView {
+.htmlView_editor .state_Card_htmlView[data-state="WORKING"] .dots_htmlView {
   display: inline;
-  color: var(--ink_Task_htmlView);
+  color: var(--ink_Mark_htmlView);
 }
 
 @media (prefers-reduced-motion: no-preference) {
-  .htmlView_editor .task_Header_htmlView[data-state="WORKING"] {
+  .htmlView_editor :is(.mark_Task_htmlView, .mark_Document_htmlView, .state_Card_htmlView)[data-state="WORKING"] {
     --time_revising_htmlView: 1.5s;
   }
 
-  .htmlView_editor .task_Header_htmlView[data-state="WORKING"] .mark_Task_htmlView::before {
+  .htmlView_editor :is(.mark_Task_htmlView, .mark_Document_htmlView)[data-state="WORKING"]::before {
     animation: revising_htmlView var(--time_revising_htmlView) linear infinite;
   }
 
-  .htmlView_editor .task_Header_htmlView[data-state="WORKING"] .dot_htmlView {
+  .htmlView_editor .state_Card_htmlView[data-state="WORKING"] .dot_htmlView {
     animation: wave_htmlView var(--time_revising_htmlView) ease-in-out infinite;
   }
 
-  .htmlView_editor .task_Header_htmlView[data-state="WORKING"] .dot_htmlView:nth-child(2) {
+  .htmlView_editor .state_Card_htmlView[data-state="WORKING"] .dot_htmlView:nth-child(2) {
     animation-delay: calc(var(--time_revising_htmlView) * -2 / 3);
   }
 
-  .htmlView_editor .task_Header_htmlView[data-state="WORKING"] .dot_htmlView:nth-child(3) {
+  .htmlView_editor .state_Card_htmlView[data-state="WORKING"] .dot_htmlView:nth-child(3) {
     animation-delay: calc(var(--time_revising_htmlView) / -3);
   }
 }
 
-.htmlView_editor .task_Header_htmlView[data-state="YOUR_TURN"] .mark_Task_htmlView::before {
+.htmlView_editor :is(.mark_Task_htmlView, .mark_Document_htmlView)[data-state="YOUR_TURN"]::before {
   width: 0.55em;
   height: 0.55em;
   margin: 0 0.125em;
-  background: var(--ink_Task_htmlView);
+  background: var(--ink_Mark_htmlView);
 }
 
-.htmlView_editor .task_Header_htmlView:is([data-state="DONE"], [data-state="CANCELED"]) .mark_Task_htmlView::before {
+.htmlView_editor :is(.mark_Task_htmlView, .mark_Document_htmlView):is([data-state="DONE"], [data-state="CANCELED"])::before {
   border-radius: 0;
-  background: var(--ink_Task_htmlView);
-  mask: var(--icon_Task_htmlView) center / contain no-repeat;
+  background: var(--ink_Mark_htmlView);
+  mask: var(--icon_Mark_htmlView) center / contain no-repeat;
 }
 
-.htmlView_editor .task_Header_htmlView[data-state="DONE"] {
-  --icon_Task_htmlView: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none' stroke='black' stroke-width='1.9' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M3 8.6l3.2 3.1L13 4.6'/%3E%3C/svg%3E");
+.htmlView_editor :is(.mark_Task_htmlView, .mark_Document_htmlView)[data-state="DONE"] {
+  --icon_Mark_htmlView: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none' stroke='black' stroke-width='1.9' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M3 8.6l3.2 3.1L13 4.6'/%3E%3C/svg%3E");
 }
 
-.htmlView_editor .task_Header_htmlView[data-state="CANCELED"] {
-  --icon_Task_htmlView: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none' stroke='black' stroke-width='1.9' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M4.2 4.2l7.6 7.6M11.8 4.2l-7.6 7.6'/%3E%3C/svg%3E");
+.htmlView_editor .mark_Task_htmlView[data-state="CANCELED"] {
+  --icon_Mark_htmlView: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none' stroke='black' stroke-width='1.9' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M4.2 4.2l7.6 7.6M11.8 4.2l-7.6 7.6'/%3E%3C/svg%3E");
 }
 
-.htmlView_editor .task_Header_htmlView[data-state="CANCELED"] .mark_Task_htmlView::before {
-  background: color-mix(in srgb, var(--ink_Task_htmlView) 75%, transparent);
+.htmlView_editor .mark_Task_htmlView[data-state="CANCELED"]::before {
+  background: color-mix(in srgb, var(--ink_Mark_htmlView) 75%, transparent);
 }
 
 .htmlView_editor .part_Header_htmlView[data-busy] {
@@ -1529,6 +1557,8 @@
 }
 
 .htmlView_editor .trigger_Document_htmlView {
+  display: flex;
+  align-items: center;
   min-width: 0;
   padding: 0;
   overflow: hidden;
@@ -1537,9 +1567,14 @@
   color: var(--view-ink, CanvasText);
   font-family: var(--view-font, ui-monospace, "SF Mono", Menlo, Consolas, monospace);
   font-size: 0.92em;
+  cursor: default;
+}
+
+.htmlView_editor .name_Document_htmlView {
+  min-width: 0;
+  overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  cursor: default;
 }
 
 .htmlView_editor .trigger_Document_htmlView:focus-visible {
@@ -1803,7 +1838,7 @@
 }
 
 .htmlView_editor .state_Card_htmlView {
-  color: var(--ink_Task_htmlView);
+  color: var(--ink_Mark_htmlView);
 }
 
 /* what the agent says, of the task or of this document, cut at three

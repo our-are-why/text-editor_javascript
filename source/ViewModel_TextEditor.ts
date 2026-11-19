@@ -71,6 +71,7 @@ export {
   type _Editing_Request_,
   type _Header_ViewModel_,
   type _Document_Header_,
+  type _State_Document_,
   type _Proposals_Card_,
   type _Figure_Card_,
   type _Revisions_Scope_,
@@ -149,11 +150,15 @@ interface _Header_ViewModel_ {
 interface _Document_Header_ {
   folder: string
   name: string
+  state: _State_Document_
+  label_State: string
   summary: string
   proposals: _Proposals_Card_
   revisions_Scope: _Revisions_Scope_
   revisions_Level: _Revisions_Level_
 }
+
+type _State_Document_ = "NONE" | "YOUR_TURN" | "WORKING" | "DONE"
 
 interface _Proposals_Card_ {
   figure: _Figure_Card_ | null
@@ -468,6 +473,8 @@ const HEADER_EMPTY: _Header_ViewModel_ = {
   document: {
     folder: "",
     name: "",
+    state: "NONE",
+    label_State: "",
     summary: "",
     proposals: {
       figure: null,

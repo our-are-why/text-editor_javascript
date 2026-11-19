@@ -32,6 +32,7 @@ import {
   type _Aim_Request_,
   type _Request_Item_,
   type _State_Task_,
+  type _State_Document_,
   type _Action_Task_,
   type _Header_ViewModel_,
   type _Part_Header_,
@@ -294,6 +295,10 @@ function headerOf__Proposals({
     .filter((proposal_Host) => proposal_Host.state === "OPEN" && !proposal_Host.requests.some((request_Host) => request_Host.status === "RUNNING"))
     .flatMap((proposal_Host) => proposal_Host.requests)
     .filter((request_Host) => request_Host.status === "QUEUED").length
+  const state_Document = stateOf__Document({
+    counts_Proposals: counts_Here,
+    counts_Requests: counts_Requests_Here
+  })
   const requests_Whole = requests_Task.filter((request_Task) => request_Task.aim.kind === "TASK")
   const counts_Requests_Task: _Counts_Requests_ = {
     QUEUED: requests_Whole.filter((request_Task) => request_Task.status === "QUEUED").length + documents_Task.reduce((sum, document_Task) => sum + document_Task.counts_Requests.QUEUED, 0),
@@ -357,6 +362,8 @@ function headerOf__Proposals({
     document: {
       folder: folderOf__Path(name_Document),
       name: nameOf__Path(name_Document),
+      state: state_Document,
+      label_State: LABELMAP__STATE_DOCUMENT[state_Document],
       summary: task?.summary_Document ?? "",
       proposals: {
         figure: totalOf__Counts(counts_Here) === 0
@@ -405,6 +412,35 @@ function figureOf__Counts_Requests(
       value: parts.join(" · "),
       more: ""
     }
+}
+
+interface _Api___stateOf__Document_ {
+  counts_Proposals: _Counts_Proposals_
+  counts_Requests: _Counts_Requests_
+}
+
+function stateOf__Document({
+  counts_Proposals,
+  counts_Requests
+}: _Api___stateOf__Document_): _State_Document_ {
+  return counts_Requests.RUNNING > 0
+    ? "WORKING"
+    : counts_Requests.QUEUED > 0 || decidedOf__Counts(counts_Proposals) < totalOf__Counts(counts_Proposals)
+      ? "YOUR_TURN"
+      : totalOf__Counts(counts_Proposals) > 0
+        ? "DONE"
+        : "NONE"
+}
+
+type _LabelMap__State_Document_ = {
+  [State in _State_Document_]: string
+}
+
+const LABELMAP__STATE_DOCUMENT: _LabelMap__State_Document_ = {
+  NONE: "",
+  YOUR_TURN: "Your turn",
+  WORKING: "Working",
+  DONE: "Done"
 }
 
 function folderOf__Path(

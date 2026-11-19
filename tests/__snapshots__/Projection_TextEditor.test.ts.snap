@@ -2,7 +2,7 @@
 
 exports[`the JavaScript example draws as it was drawn by hand 1`] = `
 "label width 2
-header {"document":{"folder":"notes/","name":"digits.txt","proposals":{"actions":[],"documents":[],"figure":{"more":"9 to review · 1 revision requested · 1 revising · 1 accepted · 1 rejected · 1 withdrawn","value":"3 of 14 decided"}},"revisions_Level":{"ask":{"label":"Revise","label_Form":"Revise this document"},"isStartable_Requests":false,"isStoppable_Requests":false,"requests":[]},"revisions_Scope":{"actions":[],"figure":{"more":"","value":"1 queued · 1 in progress"},"title_Start":"Starts all 1 request queued in this document, its own and its proposals'","title_Stop":"Stops all 1 in progress in this document, its own and its proposals', putting them back in the queue"},"summary":""},"parts":[{"isBusy":false,"text":"3 of 14 decided"},{"isBusy":false,"text":"1 request queued"},{"isBusy":true,"text":"1 in progress"}],"task":null}
+header {"document":{"folder":"notes/","label_State":"Working","name":"digits.txt","proposals":{"actions":[],"documents":[],"figure":{"more":"9 to review · 1 revision requested · 1 revising · 1 accepted · 1 rejected · 1 withdrawn","value":"3 of 14 decided"}},"revisions_Level":{"ask":{"label":"Revise","label_Form":"Revise this document"},"isStartable_Requests":false,"isStoppable_Requests":false,"requests":[]},"revisions_Scope":{"actions":[],"figure":{"more":"","value":"1 queued · 1 in progress"},"title_Start":"Starts all 1 request queued in this document, its own and its proposals'","title_Stop":"Stops all 1 in progress in this document, its own and its proposals', putting them back in the queue"},"state":"WORKING","summary":""},"parts":[{"isBusy":false,"text":"3 of 14 decided"},{"isBusy":false,"text":"1 request queued"},{"isBusy":true,"text":"1 in progress"}],"task":null}
 FRAME 1-2
   CURRENT_LINES run 1
     "1" removed none: "// Retries a flaky async call, backing off further each time, until it"{data-change=removed data-side=before data-source=header data-state=OPEN data-syntax=comment}
@@ -306,7 +306,7 @@ FRAME 41-50
 
 exports[`the Markdown example draws as it did when it was looked over 1`] = `
 "label width 2
-header {"document":{"folder":"notes/","name":"digits.txt","proposals":{"actions":[],"documents":[],"figure":{"more":"6 to review · 1 revision requested · 1 revising · 1 accepted · 1 rejected · 1 withdrawn","value":"3 of 11 decided"}},"revisions_Level":{"ask":{"label":"Revise","label_Form":"Revise this document"},"isStartable_Requests":false,"isStoppable_Requests":false,"requests":[]},"revisions_Scope":{"actions":[],"figure":{"more":"","value":"1 queued · 1 in progress"},"title_Start":"Starts all 1 request queued in this document, its own and its proposals'","title_Stop":"Stops all 1 in progress in this document, its own and its proposals', putting them back in the queue"},"summary":""},"parts":[{"isBusy":false,"text":"3 of 11 decided"},{"isBusy":false,"text":"1 request queued"},{"isBusy":true,"text":"1 in progress"}],"task":null}
+header {"document":{"folder":"notes/","label_State":"Working","name":"digits.txt","proposals":{"actions":[],"documents":[],"figure":{"more":"6 to review · 1 revision requested · 1 revising · 1 accepted · 1 rejected · 1 withdrawn","value":"3 of 11 decided"}},"revisions_Level":{"ask":{"label":"Revise","label_Form":"Revise this document"},"isStartable_Requests":false,"isStoppable_Requests":false,"requests":[]},"revisions_Scope":{"actions":[],"figure":{"more":"","value":"1 queued · 1 in progress"},"title_Start":"Starts all 1 request queued in this document, its own and its proposals'","title_Stop":"Stops all 1 in progress in this document, its own and its proposals', putting them back in the queue"},"state":"WORKING","summary":""},"parts":[{"isBusy":false,"text":"3 of 11 decided"},{"isBusy":false,"text":"1 request queued"},{"isBusy":true,"text":"1 in progress"}],"task":null}
   LINES run 1
     "1" none none: "#"{data-syntax=heading marker} " retry"{data-syntax=heading}
       ⟵ document 0:0 [0,7)
@@ -506,7 +506,7 @@ FRAME 39-43
 
 exports[`the Markdown example, its changes read as Markdown, draws as it did when it was looked over 1`] = `
 "label width 2
-header {"document":{"folder":"notes/","name":"digits.txt","proposals":{"actions":[],"documents":[],"figure":{"more":"6 to review · 1 revision requested · 1 revising · 1 accepted · 1 rejected · 1 withdrawn","value":"3 of 11 decided"}},"revisions_Level":{"ask":{"label":"Revise","label_Form":"Revise this document"},"isStartable_Requests":false,"isStoppable_Requests":false,"requests":[]},"revisions_Scope":{"actions":[],"figure":{"more":"","value":"1 queued · 1 in progress"},"title_Start":"Starts all 1 request queued in this document, its own and its proposals'","title_Stop":"Stops all 1 in progress in this document, its own and its proposals', putting them back in the queue"},"summary":""},"parts":[{"isBusy":false,"text":"3 of 11 decided"},{"isBusy":false,"text":"1 request queued"},{"isBusy":true,"text":"1 in progress"}],"task":null}
+header {"document":{"folder":"notes/","label_State":"Working","name":"digits.txt","proposals":{"actions":[],"documents":[],"figure":{"more":"6 to review · 1 revision requested · 1 revising · 1 accepted · 1 rejected · 1 withdrawn","value":"3 of 11 decided"}},"revisions_Level":{"ask":{"label":"Revise","label_Form":"Revise this document"},"isStartable_Requests":false,"isStoppable_Requests":false,"requests":[]},"revisions_Scope":{"actions":[],"figure":{"more":"","value":"1 queued · 1 in progress"},"title_Start":"Starts all 1 request queued in this document, its own and its proposals'","title_Stop":"Stops all 1 in progress in this document, its own and its proposals', putting them back in the queue"},"state":"WORKING","summary":""},"parts":[{"isBusy":false,"text":"3 of 11 decided"},{"isBusy":false,"text":"1 request queued"},{"isBusy":true,"text":"1 in progress"}],"task":null}
   LINES run 1
     "1" none none: "#"{data-syntax=heading marker} " retry"{data-syntax=heading}
       ⟵ document 0:0 [0,7)
@@ -707,7 +707,7 @@ FRAME 39-43
 
 exports[`the changes document's kinds-removed draws as it was drawn by hand 1`] = `
 "label width 1
-header {"document":{"folder":"","name":"","proposals":{"actions":[],"documents":[],"figure":{"more":"1 to review","value":"0 of 1 decided"}},"revisions_Level":{"ask":{"label":"Revise","label_Form":"Revise this document"},"isStartable_Requests":false,"isStoppable_Requests":false,"requests":[]},"revisions_Scope":{"actions":[],"figure":null,"title_Start":null,"title_Stop":null},"summary":""},"parts":[{"isBusy":false,"text":"0 of 1 decided"}],"task":null}
+header {"document":{"folder":"","label_State":"Your turn","name":"","proposals":{"actions":[],"documents":[],"figure":{"more":"1 to review","value":"0 of 1 decided"}},"revisions_Level":{"ask":{"label":"Revise","label_Form":"Revise this document"},"isStartable_Requests":false,"isStoppable_Requests":false,"requests":[]},"revisions_Scope":{"actions":[],"figure":null,"title_Start":null,"title_Stop":null},"state":"YOUR_TURN","summary":""},"parts":[{"isBusy":false,"text":"0 of 1 decided"}],"task":null}
   LINES run 1
     "1" none none: "const"{data-syntax=keyword} " ATTEMPTS = " "5"{data-syntax=number} ";"
       ⟵ document 0:0 [0,19)
@@ -728,7 +728,7 @@ FRAME 2-2
 
 exports[`the changes document's kinds-inserted draws as it was drawn by hand 1`] = `
 "label width 1
-header {"document":{"folder":"","name":"","proposals":{"actions":[],"documents":[],"figure":{"more":"1 to review","value":"0 of 1 decided"}},"revisions_Level":{"ask":{"label":"Revise","label_Form":"Revise this document"},"isStartable_Requests":false,"isStoppable_Requests":false,"requests":[]},"revisions_Scope":{"actions":[],"figure":null,"title_Start":null,"title_Stop":null},"summary":""},"parts":[{"isBusy":false,"text":"0 of 1 decided"}],"task":null}
+header {"document":{"folder":"","label_State":"Your turn","name":"","proposals":{"actions":[],"documents":[],"figure":{"more":"1 to review","value":"0 of 1 decided"}},"revisions_Level":{"ask":{"label":"Revise","label_Form":"Revise this document"},"isStartable_Requests":false,"isStoppable_Requests":false,"requests":[]},"revisions_Scope":{"actions":[],"figure":null,"title_Start":null,"title_Stop":null},"state":"YOUR_TURN","summary":""},"parts":[{"isBusy":false,"text":"0 of 1 decided"}],"task":null}
   LINES run 1
     "1" none none: "for"{data-syntax=keyword} " (" "let"{data-syntax=keyword} " n = " "1"{data-syntax=number} "; n <= attempts; n++) {"
       ⟵ document 0:0 [0,37)
@@ -750,7 +750,7 @@ FRAME 2-2
 
 exports[`the changes document's kinds-replaced draws as it was drawn by hand 1`] = `
 "label width 1
-header {"document":{"folder":"","name":"","proposals":{"actions":[],"documents":[],"figure":{"more":"1 to review","value":"0 of 1 decided"}},"revisions_Level":{"ask":{"label":"Revise","label_Form":"Revise this document"},"isStartable_Requests":false,"isStoppable_Requests":false,"requests":[]},"revisions_Scope":{"actions":[],"figure":null,"title_Start":null,"title_Stop":null},"summary":""},"parts":[{"isBusy":false,"text":"0 of 1 decided"}],"task":null}
+header {"document":{"folder":"","label_State":"Your turn","name":"","proposals":{"actions":[],"documents":[],"figure":{"more":"1 to review","value":"0 of 1 decided"}},"revisions_Level":{"ask":{"label":"Revise","label_Form":"Revise this document"},"isStartable_Requests":false,"isStoppable_Requests":false,"requests":[]},"revisions_Scope":{"actions":[],"figure":null,"title_Start":null,"title_Stop":null},"state":"YOUR_TURN","summary":""},"parts":[{"isBusy":false,"text":"0 of 1 decided"}],"task":null}
 FRAME 1-2
   CURRENT_LINES run 1
     "1" changed none: "export"{data-syntax=keyword} " " "function"{data-syntax=keyword} " " "backoff"{data-syntax=function} "(" "n"{data-change=replaced data-side=before data-source=round data-state=OPEN} ") {"
@@ -777,7 +777,7 @@ FRAME 1-2
 
 exports[`the changes document's kinds-restyled draws as it was drawn by hand 1`] = `
 "label width 1
-header {"document":{"folder":"","name":"","proposals":{"actions":[],"documents":[],"figure":{"more":"1 to review","value":"0 of 1 decided"}},"revisions_Level":{"ask":{"label":"Revise","label_Form":"Revise this document"},"isStartable_Requests":false,"isStoppable_Requests":false,"requests":[]},"revisions_Scope":{"actions":[],"figure":null,"title_Start":null,"title_Stop":null},"summary":""},"parts":[{"isBusy":false,"text":"0 of 1 decided"}],"task":null}
+header {"document":{"folder":"","label_State":"Your turn","name":"","proposals":{"actions":[],"documents":[],"figure":{"more":"1 to review","value":"0 of 1 decided"}},"revisions_Level":{"ask":{"label":"Revise","label_Form":"Revise this document"},"isStartable_Requests":false,"isStoppable_Requests":false,"requests":[]},"revisions_Scope":{"actions":[],"figure":null,"title_Start":null,"title_Stop":null},"state":"YOUR_TURN","summary":""},"parts":[{"isBusy":false,"text":"0 of 1 decided"}],"task":null}
 FRAME 1-1
   CURRENT_LINES run 1
     "1" changed none: "The delay doubles each round, and " "never"{data-change=restyled data-side=before data-source=bold data-state=OPEN} " grows past thirty seconds."
@@ -795,7 +795,7 @@ FRAME 1-1
 
 exports[`the changes document's kinds-replaced-restyled draws as it was drawn by hand 1`] = `
 "label width 1
-header {"document":{"folder":"","name":"","proposals":{"actions":[],"documents":[],"figure":{"more":"1 to review","value":"0 of 1 decided"}},"revisions_Level":{"ask":{"label":"Revise","label_Form":"Revise this document"},"isStartable_Requests":false,"isStoppable_Requests":false,"requests":[]},"revisions_Scope":{"actions":[],"figure":null,"title_Start":null,"title_Stop":null},"summary":""},"parts":[{"isBusy":false,"text":"0 of 1 decided"}],"task":null}
+header {"document":{"folder":"","label_State":"Your turn","name":"","proposals":{"actions":[],"documents":[],"figure":{"more":"1 to review","value":"0 of 1 decided"}},"revisions_Level":{"ask":{"label":"Revise","label_Form":"Revise this document"},"isStartable_Requests":false,"isStoppable_Requests":false,"requests":[]},"revisions_Scope":{"actions":[],"figure":null,"title_Start":null,"title_Stop":null},"state":"YOUR_TURN","summary":""},"parts":[{"isBusy":false,"text":"0 of 1 decided"}],"task":null}
 FRAME 1-1
   CURRENT_LINES run 1
     "1" changed none: "Between attempts it waits " "a second"{data-change=replacedRestyled data-side=before data-source=wait data-state=OPEN} " at most."
@@ -813,7 +813,7 @@ FRAME 1-1
 
 exports[`the changes document's kinds-moved draws as it was drawn by hand 1`] = `
 "label width 1
-header {"document":{"folder":"","name":"","proposals":{"actions":[],"documents":[],"figure":{"more":"1 to review","value":"0 of 1 decided"}},"revisions_Level":{"ask":{"label":"Revise","label_Form":"Revise this document"},"isStartable_Requests":false,"isStoppable_Requests":false,"requests":[]},"revisions_Scope":{"actions":[],"figure":null,"title_Start":null,"title_Stop":null},"summary":""},"parts":[{"isBusy":false,"text":"0 of 1 decided"}],"task":null}
+header {"document":{"folder":"","label_State":"Your turn","name":"","proposals":{"actions":[],"documents":[],"figure":{"more":"1 to review","value":"0 of 1 decided"}},"revisions_Level":{"ask":{"label":"Revise","label_Form":"Revise this document"},"isStartable_Requests":false,"isStoppable_Requests":false,"requests":[]},"revisions_Scope":{"actions":[],"figure":null,"title_Start":null,"title_Stop":null},"state":"YOUR_TURN","summary":""},"parts":[{"isBusy":false,"text":"0 of 1 decided"}],"task":null}
   LINES run 1
     "1" none none: "function"{data-syntax=keyword} " " "isRetryable"{data-syntax=function} "(error) {"
       ⟵ document 0:0 [0,29)
@@ -843,7 +843,7 @@ FRAME 2-3
 
 exports[`the changes document's kinds-latent draws as it was drawn by hand 1`] = `
 "label width 1
-header {"document":{"folder":"","name":"","proposals":{"actions":[],"documents":[],"figure":{"more":"2 to review","value":"0 of 2 decided"}},"revisions_Level":{"ask":{"label":"Revise","label_Form":"Revise this document"},"isStartable_Requests":false,"isStoppable_Requests":false,"requests":[]},"revisions_Scope":{"actions":[],"figure":null,"title_Start":null,"title_Stop":null},"summary":""},"parts":[{"isBusy":false,"text":"0 of 2 decided"}],"task":null}
+header {"document":{"folder":"","label_State":"Your turn","name":"","proposals":{"actions":[],"documents":[],"figure":{"more":"2 to review","value":"0 of 2 decided"}},"revisions_Level":{"ask":{"label":"Revise","label_Form":"Revise this document"},"isStartable_Requests":false,"isStoppable_Requests":false,"requests":[]},"revisions_Scope":{"actions":[],"figure":null,"title_Start":null,"title_Stop":null},"state":"YOUR_TURN","summary":""},"parts":[{"isBusy":false,"text":"0 of 2 decided"}],"task":null}
 FRAME 1-2
   CURRENT_LINES run 1
     "1" changed none: "  " "if"{data-syntax=keyword} " (" "n"{data-change=replaced data-side=before data-source=round data-state=OPEN} " === attempts) " "break"{data-syntax=keyword} ";"
@@ -869,7 +869,7 @@ FRAME 1-2
 
 exports[`the changes document's kinds-carried draws as it was drawn by hand 1`] = `
 "label width 1
-header {"document":{"folder":"","name":"","proposals":{"actions":[],"documents":[],"figure":{"more":"2 to review","value":"0 of 2 decided"}},"revisions_Level":{"ask":{"label":"Revise","label_Form":"Revise this document"},"isStartable_Requests":false,"isStoppable_Requests":false,"requests":[]},"revisions_Scope":{"actions":[],"figure":null,"title_Start":null,"title_Stop":null},"summary":""},"parts":[{"isBusy":false,"text":"0 of 2 decided"}],"task":null}
+header {"document":{"folder":"","label_State":"Your turn","name":"","proposals":{"actions":[],"documents":[],"figure":{"more":"2 to review","value":"0 of 2 decided"}},"revisions_Level":{"ask":{"label":"Revise","label_Form":"Revise this document"},"isStartable_Requests":false,"isStoppable_Requests":false,"requests":[]},"revisions_Scope":{"actions":[],"figure":null,"title_Start":null,"title_Stop":null},"state":"YOUR_TURN","summary":""},"parts":[{"isBusy":false,"text":"0 of 2 decided"}],"task":null}
 FRAME 1-2
   CURRENT_LINES run 1
     "1" none none: "const"{data-syntax=keyword} " DELAY_MS = " "100"{data-syntax=number} ";"
@@ -894,9 +894,33 @@ FRAME 1-2
     {"actions":[{"command":"accept","label":"Accept","stateAfter":"ACCEPTED"},{"command":"reject","label":"Reject","stateAfter":"REJECTED"},{"command":"revise","label":"Revise","stateAfter":"REQUESTED"}],"attributes":{},"confirming":null,"isDrafting":false,"isRunning":false,"isStartable":false,"neighbors":{"range_Next":null,"range_Previous":null},"places":{"conditions":[{"count":1,"kind":"CARRIED","source":"sleep","title":"Move sleep up, beside the delays"}],"count_All":1,"count_Here":1,"kind":"COUNT"},"rationale":"The unit in the name, as DELAY_MS has it.","requests":[],"source":"delay","stale":null,"state":"OPEN","status":"","title":"Call sleep's ms delayMs"}"
 `;
 
+exports[`the changes document's kinds-stale draws as it was drawn by hand 1`] = `
+"label width 1
+header {"document":{"folder":"","label_State":"Your turn","name":"","proposals":{"actions":[],"documents":[],"figure":{"more":"1 to review","value":"0 of 1 decided"}},"revisions_Level":{"ask":{"label":"Revise","label_Form":"Revise this document"},"isStartable_Requests":false,"isStoppable_Requests":false,"requests":[]},"revisions_Scope":{"actions":[],"figure":null,"title_Start":null,"title_Stop":null},"state":"YOUR_TURN","summary":""},"parts":[{"isBusy":false,"text":"0 of 1 decided"}],"task":null}
+FRAME 1-2
+  CURRENT_LINES run 1
+    "1" changed none: "const"{data-syntax=keyword} " " "ATTEMPTS"{data-change=replaced data-side=before data-source=names data-state=OPEN} " = " "5"{data-syntax=number} ";"
+      ⟵ document 0:0 [0,19)
+    "2" changed none: "const"{data-syntax=keyword} " DELAY_MS = " "100"{data-syntax=number} ";" " "{data-change=removed data-side=before data-source=names data-state=OPEN} "// in milliseconds"{data-change=removed data-side=before data-source=names data-state=OPEN data-syntax=comment}
+      ⟵ document 1:0 [0,40)
+    ring {data-source=names data-state=OPEN}
+      STRETCH 0:6-0:14 {data-change=replaced data-place=1 data-side=before data-source=names}
+      STRETCH 1:22-1:40 {data-change=removed data-place=2 data-side=before data-source=names data-stale=}
+  PROPOSAL_LINES run 2
+    "~" changed none: "const"{data-syntax=keyword} " " "MAX_ATTEMPTS"{data-change=replaced data-side=after data-source=names data-state=OPEN} " = " "5"{data-syntax=number} ";"
+      ⟵ document 0:0 [0,6) | names#0 0:0 [6,18) | document 0:14 [18,23)
+    "" none none: "const"{data-syntax=keyword} " DELAY_MS = " "100"{data-syntax=number} ";"
+      ⟵ document 1:0 [0,21) | names#1 0:0 [21,21)
+    ring {data-source=names data-state=OPEN}
+      STRETCH 0:6-0:18 {data-change=replaced data-place=1 data-side=after data-source=names}
+      POINT 1:21 {data-change=removed data-place=2 data-side=after data-source=names}
+  PROPOSAL_LIST
+    {"actions":[{"command":"accept","label":"Accept","stateAfter":"ACCEPTED"},{"command":"reject","label":"Reject","stateAfter":"REJECTED"},{"command":"revise","label":"Revise","stateAfter":"REQUESTED"}],"attributes":{},"confirming":null,"isDrafting":false,"isRunning":false,"isStartable":false,"neighbors":{"range_Next":null,"range_Previous":null},"places":{"kind":"NONE"},"rationale":"MAX_ATTEMPTS says it's a cap, and DELAY_MS says its unit in its name.","requests":[],"source":"names","stale":{"isRerunnable":true,"label":"1 change written before your edits"},"state":"OPEN","status":"","title":"Say the cap, drop the unit comment"}"
+`;
+
 exports[`the changes document's shape-free draws as it was drawn by hand 1`] = `
 "label width 1
-header {"document":{"folder":"","name":"","proposals":{"actions":[],"documents":[],"figure":{"more":"1 to review","value":"0 of 1 decided"}},"revisions_Level":{"ask":{"label":"Revise","label_Form":"Revise this document"},"isStartable_Requests":false,"isStoppable_Requests":false,"requests":[]},"revisions_Scope":{"actions":[],"figure":null,"title_Start":null,"title_Stop":null},"summary":""},"parts":[{"isBusy":false,"text":"0 of 1 decided"}],"task":null}
+header {"document":{"folder":"","label_State":"Your turn","name":"","proposals":{"actions":[],"documents":[],"figure":{"more":"1 to review","value":"0 of 1 decided"}},"revisions_Level":{"ask":{"label":"Revise","label_Form":"Revise this document"},"isStartable_Requests":false,"isStoppable_Requests":false,"requests":[]},"revisions_Scope":{"actions":[],"figure":null,"title_Start":null,"title_Stop":null},"state":"YOUR_TURN","summary":""},"parts":[{"isBusy":false,"text":"0 of 1 decided"}],"task":null}
 FRAME 1-1
   CURRENT_LINES run 1
     "1" changed none: "  " "const"{data-syntax=keyword} " delay = " "DELAY_MS"{data-change=replaced data-side=before data-source=base data-state=OPEN} " * " "2"{data-syntax=number} ";"
@@ -914,7 +938,7 @@ FRAME 1-1
 
 exports[`the changes document's shape-pressed draws as it was drawn by hand 1`] = `
 "label width 1
-header {"document":{"folder":"","name":"","proposals":{"actions":[],"documents":[],"figure":{"more":"1 to review","value":"0 of 1 decided"}},"revisions_Level":{"ask":{"label":"Revise","label_Form":"Revise this document"},"isStartable_Requests":false,"isStoppable_Requests":false,"requests":[]},"revisions_Scope":{"actions":[],"figure":null,"title_Start":null,"title_Stop":null},"summary":""},"parts":[{"isBusy":false,"text":"0 of 1 decided"}],"task":null}
+header {"document":{"folder":"","label_State":"Your turn","name":"","proposals":{"actions":[],"documents":[],"figure":{"more":"1 to review","value":"0 of 1 decided"}},"revisions_Level":{"ask":{"label":"Revise","label_Form":"Revise this document"},"isStartable_Requests":false,"isStoppable_Requests":false,"requests":[]},"revisions_Scope":{"actions":[],"figure":null,"title_Start":null,"title_Stop":null},"state":"YOUR_TURN","summary":""},"parts":[{"isBusy":false,"text":"0 of 1 decided"}],"task":null}
 FRAME 1-1
   CURRENT_LINES run 1
     "1" changed none: "    " "await"{data-syntax=keyword} " " "sleep"{data-syntax=function} "(" "backoff"{data-syntax=function} "(" "n"{data-change=replaced data-side=before data-source=round data-state=OPEN} "), signal);"
@@ -932,7 +956,7 @@ FRAME 1-1
 
 exports[`the changes document's shape-side-by-side draws as it was drawn by hand 1`] = `
 "label width 1
-header {"document":{"folder":"","name":"","proposals":{"actions":[],"documents":[],"figure":{"more":"2 to review","value":"0 of 2 decided"}},"revisions_Level":{"ask":{"label":"Revise","label_Form":"Revise this document"},"isStartable_Requests":false,"isStoppable_Requests":false,"requests":[]},"revisions_Scope":{"actions":[],"figure":null,"title_Start":null,"title_Stop":null},"summary":""},"parts":[{"isBusy":false,"text":"0 of 2 decided"}],"task":null}
+header {"document":{"folder":"","label_State":"Your turn","name":"","proposals":{"actions":[],"documents":[],"figure":{"more":"2 to review","value":"0 of 2 decided"}},"revisions_Level":{"ask":{"label":"Revise","label_Form":"Revise this document"},"isStartable_Requests":false,"isStoppable_Requests":false,"requests":[]},"revisions_Scope":{"actions":[],"figure":null,"title_Start":null,"title_Stop":null},"state":"YOUR_TURN","summary":""},"parts":[{"isBusy":false,"text":"0 of 2 decided"}],"task":null}
 FRAME 1-1
   CURRENT_LINES run 1
     "1" changed none: "  " "signal"{data-change=replaced data-side=before data-source=abort data-state=OPEN} "?"{data-change=removed data-side=before data-source=chain data-state=OPEN} "." "throwIfAborted"{data-syntax=function} "();"
@@ -955,7 +979,7 @@ FRAME 1-1
 
 exports[`the changes document's shape-stacked draws as it was drawn by hand 1`] = `
 "label width 1
-header {"document":{"folder":"","name":"","proposals":{"actions":[],"documents":[],"figure":{"more":"1 to review","value":"0 of 1 decided"}},"revisions_Level":{"ask":{"label":"Revise","label_Form":"Revise this document"},"isStartable_Requests":false,"isStoppable_Requests":false,"requests":[]},"revisions_Scope":{"actions":[],"figure":null,"title_Start":null,"title_Stop":null},"summary":""},"parts":[{"isBusy":false,"text":"0 of 1 decided"}],"task":null}
+header {"document":{"folder":"","label_State":"Your turn","name":"","proposals":{"actions":[],"documents":[],"figure":{"more":"1 to review","value":"0 of 1 decided"}},"revisions_Level":{"ask":{"label":"Revise","label_Form":"Revise this document"},"isStartable_Requests":false,"isStoppable_Requests":false,"requests":[]},"revisions_Scope":{"actions":[],"figure":null,"title_Start":null,"title_Stop":null},"state":"YOUR_TURN","summary":""},"parts":[{"isBusy":false,"text":"0 of 1 decided"}],"task":null}
 FRAME 1-2
   CURRENT_LINES run 1
     "1" changed none: "const"{data-syntax=keyword} " " "MIN_MS"{data-change=replaced data-side=before data-source=bounds data-state=OPEN} " = " "100"{data-syntax=number} ";"
@@ -979,7 +1003,7 @@ FRAME 1-2
 
 exports[`the changes document's shape-lines draws as it was drawn by hand 1`] = `
 "label width 1
-header {"document":{"folder":"","name":"","proposals":{"actions":[],"documents":[],"figure":{"more":"1 to review","value":"0 of 1 decided"}},"revisions_Level":{"ask":{"label":"Revise","label_Form":"Revise this document"},"isStartable_Requests":false,"isStoppable_Requests":false,"requests":[]},"revisions_Scope":{"actions":[],"figure":null,"title_Start":null,"title_Stop":null},"summary":""},"parts":[{"isBusy":false,"text":"0 of 1 decided"}],"task":null}
+header {"document":{"folder":"","label_State":"Your turn","name":"","proposals":{"actions":[],"documents":[],"figure":{"more":"1 to review","value":"0 of 1 decided"}},"revisions_Level":{"ask":{"label":"Revise","label_Form":"Revise this document"},"isStartable_Requests":false,"isStoppable_Requests":false,"requests":[]},"revisions_Scope":{"actions":[],"figure":null,"title_Start":null,"title_Stop":null},"state":"YOUR_TURN","summary":""},"parts":[{"isBusy":false,"text":"0 of 1 decided"}],"task":null}
   LINES run 1
     "1" none none: "export"{data-syntax=keyword} " " "function"{data-syntax=keyword} " " "backoff"{data-syntax=function} "(n) {"
       ⟵ document 0:0 [0,28)
@@ -1005,7 +1029,7 @@ FRAME 2-3
 
 exports[`the changes document's shape-wrapped draws as it was drawn by hand 1`] = `
 "label width 1
-header {"document":{"folder":"","name":"","proposals":{"actions":[],"documents":[],"figure":{"more":"1 to review","value":"0 of 1 decided"}},"revisions_Level":{"ask":{"label":"Revise","label_Form":"Revise this document"},"isStartable_Requests":false,"isStoppable_Requests":false,"requests":[]},"revisions_Scope":{"actions":[],"figure":null,"title_Start":null,"title_Stop":null},"summary":""},"parts":[{"isBusy":false,"text":"0 of 1 decided"}],"task":null}
+header {"document":{"folder":"","label_State":"Your turn","name":"","proposals":{"actions":[],"documents":[],"figure":{"more":"1 to review","value":"0 of 1 decided"}},"revisions_Level":{"ask":{"label":"Revise","label_Form":"Revise this document"},"isStartable_Requests":false,"isStoppable_Requests":false,"requests":[]},"revisions_Scope":{"actions":[],"figure":null,"title_Start":null,"title_Stop":null},"state":"YOUR_TURN","summary":""},"parts":[{"isBusy":false,"text":"0 of 1 decided"}],"task":null}
 FRAME 1-1
   CURRENT_LINES run 1
     "1" changed none: " * @param {{ attempts?: number" ", onRetry?: (error: unknown, n: number) => "{data-change=removed data-side=before data-source=hook data-state=OPEN} "void"{data-change=removed data-side=before data-source=hook data-state=OPEN data-syntax=keyword} " }} [options]"
@@ -1023,7 +1047,7 @@ FRAME 1-1
 
 exports[`the changes document's shape-nested draws as it was drawn by hand 1`] = `
 "label width 1
-header {"document":{"folder":"","name":"","proposals":{"actions":[],"documents":[],"figure":{"more":"2 to review","value":"0 of 2 decided"}},"revisions_Level":{"ask":{"label":"Revise","label_Form":"Revise this document"},"isStartable_Requests":false,"isStoppable_Requests":false,"requests":[]},"revisions_Scope":{"actions":[],"figure":null,"title_Start":null,"title_Stop":null},"summary":""},"parts":[{"isBusy":false,"text":"0 of 2 decided"}],"task":null}
+header {"document":{"folder":"","label_State":"Your turn","name":"","proposals":{"actions":[],"documents":[],"figure":{"more":"2 to review","value":"0 of 2 decided"}},"revisions_Level":{"ask":{"label":"Revise","label_Form":"Revise this document"},"isStartable_Requests":false,"isStoppable_Requests":false,"requests":[]},"revisions_Scope":{"actions":[],"figure":null,"title_Start":null,"title_Stop":null},"state":"YOUR_TURN","summary":""},"parts":[{"isBusy":false,"text":"0 of 2 decided"}],"task":null}
 FRAME 1-1
   CURRENT_LINES run 1
     "1" changed none: "    " "if"{data-syntax=keyword} " (" "n"{data-change=moved data-edit-change=replaced data-edit-source=round data-side=before data-source=order data-state=OPEN} " === attempts"{data-change=moved data-side=before data-source=order data-state=OPEN} " || " "!"{data-change=moved data-side=before data-source=order data-state=OPEN} "isRetryable"{data-change=moved data-side=before data-source=order data-state=OPEN data-syntax=function} "(error)"{data-change=moved data-side=before data-source=order data-state=OPEN} ") " "break"{data-syntax=keyword} ";"
@@ -1048,7 +1072,7 @@ FRAME 1-1
 
 exports[`the changes document's shape-start draws as it was drawn by hand 1`] = `
 "label width 1
-header {"document":{"folder":"","name":"","proposals":{"actions":[],"documents":[],"figure":{"more":"1 to review","value":"0 of 1 decided"}},"revisions_Level":{"ask":{"label":"Revise","label_Form":"Revise this document"},"isStartable_Requests":false,"isStoppable_Requests":false,"requests":[]},"revisions_Scope":{"actions":[],"figure":null,"title_Start":null,"title_Stop":null},"summary":""},"parts":[{"isBusy":false,"text":"0 of 1 decided"}],"task":null}
+header {"document":{"folder":"","label_State":"Your turn","name":"","proposals":{"actions":[],"documents":[],"figure":{"more":"1 to review","value":"0 of 1 decided"}},"revisions_Level":{"ask":{"label":"Revise","label_Form":"Revise this document"},"isStartable_Requests":false,"isStoppable_Requests":false,"requests":[]},"revisions_Scope":{"actions":[],"figure":null,"title_Start":null,"title_Stop":null},"state":"YOUR_TURN","summary":""},"parts":[{"isBusy":false,"text":"0 of 1 decided"}],"task":null}
 FRAME 1-1
   CURRENT_LINES run 1
     "1" changed none: "export"{data-change=removed data-side=before data-source=private data-state=OPEN data-syntax=keyword} " "{data-change=removed data-side=before data-source=private data-state=OPEN} "function"{data-syntax=keyword} " " "backoff"{data-syntax=function} "(n) {}"
@@ -1066,7 +1090,7 @@ FRAME 1-1
 
 exports[`the changes document's moves-frames draws as it was drawn by hand 1`] = `
 "label width 1
-header {"document":{"folder":"","name":"","proposals":{"actions":[],"documents":[],"figure":{"more":"1 to review","value":"0 of 1 decided"}},"revisions_Level":{"ask":{"label":"Revise","label_Form":"Revise this document"},"isStartable_Requests":false,"isStoppable_Requests":false,"requests":[]},"revisions_Scope":{"actions":[],"figure":null,"title_Start":null,"title_Stop":null},"summary":""},"parts":[{"isBusy":false,"text":"0 of 1 decided"}],"task":null}
+header {"document":{"folder":"","label_State":"Your turn","name":"","proposals":{"actions":[],"documents":[],"figure":{"more":"1 to review","value":"0 of 1 decided"}},"revisions_Level":{"ask":{"label":"Revise","label_Form":"Revise this document"},"isStartable_Requests":false,"isStoppable_Requests":false,"requests":[]},"revisions_Scope":{"actions":[],"figure":null,"title_Start":null,"title_Stop":null},"state":"YOUR_TURN","summary":""},"parts":[{"isBusy":false,"text":"0 of 1 decided"}],"task":null}
   LINES run 1
     "1" none none: "const"{data-syntax=keyword} " DELAY_MS = " "100"{data-syntax=number} ";"
       ⟵ document 0:0 [0,21)
@@ -1100,7 +1124,7 @@ FRAME 4-5
 
 exports[`the changes document's moves-line draws as it was drawn by hand 1`] = `
 "label width 1
-header {"document":{"folder":"","name":"","proposals":{"actions":[],"documents":[],"figure":{"more":"1 to review","value":"0 of 1 decided"}},"revisions_Level":{"ask":{"label":"Revise","label_Form":"Revise this document"},"isStartable_Requests":false,"isStoppable_Requests":false,"requests":[]},"revisions_Scope":{"actions":[],"figure":null,"title_Start":null,"title_Stop":null},"summary":""},"parts":[{"isBusy":false,"text":"0 of 1 decided"}],"task":null}
+header {"document":{"folder":"","label_State":"Your turn","name":"","proposals":{"actions":[],"documents":[],"figure":{"more":"1 to review","value":"0 of 1 decided"}},"revisions_Level":{"ask":{"label":"Revise","label_Form":"Revise this document"},"isStartable_Requests":false,"isStoppable_Requests":false,"requests":[]},"revisions_Scope":{"actions":[],"figure":null,"title_Start":null,"title_Stop":null},"state":"YOUR_TURN","summary":""},"parts":[{"isBusy":false,"text":"0 of 1 decided"}],"task":null}
 FRAME 1-1
   CURRENT_LINES run 1
     "1" changed none: "    " "if"{data-syntax=keyword} " (" "n === attempts"{data-change=moved data-side=before data-source=order data-state=OPEN} " || " "!"{data-change=moved data-side=before data-source=order data-state=OPEN} "isRetryable"{data-change=moved data-side=before data-source=order data-state=OPEN data-syntax=function} "(error)"{data-change=moved data-side=before data-source=order data-state=OPEN} ") " "break"{data-syntax=keyword} ";"
@@ -1120,7 +1144,7 @@ FRAME 1-1
 
 exports[`the changes document's lines-removed draws as it was drawn by hand 1`] = `
 "label width 1
-header {"document":{"folder":"","name":"","proposals":{"actions":[],"documents":[],"figure":{"more":"1 to review","value":"0 of 1 decided"}},"revisions_Level":{"ask":{"label":"Revise","label_Form":"Revise this document"},"isStartable_Requests":false,"isStoppable_Requests":false,"requests":[]},"revisions_Scope":{"actions":[],"figure":null,"title_Start":null,"title_Stop":null},"summary":""},"parts":[{"isBusy":false,"text":"0 of 1 decided"}],"task":null}
+header {"document":{"folder":"","label_State":"Your turn","name":"","proposals":{"actions":[],"documents":[],"figure":{"more":"1 to review","value":"0 of 1 decided"}},"revisions_Level":{"ask":{"label":"Revise","label_Form":"Revise this document"},"isStartable_Requests":false,"isStoppable_Requests":false,"requests":[]},"revisions_Scope":{"actions":[],"figure":null,"title_Start":null,"title_Stop":null},"state":"YOUR_TURN","summary":""},"parts":[{"isBusy":false,"text":"0 of 1 decided"}],"task":null}
 FRAME 1-3
   CURRENT_LINES run 1
     "1" none none: "  " "if"{data-syntax=keyword} " (n === attempts) " "break"{data-syntax=keyword} ";"
@@ -1144,7 +1168,7 @@ FRAME 1-3
 
 exports[`the changes document's lines-inserted draws as it was drawn by hand 1`] = `
 "label width 1
-header {"document":{"folder":"","name":"","proposals":{"actions":[],"documents":[],"figure":{"more":"1 to review","value":"0 of 1 decided"}},"revisions_Level":{"ask":{"label":"Revise","label_Form":"Revise this document"},"isStartable_Requests":false,"isStoppable_Requests":false,"requests":[]},"revisions_Scope":{"actions":[],"figure":null,"title_Start":null,"title_Stop":null},"summary":""},"parts":[{"isBusy":false,"text":"0 of 1 decided"}],"task":null}
+header {"document":{"folder":"","label_State":"Your turn","name":"","proposals":{"actions":[],"documents":[],"figure":{"more":"1 to review","value":"0 of 1 decided"}},"revisions_Level":{"ask":{"label":"Revise","label_Form":"Revise this document"},"isStartable_Requests":false,"isStoppable_Requests":false,"requests":[]},"revisions_Scope":{"actions":[],"figure":null,"title_Start":null,"title_Stop":null},"state":"YOUR_TURN","summary":""},"parts":[{"isBusy":false,"text":"0 of 1 decided"}],"task":null}
 FRAME 1-2
   CURRENT_LINES run 1
     "1" none none: "  " "const"{data-syntax=keyword} " delay = DELAY_MS * " "2"{data-syntax=number} " ** (n - " "1"{data-syntax=number} ");"
@@ -1169,7 +1193,7 @@ FRAME 1-2
 
 exports[`the changes document's lines-blank draws as it was drawn by hand 1`] = `
 "label width 1
-header {"document":{"folder":"","name":"","proposals":{"actions":[],"documents":[],"figure":{"more":"1 to review","value":"0 of 1 decided"}},"revisions_Level":{"ask":{"label":"Revise","label_Form":"Revise this document"},"isStartable_Requests":false,"isStoppable_Requests":false,"requests":[]},"revisions_Scope":{"actions":[],"figure":null,"title_Start":null,"title_Stop":null},"summary":""},"parts":[{"isBusy":false,"text":"0 of 1 decided"}],"task":null}
+header {"document":{"folder":"","label_State":"Your turn","name":"","proposals":{"actions":[],"documents":[],"figure":{"more":"1 to review","value":"0 of 1 decided"}},"revisions_Level":{"ask":{"label":"Revise","label_Form":"Revise this document"},"isStartable_Requests":false,"isStoppable_Requests":false,"requests":[]},"revisions_Scope":{"actions":[],"figure":null,"title_Start":null,"title_Stop":null},"state":"YOUR_TURN","summary":""},"parts":[{"isBusy":false,"text":"0 of 1 decided"}],"task":null}
   LINES run 1
     "1" none none: "const"{data-syntax=keyword} " ATTEMPTS = " "5"{data-syntax=number} ";"
       ⟵ document 0:0 [0,19)
@@ -1191,7 +1215,7 @@ FRAME 2-3
 
 exports[`the changes document's lines-all draws as it was drawn by hand 1`] = `
 "label width 1
-header {"document":{"folder":"","name":"","proposals":{"actions":[],"documents":[],"figure":{"more":"1 to review","value":"0 of 1 decided"}},"revisions_Level":{"ask":{"label":"Revise","label_Form":"Revise this document"},"isStartable_Requests":false,"isStoppable_Requests":false,"requests":[]},"revisions_Scope":{"actions":[],"figure":null,"title_Start":null,"title_Stop":null},"summary":""},"parts":[{"isBusy":false,"text":"0 of 1 decided"}],"task":null}
+header {"document":{"folder":"","label_State":"Your turn","name":"","proposals":{"actions":[],"documents":[],"figure":{"more":"1 to review","value":"0 of 1 decided"}},"revisions_Level":{"ask":{"label":"Revise","label_Form":"Revise this document"},"isStartable_Requests":false,"isStoppable_Requests":false,"requests":[]},"revisions_Scope":{"actions":[],"figure":null,"title_Start":null,"title_Stop":null},"state":"YOUR_TURN","summary":""},"parts":[{"isBusy":false,"text":"0 of 1 decided"}],"task":null}
   LINES run 1
     "1" none none: "export"{data-syntax=keyword} " " "function"{data-syntax=keyword} " " "backoff"{data-syntax=function} "(n) {"
       ⟵ document 0:0 [0,28)
@@ -1217,7 +1241,7 @@ FRAME 2-4
 
 exports[`the changes document's threads-frames draws as it was drawn by hand 1`] = `
 "label width 1
-header {"document":{"folder":"","name":"","proposals":{"actions":[],"documents":[],"figure":{"more":"1 to review","value":"0 of 1 decided"}},"revisions_Level":{"ask":{"label":"Revise","label_Form":"Revise this document"},"isStartable_Requests":false,"isStoppable_Requests":false,"requests":[]},"revisions_Scope":{"actions":[],"figure":null,"title_Start":null,"title_Stop":null},"summary":""},"parts":[{"isBusy":false,"text":"0 of 1 decided"}],"task":null}
+header {"document":{"folder":"","label_State":"Your turn","name":"","proposals":{"actions":[],"documents":[],"figure":{"more":"1 to review","value":"0 of 1 decided"}},"revisions_Level":{"ask":{"label":"Revise","label_Form":"Revise this document"},"isStartable_Requests":false,"isStoppable_Requests":false,"requests":[]},"revisions_Scope":{"actions":[],"figure":null,"title_Start":null,"title_Stop":null},"state":"YOUR_TURN","summary":""},"parts":[{"isBusy":false,"text":"0 of 1 decided"}],"task":null}
 FRAME 1-2
   CURRENT_LINES run 1
     "1" changed none: "export"{data-syntax=keyword} " " "function"{data-syntax=keyword} " " "backoff"{data-syntax=function} "(" "n"{data-change=replaced data-side=before data-source=round data-state=OPEN} ") {"
@@ -1263,7 +1287,7 @@ FRAME 5-5
 
 exports[`the changes document's pointing-proposal draws as it was drawn by hand 1`] = `
 "label width 1
-header {"document":{"folder":"","name":"","proposals":{"actions":[],"documents":[],"figure":{"more":"2 to review","value":"0 of 2 decided"}},"revisions_Level":{"ask":{"label":"Revise","label_Form":"Revise this document"},"isStartable_Requests":false,"isStoppable_Requests":false,"requests":[]},"revisions_Scope":{"actions":[],"figure":null,"title_Start":null,"title_Stop":null},"summary":""},"parts":[{"isBusy":false,"text":"0 of 2 decided"}],"task":null}
+header {"document":{"folder":"","label_State":"Your turn","name":"","proposals":{"actions":[],"documents":[],"figure":{"more":"2 to review","value":"0 of 2 decided"}},"revisions_Level":{"ask":{"label":"Revise","label_Form":"Revise this document"},"isStartable_Requests":false,"isStoppable_Requests":false,"requests":[]},"revisions_Scope":{"actions":[],"figure":null,"title_Start":null,"title_Stop":null},"state":"YOUR_TURN","summary":""},"parts":[{"isBusy":false,"text":"0 of 2 decided"}],"task":null}
 FRAME 1-3
   CURRENT_LINES run 1
     "1" changed none: "export"{data-syntax=keyword} " " "function"{data-syntax=keyword} " " "backoff"{data-syntax=function} "(" "n"{data-change=replaced data-side=before data-source=round data-state=OPEN} ") {"
@@ -1304,7 +1328,7 @@ FRAME 1-3
 
 exports[`the changes document's folding-peek draws as it was drawn by hand 1`] = `
 "label width 1
-header {"document":{"folder":"","name":"","proposals":{"actions":[],"documents":[],"figure":{"more":"2 to review","value":"0 of 2 decided"}},"revisions_Level":{"ask":{"label":"Revise","label_Form":"Revise this document"},"isStartable_Requests":false,"isStoppable_Requests":false,"requests":[]},"revisions_Scope":{"actions":[],"figure":null,"title_Start":null,"title_Stop":null},"summary":""},"parts":[{"isBusy":false,"text":"0 of 2 decided"}],"task":null}
+header {"document":{"folder":"","label_State":"Your turn","name":"","proposals":{"actions":[],"documents":[],"figure":{"more":"2 to review","value":"0 of 2 decided"}},"revisions_Level":{"ask":{"label":"Revise","label_Form":"Revise this document"},"isStartable_Requests":false,"isStoppable_Requests":false,"requests":[]},"revisions_Scope":{"actions":[],"figure":null,"title_Start":null,"title_Stop":null},"state":"YOUR_TURN","summary":""},"parts":[{"isBusy":false,"text":"0 of 2 decided"}],"task":null}
 FRAME 1-3
   CURRENT_LINES run 1
     "1" changed none: "export"{data-syntax=keyword} " " "function"{data-syntax=keyword} " " "backoff"{data-syntax=function} "(" "n"{data-change=replaced data-side=before data-source=round data-state=OPEN} ") {"
@@ -1343,7 +1367,7 @@ FRAME 1-3
 
 exports[`the changes document's folding-removals draws as it was drawn by hand 1`] = `
 "label width 1
-header {"document":{"folder":"","name":"","proposals":{"actions":[],"documents":[],"figure":{"more":"1 to review","value":"0 of 1 decided"}},"revisions_Level":{"ask":{"label":"Revise","label_Form":"Revise this document"},"isStartable_Requests":false,"isStoppable_Requests":false,"requests":[]},"revisions_Scope":{"actions":[],"figure":null,"title_Start":null,"title_Stop":null},"summary":""},"parts":[{"isBusy":false,"text":"0 of 1 decided"}],"task":null}
+header {"document":{"folder":"","label_State":"Your turn","name":"","proposals":{"actions":[],"documents":[],"figure":{"more":"1 to review","value":"0 of 1 decided"}},"revisions_Level":{"ask":{"label":"Revise","label_Form":"Revise this document"},"isStartable_Requests":false,"isStoppable_Requests":false,"requests":[]},"revisions_Scope":{"actions":[],"figure":null,"title_Start":null,"title_Stop":null},"state":"YOUR_TURN","summary":""},"parts":[{"isBusy":false,"text":"0 of 1 decided"}],"task":null}
 FRAME 1-2
   CURRENT_LINES run 1
     "1" removed none: "// Retries a flaky async call, backing off each time,"{data-change=removed data-side=before data-source=header data-state=OPEN data-syntax=comment}
@@ -1364,7 +1388,7 @@ FRAME 1-2
 
 exports[`the changes document's marks-notch draws as it was drawn by hand 1`] = `
 "label width 1
-header {"document":{"folder":"","name":"","proposals":{"actions":[],"documents":[],"figure":{"more":"1 to review","value":"0 of 1 decided"}},"revisions_Level":{"ask":{"label":"Revise","label_Form":"Revise this document"},"isStartable_Requests":false,"isStoppable_Requests":false,"requests":[]},"revisions_Scope":{"actions":[],"figure":null,"title_Start":null,"title_Stop":null},"summary":""},"parts":[{"isBusy":false,"text":"0 of 1 decided"}],"task":null}
+header {"document":{"folder":"","label_State":"Your turn","name":"","proposals":{"actions":[],"documents":[],"figure":{"more":"1 to review","value":"0 of 1 decided"}},"revisions_Level":{"ask":{"label":"Revise","label_Form":"Revise this document"},"isStartable_Requests":false,"isStoppable_Requests":false,"requests":[]},"revisions_Scope":{"actions":[],"figure":null,"title_Start":null,"title_Stop":null},"state":"YOUR_TURN","summary":""},"parts":[{"isBusy":false,"text":"0 of 1 decided"}],"task":null}
 FRAME 1-1
   CURRENT_LINES run 1
     "1" changed none: "    " "await"{data-syntax=keyword} " " "sleep"{data-syntax=function} "(" "backoff"{data-syntax=function} "(n)" ", signal"{data-change=removed data-side=before data-source=signal data-state=OPEN} ");"
@@ -1382,7 +1406,7 @@ FRAME 1-1
 
 exports[`the changes document's marks-lines draws as it was drawn by hand 1`] = `
 "label width 1
-header {"document":{"folder":"","name":"","proposals":{"actions":[],"documents":[],"figure":{"more":"1 to review","value":"0 of 1 decided"}},"revisions_Level":{"ask":{"label":"Revise","label_Form":"Revise this document"},"isStartable_Requests":false,"isStoppable_Requests":false,"requests":[]},"revisions_Scope":{"actions":[],"figure":null,"title_Start":null,"title_Stop":null},"summary":""},"parts":[{"isBusy":false,"text":"0 of 1 decided"}],"task":null}
+header {"document":{"folder":"","label_State":"Your turn","name":"","proposals":{"actions":[],"documents":[],"figure":{"more":"1 to review","value":"0 of 1 decided"}},"revisions_Level":{"ask":{"label":"Revise","label_Form":"Revise this document"},"isStartable_Requests":false,"isStoppable_Requests":false,"requests":[]},"revisions_Scope":{"actions":[],"figure":null,"title_Start":null,"title_Stop":null},"state":"YOUR_TURN","summary":""},"parts":[{"isBusy":false,"text":"0 of 1 decided"}],"task":null}
 FRAME 1-3
   CURRENT_LINES run 1
     "1" none none: "  " "if"{data-syntax=keyword} " (n === attempts) " "break"{data-syntax=keyword} ";"
@@ -1406,7 +1430,7 @@ FRAME 1-3
 
 exports[`the changes document's marks-one-point draws as it was drawn by hand 1`] = `
 "label width 1
-header {"document":{"folder":"","name":"","proposals":{"actions":[],"documents":[],"figure":{"more":"2 to review","value":"0 of 2 decided"}},"revisions_Level":{"ask":{"label":"Revise","label_Form":"Revise this document"},"isStartable_Requests":false,"isStoppable_Requests":false,"requests":[]},"revisions_Scope":{"actions":[],"figure":null,"title_Start":null,"title_Stop":null},"summary":""},"parts":[{"isBusy":false,"text":"0 of 2 decided"}],"task":null}
+header {"document":{"folder":"","label_State":"Your turn","name":"","proposals":{"actions":[],"documents":[],"figure":{"more":"2 to review","value":"0 of 2 decided"}},"revisions_Level":{"ask":{"label":"Revise","label_Form":"Revise this document"},"isStartable_Requests":false,"isStoppable_Requests":false,"requests":[]},"revisions_Scope":{"actions":[],"figure":null,"title_Start":null,"title_Stop":null},"state":"YOUR_TURN","summary":""},"parts":[{"isBusy":false,"text":"0 of 2 decided"}],"task":null}
 FRAME 1-1
   CURRENT_LINES run 1
     "1" changed none: "function"{data-syntax=keyword} " " "retry"{data-syntax=function} "(attempt" ", options"{data-change=removed data-side=before data-source=options data-state=OPEN} ", legacy"{data-change=removed data-side=before data-source=legacy data-state=OPEN} ") {}"
@@ -1429,7 +1453,7 @@ FRAME 1-1
 
 exports[`the changes document's marks-beside-ring draws as it was drawn by hand 1`] = `
 "label width 1
-header {"document":{"folder":"","name":"","proposals":{"actions":[],"documents":[],"figure":{"more":"2 to review","value":"0 of 2 decided"}},"revisions_Level":{"ask":{"label":"Revise","label_Form":"Revise this document"},"isStartable_Requests":false,"isStoppable_Requests":false,"requests":[]},"revisions_Scope":{"actions":[],"figure":null,"title_Start":null,"title_Stop":null},"summary":""},"parts":[{"isBusy":false,"text":"0 of 2 decided"}],"task":null}
+header {"document":{"folder":"","label_State":"Your turn","name":"","proposals":{"actions":[],"documents":[],"figure":{"more":"2 to review","value":"0 of 2 decided"}},"revisions_Level":{"ask":{"label":"Revise","label_Form":"Revise this document"},"isStartable_Requests":false,"isStoppable_Requests":false,"requests":[]},"revisions_Scope":{"actions":[],"figure":null,"title_Start":null,"title_Stop":null},"state":"YOUR_TURN","summary":""},"parts":[{"isBusy":false,"text":"0 of 2 decided"}],"task":null}
 FRAME 1-1
   CURRENT_LINES run 1
     "1" changed none: "  " "signal"{data-change=replaced data-side=before data-source=abort data-state=OPEN} "?"{data-change=removed data-side=before data-source=chain data-state=OPEN} "." "throwIfAborted"{data-syntax=function} "();"
@@ -1452,7 +1476,7 @@ FRAME 1-1
 
 exports[`the changes document's marks-in-move draws as it was drawn by hand 1`] = `
 "label width 1
-header {"document":{"folder":"","name":"","proposals":{"actions":[],"documents":[],"figure":{"more":"2 to review","value":"0 of 2 decided"}},"revisions_Level":{"ask":{"label":"Revise","label_Form":"Revise this document"},"isStartable_Requests":false,"isStoppable_Requests":false,"requests":[]},"revisions_Scope":{"actions":[],"figure":null,"title_Start":null,"title_Stop":null},"summary":""},"parts":[{"isBusy":false,"text":"0 of 2 decided"}],"task":null}
+header {"document":{"folder":"","label_State":"Your turn","name":"","proposals":{"actions":[],"documents":[],"figure":{"more":"2 to review","value":"0 of 2 decided"}},"revisions_Level":{"ask":{"label":"Revise","label_Form":"Revise this document"},"isStartable_Requests":false,"isStoppable_Requests":false,"requests":[]},"revisions_Scope":{"actions":[],"figure":null,"title_Start":null,"title_Stop":null},"state":"YOUR_TURN","summary":""},"parts":[{"isBusy":false,"text":"0 of 2 decided"}],"task":null}
 FRAME 1-2
   CURRENT_LINES run 1
     "1" none none: "const"{data-syntax=keyword} " DELAY_MS = " "100"{data-syntax=number} ";"
@@ -1477,7 +1501,7 @@ FRAME 1-2
 
 exports[`the changes document's marks-strip draws as it was drawn by hand 1`] = `
 "label width 1
-header {"document":{"folder":"","name":"","proposals":{"actions":[],"documents":[],"figure":{"more":"1 to review","value":"0 of 1 decided"}},"revisions_Level":{"ask":{"label":"Revise","label_Form":"Revise this document"},"isStartable_Requests":false,"isStoppable_Requests":false,"requests":[]},"revisions_Scope":{"actions":[],"figure":null,"title_Start":null,"title_Stop":null},"summary":""},"parts":[{"isBusy":false,"text":"0 of 1 decided"}],"task":null}
+header {"document":{"folder":"","label_State":"Your turn","name":"","proposals":{"actions":[],"documents":[],"figure":{"more":"1 to review","value":"0 of 1 decided"}},"revisions_Level":{"ask":{"label":"Revise","label_Form":"Revise this document"},"isStartable_Requests":false,"isStoppable_Requests":false,"requests":[]},"revisions_Scope":{"actions":[],"figure":null,"title_Start":null,"title_Stop":null},"state":"YOUR_TURN","summary":""},"parts":[{"isBusy":false,"text":"0 of 1 decided"}],"task":null}
 FRAME 1-2
   CURRENT_LINES run 1
     "1" removed none: "// Retries a flaky async call, backing off each time,"{data-change=removed data-side=before data-source=header data-state=OPEN data-syntax=comment}
@@ -1498,7 +1522,7 @@ FRAME 1-2
 
 exports[`the changes document's marks-end draws as it was drawn by hand 1`] = `
 "label width 1
-header {"document":{"folder":"","name":"","proposals":{"actions":[],"documents":[],"figure":{"more":"1 to review","value":"0 of 1 decided"}},"revisions_Level":{"ask":{"label":"Revise","label_Form":"Revise this document"},"isStartable_Requests":false,"isStoppable_Requests":false,"requests":[]},"revisions_Scope":{"actions":[],"figure":null,"title_Start":null,"title_Stop":null},"summary":""},"parts":[{"isBusy":false,"text":"0 of 1 decided"}],"task":null}
+header {"document":{"folder":"","label_State":"Your turn","name":"","proposals":{"actions":[],"documents":[],"figure":{"more":"1 to review","value":"0 of 1 decided"}},"revisions_Level":{"ask":{"label":"Revise","label_Form":"Revise this document"},"isStartable_Requests":false,"isStoppable_Requests":false,"requests":[]},"revisions_Scope":{"actions":[],"figure":null,"title_Start":null,"title_Stop":null},"state":"YOUR_TURN","summary":""},"parts":[{"isBusy":false,"text":"0 of 1 decided"}],"task":null}
 FRAME 1-3
   CURRENT_LINES run 1
     "1" none none: "function"{data-syntax=keyword} " " "sleep"{data-syntax=function} "(ms) {}"
@@ -1520,7 +1544,7 @@ FRAME 1-3
 
 exports[`the changes document's marks-whitespace draws as it was drawn by hand 1`] = `
 "label width 1
-header {"document":{"folder":"","name":"","proposals":{"actions":[],"documents":[],"figure":{"more":"1 to review","value":"0 of 1 decided"}},"revisions_Level":{"ask":{"label":"Revise","label_Form":"Revise this document"},"isStartable_Requests":false,"isStoppable_Requests":false,"requests":[]},"revisions_Scope":{"actions":[],"figure":null,"title_Start":null,"title_Stop":null},"summary":""},"parts":[{"isBusy":false,"text":"0 of 1 decided"}],"task":null}
+header {"document":{"folder":"","label_State":"Your turn","name":"","proposals":{"actions":[],"documents":[],"figure":{"more":"1 to review","value":"0 of 1 decided"}},"revisions_Level":{"ask":{"label":"Revise","label_Form":"Revise this document"},"isStartable_Requests":false,"isStoppable_Requests":false,"requests":[]},"revisions_Scope":{"actions":[],"figure":null,"title_Start":null,"title_Stop":null},"state":"YOUR_TURN","summary":""},"parts":[{"isBusy":false,"text":"0 of 1 decided"}],"task":null}
 FRAME 1-1
   CURRENT_LINES run 1
     "1" changed none: "  "{data-change=removed data-side=before data-source=indent data-state=OPEN} "  signal?." "throwIfAborted"{data-syntax=function} "();"
@@ -1538,7 +1562,7 @@ FRAME 1-1
 
 exports[`the changes document's marks-start-to-middle draws as it was drawn by hand 1`] = `
 "label width 1
-header {"document":{"folder":"","name":"","proposals":{"actions":[],"documents":[],"figure":{"more":"1 to review","value":"0 of 1 decided"}},"revisions_Level":{"ask":{"label":"Revise","label_Form":"Revise this document"},"isStartable_Requests":false,"isStoppable_Requests":false,"requests":[]},"revisions_Scope":{"actions":[],"figure":null,"title_Start":null,"title_Stop":null},"summary":""},"parts":[{"isBusy":false,"text":"0 of 1 decided"}],"task":null}
+header {"document":{"folder":"","label_State":"Your turn","name":"","proposals":{"actions":[],"documents":[],"figure":{"more":"1 to review","value":"0 of 1 decided"}},"revisions_Level":{"ask":{"label":"Revise","label_Form":"Revise this document"},"isStartable_Requests":false,"isStoppable_Requests":false,"requests":[]},"revisions_Scope":{"actions":[],"figure":null,"title_Start":null,"title_Stop":null},"state":"YOUR_TURN","summary":""},"parts":[{"isBusy":false,"text":"0 of 1 decided"}],"task":null}
 FRAME 1-2
   CURRENT_LINES run 1
     "1" removed none: "// 100ms, 200ms, 400ms, and so on,"{data-change=removed data-side=before data-source=words data-state=OPEN data-syntax=comment}
@@ -1558,7 +1582,7 @@ FRAME 1-2
 
 exports[`the changes document's marks-between-lines draws as it was drawn by hand 1`] = `
 "label width 1
-header {"document":{"folder":"","name":"","proposals":{"actions":[],"documents":[],"figure":{"more":"2 to review","value":"0 of 2 decided"}},"revisions_Level":{"ask":{"label":"Revise","label_Form":"Revise this document"},"isStartable_Requests":false,"isStoppable_Requests":false,"requests":[]},"revisions_Scope":{"actions":[],"figure":null,"title_Start":null,"title_Stop":null},"summary":""},"parts":[{"isBusy":false,"text":"0 of 2 decided"}],"task":null}
+header {"document":{"folder":"","label_State":"Your turn","name":"","proposals":{"actions":[],"documents":[],"figure":{"more":"2 to review","value":"0 of 2 decided"}},"revisions_Level":{"ask":{"label":"Revise","label_Form":"Revise this document"},"isStartable_Requests":false,"isStoppable_Requests":false,"requests":[]},"revisions_Scope":{"actions":[],"figure":null,"title_Start":null,"title_Stop":null},"state":"YOUR_TURN","summary":""},"parts":[{"isBusy":false,"text":"0 of 2 decided"}],"task":null}
 FRAME 1-2
   CURRENT_LINES run 1
     "1" removed none: "// backoff"{data-change=removed data-side=before data-source=comment data-state=OPEN data-syntax=comment}
@@ -1583,7 +1607,7 @@ FRAME 1-2
 
 exports[`the scene proposals-code draws as it was drawn by hand 1`] = `
 "label width 2
-header {"document":{"folder":"","name":"","proposals":{"actions":[],"documents":[],"figure":{"more":"3 to review","value":"0 of 3 decided"}},"revisions_Level":{"ask":{"label":"Revise","label_Form":"Revise this document"},"isStartable_Requests":false,"isStoppable_Requests":false,"requests":[]},"revisions_Scope":{"actions":[],"figure":null,"title_Start":null,"title_Stop":null},"summary":""},"parts":[{"isBusy":false,"text":"0 of 3 decided"}],"task":null}
+header {"document":{"folder":"","label_State":"Your turn","name":"","proposals":{"actions":[],"documents":[],"figure":{"more":"3 to review","value":"0 of 3 decided"}},"revisions_Level":{"ask":{"label":"Revise","label_Form":"Revise this document"},"isStartable_Requests":false,"isStoppable_Requests":false,"requests":[]},"revisions_Scope":{"actions":[],"figure":null,"title_Start":null,"title_Stop":null},"state":"YOUR_TURN","summary":""},"parts":[{"isBusy":false,"text":"0 of 3 decided"}],"task":null}
   LINES run 1
     "1" none none: "// counts the words in a text, as a person reading it would"
       ⟵ document 0:0 [0,59)
@@ -1678,7 +1702,7 @@ FRAME 11-17
 
 exports[`the scene proposals-thread draws as it was drawn by hand 1`] = `
 "label width 2
-header {"document":{"folder":"","name":"","proposals":{"actions":[],"documents":[],"figure":{"more":"2 to review","value":"0 of 2 decided"}},"revisions_Level":{"ask":{"label":"Revise","label_Form":"Revise this document"},"isStartable_Requests":false,"isStoppable_Requests":false,"requests":[]},"revisions_Scope":{"actions":[],"figure":null,"title_Start":null,"title_Stop":null},"summary":""},"parts":[{"isBusy":false,"text":"0 of 2 decided"}],"task":null}
+header {"document":{"folder":"","label_State":"Your turn","name":"","proposals":{"actions":[],"documents":[],"figure":{"more":"2 to review","value":"0 of 2 decided"}},"revisions_Level":{"ask":{"label":"Revise","label_Form":"Revise this document"},"isStartable_Requests":false,"isStoppable_Requests":false,"requests":[]},"revisions_Scope":{"actions":[],"figure":null,"title_Start":null,"title_Stop":null},"state":"YOUR_TURN","summary":""},"parts":[{"isBusy":false,"text":"0 of 2 decided"}],"task":null}
   LINES run 1
     "1" none none: "// Retries a flaky async call, backing off further each time, until it"{data-syntax=comment}
       ⟵ document 0:0 [0,70)
@@ -1875,7 +1899,7 @@ FRAME 31-34
 
 exports[`the scene proposals-prose draws as it was drawn by hand 1`] = `
 "label width 2
-header {"document":{"folder":"","name":"","proposals":{"actions":[],"documents":[],"figure":{"more":"4 to review","value":"0 of 4 decided"}},"revisions_Level":{"ask":{"label":"Revise","label_Form":"Revise this document"},"isStartable_Requests":false,"isStoppable_Requests":false,"requests":[]},"revisions_Scope":{"actions":[],"figure":null,"title_Start":null,"title_Stop":null},"summary":""},"parts":[{"isBusy":false,"text":"0 of 4 decided"}],"task":null}
+header {"document":{"folder":"","label_State":"Your turn","name":"","proposals":{"actions":[],"documents":[],"figure":{"more":"4 to review","value":"0 of 4 decided"}},"revisions_Level":{"ask":{"label":"Revise","label_Form":"Revise this document"},"isStartable_Requests":false,"isStoppable_Requests":false,"requests":[]},"revisions_Scope":{"actions":[],"figure":null,"title_Start":null,"title_Stop":null},"state":"YOUR_TURN","summary":""},"parts":[{"isBusy":false,"text":"0 of 4 decided"}],"task":null}
   LINES run 1
     "1" none none: "Moving the workshop"
       ⟵ document 0:0 [0,19)
@@ -1966,28 +1990,4 @@ FRAME 22-22
       ⟵ document 28:0 [0,73)
     "30" none none: "yard while we're there."
       ⟵ document 29:0 [0,23)"
-`;
-
-exports[`the changes document's kinds-stale draws as it was drawn by hand 1`] = `
-"label width 1
-header {"document":{"folder":"","name":"","proposals":{"actions":[],"documents":[],"figure":{"more":"1 to review","value":"0 of 1 decided"}},"revisions_Level":{"ask":{"label":"Revise","label_Form":"Revise this document"},"isStartable_Requests":false,"isStoppable_Requests":false,"requests":[]},"revisions_Scope":{"actions":[],"figure":null,"title_Start":null,"title_Stop":null},"summary":""},"parts":[{"isBusy":false,"text":"0 of 1 decided"}],"task":null}
-FRAME 1-2
-  CURRENT_LINES run 1
-    "1" changed none: "const"{data-syntax=keyword} " " "ATTEMPTS"{data-change=replaced data-side=before data-source=names data-state=OPEN} " = " "5"{data-syntax=number} ";"
-      ⟵ document 0:0 [0,19)
-    "2" changed none: "const"{data-syntax=keyword} " DELAY_MS = " "100"{data-syntax=number} ";" " "{data-change=removed data-side=before data-source=names data-state=OPEN} "// in milliseconds"{data-change=removed data-side=before data-source=names data-state=OPEN data-syntax=comment}
-      ⟵ document 1:0 [0,40)
-    ring {data-source=names data-state=OPEN}
-      STRETCH 0:6-0:14 {data-change=replaced data-place=1 data-side=before data-source=names}
-      STRETCH 1:22-1:40 {data-change=removed data-place=2 data-side=before data-source=names data-stale=}
-  PROPOSAL_LINES run 2
-    "~" changed none: "const"{data-syntax=keyword} " " "MAX_ATTEMPTS"{data-change=replaced data-side=after data-source=names data-state=OPEN} " = " "5"{data-syntax=number} ";"
-      ⟵ document 0:0 [0,6) | names#0 0:0 [6,18) | document 0:14 [18,23)
-    "" none none: "const"{data-syntax=keyword} " DELAY_MS = " "100"{data-syntax=number} ";"
-      ⟵ document 1:0 [0,21) | names#1 0:0 [21,21)
-    ring {data-source=names data-state=OPEN}
-      STRETCH 0:6-0:18 {data-change=replaced data-place=1 data-side=after data-source=names}
-      POINT 1:21 {data-change=removed data-place=2 data-side=after data-source=names}
-  PROPOSAL_LIST
-    {"actions":[{"command":"accept","label":"Accept","stateAfter":"ACCEPTED"},{"command":"reject","label":"Reject","stateAfter":"REJECTED"},{"command":"revise","label":"Revise","stateAfter":"REQUESTED"}],"attributes":{},"confirming":null,"isDrafting":false,"isRunning":false,"isStartable":false,"neighbors":{"range_Next":null,"range_Previous":null},"places":{"kind":"NONE"},"rationale":"MAX_ATTEMPTS says it's a cap, and DELAY_MS says its unit in its name.","requests":[],"source":"names","stale":{"isRerunnable":true,"label":"1 change written before your edits"},"state":"OPEN","status":"","title":"Say the cap, drop the unit comment"}"
 `;

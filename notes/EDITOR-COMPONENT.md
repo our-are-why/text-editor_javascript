@@ -2854,3 +2854,21 @@ arrow with the keyboard, scrolled out of view, gives it to the document,
 document on: the note pressed had kept it, and Space, scrolling, pressed
 it again, jumping back to where it goes from wherever the document had
 been scrolled to.
+
+Decided 2026-11-19: the document stands somewhere, as the task does,
+`_State_Document_`, worked out by the projection from its own proposals
+and requests, its proposals' too: its requests under way, `WORKING`;
+something here yours, a proposal to decide or a request to start,
+`YOUR_TURN`; every proposal decided, nothing queued, `DONE`; nothing
+proposed, `NONE`; working first, then yours. Shown by the task's own
+marks, after the file's name in the header, on its right as the document
+is, as big as the task's, in the header's font, centred on the name,
+about half as far from it as the task's mark is from the task's name,
+the header's own gap, so the two read as a pair, not a reflection,
+mirroring them tried first; in words in its card, after its path, as the
+task's are after its id, Working's dots waving. The state's on what says
+it, the marks and the cards' words, `data-state`, not the header's part
+holding the card: the JSX runtime draws an element anew when a data
+attribute changes, and the part drawn anew for a new state had closed
+its card under the pointer or the keyboard, a round ending while it was
+open; the task's moved there too, as it had the same flaw.

@@ -2854,7 +2854,7 @@ describe("beside it: what can't live in one document", () => {
         header: {
           task: { id: "T-40", name: "Rename the retries", state: "WORKING", label_State: "Working", summary: "Renames them.", reason: "", proposals: { figure: { value: "16 of 48 decided", more: "" }, documents, actions: [] }, revisions_Scope: { figure: null, title_Start: null, title_Stop: null, actions: [] }, revisions_Level: { requests: [], isStartable_Requests: false, isStoppable_Requests: false, ask: { label: "Revise", label_Form: "Revise the task" } } },
           parts: [],
-          document: { folder: "source/", name: "retry.ts", summary: "", proposals: { figure: null, documents: [], actions: [] }, revisions_Scope: { figure: null, title_Start: null, title_Stop: null, actions: [] }, revisions_Level: { requests: [], isStartable_Requests: false, isStoppable_Requests: false, ask: { label: "Revise", label_Form: "Revise this document" } } }
+          document: { folder: "source/", name: "retry.ts", state: "NONE", label_State: "", summary: "", proposals: { figure: null, documents: [], actions: [] }, revisions_Scope: { figure: null, title_Start: null, title_Stop: null, actions: [] }, revisions_Level: { requests: [], isStartable_Requests: false, isStoppable_Requests: false, ask: { label: "Revise", label_Form: "Revise this document" } } }
         }
       })
       const card = containerElement.querySelector(".card_Task_htmlView")
