@@ -556,9 +556,8 @@
 }
 
 /* the group's own actions, after its heading, folded behind a plum
-   ellipsis, unfolding, a faint rule setting them apart from it, not a
-   dot, which would read as more of the heading: Start, starting every
-   request in it, a proposal's all of that proposal's, the document's or the task's
+   ellipsis, unfolding, nothing between them and it, their ink and weight
+   setting them apart from it: Start, starting every request in it, a proposal's all of that proposal's, the document's or the task's
    its own; Stop, while any of them is in progress, putting it back in
    the queue; and Add, a chevron after it as Revise has, a new request
    the list's last, in its box. In the plum, the heading's size, not bold,
@@ -567,8 +566,6 @@
   display: inline-flex;
   align-items: baseline;
   gap: 0.75rem;
-  padding-left: 0.6rem;
-  border-left: 1px solid color-mix(in srgb, var(--ink_state_htmlView) 40%, transparent);
 }
 
 .htmlView_editor .actions_Request_htmlView:empty {
@@ -736,30 +733,8 @@
   color: var(--view-placeholder-ink, color-mix(in srgb, CanvasText 58%, transparent));
 }
 
-/* Edit, beside a queued request's Start and Remove, as quiet as Remove;
-   pressed, the request its own box, what it says in it, Save, plum, as
-   Add is, and Cancel, under it, on the right */
-.htmlView_editor .edit_Said_htmlView {
-  margin-left: 0.5em;
-  padding: 0;
-  border: none;
-  background: none;
-  color: var(--view-placeholder-ink, color-mix(in srgb, CanvasText 58%, transparent));
-  font: inherit;
-  font-size: 0.82em;
-  cursor: pointer;
-}
-
-.htmlView_editor .edit_Said_htmlView:hover {
-  color: inherit;
-  text-decoration: underline;
-}
-
-.htmlView_editor .edit_Said_htmlView:focus-visible {
-  outline: 2px solid var(--view-focus-ring, CanvasText);
-  outline-offset: 2px;
-}
-
+/* Edit, pressed: the request its own box, what it says in it, Save,
+   plum, as Add is, and Cancel, under it, on the right */
 .htmlView_editor .said_htmlView > .notes_Edit_htmlView {
   display: block;
   margin-top: 0.2rem;
@@ -791,9 +766,11 @@
   display: none;
 }
 
-/* Remove, for a queued request, done without, and Dismiss, for one
-   addressed, done with, as quiet as each other, shown as the rest are */
-.htmlView_editor :is(.remove_htmlView, .dismiss_Said_htmlView) {
+/* a request's own actions, all quiet, in the muted ink, the page's when
+   hovered, its status the one thing in it plum: Stop, Edit, Start, and
+   Remove, for a queued request, done without, and Dismiss, for one
+   addressed, done with */
+.htmlView_editor :is(.stop_Said_htmlView, .edit_Said_htmlView, .start_Said_htmlView, .dismiss_Said_htmlView, .remove_htmlView) {
   margin-left: 0.5em;
   padding: 0;
   border: none;
@@ -804,39 +781,22 @@
   cursor: pointer;
 }
 
-.htmlView_editor :is(.start_Said_htmlView, .stop_Said_htmlView, .progress_Said_htmlView) {
+.htmlView_editor .progress_Said_htmlView {
   margin-left: 0.5em;
-  padding: 0;
-  border: none;
-  background: none;
   color: var(--accent_revision_htmlView);
-  font: inherit;
   font-size: 0.82em;
-}
-
-.htmlView_editor :is(.start_Said_htmlView, .stop_Said_htmlView) {
-  cursor: pointer;
-}
-
-.htmlView_editor :is(.start_Said_htmlView, .stop_Said_htmlView):hover {
-  text-decoration: underline;
-}
-
-.htmlView_editor :is(.start_Said_htmlView, .stop_Said_htmlView):focus-visible {
-  outline: 2px solid var(--view-focus-ring, CanvasText);
-  outline-offset: 2px;
 }
 
 .htmlView_editor .progress_Said_htmlView {
   font-style: italic;
 }
 
-.htmlView_editor :is(.remove_htmlView, .dismiss_Said_htmlView):hover {
+.htmlView_editor :is(.stop_Said_htmlView, .edit_Said_htmlView, .start_Said_htmlView, .dismiss_Said_htmlView, .remove_htmlView):hover {
   color: inherit;
   text-decoration: underline;
 }
 
-.htmlView_editor :is(.remove_htmlView, .dismiss_Said_htmlView):focus-visible {
+.htmlView_editor :is(.stop_Said_htmlView, .edit_Said_htmlView, .start_Said_htmlView, .dismiss_Said_htmlView, .remove_htmlView):focus-visible {
   outline: 2px solid var(--view-focus-ring, CanvasText);
   outline-offset: 2px;
 }
@@ -1662,8 +1622,8 @@
 .htmlView_editor .list_Document_Card_htmlView {
   display: flex;
   flex-direction: column;
-  gap: 0.1rem;
-  max-height: calc(6.5lh + 0.6rem);
+  gap: 0.3rem;
+  max-height: calc(6.5lh + 6 * 0.3rem);
   margin: 0.1rem -0.4rem 0;
   padding: 0;
   overflow-y: auto;
@@ -1674,16 +1634,18 @@
 .htmlView_editor .document_Card_htmlView {
   display: flex;
   flex: none;
-  align-items: baseline;
+  align-items: center;
   gap: 0.5rem;
   min-width: 0;
-  padding: 0.05rem 0.4rem;
+  padding: 0 0.4rem;
   border-radius: 3px;
 }
 
 /* the document this editor has open, said by its row, not in words: a
    faint wash of the proposals' indigo behind it, out a little past its
-   words, its name bold, as a list marks what's selected */
+   words, its name bold, as a list marks what's selected; the band as
+   tall as the chip in it, exactly, a row's things centred, not set on
+   their baselines, and nothing padding it, so the chip's the tallest */
 .htmlView_editor .document_Card_htmlView[aria-current] {
   background: color-mix(in srgb, var(--accent_proposals_htmlView) 11%, transparent);
 }
@@ -1829,16 +1791,12 @@
 }
 
 /* the task's own total, the last of its documents' rows, its name "all
-   (*)", every document, in the files' font, muted; a hairline over it,
-   coming in quickly from the right, then fading out slowly to the left,
-   gone three quarters of the way across; its actions, Accept all for
-   every document, folded as a row's are */
+   (*)", every document, in the files' font, muted; its actions, Accept
+   all for every document, folded as a row's are; outside their list, so
+   it stays as they scroll, as far under the last as each is under the one
+   before, the section's own gap taken back */
 .htmlView_editor .total_Document_Card_htmlView {
-  margin: 0.15rem -0.4rem 0;
-  padding-top: 0.25rem;
-  border-top: 1px solid;
-  border-image: linear-gradient(to left, transparent, var(--view-menu-edge, color-mix(in srgb, CanvasText 16%, transparent)) 18%, transparent 75%) 1;
-  border-radius: 0;
+  margin: calc(0.3rem - 0.2rem) -0.4rem 0;
 }
 
 .htmlView_editor .total_Document_Card_htmlView .name_Document_Card_htmlView {
@@ -1862,9 +1820,9 @@
    and all, where the text's own underline would skip what isn't text;
    what asks for a change, Revise once the task's proposals are in front of
    you, Add a request till then, in the revision's plum, as a proposal's
-   Revise is; Start all, plum too, and bold, as Start is wherever it is,
-   with no ground of its own here, for everything queued in its scope, and
-   Stop all, plum, for everything in progress there, how many said when
+   Revise is; Start all, plum too, not bold, its scope's line saying
+   enough, no ground of its own here, for everything queued in its scope,
+   and Stop all, plum, for everything in progress there, how many said when
    either's hovered */
 .htmlView_editor .actions_Card_htmlView {
   display: flex;
@@ -1890,6 +1848,7 @@
 
 .htmlView_editor .actions_Card_htmlView > :is(.start_htmlView, .stop_htmlView, [data-ask]) {
   color: var(--accent_revision_htmlView);
+  font-weight: normal;
 }
 
 

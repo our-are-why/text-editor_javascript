@@ -2757,7 +2757,7 @@ describe("beside it: what can't live in one document", () => {
       return {
         figure: containerElement.querySelector(".card_Task_htmlView .total_Document_Card_htmlView .value_Document_Card_htmlView")?.textContent ?? null,
         rows: rows.length,
-        rowsSeen: list === null || first === undefined ? 0 : list.clientHeight / first.getBoundingClientRect().height,
+        rowsSeen: list === null || first === undefined || rows[1] === undefined ? 0 : list.clientHeight / (rows[1].getBoundingClientRect().top - first.getBoundingClientRect().top),
         isScrolling: list !== null && list.scrollHeight > list.clientHeight,
         height_Card: card?.getBoundingClientRect().height ?? 0,
         isFirstShown: first?.getAttribute("aria-current") === "true",

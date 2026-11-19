@@ -1894,9 +1894,22 @@ outside the documents' scroll, so it stays as they scroll. With one
 document, the figure alone, on its line, as before. The ellipsis's ink:
 a request's own neutral, its actions being quiet ones; a group's heading's
 the revision's plum; the revisions' plum; the proposals' indigo. The
-total's name is "all (*)"; its hairline comes in from the right over a
-short stretch, a fifth or so of the way, and fades out slowly to the
-left, gone three quarters of the way across. Folded actions unfold while
+total's name is "all (*)", no hairline over it, the rule tried, faded
+in from the right and out to the left, and let go; it reads as the last
+row by its name and its muted ink, as far under the last document as each
+is under the one before, it being outside their list so it stays as they
+scroll; the rows spaced as the total first was, 0.3rem apart, roomier
+than they'd been, the list's height, six and a half rows, counting it.
+The open document's band is exactly as tall as the chip in it: a row's
+things centred, not set on their baselines, nothing padding it, the
+chip the tallest of them. A request's own actions are all quiet, Stop,
+Edit, Start, Dismiss and Remove alike, in the muted ink, the page's when
+hovered, its status, "in progress", "addressed", the one thing on its
+line in plum; Start bold and plum is a group's, a card's, a form's. An unfolded set of actions
+opening into a pill of its ellipsis's ground was tried too, and let go:
+they unfold plain, as they were. A group's actions unfold with nothing
+between them and its heading, the rule gone, their ink and weight
+setting them apart. Folded actions unfold while
 what they're beside is pointed at, or the keyboard's focus is on one of
 them, `:has(:focus-visible)`, not the focus a click leaves on one, which
 had kept a group's "| Start Add" out after Add was used, till the focus
