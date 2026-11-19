@@ -3607,13 +3607,74 @@ function reveal__View_TextEditor({
   containerElement_View,
   target_Note
 }: _Api___reveal__View_TextEditor_): void {
-  containerElement_View
+  const element_Target = containerElement_View
     .querySelector(`.text_htmlView [data-source="${CSS.escape(target_Note.source)}"][data-side="${CSS.escape(target_Note.side)}"]`)
     ?.closest(".line_htmlView")
-    ?.scrollIntoView({
+  if (element_Target === null || element_Target === undefined) return
+  const behavior = matchMedia("(prefers-reduced-motion: reduce)").matches ? "instant" : "smooth"
+  const element_Scroller = scrollerOf__Element({
+    element: element_Target
+  })
+  const element_Pressed = [...containerElement_View.querySelectorAll(`.note_htmlView[data-target-source="${CSS.escape(target_Note.source)}"][data-target-side="${CSS.escape(target_Note.side)}"]`)].find((element_Note) => isShown__Element({
+    element: element_Note,
+    element_Scroller
+  }))
+  const element_Arrived = containerElement_View.querySelector(`.note_htmlView[data-target-source="${CSS.escape(target_Note.source)}"]:not([data-target-side="${CSS.escape(target_Note.side)}"])`)
+  const element_From = element_Arrived === null ? element_Pressed?.closest(".line_htmlView") : element_Pressed
+  if (element_From === null || element_From === undefined) {
+    element_Target.scrollIntoView({
       block: "center",
-      behavior: "smooth"
+      behavior
     })
+    return
+  }
+  element_Scroller.scrollBy({
+    top: (element_Arrived ?? element_Target).getBoundingClientRect().top - element_From.getBoundingClientRect().top,
+    behavior
+  })
+}
+
+interface _Api___scrollerOf__Element_ {
+  element: Element
+}
+
+function scrollerOf__Element({
+  element
+}: _Api___scrollerOf__Element_): Element {
+  const element_Parent = element.parentElement
+  if (element_Parent === null) return document.scrollingElement ?? document.documentElement
+  return /auto|scroll/.test(getComputedStyle(element_Parent).overflowY) && element_Parent.scrollHeight > element_Parent.clientHeight
+    ? element_Parent
+    : scrollerOf__Element({
+      element: element_Parent
+    })
+}
+
+interface _Api___isShown__Element_ {
+  element: Element
+  element_Scroller: Element
+}
+
+function isShown__Element({
+  element,
+  element_Scroller
+}: _Api___isShown__Element_): boolean {
+  const rect = element.getBoundingClientRect()
+  const rect_Scroller = element_Scroller === document.scrollingElement
+    ? new DOMRect(
+      0,
+      0,
+      innerWidth,
+      innerHeight
+    )
+    : element_Scroller.getBoundingClientRect()
+  return rect.top >= Math.max(
+    rect_Scroller.top,
+    0
+  ) && rect.bottom <= Math.min(
+    rect_Scroller.bottom,
+    innerHeight
+  )
 }
 
 interface _Api___focusEdited__View_TextEditor_ {
@@ -3718,49 +3779,6 @@ function visit__View_TextEditor({
       duration: 1400,
       easing: "ease-out"
     }
-  )
-}
-
-interface _Api___scrollerOf__Element_ {
-  element: Element
-}
-
-function scrollerOf__Element({
-  element
-}: _Api___scrollerOf__Element_): Element {
-  const element_Parent = element.parentElement
-  if (element_Parent === null) return document.scrollingElement ?? document.documentElement
-  return /auto|scroll/.test(getComputedStyle(element_Parent).overflowY) && element_Parent.scrollHeight > element_Parent.clientHeight
-    ? element_Parent
-    : scrollerOf__Element({
-      element: element_Parent
-    })
-}
-
-interface _Api___isShown__Element_ {
-  element: Element
-  element_Scroller: Element
-}
-
-function isShown__Element({
-  element,
-  element_Scroller
-}: _Api___isShown__Element_): boolean {
-  const rect = element.getBoundingClientRect()
-  const rect_Scroller = element_Scroller === document.scrollingElement
-    ? new DOMRect(
-      0,
-      0,
-      innerWidth,
-      innerHeight
-    )
-    : element_Scroller.getBoundingClientRect()
-  return rect.top >= Math.max(
-    rect_Scroller.top,
-    0
-  ) && rect.bottom <= Math.min(
-    rect_Scroller.bottom,
-    innerHeight
   )
 }
 

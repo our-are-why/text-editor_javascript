@@ -1297,3 +1297,79 @@ test("a fold opened where it is: nothing on any line, or under it, moving as its
   expect(moved).toEqual([])
   expect(opened_JavaScript.errors).toEqual([])
 })
+
+// then an item's arrow pressed, the pointer on it, as you would: the
+// document scrolled, in its own scroller, the page not, so the arrow the
+// same way on the item it goes to is under the pointer, even where that
+// place is near the document's end, the room past its last line, as
+// Monaco's, letting it scroll so far
+await opened_JavaScript.page.keyboard.press("Escape")
+await opened_JavaScript.page.mouse.move(700, 700)
+// the document's scroll come to rest: no change in a quarter of a second
+const stilled = () => opened_JavaScript.page.evaluate(async () => {
+  const scroller = document.querySelector(".document_htmlView")
+  let top = -1
+  while (scroller !== null && scroller.scrollTop !== top) {
+    top = scroller.scrollTop
+    await new Promise((resolve) => setTimeout(resolve, 250))
+  }
+})
+const landings: Array<number> = []
+let scroll_Furthest = 0
+const count_Arrows = Math.min(3, await opened_JavaScript.page.locator(".neighbor_htmlView[data-way=\"NEXT\"]:not(:disabled)").count())
+for (let index = 0; index < count_Arrows; index++) {
+  const arrow = opened_JavaScript.page.locator(".neighbor_htmlView[data-way=\"NEXT\"]:not(:disabled)").nth(index)
+  await arrow.scrollIntoViewIfNeeded()
+  await stilled()
+  const box = await arrow.boundingBox()
+  if (box === null) continue
+  const point = { x: box.x + box.width / 2, y: box.y + box.height / 2 }
+  await opened_JavaScript.page.mouse.move(point.x, point.y)
+  await opened_JavaScript.page.mouse.down()
+  await opened_JavaScript.page.mouse.up()
+  await stilled()
+  landings.push(await opened_JavaScript.page.evaluate(({ x, y }) => document.elementFromPoint(x, y)?.closest(".neighbor_htmlView")?.getAttribute("data-way") === "NEXT" ? 1 : 0, point))
+  scroll_Furthest = Math.max(scroll_Furthest, await opened_JavaScript.page.evaluate(() => document.querySelector(".document_htmlView")?.scrollTop ?? 0))
+}
+const room = await opened_JavaScript.page.evaluate(() => {
+  const scroller = document.querySelector(".document_htmlView")
+  if (scroller === null) return null
+  const height_Room = parseFloat(getComputedStyle(scroller, "::after").height)
+  return { isRoomed: height_Room > scroller.clientHeight / 2, scroll_Past: scroller.scrollHeight - scroller.clientHeight - height_Room, scrollY }
+})
+
+test("an item's arrow pressed, the pointer on it: the arrow the same way on the item it goes to under the pointer, even near the document's end, the room past its last line letting it scroll so far; the page not scrolling", () => {
+  expect(count_Arrows).toBeGreaterThan(1)
+  expect(landings).toEqual(Array.from({ length: count_Arrows }, () => 1))
+  expect(room?.isRoomed).toBe(true)
+  expect(scroll_Furthest).toBeGreaterThan(room?.scroll_Past ?? Infinity)
+  expect(room?.scrollY).toBe(0)
+  expect(opened_JavaScript.errors).toEqual([])
+})
+
+// then a move's note pressed, the pointer on it: the note at its other
+// end, pointing back, at the height the one pressed was, its line under
+// the pointer, as an item's arrows put theirs, the room past the last line
+// letting the first note's reach the end
+await opened_JavaScript.page.mouse.move(700, 700)
+const jumps: Array<string> = []
+for (const label of ["from lines 41–50", "from line 38"]) {
+  const note = opened_JavaScript.page.locator(`.note_htmlView[aria-label="${label}"]`).first()
+  if (await note.count() === 0) continue
+  await note.scrollIntoViewIfNeeded()
+  await stilled()
+  const box = await note.boundingBox()
+  if (box === null) continue
+  const [source, side] = await note.evaluate((element) => [element.getAttribute("data-target-source"), element.getAttribute("data-target-side")])
+  await opened_JavaScript.page.mouse.move(box.x + box.width / 2, box.y + box.height / 2)
+  await opened_JavaScript.page.mouse.down()
+  await opened_JavaScript.page.mouse.up()
+  await stilled()
+  const top_Arrived = await opened_JavaScript.page.evaluate(({ source, side }) => document.querySelector(`.note_htmlView[data-target-source="${source}"]:not([data-target-side="${side}"])`)?.getBoundingClientRect().top ?? null, { source, side })
+  jumps.push(`${label}: ${top_Arrived !== null && Math.abs(top_Arrived - box.y) < 1 ? "at its height" : `${top_Arrived} for ${box.y}`}`)
+}
+
+test("a move's note pressed, the pointer on it: the note at its other end at the height the one pressed was, its line under the pointer, even where that end's near the document's end", () => {
+  expect(jumps).toEqual(["from lines 41–50: at its height", "from line 38: at its height"])
+  expect(opened_JavaScript.errors).toEqual([])
+})

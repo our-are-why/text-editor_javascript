@@ -2095,7 +2095,12 @@ there, `sourceAt`: the innermost ring whose area it's in, or else what it's
 over, as a point's resolved by lowering, not by its source; what place of
 it, `placeAt`, the same ring's; and what note, `targetAt`; and `JUMP`, to a
 note's target, its handler keeping it in the state, which the editor, once
-it's drawn, has the view reveal, `reveal`, scrolling it to the middle, then
+it's drawn, has the view reveal, `reveal`, scrolling the note at its other
+end, pointing back, to the height the one pressed is, its line under the
+pointer, as an item's arrows put theirs, or, with no note there, its
+line to the pressed one's, or, the pressed one out of view, to the
+middle (decided 2026-11-19: the middle had put it anywhere but under the
+pointer; a note's at its line's end, so only its height's kept), then
 forgets, as scrolling is something done, not a state to draw. It doesn't
 point at what it reveals: pointing is the mouse's, and the scroll moves
 what's under it. Once it's drawn, though, before revealing, it points again
@@ -2812,3 +2817,14 @@ items, not a line of text round them, which had made a document's row
 taller than its chip folded, so it shrank opening; in a request's words,
 inline; on a card's line, a pixel's negative margin above and below, so
 actions a hair taller than the figure's chip don't grow the line.
+
+Decided 2026-11-19: room past the document's last line, as Monaco's, the
+"later, maybe" under `VISIT`: given a height, the editor scrolling its
+document itself, the document scrolls till its last line's at its top, a
+blank block after it as tall as its scroller less a line, so an item's
+arrow pressed puts the arrow the same way on the item it goes to under
+the pointer near the document's end too, which, the editor a panel, its
+scroller ending where the document does, it had stopped doing; given no
+height, the page scrolling, no room, there being no height to take it
+from. None above the first line, as in Monaco: near the top a jump lands
+as near the pointer as it can.

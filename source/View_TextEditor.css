@@ -1288,6 +1288,19 @@
   padding: var(--view-padding-block, 0.75rem) var(--view-padding-inline, 1rem);
 }
 
+/* room past the document's last line, as Monaco's: given a height, the
+   document scrolls till its last line's at its top, so a jump to a place
+   near its end, as an item's arrow makes, puts that place's arrow under the
+   pointer, as anywhere else; given none, the page scrolling, there's no
+   height to take it from, and none. None above its first line, as in
+   Monaco, so a jump to a place near the top lands as near the pointer as
+   it can */
+.htmlView_editor .document_htmlView::after {
+  content: "";
+  display: block;
+  height: calc(100% - 1lh);
+}
+
 .htmlView_editor .header_htmlView {
   position: sticky;
   top: 0;
