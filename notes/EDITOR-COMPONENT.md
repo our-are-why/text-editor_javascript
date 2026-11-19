@@ -2818,13 +2818,39 @@ taller than its chip folded, so it shrank opening; in a request's words,
 inline; on a card's line, a pixel's negative margin above and below, so
 actions a hair taller than the figure's chip don't grow the line.
 
-Decided 2026-11-19: room past the document's last line, as Monaco's, the
-"later, maybe" under `VISIT`: given a height, the editor scrolling its
-document itself, the document scrolls till its last line's at its top, a
-blank block after it as tall as its scroller less a line, so an item's
-arrow pressed puts the arrow the same way on the item it goes to under
-the pointer near the document's end too, which, the editor a panel, its
-scroller ending where the document does, it had stopped doing; given no
-height, the page scrolling, no room, there being no height to take it
-from. None above the first line, as in Monaco: near the top a jump lands
-as near the pointer as it can.
+Decided 2026-11-19: room above the document's first line and past its
+last, only as a jump needs it, the "later, maybe" under `VISIT`: given a
+height, the editor scrolling its document itself, an item's arrow or a
+move's note pressed near the document's top or end, the view makes as
+much room as puts what it goes to under the pointer, keeping what's shown
+where it is, then scrolls; after, the room's only as much as is shown,
+never scrolled into: what's scrolled away from it's taken back, what's
+shown kept where it is, so scrolling up at the top, or down at the end,
+moves nothing, and at rest, or scrolled clear of it, there's none. Tried
+first, and let go the same day: a room past the last line always, as
+Monaco's, which scrolling could reach. The view's own measure,
+`_Room_View_`, set on the document, `--roomAbove_htmlView` and
+`--roomBelow_htmlView`, its `::before` and `::after`, again after every
+draw, which takes the style off; kept where it is by measuring the first
+block before and after and scrolling by the difference, Chromium's own
+anchoring not applying at the top or where the room's shown; taken back
+on `scroll`, not while a smooth jump's under way, till it ends: at a
+`scrollend` where it was headed, `top_Jumped`, or, short of it, still
+for 150ms after, as one the user stopped is; on a display of more than one
+device pixel to a CSS pixel Chromium sends a `scrollend` for the instant
+first step of a jump up, the one keeping what's shown still as room's
+made above, a moment into the jump, which, taken for its end, had the room
+taken back and the jump stopped, every jump up after a jump down going
+nowhere; and, scroll positions rounded to those pixels, less than half a
+pixel from the top or the end taken as at it;
+the arrows' and the notes' scrolls handed to the class, `_Jump_View_`,
+not made by them. Given no height, the page scrolling, none.
+
+Decided 2026-11-19: the keyboard after a jump. A move's note's jump puts
+it on the note at the other end, under the pointer, as an item's arrows
+put it on theirs, so Enter or Space jumps back from there. A note or an
+arrow with the keyboard, scrolled out of view, gives it to the document,
+`tabindex="-1"`, no ring, so Space, Page Down and the arrows scroll the
+document on: the note pressed had kept it, and Space, scrolling, pressed
+it again, jumping back to where it goes from wherever the document had
+been scrolled to.

@@ -89,6 +89,9 @@ class _View_TextEditor_ {
   ink$_Glyph: Map<string, _Ink_Glyph_>
   resizeObserver_containerElement: ResizeObserver
   mutationObserver_containerElement: MutationObserver
+  room: _Room_View_
+  isJumping: boolean
+  top_Jumped: number
 
   constructor({
     containerElement,
@@ -114,6 +117,30 @@ class _View_TextEditor_ {
         containerElement_View: this.containerElement
       })
     )
+    this.room = {
+      above: 0,
+      below: 0
+    }
+    this.isJumping = false
+    this.top_Jumped = 0
+    this.containerElement.addEventListener(
+      "scroll",
+      () => this.scrolled(),
+      {
+        capture: true,
+        passive: true
+      }
+    )
+    this.containerElement.addEventListener(
+      "scrollend",
+      (event) => {
+        if (!(event.target instanceof Element) || !event.target.matches(".document_htmlView")) return
+        this.settled(event.target)
+      },
+      {
+        capture: true
+      }
+    )
   }
 
   draw(
@@ -126,6 +153,10 @@ class _View_TextEditor_ {
       containerElement_View: this.containerElement,
       componentMap_View: this.componentMap,
       viewModel_TextEditor
+    })
+    drawRoom__View_TextEditor({
+      containerElement_View: this.containerElement,
+      room_View: this.room
     })
     heldTillWritten__Form({
       containerElement_View: this.containerElement
@@ -218,10 +249,11 @@ class _View_TextEditor_ {
   reveal(
     target_Note: _Target_Note_
   ): void {
-    reveal__View_TextEditor({
+    const jump_View = reveal__View_TextEditor({
       containerElement_View: this.containerElement,
       target_Note
     })
+    if (jump_View !== null) this.jumped(jump_View)
   }
 
   focusEdited(
@@ -260,9 +292,53 @@ class _View_TextEditor_ {
   visit(
     visit_Item: _Visit_Item_
   ): void {
-    visit__View_TextEditor({
+    const jump_View = visit__View_TextEditor({
       containerElement_View: this.containerElement,
       visit_Item
+    })
+    if (jump_View !== null) this.jumped(jump_View)
+  }
+
+  jumped(
+    jump_View: _Jump_View_
+  ): void {
+    this.isJumping = jump_View.behavior === "smooth" && Math.abs(jump_View.top) >= 1
+    const jumped_View = jump__View_TextEditor({
+      containerElement_View: this.containerElement,
+      room_View: this.room,
+      jump_View
+    })
+    this.room = jumped_View.room_View
+    this.top_Jumped = jumped_View.top_Target
+  }
+
+  settled(
+    element_Document: Element
+  ): void {
+    const top = element_Document.scrollTop
+    if (this.isJumping && Math.abs(top - this.top_Jumped) >= 1) {
+      setTimeout(
+        () => {
+          if (!this.isJumping || element_Document.scrollTop !== top) return
+          this.isJumping = false
+          this.scrolled()
+        },
+        150
+      )
+      return
+    }
+    this.isJumping = false
+    this.scrolled()
+  }
+
+  scrolled(): void {
+    if (this.isJumping) return
+    released__Focus_Jump({
+      containerElement_View: this.containerElement
+    })
+    this.room = roomScrolled__View_TextEditor({
+      containerElement_View: this.containerElement,
+      room_View: this.room
     })
   }
 }
@@ -270,6 +346,11 @@ class _View_TextEditor_ {
 interface _Api__View_TextEditor_ {
   containerElement: HTMLElement
   componentMap: _ComponentMap__View_TextEditor_
+}
+
+interface _Room_View_ {
+  above: number
+  below: number
 }
 
 interface _Api___heldTillWritten__Form_ {
@@ -352,7 +433,10 @@ function TextEditor_Html({
         header_ViewModel={viewModel_TextEditor.header}
         form_Request={viewModel_TextEditor.request?.place.kind === "POINT" ? null : viewModel_TextEditor.request}
       />
-      <div class="document_htmlView">
+      <div
+        class="document_htmlView"
+        tabindex="-1"
+      >
         {viewModel_TextEditor.blocks.map((block_ViewModel) => (
           <Block_TextEditor__Html
             componentMap_View={componentMap_View}
@@ -3606,11 +3690,11 @@ interface _Api___reveal__View_TextEditor_ {
 function reveal__View_TextEditor({
   containerElement_View,
   target_Note
-}: _Api___reveal__View_TextEditor_): void {
+}: _Api___reveal__View_TextEditor_): _Jump_View_ | null {
   const element_Target = containerElement_View
     .querySelector(`.text_htmlView [data-source="${CSS.escape(target_Note.source)}"][data-side="${CSS.escape(target_Note.side)}"]`)
     ?.closest(".line_htmlView")
-  if (element_Target === null || element_Target === undefined) return
+  if (element_Target === null || element_Target === undefined) return null
   const behavior = matchMedia("(prefers-reduced-motion: reduce)").matches ? "instant" : "smooth"
   const element_Scroller = scrollerOf__Element({
     element: element_Target
@@ -3621,17 +3705,29 @@ function reveal__View_TextEditor({
   }))
   const element_Arrived = containerElement_View.querySelector(`.note_htmlView[data-target-source="${CSS.escape(target_Note.source)}"]:not([data-target-side="${CSS.escape(target_Note.side)}"])`)
   const element_From = element_Arrived === null ? element_Pressed?.closest(".line_htmlView") : element_Pressed
+  if (element_Arrived instanceof HTMLElement) {
+    element_Arrived.focus({
+      preventScroll: true
+    })
+  }
   if (element_From === null || element_From === undefined) {
     element_Target.scrollIntoView({
       block: "center",
       behavior
     })
-    return
+    return null
   }
-  element_Scroller.scrollBy({
+  return {
+    element_Scroller,
     top: (element_Arrived ?? element_Target).getBoundingClientRect().top - element_From.getBoundingClientRect().top,
     behavior
-  })
+  }
+}
+
+interface _Jump_View_ {
+  element_Scroller: Element
+  top: number
+  behavior: ScrollBehavior
 }
 
 interface _Api___scrollerOf__Element_ {
@@ -3733,11 +3829,11 @@ interface _Visit_Item_ {
 function visit__View_TextEditor({
   containerElement_View,
   visit_Item
-}: _Api___visit__View_TextEditor_): void {
+}: _Api___visit__View_TextEditor_): _Jump_View_ | null {
   const element_Item = containerElement_View.querySelector<HTMLElement>(selectorOf__Id_Item({
     id_Item: visit_Item.id_Item
   }))
-  if (element_Item === null) return
+  if (element_Item === null) return null
   const isStill = matchMedia("(prefers-reduced-motion: reduce)").matches
   const behavior = isStill ? "instant" : "smooth"
   const element_Pressed = containerElement_View.querySelector(`${selectorOf__Id_Item({
@@ -3747,15 +3843,17 @@ function visit__View_TextEditor({
   const element_Scroller = scrollerOf__Element({
     element: element_Item
   })
-  if (element_Pressed !== null && element_Arrived !== null && isShown__Element({
+  const jump_View: _Jump_View_ | null = element_Pressed !== null && element_Arrived !== null && isShown__Element({
     element: element_Pressed,
     element_Scroller
-  })) {
-    element_Scroller.scrollBy({
+  })
+    ? {
+      element_Scroller,
       top: element_Arrived.getBoundingClientRect().top - element_Pressed.getBoundingClientRect().top,
       behavior
-    })
-  } else {
+    }
+    : null
+  if (jump_View === null) {
     element_Item.scrollIntoView({
       block: "center",
       behavior
@@ -3765,21 +3863,141 @@ function visit__View_TextEditor({
   element_Neighbor?.focus({
     preventScroll: true
   })
-  if (isStill) return
-  element_Item.animate(
-    [
+  if (!isStill) {
+    element_Item.animate(
+      [
+        {
+          boxShadow: "inset 0 0 0 100vmax color-mix(in srgb, CanvasText 12%, transparent)"
+        },
+        {
+          boxShadow: "inset 0 0 0 100vmax transparent"
+        }
+      ],
       {
-        boxShadow: "inset 0 0 0 100vmax color-mix(in srgb, CanvasText 12%, transparent)"
-      },
-      {
-        boxShadow: "inset 0 0 0 100vmax transparent"
+        duration: 1400,
+        easing: "ease-out"
       }
-    ],
-    {
-      duration: 1400,
-      easing: "ease-out"
-    }
-  )
+    )
+  }
+  return jump_View
+}
+
+interface _Api___jump__View_TextEditor_ {
+  containerElement_View: HTMLElement
+  room_View: _Room_View_
+  jump_View: _Jump_View_
+}
+
+function jump__View_TextEditor({
+  containerElement_View,
+  room_View,
+  jump_View
+}: _Api___jump__View_TextEditor_): _Jumped_View_ {
+  const element_Document = containerElement_View.querySelector(".document_htmlView")
+  const top_Wanted = jump_View.element_Scroller.scrollTop + jump_View.top
+  const top_Most = jump_View.element_Scroller.scrollHeight - jump_View.element_Scroller.clientHeight
+  const room_Jump = jump_View.element_Scroller === element_Document && element_Document instanceof HTMLElement
+    ? keptRoom__Document({
+      element_Document,
+      room_View: {
+        above: room_View.above + Math.max(
+          0,
+          -top_Wanted
+        ),
+        below: room_View.below + Math.max(
+          0,
+          top_Wanted - top_Most
+        )
+      }
+    })
+    : room_View
+  const top_Target = jump_View.element_Scroller.scrollTop + jump_View.top
+  jump_View.element_Scroller.scrollBy({
+    top: jump_View.top,
+    behavior: jump_View.behavior
+  })
+  return {
+    room_View: room_Jump,
+    top_Target
+  }
+}
+
+interface _Jumped_View_ {
+  room_View: _Room_View_
+  top_Target: number
+}
+
+interface _Api___keptRoom__Document_ {
+  element_Document: HTMLElement
+  room_View: _Room_View_
+}
+
+function keptRoom__Document({
+  element_Document,
+  room_View
+}: _Api___keptRoom__Document_): _Room_View_ {
+  const element_First = element_Document.firstElementChild
+  const top_Before = element_First?.getBoundingClientRect().top ?? 0
+  roomed__Document({
+    element_Document,
+    room_View
+  })
+  const top_Moved = (element_First?.getBoundingClientRect().top ?? 0) - top_Before
+  if (Math.abs(top_Moved) > 0.01) element_Document.scrollTop += top_Moved
+  return room_View
+}
+
+interface _Api___released__Focus_Jump_ {
+  containerElement_View: HTMLElement
+}
+
+function released__Focus_Jump({
+  containerElement_View
+}: _Api___released__Focus_Jump_): void {
+  const element_Focused = document.activeElement
+  const element_Document = containerElement_View.querySelector(".document_htmlView")
+  if (!(element_Focused instanceof HTMLElement) || !(element_Document instanceof HTMLElement) || !element_Focused.matches(".note_htmlView, .neighbor_htmlView") || !element_Document.contains(element_Focused) || isShown__Element({
+    element: element_Focused,
+    element_Scroller: element_Document
+  })) return
+  element_Document.focus({
+    preventScroll: true
+  })
+}
+
+interface _Api___roomScrolled__View_TextEditor_ {
+  containerElement_View: HTMLElement
+  room_View: _Room_View_
+}
+
+function roomScrolled__View_TextEditor({
+  containerElement_View,
+  room_View
+}: _Api___roomScrolled__View_TextEditor_): _Room_View_ {
+  const element_Document = containerElement_View.querySelector(".document_htmlView")
+  if (!(element_Document instanceof HTMLElement) || room_View.above + room_View.below === 0) return room_View
+  const top = element_Document.scrollTop
+  const fromEnd = element_Document.scrollHeight - element_Document.clientHeight - top
+  const room_Scrolled = {
+    above: top < 0.5
+      ? room_View.above
+      : Math.max(
+        0,
+        room_View.above - top
+      ),
+    below: fromEnd < 0.5
+      ? room_View.below
+      : Math.max(
+        0,
+        room_View.below - fromEnd
+      )
+  }
+  return room_Scrolled.above === room_View.above && room_Scrolled.below === room_View.below
+    ? room_View
+    : keptRoom__Document({
+      element_Document,
+      room_View: room_Scrolled
+    })
 }
 
 type _SelectorMap_Part_ = {
@@ -4288,6 +4506,42 @@ const SELECTORMAP__FOCUS_ASKING: _SelectorMap__Focus_Asking_ = {
   ASK_TASK: ".card_Task_htmlView [data-ask='TASK']",
   ASK_DOCUMENT: ".card_Document_htmlView [data-ask='DOCUMENT']",
   EDIT: ".said_htmlView > .notes_Edit_htmlView"
+}
+
+interface _Api___drawRoom__View_TextEditor_ {
+  containerElement_View: HTMLElement
+  room_View: _Room_View_
+}
+
+function drawRoom__View_TextEditor({
+  containerElement_View,
+  room_View
+}: _Api___drawRoom__View_TextEditor_): void {
+  const element_Document = containerElement_View.querySelector(".document_htmlView")
+  if (!(element_Document instanceof HTMLElement) || room_View.above + room_View.below === 0) return
+  roomed__Document({
+    element_Document,
+    room_View
+  })
+}
+
+interface _Api___roomed__Document_ {
+  element_Document: HTMLElement
+  room_View: _Room_View_
+}
+
+function roomed__Document({
+  element_Document,
+  room_View
+}: _Api___roomed__Document_): void {
+  element_Document.style.setProperty(
+    "--roomAbove_htmlView",
+    `${room_View.above}px`
+  )
+  element_Document.style.setProperty(
+    "--roomBelow_htmlView",
+    `${room_View.below}px`
+  )
 }
 
 interface _Api___keptOpen__Card_ {

@@ -1288,17 +1288,33 @@
   padding: var(--view-padding-block, 0.75rem) var(--view-padding-inline, 1rem);
 }
 
-/* room past the document's last line, as Monaco's: given a height, the
-   document scrolls till its last line's at its top, so a jump to a place
-   near its end, as an item's arrow makes, puts that place's arrow under the
-   pointer, as anywhere else; given none, the page scrolling, there's no
-   height to take it from, and none. None above its first line, as in
-   Monaco, so a jump to a place near the top lands as near the pointer as
-   it can */
+/* room above the document's first line and past its last, only as a jump
+   needs it: an item's arrow, or a move's note, pressed near the document's
+   top or end, the view making as much as puts what it goes to under the
+   pointer, keeping what's shown where it is; then only as much as is
+   shown, never scrolled into, the view taking back what's scrolled away
+   from, keeping what's shown where it is again, so scrolling never reaches
+   it, a jump alone; the view's own measure, set on the document; given no
+   height, the page scrolling, none */
+/* the document given the keyboard when a note or an arrow it had is
+   scrolled out of view, so Space, Page Down and the arrows scroll it, not
+   press what can't be seen, jumping back; no ring of its own */
+.htmlView_editor .document_htmlView:focus {
+  outline: none;
+}
+
+.htmlView_editor .document_htmlView::before,
 .htmlView_editor .document_htmlView::after {
   content: "";
   display: block;
-  height: calc(100% - 1lh);
+}
+
+.htmlView_editor .document_htmlView::before {
+  height: var(--roomAbove_htmlView, 0px);
+}
+
+.htmlView_editor .document_htmlView::after {
+  height: var(--roomBelow_htmlView, 0px);
 }
 
 .htmlView_editor .header_htmlView {

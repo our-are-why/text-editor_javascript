@@ -31,15 +31,21 @@ interface _Opened_Example_ {
 // sent through the page's keyboard and mouse is the browser's own input,
 // trusted and with its default actions, which events a test dispatches
 // itself don't have. In a laptop's window, the size an example's laid out
-// for, an app the window's height, its editor beside what it's about.
-async function openExample(name: string): Promise<_Opened_Example_> {
+// for, an app the window's height, its editor beside what it's about; at
+// the display's density given, as many device pixels to a CSS pixel, 1 or,
+// as a laptop's, 2, scroll positions rounded to them.
+async function openExample(
+  name: string,
+  scale_Device: number
+): Promise<_Opened_Example_> {
   const server = servePlayground(0, "testing")
   const browser = await chromium.launch({ executablePath })
   const page = await browser.newPage({
     viewport: {
       width: 1440,
       height: 900
-    }
+    },
+    deviceScaleFactor: scale_Device
   })
   const errors: Array<string> = []
   await page.exposeFunction("reportError_Page", (message: string) => errors.push(message))

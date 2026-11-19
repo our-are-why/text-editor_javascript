@@ -5,7 +5,10 @@ import { openExample } from "./harness.ts"
 // Markdown first, then, its button pressed, as text, then as Markdown again;
 // each time, the rings on what its default's made bold, as proposed, and
 // the buttons' state, once the editor's drawn again
-const opened = await openExample("markdown")
+const opened = await openExample(
+  "markdown",
+  1
+)
 afterAll(() => opened.close())
 
 const drawnAfter = async (label: string | null) => {
@@ -363,7 +366,10 @@ test("words already there, among what's proposed, are edited as typed: every cha
 // attempts || signal?.aborted) break", the moved words ending at
 // "attempts", the words a proposal puts in, " || signal?.aborted", right
 // after them: an "s" typed at their meeting, and the rings drawn there
-const opened_JavaScript = await openExample("javascript")
+const opened_JavaScript = await openExample(
+  "javascript",
+  1
+)
 afterAll(() => opened_JavaScript.close())
 const ringsAt = (needle: string) => opened_JavaScript.page.evaluate(async (needle) => {
   await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)))
@@ -1301,8 +1307,8 @@ test("a fold opened where it is: nothing on any line, or under it, moving as its
 // then an item's arrow pressed, the pointer on it, as you would: the
 // document scrolled, in its own scroller, the page not, so the arrow the
 // same way on the item it goes to is under the pointer, even where that
-// place is near the document's end, the room past its last line, as
-// Monaco's, letting it scroll so far
+// place is near the document's end, room made past its last line letting
+// it scroll so far
 await opened_JavaScript.page.keyboard.press("Escape")
 await opened_JavaScript.page.mouse.move(700, 700)
 // the document's scroll come to rest: no change in a quarter of a second
@@ -1334,14 +1340,12 @@ for (let index = 0; index < count_Arrows; index++) {
 const room = await opened_JavaScript.page.evaluate(() => {
   const scroller = document.querySelector(".document_htmlView")
   if (scroller === null) return null
-  const height_Room = parseFloat(getComputedStyle(scroller, "::after").height)
-  return { isRoomed: height_Room > scroller.clientHeight / 2, scroll_Past: scroller.scrollHeight - scroller.clientHeight - height_Room, scrollY }
+  return { scroll_Past: scroller.scrollHeight - scroller.clientHeight - parseFloat(getComputedStyle(scroller, "::before").height) - parseFloat(getComputedStyle(scroller, "::after").height), scrollY }
 })
 
-test("an item's arrow pressed, the pointer on it: the arrow the same way on the item it goes to under the pointer, even near the document's end, the room past its last line letting it scroll so far; the page not scrolling", () => {
+test("an item's arrow pressed, the pointer on it: the arrow the same way on the item it goes to under the pointer, even near the document's end, room made past its last line letting it scroll so far; the page not scrolling", () => {
   expect(count_Arrows).toBeGreaterThan(1)
   expect(landings).toEqual(Array.from({ length: count_Arrows }, () => 1))
-  expect(room?.isRoomed).toBe(true)
   expect(scroll_Furthest).toBeGreaterThan(room?.scroll_Past ?? Infinity)
   expect(room?.scrollY).toBe(0)
   expect(opened_JavaScript.errors).toEqual([])
@@ -1372,4 +1376,146 @@ for (const label of ["from lines 41–50", "from line 38"]) {
 test("a move's note pressed, the pointer on it: the note at its other end at the height the one pressed was, its line under the pointer, even where that end's near the document's end", () => {
   expect(jumps).toEqual(["from lines 41–50: at its height", "from line 38: at its height"])
   expect(opened_JavaScript.errors).toEqual([])
+})
+
+// then the room a jump makes, above the first line or past the last, only
+// as much as is shown, never scrolled into: wheeled to the top and to the
+// end, none; a move's note pressed near the document's end, its other end
+// near the top, room made above the first line, its note under the
+// pointer; wheeled down, the room shrinking as the document moves, the top
+// still the top; wheeled up, nothing moving; the other note pressed, room
+// made past the last line; wheeled up, it shrinking; wheeled down, nothing
+// moving
+const roomOf = () => opened_JavaScript.page.evaluate(() => {
+  const scroller = document.querySelector(".document_htmlView")
+  const note = document.querySelector(".note_htmlView[data-target-source=\"sleep\"][data-target-side=\"before\"]")
+  if (scroller === null || note === null) return null
+  return {
+    scrollTop: scroller.scrollTop,
+    fromEnd: scroller.scrollHeight - scroller.clientHeight - scroller.scrollTop,
+    above: parseFloat(getComputedStyle(scroller, "::before").height),
+    below: parseFloat(getComputedStyle(scroller, "::after").height),
+    note: note.getBoundingClientRect().top
+  }
+})
+const pressedOf_Note = async (selector: string) => {
+  const note = opened_JavaScript.page.locator(selector).first()
+  await note.scrollIntoViewIfNeeded()
+  await stilled()
+  const box = await note.boundingBox()
+  if (box === null) return null
+  await opened_JavaScript.page.mouse.move(box.x + box.width / 2, box.y + box.height / 2)
+  await opened_JavaScript.page.mouse.down()
+  await opened_JavaScript.page.mouse.up()
+  await stilled()
+  return box.y
+}
+const wheeled = async (delta: number) => {
+  await opened_JavaScript.page.mouse.wheel(0, delta)
+  await stilled()
+  return await roomOf()
+}
+await opened_JavaScript.page.mouse.move(700, 500)
+for (let index = 0; index < 6; index++) await opened_JavaScript.page.mouse.wheel(0, -3000)
+await stilled()
+for (let index = 0; index < 6; index++) await opened_JavaScript.page.mouse.wheel(0, 3000)
+await stilled()
+const room_Rest = await roomOf()
+const top_Pressed_Up = await pressedOf_Note(".note_htmlView[data-target-source=\"sleep\"][data-target-side=\"after\"]")
+const room_Up = await roomOf()
+const room_Up_Down = await wheeled(120)
+const room_Up_Up = await wheeled(-400)
+const top_Pressed_Down = await pressedOf_Note(".note_htmlView[data-target-source=\"sleep\"][data-target-side=\"before\"]")
+const room_Down = await roomOf()
+const room_Down_Up = await wheeled(-100)
+const room_Down_Down = await wheeled(400)
+
+test("the room a jump makes, above the first line or past the last, is only as much as is shown, never scrolled into: none at rest; made for a jump up, its note under the pointer, shrinking as the document's scrolled down, nothing moving scrolled up; made for a jump down, shrinking scrolled up, nothing moving scrolled down", () => {
+  expect(room_Rest).toMatchObject({ above: 0, below: 0 })
+  expect(Math.abs(room_Rest?.fromEnd ?? -1)).toBeLessThan(1)
+  expect(room_Up?.above).toBeGreaterThan(0)
+  expect(room_Up?.scrollTop).toBe(0)
+  expect(Math.abs((room_Up?.note ?? 0) - (top_Pressed_Up ?? -100))).toBeLessThan(1)
+  expect(room_Up_Down?.above).toBeLessThan(room_Up?.above ?? 0)
+  expect(room_Up_Down?.scrollTop).toBe(0)
+  expect(Math.abs((room_Up?.note ?? 0) - (room_Up_Down?.note ?? 0) - ((room_Up?.above ?? 0) - (room_Up_Down?.above ?? 0)))).toBeLessThan(1)
+  expect(room_Up_Up).toEqual(room_Up_Down)
+  expect(top_Pressed_Down).not.toBeNull()
+  expect(room_Down?.below).toBeGreaterThan(0)
+  expect(Math.abs(room_Down?.fromEnd ?? -1)).toBeLessThan(1)
+  expect(room_Down_Up?.below).toBeLessThan(room_Down?.below ?? 0)
+  expect(Math.abs(room_Down_Up?.fromEnd ?? -1)).toBeLessThan(1)
+  expect(room_Down_Down).toEqual(room_Down_Up)
+  expect(opened_JavaScript.errors).toEqual([])
+})
+
+// then the same jumps on a display of twice the density, as a laptop's,
+// scroll positions rounded to its pixels, where the browser ends the
+// instant first step of a jump up, keeping what's shown still as room's
+// made above, on its own, a moment into the jump: a move's note pressed up,
+// then its other end's down, then up again, each landing its other end at
+// the height the one pressed was, none stopped by that first step's end
+const opened_Dense = await openExample(
+  "javascript",
+  2
+)
+afterAll(() => opened_Dense.close())
+await opened_Dense.page.waitForSelector(".note_htmlView")
+const stilled_Dense = () => opened_Dense.page.evaluate(async () => {
+  const scroller = document.querySelector(".document_htmlView")
+  let top = -1
+  while (scroller !== null && scroller.scrollTop !== top) {
+    top = scroller.scrollTop
+    await new Promise((resolve) => setTimeout(resolve, 250))
+  }
+})
+const note_Moved = ".note_htmlView[data-target-source=\"sleep\"][data-target-side=\"after\"]"
+const note_From = ".note_htmlView[data-target-source=\"sleep\"][data-target-side=\"before\"]"
+const landedOf_Dense = async (pressed: string, counterpart: string) => {
+  const box = await opened_Dense.page.locator(pressed).first().boundingBox()
+  if (box === null) return "not drawn"
+  await opened_Dense.page.mouse.move(box.x + box.width / 2, box.y + box.height / 2)
+  await opened_Dense.page.mouse.down()
+  await opened_Dense.page.mouse.up()
+  await stilled_Dense()
+  const top = await opened_Dense.page.evaluate((counterpart) => document.querySelector(counterpart)?.getBoundingClientRect().top ?? null, counterpart)
+  return top !== null && Math.abs(top - box.y) < 1 ? "at its height" : `at ${top} for ${box.y}`
+}
+await opened_Dense.page.locator(note_Moved).scrollIntoViewIfNeeded()
+await stilled_Dense()
+const jumps_Dense = [
+  await landedOf_Dense(note_Moved, note_From),
+  await landedOf_Dense(note_From, note_Moved),
+  await landedOf_Dense(note_Moved, note_From)
+]
+
+test("on a display of twice the density, a move's note pressed up, then down, then up again: each landing its other end at the height the one pressed was", () => {
+  expect(jumps_Dense).toEqual(["at its height", "at its height", "at its height"])
+  expect(opened_Dense.errors).toEqual([])
+})
+
+// then the keyboard after a move's note's jump: on the note at its other
+// end, under the pointer, as an item's arrows leave it on theirs, so Enter
+// or Space jumps back from there; the document scrolled till that note's
+// out of view, the keyboard on the document, so Space scrolls it on, not
+// pressing a note that can't be seen, which had jumped back to where it
+// goes from wherever the document had been scrolled to
+await opened_Dense.page.locator(note_Moved).scrollIntoViewIfNeeded()
+await stilled_Dense()
+const pressed_Keyed = await landedOf_Dense(note_Moved, note_From)
+const focused_Keyed = await opened_Dense.page.evaluate(() => document.activeElement?.matches(".note_htmlView[data-target-source=\"sleep\"][data-target-side=\"before\"]") === true)
+await opened_Dense.page.mouse.move(700, 450)
+await opened_Dense.page.mouse.wheel(0, 600)
+await stilled_Dense()
+const scrolled_Keyed = await opened_Dense.page.evaluate(() => ({ focus: document.activeElement?.className ?? null, top: document.querySelector(".document_htmlView")?.scrollTop ?? 0 }))
+await opened_Dense.page.keyboard.press("Space")
+await stilled_Dense()
+const spaced_Keyed = await opened_Dense.page.evaluate(() => document.querySelector(".document_htmlView")?.scrollTop ?? 0)
+
+test("the keyboard after a move's note's jump: on the note at its other end; that note scrolled out of view, on the document, so Space scrolls it on, not jumping back", () => {
+  expect(pressed_Keyed).toBe("at its height")
+  expect(focused_Keyed).toBe(true)
+  expect(scrolled_Keyed.focus).toBe("document_htmlView")
+  expect(spaced_Keyed).toBeGreaterThan(scrolled_Keyed.top)
+  expect(opened_Dense.errors).toEqual([])
 })
