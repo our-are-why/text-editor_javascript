@@ -560,8 +560,8 @@
    setting them apart from it: Start, starting every request in it, a proposal's all of that proposal's, the document's or the task's
    its own; Stop, while any of them is in progress, putting it back in
    the queue; and Add, a chevron after it as Revise has, a new request
-   the list's last, in its box. In the plum, the heading's size, not bold,
-   as the heading is; links, no ground of their own */
+   the list's last, in its box. In the plum, the heading's size, Start
+   bold, as every Start is, the rest not; links, no ground of their own */
 .htmlView_editor .actions_Request_htmlView {
   display: inline-flex;
   align-items: baseline;
@@ -799,6 +799,14 @@
 .htmlView_editor :is(.stop_Said_htmlView, .edit_Said_htmlView, .start_Said_htmlView, .dismiss_Said_htmlView, .remove_htmlView):focus-visible {
   outline: 2px solid var(--view-focus-ring, CanvasText);
   outline-offset: 2px;
+}
+
+/* every Start bold, wherever it is, a group's, a request's own, as a
+   card's Start all and a form's are: what all of this waits on, nothing
+   revised till it's pressed; after the rules giving their buttons the
+   font they're in, and more particular than they are */
+.htmlView_editor :is(.actions_Request_htmlView > .start_Request_htmlView, .said_htmlView .start_Said_htmlView) {
+  font-weight: 600;
 }
 
 /* the words a queued or revising request is on, as proposed: underlined,
@@ -1820,10 +1828,10 @@
    and all, where the text's own underline would skip what isn't text;
    what asks for a change, Revise once the task's proposals are in front of
    you, Add a request till then, in the revision's plum, as a proposal's
-   Revise is; Start all, plum too, not bold, its scope's line saying
-   enough, no ground of its own here, for everything queued in its scope,
-   and Stop all, plum, for everything in progress there, how many said when
-   either's hovered */
+   Revise is; Start all, plum too, and bold, as every Start is, no ground
+   of its own here, for everything queued in its scope, and Stop all,
+   plum, for everything in progress there, how many said when either's
+   hovered */
 .htmlView_editor .actions_Card_htmlView {
   display: flex;
   flex-wrap: wrap;
@@ -1848,7 +1856,6 @@
 
 .htmlView_editor .actions_Card_htmlView > :is(.start_htmlView, .stop_htmlView, [data-ask]) {
   color: var(--accent_revision_htmlView);
-  font-weight: normal;
 }
 
 

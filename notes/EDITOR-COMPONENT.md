@@ -1905,7 +1905,10 @@ things centred, not set on their baselines, nothing padding it, the
 chip the tallest of them. A request's own actions are all quiet, Stop,
 Edit, Start, Dismiss and Remove alike, in the muted ink, the page's when
 hovered, its status, "in progress", "addressed", the one thing on its
-line in plum; Start bold and plum is a group's, a card's, a form's. An unfolded set of actions
+line in plum. Every Start is bold, wherever it is, a card's Start all, a
+group's, a form's, and a request's own, grey as the rest of its actions
+are but bold, what everything queued waits on; Stop and the rest stay
+regular. Start all was made regular for a moment, and made bold again. An unfolded set of actions
 opening into a pill of its ellipsis's ground was tried too, and let go:
 they unfold plain, as they were. A group's actions unfold with nothing
 between them and its heading, the rule gone, their ink and weight
