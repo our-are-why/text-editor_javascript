@@ -351,6 +351,24 @@ test("a folded frame's lines, its lines as proposed, are edited as they are unfo
   expect(saidOfRequest(requestedFolded(caretIn_Digit(1)))).toBe('digit#0 0:1-0:1 "x" typed proposed')
 })
 
+test("a frame's Accept all asks the host for each open proposal it lists, its own action to Accepted, as if each were pressed; one with requests waiting left to be decided by itself; nothing for another frame", () => {
+  const range_Frame = viewModel.blocks.flatMap((block) => block.kind === "FRAME" ? [block.range] : [])[0]
+  if (range_Frame === undefined) throw new Error("no frame")
+  const accepted = (range: typeof range_Frame) => {
+    const asked: Array<unknown> = []
+    const state = stateOf(null)
+    const state_After = HANDLERMAP__TEXTEDITOR.ACCEPT_ALL({ state, command: { kind: "ACCEPT_ALL", range }, layout_View, module_Words: MODULE_WORDS_TEXT, edit_View: () => null, ask_View: (asked_Host) => {
+      asked.push(asked_Host)
+    } })
+    return { isSame: state_After === state, asked }
+  }
+  const items = viewModel.blocks.flatMap((block) => block.kind === "FRAME" && block.range.first === range_Frame.first ? block.parts.flatMap((part) => part.kind === "PROPOSAL_LIST" ? part.items : []) : [])
+  const opens = items.filter((item) => item.state === "OPEN").map((item) => item.source)
+  expect(opens.length).toBeGreaterThan(0)
+  expect(accepted(range_Frame)).toEqual({ isSame: true, asked: opens.map((source) => ({ kind: "ACTION", source, command: "accept", notes: null, selected: null })) })
+  expect(accepted({ first: 900, last: 901 }).asked).toEqual([])
+})
+
 test("a proposal's action pressed is asked of the host, its command, the viewer deciding nothing; a revision's notes sent, the same, its notes with it, and its draft closed", () => {
   const id_Item = { source: "digit", range_Frame: { first: 1, last: 1 } }
   const asked: Array<unknown> = []

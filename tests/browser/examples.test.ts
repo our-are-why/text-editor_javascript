@@ -1382,10 +1382,10 @@ test("a move's note pressed, the pointer on it: the note at its other end at the
 // as much as is shown, never scrolled into: wheeled to the top and to the
 // end, none; a move's note pressed near the document's end, its other end
 // near the top, room made above the first line, its note under the
-// pointer; wheeled down, the room shrinking as the document moves, the top
-// still the top; wheeled up, nothing moving; the other note pressed, room
-// made past the last line; wheeled up, it shrinking; wheeled down, nothing
-// moving
+// pointer; wheeled down half as far as the room, the room shrinking as the
+// document moves, the top still the top; wheeled up, nothing moving; the
+// other note pressed, room made past the last line; wheeled up half as
+// far, it shrinking; wheeled down, nothing moving
 const roomOf = () => opened_JavaScript.page.evaluate(() => {
   const scroller = document.querySelector(".document_htmlView")
   const note = document.querySelector(".note_htmlView[data-target-source=\"sleep\"][data-target-side=\"before\"]")
@@ -1423,11 +1423,17 @@ await stilled()
 const room_Rest = await roomOf()
 const top_Pressed_Up = await pressedOf_Note(".note_htmlView[data-target-source=\"sleep\"][data-target-side=\"after\"]")
 const room_Up = await roomOf()
-const room_Up_Down = await wheeled(120)
+const room_Up_Down = await wheeled(Math.max(
+  1,
+  Math.floor((room_Up?.above ?? 0) / 2)
+))
 const room_Up_Up = await wheeled(-400)
 const top_Pressed_Down = await pressedOf_Note(".note_htmlView[data-target-source=\"sleep\"][data-target-side=\"before\"]")
 const room_Down = await roomOf()
-const room_Down_Up = await wheeled(-100)
+const room_Down_Up = await wheeled(-Math.max(
+  1,
+  Math.floor((room_Down?.below ?? 0) / 2)
+))
 const room_Down_Down = await wheeled(400)
 
 test("the room a jump makes, above the first line or past the last, is only as much as is shown, never scrolled into: none at rest; made for a jump up, its note under the pointer, shrinking as the document's scrolled down, nothing moving scrolled up; made for a jump down, shrinking scrolled up, nothing moving scrolled down", () => {
@@ -1517,5 +1523,47 @@ test("the keyboard after a move's note's jump: on the note at its other end; tha
   expect(focused_Keyed).toBe(true)
   expect(scrolled_Keyed.focus).toBe("document_htmlView")
   expect(spaced_Keyed).toBeGreaterThan(scrolled_Keyed.top)
+  expect(opened_Dense.errors).toEqual([])
+})
+
+// then a frame's head, above its list: "Proposals", its lines, how far its
+// proposals have got; Accept all for its open proposals, behind an
+// ellipsis; while anything's queued or in progress for them,
+// how many, Start all and Stop all behind another. Start all, pressed as
+// you would, starting the requests queued for the proposals it lists;
+// Accept all accepting its open proposals, the host asked for each
+await opened_Dense.page.mouse.move(700, 700)
+const heads_Dense = await opened_Dense.page.evaluate(() => [...document.querySelectorAll(".head_Proposals_htmlView")].map((head) => `${head.querySelector(".range_Head_htmlView")?.textContent} ${head.querySelector(".value_Head_htmlView")?.textContent} ${head.querySelector("[data-accept-all]")?.textContent ?? ""}${head.querySelector("[data-scope=\"FRAME\"]") === null ? "" : ` | ${head.querySelector(".value_Scope_htmlView")?.textContent}`}`))
+const pressedIn_Dense = async (head: ReturnType<typeof opened_Dense.page.locator>, fold: string, control: string) => {
+  await head.scrollIntoViewIfNeeded()
+  await stilled_Dense()
+  const box = await head.locator(`${fold} .more_htmlView`).first().boundingBox()
+  if (box !== null) await opened_Dense.page.mouse.move(box.x + box.width / 2, box.y + box.height / 2)
+  await head.locator(control).first().click()
+  await opened_Dense.page.waitForTimeout(300)
+}
+const logged_Before_Frame = (await opened_Dense.logged()).length
+await pressedIn_Dense(opened_Dense.page.locator(".head_Proposals_htmlView", { has: opened_Dense.page.locator("[data-scope=\"FRAME\"][data-work=\"START\"]") }), ".scope_Head_htmlView", "[data-scope=\"FRAME\"][data-work=\"START\"]")
+const started_Frame = (await opened_Dense.logged()).slice(logged_Before_Frame).filter((entry) => "revising" in entry)
+const head_First = opened_Dense.page.locator(".head_Proposals_htmlView").first()
+const opens_First = await head_First.evaluate((head) => [...(head.closest(".frame_htmlView")?.querySelectorAll(".item_htmlView[data-state=\"OPEN\"]") ?? [])].map((item) => item.getAttribute("data-source")))
+const logged_Before_Accept = (await opened_Dense.logged()).length
+await pressedIn_Dense(head_First, ":scope > .fold_Action_htmlView", "[data-accept-all]")
+const accepted_Frame = (await opened_Dense.logged()).slice(logged_Before_Accept).filter((entry) => "asked" in entry)
+const states_First = await head_First.evaluate((head) => [...(head.closest(".frame_htmlView")?.querySelectorAll(".item_htmlView") ?? [])].map((item) => item.getAttribute("data-state")))
+
+test("a frame's head says its lines and how far its proposals have got; its Start all starts what's queued for the proposals it lists; its Accept all accepts its open proposals, the host asked for each", () => {
+  expect(heads_Dense).toEqual([
+    "lines 1–2 0 of 1 decided Accept all (1)",
+    "before line 6 0 of 2 decided Accept all (2)",
+    "line 10 0 of 2 decided Accept all (2)",
+    "lines 13–27 1 of 6 decided Accept all (5)",
+    "lines 31–34 1 of 3 decided Accept all (1) | 1 queued",
+    "lines 36–40 1 of 3 decided Accept all (1) | 1 in progress",
+    "lines 41–50 0 of 2 decided Accept all (2)"
+  ])
+  expect(started_Frame).toEqual([{ revising: "cap", requests: 1 }])
+  expect(accepted_Frame).toEqual(opens_First.map((source) => ({ asked: "accept", proposal: source, notes: null, words: null })))
+  expect(states_First).toEqual(["ACCEPTED"])
   expect(opened_Dense.errors).toEqual([])
 })

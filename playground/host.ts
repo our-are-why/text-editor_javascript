@@ -172,8 +172,9 @@ function hostedOf__Editor<State>({
     ]
   }
   // what a Start takes, everything queued within its scope, or a Stop,
-  // everything in progress within it: a request alone; a proposal's; the
-  // document's own, or the task's own, requests; everything in the
+  // everything in progress within it: a request alone; a proposal's; a
+  // frame's, those of the proposals it lists; the document's own, or the
+  // task's own, requests; everything in the
   // document, its own and its proposals'; or everything in the task, here
   // as much as the playground has of it, this document's
   const isInScope__Request_Proposal = (
@@ -182,6 +183,7 @@ function hostedOf__Editor<State>({
     id: string
   ) => scope.kind === "DOCUMENT"
     || scope.kind === "TASK"
+    || (scope.kind === "FRAME" && scope.sources.includes(source))
     || (scope.kind === "PROPOSAL" && scope.source === source)
     || (scope.kind === "REQUEST" && scope.source === source && scope.id === id)
   const isInScope__Request_Task = (

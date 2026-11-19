@@ -19,6 +19,7 @@ import {
   parseTexts_Line
 } from "./Model_TextEditor.ts"
 import {
+  isLines__Part_Frame,
   type _Range_Lines_,
   type _Module_Language_,
   type _ViewModel_TextEditor_,
@@ -185,7 +186,7 @@ function requestedIn__Blocks({
       ...block_ViewModel,
       parts: mapped__NonEmpty({
         items: block_ViewModel.parts,
-        map: (part_Frame): _Part_Frame_ => part_Frame.kind === "PROPOSAL_LIST"
+        map: (part_Frame): _Part_Frame_ => !isLines__Part_Frame(part_Frame)
           ? part_Frame
           : {
             ...part_Frame,
@@ -261,14 +262,7 @@ function headerOf__Proposals({
       : proposal_Host.requests.some((request_Host) => request_Host.status === "QUEUED")
         ? "REQUESTED"
         : "OPEN")
-  const counts_Here: _Counts_Proposals_ = {
-    OPEN: states_Here.filter((state) => state === "OPEN").length,
-    REQUESTED: states_Here.filter((state) => state === "REQUESTED").length,
-    REVISING: states_Here.filter((state) => state === "REVISING").length,
-    ACCEPTED: states_Here.filter((state) => state === "ACCEPTED").length,
-    REJECTED: states_Here.filter((state) => state === "REJECTED").length,
-    WITHDRAWN: states_Here.filter((state) => state === "WITHDRAWN").length
-  }
+  const counts_Here = countsOf__States(states_Here)
   const requests_Counted_Here = [
     ...proposals_Here.flatMap((proposal_Host) => proposal_Host.requests),
     ...requests_Here
@@ -469,6 +463,19 @@ function itemOf__Request_Task(
     isEditing: false,
     isStoppable: request_Task.status === "RUNNING",
     isDismissable: request_Task.status === "ADDRESSED"
+  }
+}
+
+function countsOf__States(
+  states: Array<_State_Proposal_>
+): _Counts_Proposals_ {
+  return {
+    OPEN: states.filter((state) => state === "OPEN").length,
+    REQUESTED: states.filter((state) => state === "REQUESTED").length,
+    REVISING: states.filter((state) => state === "REVISING").length,
+    ACCEPTED: states.filter((state) => state === "ACCEPTED").length,
+    REJECTED: states.filter((state) => state === "REJECTED").length,
+    WITHDRAWN: states.filter((state) => state === "WITHDRAWN").length
   }
 }
 
@@ -2746,15 +2753,25 @@ function frameOf__Drawn({
       ...items_Rest
     ]
   }
+  const range_Frame = {
+    first: frame_Drawn.frame_Model.first + 1,
+    last: frame_Drawn.frame_Model.last + 1
+  }
+  const part_Head = headOf__Frame({
+    range_Frame,
+    items: [
+      item_First,
+      ...items_Rest
+    ],
+    proposals_Listed: proposals.filter((proposal_Host) => frame_Drawn.sources.includes(proposal_Host.source))
+  })
   return {
     kind: "FRAME",
-    range: {
-      first: frame_Drawn.frame_Model.first + 1,
-      last: frame_Drawn.frame_Model.last + 1
-    },
+    range: range_Frame,
     parts: frame_Drawn.run_Current === null
       ? [
         part_Proposed,
+        part_Head,
         part_List
       ]
       : [
@@ -2763,6 +2780,7 @@ function frameOf__Drawn({
           run: frame_Drawn.run_Current
         },
         part_Proposed,
+        part_Head,
         part_List
       ]
   }
@@ -2790,6 +2808,61 @@ function staleOf__Round({
       label: parts.join(" · "),
       isRerunnable
     }
+}
+
+interface _Api___headOf__Frame_ {
+  range_Frame: _Range_Lines_
+  items: Array<_Item_Proposals_>
+  proposals_Listed: Array<_Proposal_Host_>
+}
+
+function headOf__Frame({
+  range_Frame,
+  items,
+  proposals_Listed
+}: _Api___headOf__Frame_): _Part_Frame_ {
+  const counts_Frame = countsOf__States(items.map((item_Proposals) => item_Proposals.state))
+  const statuses = proposals_Listed.flatMap((proposal_Host) => proposal_Host.requests.map((request_Host) => request_Host.status))
+  const counts_Requests: _Counts_Requests_ = {
+    QUEUED: statuses.filter((status) => status === "QUEUED").length,
+    RUNNING: statuses.filter((status) => status === "RUNNING").length
+  }
+  const count_Startable = proposals_Listed
+    .filter((proposal_Host) => proposal_Host.state === "OPEN" && !proposal_Host.requests.some((request_Host) => request_Host.status === "RUNNING"))
+    .flatMap((proposal_Host) => proposal_Host.requests)
+    .filter((request_Host) => request_Host.status === "QUEUED").length
+  const label_Range = labelOf__Range_Frame(range_Frame)
+  const count_Acceptable = items.filter((item_Proposals) => item_Proposals.state === "OPEN" && item_Proposals.actions.some((action_Item) => action_Item.stateAfter === "ACCEPTED")).length
+  return {
+    kind: "PROPOSAL_HEAD",
+    label_Range,
+    figure: {
+      value: decidedOf__Label(counts_Frame),
+      more: breakdownOf__Counts(counts_Frame)
+    },
+    accept_All: count_Acceptable === 0
+      ? null
+      : {
+        label: `Accept all (${count_Acceptable})`,
+        title: `Accepts every open proposal listed in ${label_Range}, wherever else it's listed; one with requests waiting is left to be decided by itself`
+      },
+    revisions_Scope: {
+      figure: figureOf__Counts_Requests(counts_Requests),
+      title_Start: count_Startable === 0 ? null : `Starts all ${count_Startable} ${count_Startable === 1 ? "request" : "requests"} queued for the proposals listed in ${label_Range}`,
+      title_Stop: counts_Requests.RUNNING === 0 ? null : `Stops all ${counts_Requests.RUNNING} in progress for the proposals listed in ${label_Range}, putting them back in the queue`,
+      actions: []
+    }
+  }
+}
+
+function labelOf__Range_Frame(
+  range_Frame: _Range_Lines_
+): string {
+  return range_Frame.last < range_Frame.first
+    ? `before line ${range_Frame.first}`
+    : range_Frame.first === range_Frame.last
+      ? `line ${range_Frame.first}`
+      : `lines ${range_Frame.first}–${range_Frame.last}`
 }
 
 type _StatusMap__State_Proposal_ = {

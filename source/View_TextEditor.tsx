@@ -23,6 +23,7 @@ import type {
   __BASE_Part__Frame_,
   _CURRENT_Part__Frame_,
   _PROPOSED_Part__Frame_,
+  _HEAD_Part__Frame_,
   _PROPOSALS_Part__Frame_,
   _Item_Proposals_,
   _Places_Item_,
@@ -747,51 +748,68 @@ function Revisions_Scope__Html({
       <p class="label_Card_htmlView">Scope Revisions</p>
       <div class="line_Card_htmlView">
         <span class="value_Card_htmlView">{revisions_Scope.figure === null ? "Nothing queued" : revisions_Scope.figure.value}</span>
-        {(revisions_Scope.title_Start !== null || revisions_Scope.title_Stop !== null || revisions_Scope.actions.length > 0) && (
-          <Fold_Action$__Html>
-            <div
-              class="actions_Card_htmlView folded_htmlView"
-              role="group"
-              aria-label="Scope revision actions"
-            >
-              {revisions_Scope.title_Start !== null && (
-                <button
-                  type="button"
-                  class="action_htmlView start_htmlView"
-                  data-scope={scope_Work}
-                  data-work="START"
-                  data-state-after="REVISING"
-                  title={revisions_Scope.title_Start}
-                >
-                  Start all
-                </button>
-              )}
-              {revisions_Scope.title_Stop !== null && (
-                <button
-                  type="button"
-                  class="action_htmlView stop_htmlView"
-                  data-scope={scope_Work}
-                  data-work="STOP"
-                  title={revisions_Scope.title_Stop}
-                >
-                  Stop all
-                </button>
-              )}
-              {revisions_Scope.actions.map((action_Task) => (
-                <button
-                  type="button"
-                  class="action_htmlView"
-                  data-task={action_Task.command}
-                >
-                  {action_Task.label}
-                </button>
-              ))}
-            </div>
-          </Fold_Action$__Html>
-        )}
+        <Action$_Scope__Html
+          revisions_Scope={revisions_Scope}
+          scope_Work={scope_Work}
+        />
       </div>
     </section>
   )
+}
+
+interface _Api___Action$_Scope__Html_ {
+  revisions_Scope: _Revisions_Scope_
+  scope_Work: "TASK" | "DOCUMENT" | "FRAME"
+}
+
+function Action$_Scope__Html({
+  revisions_Scope,
+  scope_Work
+}: _Api___Action$_Scope__Html_): _Node_Jsx_ {
+  return revisions_Scope.title_Start === null && revisions_Scope.title_Stop === null && revisions_Scope.actions.length === 0
+    ? null
+    : (
+      <Fold_Action$__Html>
+        <div
+          class="actions_Card_htmlView folded_htmlView"
+          role="group"
+          aria-label="Scope revision actions"
+        >
+          {revisions_Scope.title_Start !== null && (
+            <button
+              type="button"
+              class="action_htmlView start_htmlView"
+              data-scope={scope_Work}
+              data-work="START"
+              data-state-after="REVISING"
+              title={revisions_Scope.title_Start}
+            >
+              Start all
+            </button>
+          )}
+          {revisions_Scope.title_Stop !== null && (
+            <button
+              type="button"
+              class="action_htmlView stop_htmlView"
+              data-scope={scope_Work}
+              data-work="STOP"
+              title={revisions_Scope.title_Stop}
+            >
+              Stop all
+            </button>
+          )}
+          {revisions_Scope.actions.map((action_Task) => (
+            <button
+              type="button"
+              class="action_htmlView"
+              data-task={action_Task.command}
+            >
+              {action_Task.label}
+            </button>
+          ))}
+        </div>
+      </Fold_Action$__Html>
+    )
 }
 
 interface _Api___Revisions_Level__Html_ {
@@ -1361,6 +1379,63 @@ function PROPOSAL_LINES__Section_Frame__Html({
         componentMap_View={componentMap_View}
         run_Line$={part_Frame.run}
       />
+    </div>
+  )
+}
+
+interface _Api___PROPOSAL_HEAD__Section_Frame__Html_ {
+  componentMap_View: _ComponentMap__View_TextEditor_
+  part_Frame: _HEAD_Part__Frame_
+}
+
+function PROPOSAL_HEAD__Section_Frame__Html({
+  part_Frame
+}: _Api___PROPOSAL_HEAD__Section_Frame__Html_): JSX.Element {
+  return (
+    <div
+      class="head_Proposals_htmlView"
+      role="group"
+      aria-label={`${part_Frame.label_Range}: its proposals`}
+    >
+      <p class="label_Head_htmlView">
+        <span class="title_Head_htmlView">Proposals</span>
+        <span class="range_Head_htmlView">{part_Frame.label_Range}</span>
+        {part_Frame.figure !== null && (
+          <span
+            class="value_Head_htmlView"
+            title={part_Frame.figure.more === "" ? undefined : part_Frame.figure.more}
+          >
+            {part_Frame.figure.value}
+          </span>
+        )}
+      </p>
+      {part_Frame.accept_All !== null && (
+        <Fold_Action$__Html>
+          <div
+            class="actions_Card_htmlView folded_htmlView"
+            role="group"
+            aria-label={`${part_Frame.label_Range}: its proposals' actions`}
+          >
+            <button
+              type="button"
+              class="action_htmlView"
+              data-accept-all=""
+              title={part_Frame.accept_All.title}
+            >
+              {part_Frame.accept_All.label}
+            </button>
+          </div>
+        </Fold_Action$__Html>
+      )}
+      {part_Frame.revisions_Scope.figure !== null && (
+        <div class="scope_Head_htmlView">
+          <span class="value_Scope_htmlView">{part_Frame.revisions_Scope.figure.value}</span>
+          <Action$_Scope__Html
+            revisions_Scope={part_Frame.revisions_Scope}
+            scope_Work="FRAME"
+          />
+        </div>
+      )}
     </div>
   )
 }
@@ -4502,6 +4577,7 @@ const COMPONENTMAP__VIEW_TEXTEDITOR: _ComponentMap__View_TextEditor_ = {
   part: {
     CURRENT_LINES: CURRENT_LINES__Section_Frame__Html,
     PROPOSAL_LINES: PROPOSAL_LINES__Section_Frame__Html,
+    PROPOSAL_HEAD: PROPOSAL_HEAD__Section_Frame__Html,
     PROPOSAL_LIST: PROPOSAL_LIST__Section_Frame__Html
   },
   places: {

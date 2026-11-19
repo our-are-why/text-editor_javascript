@@ -5,7 +5,10 @@ import type {
   _SAVE_EDIT__Command_,
   _Scope_Work_
 } from "./Viewer_TextEditor.ts"
-import type { _Id_Item_ } from "./ViewModel_TextEditor.ts"
+import type {
+  _Id_Item_,
+  _Range_Lines_
+} from "./ViewModel_TextEditor.ts"
 
 export {
   CONTROLS__TEXTEDITOR
@@ -434,6 +437,23 @@ const CONTROLS__TEXTEDITOR: Array<_Adapter_Event_> = [
     }
   },
   {
+    event: "click",
+    commandOf__Event: (event) => {
+      const element_Accept = event.target instanceof Element ? event.target.closest(".head_Proposals_htmlView [data-accept-all]") : null
+      const range = element_Accept === null
+        ? null
+        : rangeOf__Frame({
+          element: element_Accept
+        })
+      return range === null
+        ? null
+        : {
+          kind: "ACCEPT_ALL",
+          range
+        }
+    }
+  },
+  {
     event: "keydown",
     commandOf__Event: (event) => event instanceof KeyboardEvent && event.key === "Escape" && event.target instanceof Element && event.target.closest(".task_Header_htmlView, .document_Header_htmlView") !== null
       ? {
@@ -649,6 +669,18 @@ const SCOPEMAP__KIND_WORK: _ScopeMap__Kind_Work_ = {
         source: id_Item.source
       }
   },
+  FRAME: (element) => {
+    const range = rangeOf__Frame({
+      element
+    })
+    return range === null
+      ? null
+      : {
+        kind: "FRAME",
+        range,
+        sources: [...element.closest(".frame_htmlView")?.querySelectorAll(".item_htmlView[data-source]") ?? []].map((element_Item) => element_Item.getAttribute("data-source") ?? "")
+      }
+  },
   DOCUMENT_REQUESTS: () => ({
     kind: "DOCUMENT_REQUESTS"
   }),
@@ -671,16 +703,31 @@ function idOf__Item({
   element
 }: _Api___idOf__Item_): _Id_Item_ | null {
   const source = element.closest(".item_htmlView")?.getAttribute("data-source")
+  const range_Frame = rangeOf__Frame({
+    element
+  })
+  return typeof source === "string" && range_Frame !== null
+    ? {
+      source,
+      range_Frame
+    }
+    : null
+}
+
+interface _Api___rangeOf__Frame_ {
+  element: Element
+}
+
+function rangeOf__Frame({
+  element
+}: _Api___rangeOf__Frame_): _Range_Lines_ | null {
   const element_Fold = element.closest(".frame_htmlView")?.querySelector(":scope > .fold_htmlView")
   const first = Number(element_Fold?.getAttribute("data-fold-first") ?? Number.NaN)
   const last = Number(element_Fold?.getAttribute("data-fold-last") ?? Number.NaN)
-  return typeof source === "string" && Number.isInteger(first) && Number.isInteger(last)
+  return Number.isInteger(first) && Number.isInteger(last)
     ? {
-      source,
-      range_Frame: {
-        first,
-        last
-      }
+      first,
+      last
     }
     : null
 }

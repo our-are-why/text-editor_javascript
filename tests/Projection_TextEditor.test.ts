@@ -2,7 +2,7 @@ import { expect, test } from "bun:test"
 import { parseModel_TextEditor, type _Changes_Host_, type _Change_Host_, type _Model_TextEditor_ } from "../source/Model_TextEditor.ts"
 import { viewModelOf__Model, type _Proposal_Host_, type _Task_Host_ } from "../source/Projection_TextEditor.ts"
 import { MODULE_READING_TEXT } from "../source/readings/text.ts"
-import { MODULE_PLAINTEXT, type _State_Task_, type _Decision_Proposal_, type _Status_Request_, type _Piece_Text_, type _Range_Lines_, type _ViewModel_TextEditor_, type _Line_Run_, type _Underlay_Text_, type _Run_Lines_ } from "../source/ViewModel_TextEditor.ts"
+import { MODULE_PLAINTEXT, isLines__Part_Frame, type _State_Task_, type _Decision_Proposal_, type _Status_Request_, type _Piece_Text_, type _Range_Lines_, type _ViewModel_TextEditor_, type _Line_Run_, type _Underlay_Text_, type _Run_Lines_ } from "../source/ViewModel_TextEditor.ts"
 import { actions_Review } from "../playground/items.ts"
 import { model_retry, proposals_retry, rounds_retry, ranges_retry, setup_retry } from "../playground/examples/javascript.ts"
 import { model_readme, proposals_readme, ranges_readme, setup_readme } from "../playground/examples/markdown.ts"
@@ -143,7 +143,9 @@ function drawnAs(
         `FRAME ${block.range.first}-${block.range.last}`,
         ...block.parts.flatMap((part) => part.kind === "PROPOSAL_LIST"
           ? [`  PROPOSAL_LIST`, ...part.items.map((item) => `    ${sortedOf(item)}`)]
-          : runOf(part.kind, part.run))
+          : part.kind === "PROPOSAL_HEAD"
+            ? [`  PROPOSAL_HEAD ${sortedOf(part)}`]
+            : runOf(part.kind, part.run))
       ]
     })
   ].join("\n")
@@ -154,7 +156,7 @@ function drawnAs(
 function runsIn(
   viewModel: _ViewModel_TextEditor_
 ): Array<_Run_Lines_> {
-  return viewModel.blocks.flatMap((block) => block.kind === "FRAME" ? block.parts.flatMap((part) => part.kind === "PROPOSAL_LIST" ? [] : [part.run]) : [block.run])
+  return viewModel.blocks.flatMap((block) => block.kind === "FRAME" ? block.parts.flatMap((part) => isLines__Part_Frame(part) ? [part.run] : []) : [block.run])
 }
 
 test("frames are the lines changes touch, run together only where they share a line, so frames back to back stay two; a host's range joins the frames it shares a line with, and widens them, but makes none where nothing changes, and never cuts a change", () => {
@@ -502,5 +504,5 @@ test("a task's own requests, on no proposal, aimed at what's selected, the whole
     }
   })
   const requestedIn = (run: _Run_Lines_) => run.lines.flatMap((line) => line.segments.filter((segment) => "data-requested" in segment.attributes).map((segment): string => segment.text))
-  expect(viewModel.blocks.map((block) => block.kind === "FRAME" ? block.parts.map((part) => part.kind === "PROPOSAL_LIST" ? [] : requestedIn(part.run)) : requestedIn(block.run))).toEqual([[["one"], ["one"], []], ["four"]])
+  expect(viewModel.blocks.map((block) => block.kind === "FRAME" ? block.parts.map((part) => isLines__Part_Frame(part) ? requestedIn(part.run) : []) : requestedIn(block.run))).toEqual([[["one"], ["one"], [], []], ["four"]])
 })

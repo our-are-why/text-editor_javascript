@@ -43,6 +43,8 @@ export {
   type __BASE_Part__Frame_,
   type _CURRENT_Part__Frame_,
   type _PROPOSED_Part__Frame_,
+  type _HEAD_Part__Frame_,
+  type _Accept_Head_,
   type _PROPOSALS_Part__Frame_,
   type _Item_Proposals_,
   type _State_Proposal_,
@@ -68,6 +70,7 @@ export {
   draftingAt__ViewModel,
   confirmingAt__ViewModel,
   editingAt__ViewModel,
+  isLines__Part_Frame,
   type _Editing_Request_,
   type _Header_ViewModel_,
   type _Document_Header_,
@@ -337,7 +340,7 @@ interface _FOLDED_Block__ViewModel_ extends __BASE_Block__ViewModel_<"FOLDED"> {
   run: _Run_Lines_
 }
 
-type _Part_Frame_ = _CURRENT_Part__Frame_ | _PROPOSED_Part__Frame_ | _PROPOSALS_Part__Frame_
+type _Part_Frame_ = _CURRENT_Part__Frame_ | _PROPOSED_Part__Frame_ | _HEAD_Part__Frame_ | _PROPOSALS_Part__Frame_
 
 interface __BASE_Part__Frame_<Kind extends string> {
   kind: Kind
@@ -349,6 +352,18 @@ interface _CURRENT_Part__Frame_ extends __BASE_Part__Frame_<"CURRENT_LINES"> {
 
 interface _PROPOSED_Part__Frame_ extends __BASE_Part__Frame_<"PROPOSAL_LINES"> {
   run: _Run_Lines_
+}
+
+interface _HEAD_Part__Frame_ extends __BASE_Part__Frame_<"PROPOSAL_HEAD"> {
+  label_Range: string
+  figure: _Figure_Card_ | null
+  accept_All: _Accept_Head_ | null
+  revisions_Scope: _Revisions_Scope_
+}
+
+interface _Accept_Head_ {
+  label: string
+  title: string
 }
 
 interface _PROPOSALS_Part__Frame_ extends __BASE_Part__Frame_<"PROPOSAL_LIST"> {
@@ -542,6 +557,12 @@ function neighboredOf__Blocks(
     })
 }
 
+function isLines__Part_Frame(
+  part_Frame: _Part_Frame_
+): part_Frame is _CURRENT_Part__Frame_ | _PROPOSED_Part__Frame_ {
+  return part_Frame.kind === "CURRENT_LINES" || part_Frame.kind === "PROPOSAL_LINES"
+}
+
 function statedOf__Blocks(
   blocks_ViewModel: Array<_Block_ViewModel_>
 ): Array<_Block_ViewModel_> {
@@ -566,7 +587,7 @@ function statedOf__Blocks(
       ...block_ViewModel,
       parts: mapped__NonEmpty({
         items: block_ViewModel.parts,
-        map: (part_Frame): _Part_Frame_ => part_Frame.kind === "PROPOSAL_LIST"
+        map: (part_Frame): _Part_Frame_ => !isLines__Part_Frame(part_Frame)
           ? part_Frame
           : {
             ...part_Frame,
@@ -618,7 +639,7 @@ function runsOf__Blocks(
 ): Array<_Run_Lines_> {
   return blocks_ViewModel.flatMap((block_ViewModel) =>
     block_ViewModel.kind === "FRAME"
-      ? block_ViewModel.parts.flatMap((part_Frame) => part_Frame.kind === "PROPOSAL_LIST" ? [] : [part_Frame.run])
+      ? block_ViewModel.parts.flatMap((part_Frame) => isLines__Part_Frame(part_Frame) ? [part_Frame.run] : [])
       : [block_ViewModel.run]
   )
 }
@@ -1081,15 +1102,17 @@ function pointedIn__Part({
           : item_Proposals
       })
     }
-    : {
-      ...part_Frame,
-      run: pointedIn__Run({
-        run_Lines: part_Frame.run,
-        source,
-        place,
-        target_Note
-      })
-    }
+    : isLines__Part_Frame(part_Frame)
+      ? {
+        ...part_Frame,
+        run: pointedIn__Run({
+          run_Lines: part_Frame.run,
+          source,
+          place,
+          target_Note
+        })
+      }
+      : part_Frame
 }
 
 interface _Selection_TextEditor_ {
@@ -1456,7 +1479,7 @@ function sectionOf__Run({
       continue
     }
     for (const part_Frame of block_ViewModel.parts) {
-      if (part_Frame.kind !== "PROPOSAL_LIST" && part_Frame.run.id === id_Run) return part_Frame.kind
+      if (isLines__Part_Frame(part_Frame) && part_Frame.run.id === id_Run) return part_Frame.kind
     }
   }
   return null

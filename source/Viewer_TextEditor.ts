@@ -76,6 +76,7 @@ export {
   type _FOLD_Command_,
   type _DRAFT_Command_,
   type _ACT_Command_,
+  type _ACCEPT_ALL__Command_,
   type _CONFIRM_Command_,
   type _REMOVE_Command_,
   type _DISMISS_Command_,
@@ -128,6 +129,7 @@ export {
   type _DOCUMENT_REQUESTS__Scope_Work_,
   type _TASK_REQUESTS__Scope_Work_,
   type _TASK_Scope_Work_,
+  type _FRAME_Scope_Work_,
   type _TASK_Asked_Host_,
   type _RERUN_Asked_Host_,
   type _EDIT_Asked_Host_,
@@ -489,7 +491,7 @@ interface _STOP_Asked_Host_ extends __BASE_Asked_Host_<"STOP"> {
   scope: _Scope_Work_
 }
 
-type _Scope_Work_ = _REQUEST_Scope_Work_ | _PROPOSAL_Scope_Work_ | _DOCUMENT_REQUESTS__Scope_Work_ | _DOCUMENT_Scope_Work_ | _TASK_REQUESTS__Scope_Work_ | _TASK_Scope_Work_
+type _Scope_Work_ = _REQUEST_Scope_Work_ | _PROPOSAL_Scope_Work_ | _FRAME_Scope_Work_ | _DOCUMENT_REQUESTS__Scope_Work_ | _DOCUMENT_Scope_Work_ | _TASK_REQUESTS__Scope_Work_ | _TASK_Scope_Work_
 
 interface __BASE_Scope_Work_<Kind extends string> {
   kind: Kind
@@ -502,6 +504,11 @@ interface _REQUEST_Scope_Work_ extends __BASE_Scope_Work_<"REQUEST"> {
 
 interface _PROPOSAL_Scope_Work_ extends __BASE_Scope_Work_<"PROPOSAL"> {
   source: string
+}
+
+interface _FRAME_Scope_Work_ extends __BASE_Scope_Work_<"FRAME"> {
+  range: _Range_Lines_
+  sources: Array<string>
 }
 
 interface _DOCUMENT_REQUESTS__Scope_Work_ extends __BASE_Scope_Work_<"DOCUMENT_REQUESTS"> {}
@@ -549,7 +556,7 @@ interface _Adapter_Event_ {
   commandOf__Event: (event: Event) => _Command_TextEditor_ | null
 }
 
-type _Command_TextEditor_ = _POINT_Command_ | _JUMP_Command_ | _FOLD_Command_ | _DRAFT_Command_ | _ACT_Command_ | _CONFIRM_Command_ | _REMOVE_Command_ | _DISMISS_Command_ | _START_Command_ | _STOP_Command_ | _TASK_Command_ | _RERUN_Command_ | _SEND_Command_ | _OPEN_MENU__Command_ | _STEP_MENU__Command_ | _CHOOSE_MENU__Command_ | _CLOSE_MENU__Command_ | _OPEN_REQUEST__Command_ | _CLOSE_CARD__Command_ | _SEND_REQUEST__Command_ | _CLOSE_REQUEST__Command_ | _LEAVE_REQUEST__Command_ | _EDIT_Command_ | _SAVE_EDIT__Command_ | _CLOSE_EDIT__Command_ | _DISCARD_Command_ | _VISIT_Command_ | _PLACE_Command_ | _DRAG_Command_ | _RELEASE_Command_ | _MOVE_Command_ | _EXTEND_Command_ | _INSERT_Command_ | _REPLACE_Command_ | _DELETE_Command_ | _UNDO_Command_ | _REDO_Command_ | _COPY_Command_ | _CUT_Command_ | _PASTE_Command_
+type _Command_TextEditor_ = _POINT_Command_ | _JUMP_Command_ | _FOLD_Command_ | _DRAFT_Command_ | _ACT_Command_ | _ACCEPT_ALL__Command_ | _CONFIRM_Command_ | _REMOVE_Command_ | _DISMISS_Command_ | _START_Command_ | _STOP_Command_ | _TASK_Command_ | _RERUN_Command_ | _SEND_Command_ | _OPEN_MENU__Command_ | _STEP_MENU__Command_ | _CHOOSE_MENU__Command_ | _CLOSE_MENU__Command_ | _OPEN_REQUEST__Command_ | _CLOSE_CARD__Command_ | _SEND_REQUEST__Command_ | _CLOSE_REQUEST__Command_ | _LEAVE_REQUEST__Command_ | _EDIT_Command_ | _SAVE_EDIT__Command_ | _CLOSE_EDIT__Command_ | _DISCARD_Command_ | _VISIT_Command_ | _PLACE_Command_ | _DRAG_Command_ | _RELEASE_Command_ | _MOVE_Command_ | _EXTEND_Command_ | _INSERT_Command_ | _REPLACE_Command_ | _DELETE_Command_ | _UNDO_Command_ | _REDO_Command_ | _COPY_Command_ | _CUT_Command_ | _PASTE_Command_
 
 interface __BASE_Command_<Kind extends string> {
   kind: Kind
@@ -575,6 +582,10 @@ interface _DRAFT_Command_ extends __BASE_Command_<"DRAFT"> {
 interface _ACT_Command_ extends __BASE_Command_<"ACT"> {
   id_Item: _Id_Item_
   command: string
+}
+
+interface _ACCEPT_ALL__Command_ extends __BASE_Command_<"ACCEPT_ALL"> {
+  range: _Range_Lines_
 }
 
 interface _CONFIRM_Command_ extends __BASE_Command_<"CONFIRM"> {
@@ -931,6 +942,37 @@ function itemOf__Id({
   return viewModel_TextEditor.blocks.flatMap((block_ViewModel) => block_ViewModel.kind === "FRAME" && block_ViewModel.range.first === id_Item.range_Frame.first && block_ViewModel.range.last === id_Item.range_Frame.last
     ? block_ViewModel.parts.flatMap((part_Frame) => part_Frame.kind === "PROPOSAL_LIST" ? part_Frame.items : [])
     : []).find((item_Proposals) => item_Proposals.source === id_Item.source) ?? null
+}
+
+function ACCEPT_ALL_stateAfter__Command({
+  state,
+  command,
+  ask_View
+}: _Api___stateAfter__Command_<"ACCEPT_ALL">): _State__Viewer_TextEditor_ {
+  const action$_Decided = viewModelOf__State(state).blocks
+    .flatMap((block_ViewModel) => block_ViewModel.kind === "FRAME" && block_ViewModel.range.first === command.range.first && block_ViewModel.range.last === command.range.last ? block_ViewModel.parts : [])
+    .flatMap((part_Frame) => part_Frame.kind === "PROPOSAL_LIST" ? part_Frame.items : [])
+    .flatMap((item_Proposals) => {
+      const action_Item = item_Proposals.actions.find((action_Each) => action_Each.stateAfter === "ACCEPTED")
+      return item_Proposals.state !== "OPEN" || action_Item === undefined
+        ? []
+        : [
+          {
+            source: item_Proposals.source,
+            command: action_Item.command
+          }
+        ]
+    })
+  for (const action_Decided of action$_Decided) {
+    ask_View({
+      kind: "ACTION",
+      source: action_Decided.source,
+      command: action_Decided.command,
+      notes: null,
+      selected: null
+    })
+  }
+  return state
 }
 
 function CONFIRM_stateAfter__Command({
@@ -2744,6 +2786,7 @@ const HANDLERMAP__TEXTEDITOR: _HandlerMap__TextEditor_ = {
   FOLD: FOLD_stateAfter__Command,
   DRAFT: DRAFT_stateAfter__Command,
   ACT: ACT_stateAfter__Command,
+  ACCEPT_ALL: ACCEPT_ALL_stateAfter__Command,
   CONFIRM: CONFIRM_stateAfter__Command,
   REMOVE: REMOVE_stateAfter__Command,
   DISMISS: DISMISS_stateAfter__Command,

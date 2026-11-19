@@ -2872,3 +2872,25 @@ holding the card: the JSX runtime draws an element anew when a data
 attribute changes, and the part drawn anew for a new state had closed
 its card under the pointer or the keyboard, a round ending while it was
 open; the task's moved there too, as it had the same flaw.
+
+Decided 2026-11-19: a frame's head, above its list, below its lines as
+proposed, not over its lines as the one set aside on 2026-11-18 was: a
+part of its own, `PROPOSAL_HEAD`, drawn by the part map's
+`PROPOSAL_HEAD__Section_Frame__Html`, a host's own in its place, none on
+a folded frame, which shows no list. One line, on the list's band, where
+the items' text starts: on the left, "Proposals", the frame's lines, how
+far its proposals have got in a quiet chip, and, hugging them, Accept all
+behind an ellipsis in the proposals' indigo, no Reject all, tried and
+taken out the same day, as accepting a frame's proposals together is
+something you'd do, rejecting them all at once isn't, the two not being
+alike; on the right,
+while anything's queued or in progress for its proposals, how many, Start
+all and Stop all behind the revision's plum ellipsis, the cards' own
+`Action$_Scope__Html`. Accept all is `ACCEPT_ALL`, the host asked, for each
+open proposal the frame lists, its own action to Accepted, as if each were
+pressed; one with requests waiting is left to be decided by itself,
+as deciding it would drop them, which asks first. Start all is the scope
+`FRAME`, its range and the sources it lists. Frame-level requests, asked
+of a frame's lines, a group of its own, Revise and Add, and an aim at
+lines, were built and taken out the same day: not yet. The parts with lines
+are picked out by `isLines__Part_Frame`, as the head has none.
