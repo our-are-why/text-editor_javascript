@@ -501,24 +501,25 @@ function Proposals_Card__Html({
       {proposals_Card.figure === null ? "None yet" : proposals_Card.figure.value}
     </span>
   )
-  const actions = proposals_Card.actions.length > 0 && [
-    <More_Action$__Html />,
-    <div
-      class="actions_Card_htmlView folded_htmlView"
-      role="group"
-      aria-label="Proposal actions"
-    >
-      {proposals_Card.actions.map((action_Task) => (
-        <button
-          type="button"
-          class="action_htmlView"
-          data-task={action_Task.command}
-        >
-          {action_Task.label}
-        </button>
-      ))}
-    </div>
-  ]
+  const actions = proposals_Card.actions.length > 0 && (
+    <Fold_Action$__Html>
+      <div
+        class="actions_Card_htmlView folded_htmlView"
+        role="group"
+        aria-label="Proposal actions"
+      >
+        {proposals_Card.actions.map((action_Task) => (
+          <button
+            type="button"
+            class="action_htmlView"
+            data-task={action_Task.command}
+          >
+            {action_Task.label}
+          </button>
+        ))}
+      </div>
+    </Fold_Action$__Html>
+  )
   return (
     <section
       class="section_Card_htmlView"
@@ -541,24 +542,25 @@ function Proposals_Card__Html({
               </span>
             </span>
             <span class="value_Document_Card_htmlView">{proposals_Card.figure === null ? "None yet" : proposals_Card.figure.value}</span>
-            {proposals_Card.actions.length > 0 && [
-              <More_Action$__Html />,
-              <span
-                class="actions_Document_Card_htmlView folded_htmlView"
-                role="group"
-                aria-label="Every document's actions"
-              >
-                {proposals_Card.actions.map((action_Task) => (
-                  <button
-                    type="button"
-                    class="action_htmlView"
-                    data-task={action_Task.command}
-                  >
-                    {action_Task.label}
-                  </button>
-                ))}
-              </span>
-            ]}
+            {proposals_Card.actions.length > 0 && (
+              <Fold_Action$__Html>
+                <span
+                  class="actions_Document_Card_htmlView folded_htmlView"
+                  role="group"
+                  aria-label="Every document's actions"
+                >
+                  {proposals_Card.actions.map((action_Task) => (
+                    <button
+                      type="button"
+                      class="action_htmlView"
+                      data-task={action_Task.command}
+                    >
+                      {action_Task.label}
+                    </button>
+                  ))}
+                </span>
+              </Fold_Action$__Html>
+            )}
           </p>
         ]
         : (
@@ -571,13 +573,22 @@ function Proposals_Card__Html({
   )
 }
 
-function More_Action$__Html(): JSX.Element {
+interface _Api___Fold_Action$__Html_ {
+  children: _Node_Jsx_
+}
+
+function Fold_Action$__Html({
+  children
+}: _Api___Fold_Action$__Html_): JSX.Element {
   return (
-    <span
-      class="more_htmlView"
-      aria-hidden="true"
-    >
-      …
+    <span class="fold_Action_htmlView">
+      <span
+        class="more_htmlView"
+        aria-hidden="true"
+      >
+        …
+      </span>
+      {children}
     </span>
   )
 }
@@ -609,23 +620,24 @@ function Document$_Card__Html({
               <span class="name_Document_Card_htmlView">{document_Card.name}</span>
             </span>
             <span class="value_Document_Card_htmlView">{document_Card.value}</span>
-            {document_Card.actions.length > 0 && <More_Action$__Html />}
             {document_Card.actions.length > 0 && (
-              <span
-                class="actions_Document_Card_htmlView folded_htmlView"
-                role="group"
-                aria-label={`${document_Card.folder}${document_Card.name} actions`}
-              >
-                {document_Card.actions.map((action_Task) => (
-                  <button
-                    type="button"
-                    class="action_htmlView"
-                    data-task={action_Task.command}
-                  >
-                    {action_Task.label}
-                  </button>
-                ))}
-              </span>
+              <Fold_Action$__Html>
+                <span
+                  class="actions_Document_Card_htmlView folded_htmlView"
+                  role="group"
+                  aria-label={`${document_Card.folder}${document_Card.name} actions`}
+                >
+                  {document_Card.actions.map((action_Task) => (
+                    <button
+                      type="button"
+                      class="action_htmlView"
+                      data-task={action_Task.command}
+                    >
+                      {action_Task.label}
+                    </button>
+                  ))}
+                </span>
+              </Fold_Action$__Html>
             )}
           </li>
         ))}
@@ -650,46 +662,47 @@ function Revisions_Scope__Html({
       <p class="label_Card_htmlView">Scope Revisions</p>
       <div class="line_Card_htmlView">
         <span class="value_Card_htmlView">{revisions_Scope.figure === null ? "Nothing queued" : revisions_Scope.figure.value}</span>
-        {(revisions_Scope.title_Start !== null || revisions_Scope.title_Stop !== null || revisions_Scope.actions.length > 0) && <More_Action$__Html />}
         {(revisions_Scope.title_Start !== null || revisions_Scope.title_Stop !== null || revisions_Scope.actions.length > 0) && (
-          <div
-            class="actions_Card_htmlView folded_htmlView"
-            role="group"
-            aria-label="Scope revision actions"
-          >
-            {revisions_Scope.title_Start !== null && (
-              <button
-                type="button"
-                class="action_htmlView start_htmlView"
-                data-scope={scope_Work}
-                data-work="START"
-                data-state-after="REVISING"
-                title={revisions_Scope.title_Start}
-              >
-                Start all
-              </button>
-            )}
-            {revisions_Scope.title_Stop !== null && (
-              <button
-                type="button"
-                class="action_htmlView stop_htmlView"
-                data-scope={scope_Work}
-                data-work="STOP"
-                title={revisions_Scope.title_Stop}
-              >
-                Stop all
-              </button>
-            )}
-            {revisions_Scope.actions.map((action_Task) => (
-              <button
-                type="button"
-                class="action_htmlView"
-                data-task={action_Task.command}
-              >
-                {action_Task.label}
-              </button>
-            ))}
-          </div>
+          <Fold_Action$__Html>
+            <div
+              class="actions_Card_htmlView folded_htmlView"
+              role="group"
+              aria-label="Scope revision actions"
+            >
+              {revisions_Scope.title_Start !== null && (
+                <button
+                  type="button"
+                  class="action_htmlView start_htmlView"
+                  data-scope={scope_Work}
+                  data-work="START"
+                  data-state-after="REVISING"
+                  title={revisions_Scope.title_Start}
+                >
+                  Start all
+                </button>
+              )}
+              {revisions_Scope.title_Stop !== null && (
+                <button
+                  type="button"
+                  class="action_htmlView stop_htmlView"
+                  data-scope={scope_Work}
+                  data-work="STOP"
+                  title={revisions_Scope.title_Stop}
+                >
+                  Stop all
+                </button>
+              )}
+              {revisions_Scope.actions.map((action_Task) => (
+                <button
+                  type="button"
+                  class="action_htmlView"
+                  data-task={action_Task.command}
+                >
+                  {action_Task.label}
+                </button>
+              ))}
+            </div>
+          </Fold_Action$__Html>
         )}
       </div>
     </section>
@@ -1672,33 +1685,34 @@ function Request$__Html({
     <div class="request_htmlView">
       <p class="head_Request_htmlView">
         <span class="label_Request_htmlView">{label}</span>
-        <More_Action$__Html />
-        <span class="actions_Request_htmlView folded_htmlView">
-          {isStartable && (
-            <button
-              type="button"
-              class="start_Request_htmlView"
-              data-scope={scope_Work}
-              data-work="START"
-              data-state-after="REVISING"
-              aria-label={`Start ${LABELMAP__SCOPE_WORK[scope_Work]}`}
-            >
-              Start
-            </button>
-          )}
-          {isStoppable && (
-            <button
-              type="button"
-              class="stop_Request_htmlView"
-              data-scope={scope_Work}
-              data-work="STOP"
-              aria-label={`Stop ${LABELMAP__SCOPE_WORK[scope_Work]}`}
-            >
-              Stop
-            </button>
-          )}
-          {add}
-        </span>
+        <Fold_Action$__Html>
+          <span class="actions_Request_htmlView folded_htmlView">
+            {isStartable && (
+              <button
+                type="button"
+                class="start_Request_htmlView"
+                data-scope={scope_Work}
+                data-work="START"
+                data-state-after="REVISING"
+                aria-label={`Start ${LABELMAP__SCOPE_WORK[scope_Work]}`}
+              >
+                Start
+              </button>
+            )}
+            {isStoppable && (
+              <button
+                type="button"
+                class="stop_Request_htmlView"
+                data-scope={scope_Work}
+                data-work="STOP"
+                aria-label={`Stop ${LABELMAP__SCOPE_WORK[scope_Work]}`}
+              >
+                Stop
+              </button>
+            )}
+            {add}
+          </span>
+        </Fold_Action$__Html>
       </p>
       <ol class="list_Request_htmlView">
         {request$.map((request_Item) => (
@@ -1737,61 +1751,62 @@ function Action$_Said__Html({
   const isActed = request_Item.isStoppable || request_Item.isDismissable || (isOpen && (request_Item.isRemovable || request_Item.isStartable))
   return !isActed
     ? null
-    : [
-      <More_Action$__Html />,
-      <span class="actions_Said_htmlView folded_htmlView">
-        {request_Item.isStoppable && (
-          <button
-            type="button"
-            class="stop_Said_htmlView"
-            data-stop={request_Item.id}
-            aria-label={`Stop “${request_Item.notes}”, putting it back in the queue`}
-          >
-            Stop
-          </button>
-        )}
-        {request_Item.isRemovable && isOpen && (
-          <button
-            type="button"
-            class="edit_Said_htmlView"
-            data-edit={request_Item.id}
-            aria-label={`Edit “${request_Item.notes}”`}
-          >
-            Edit
-          </button>
-        )}
-        {request_Item.isStartable && isOpen && (
-          <button
-            type="button"
-            class="start_Said_htmlView"
-            data-start={request_Item.id}
-            aria-label={`Start “${request_Item.notes}” alone`}
-          >
-            Start
-          </button>
-        )}
-        {request_Item.isDismissable && (
-          <button
-            type="button"
-            class="dismiss_Said_htmlView"
-            data-dismiss={request_Item.id}
-            aria-label={`Dismiss “${request_Item.notes}”, done with`}
-          >
-            Dismiss
-          </button>
-        )}
-        {request_Item.isRemovable && isOpen && (
-          <button
-            type="button"
-            class="remove_htmlView"
-            data-remove={request_Item.id}
-            aria-label={`Remove “${request_Item.notes}”`}
-          >
-            Remove
-          </button>
-        )}
-      </span>
-    ]
+    : (
+      <Fold_Action$__Html>
+        <span class="actions_Said_htmlView folded_htmlView">
+          {request_Item.isStoppable && (
+            <button
+              type="button"
+              class="stop_Said_htmlView"
+              data-stop={request_Item.id}
+              aria-label={`Stop “${request_Item.notes}”, putting it back in the queue`}
+            >
+              Stop
+            </button>
+          )}
+          {request_Item.isRemovable && isOpen && (
+            <button
+              type="button"
+              class="edit_Said_htmlView"
+              data-edit={request_Item.id}
+              aria-label={`Edit “${request_Item.notes}”`}
+            >
+              Edit
+            </button>
+          )}
+          {request_Item.isStartable && isOpen && (
+            <button
+              type="button"
+              class="start_Said_htmlView"
+              data-start={request_Item.id}
+              aria-label={`Start “${request_Item.notes}” alone`}
+            >
+              Start
+            </button>
+          )}
+          {request_Item.isDismissable && (
+            <button
+              type="button"
+              class="dismiss_Said_htmlView"
+              data-dismiss={request_Item.id}
+              aria-label={`Dismiss “${request_Item.notes}”, done with`}
+            >
+              Dismiss
+            </button>
+          )}
+          {request_Item.isRemovable && isOpen && (
+            <button
+              type="button"
+              class="remove_htmlView"
+              data-remove={request_Item.id}
+              aria-label={`Remove “${request_Item.notes}”`}
+            >
+              Remove
+            </button>
+          )}
+        </span>
+      </Fold_Action$__Html>
+    )
 }
 
 interface _Api___Edit_Said__Html_ {
@@ -3616,7 +3631,7 @@ function focusEdited__View_TextEditor({
       id_Item: editing_Request.id_Item
     })
   containerElement_View
-    .querySelector<HTMLElement>(`${selector_Holder} .said_htmlView[data-request="${CSS.escape(editing_Request.id)}"] > .actions_Said_htmlView > .edit_Said_htmlView`)
+    .querySelector<HTMLElement>(`${selector_Holder} .said_htmlView[data-request="${CSS.escape(editing_Request.id)}"] > .fold_Action_htmlView > .actions_Said_htmlView > .edit_Said_htmlView`)
     ?.focus()
 }
 

@@ -600,10 +600,12 @@
 /* actions folded behind an ellipsis, wherever they sit beside something,
    a request's own, Stop, Edit, Start, Dismiss, Remove, a group's, by its
    heading, a card's, on a line by its figure, or a document's, on its
-   row: unfolded while what they're beside is pointed at, or the keyboard's
-   on one of them, the ellipsis stepping aside for them, not left unfolded
-   by the focus a click leaves on one, so they fold once the pointer's
-   gone; folded, hidden
+   row: the ellipsis and its actions one fold, unfolded while the pointer's
+   on it, or near it, a little past it all round, not anywhere on the line,
+   or the keyboard's on one of them, the ellipsis stepping aside for them,
+   the pointer then on them, so they stay; not left unfolded by the focus
+   a click leaves on one, so they fold once the pointer's gone; folded,
+   hidden
    and out of the way, not gone, so the keyboard still reaches them, and
    unfolds them as it does; always unfolded where nothing can be pointed
    at. A line of nothing but its actions, Revise alone, isn't folded */
@@ -616,7 +618,34 @@
   white-space: nowrap;
 }
 
-.htmlView_editor :is(.said_htmlView, .head_Request_htmlView, .line_Card_htmlView, .document_Card_htmlView):is(:hover, :has(:focus-visible)) > .folded_htmlView {
+/* the fold as tall as what it shows, the ellipsis or its actions, as if
+   they were its line's own, no line of text round them, so nothing moves
+   as it opens; in a request's words, inline, as they are */
+.htmlView_editor .fold_Action_htmlView {
+  position: relative;
+  isolation: isolate;
+  display: inline-flex;
+}
+
+.htmlView_editor .said_htmlView > .fold_Action_htmlView {
+  display: inline;
+}
+
+/* on a card's line, set on its baseline as the figure beside it is, its
+   actions a hair taller than the figure's chip not making the line taller
+   as they open */
+.htmlView_editor .line_Card_htmlView > .fold_Action_htmlView {
+  margin-block: -1px;
+}
+
+.htmlView_editor .fold_Action_htmlView::before {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  inset: -0.35em;
+}
+
+.htmlView_editor .fold_Action_htmlView:is(:hover, :has(:focus-visible)) > .folded_htmlView {
   position: static;
   width: auto;
   height: auto;
@@ -624,8 +653,8 @@
   clip-path: none;
 }
 
-.htmlView_editor :is(.said_htmlView, .head_Request_htmlView, .line_Card_htmlView, .document_Card_htmlView):is(:hover, :has(:focus-visible)) > .more_htmlView,
-.htmlView_editor .head_Request_htmlView:has(> .actions_Request_htmlView:empty) > .more_htmlView {
+.htmlView_editor .fold_Action_htmlView:is(:hover, :has(:focus-visible)) > .more_htmlView,
+.htmlView_editor .fold_Action_htmlView:has(> .actions_Request_htmlView:empty) > .more_htmlView {
   display: none;
 }
 
@@ -673,12 +702,11 @@
   --ink_More_htmlView: var(--accent_proposals_htmlView);
 }
 
-.htmlView_editor .said_htmlView > .more_htmlView {
+.htmlView_editor .said_htmlView .more_htmlView {
   --ink_More_htmlView: var(--view-placeholder-ink, color-mix(in srgb, CanvasText 58%, transparent));
 }
 
-.htmlView_editor .said_htmlView > .more_htmlView,
-.htmlView_editor .said_htmlView:is(:hover, :has(:focus-visible)) > .actions_Said_htmlView {
+.htmlView_editor .said_htmlView > .fold_Action_htmlView {
   margin-left: 0.5em;
 }
 
@@ -692,7 +720,7 @@
   margin-left: 0;
 }
 
-.htmlView_editor :is(.value_Card_htmlView ~ .more_htmlView, .value_Card_htmlView ~ .actions_Card_htmlView, .document_Card_htmlView > .more_htmlView) {
+.htmlView_editor :is(.value_Card_htmlView ~ .fold_Action_htmlView, .document_Card_htmlView > .fold_Action_htmlView) {
   margin-left: auto;
 }
 
@@ -1819,7 +1847,7 @@
   color: var(--view-placeholder-ink, color-mix(in srgb, CanvasText 58%, transparent));
 }
 
-.htmlView_editor .line_Card_htmlView > .actions_Card_htmlView {
+.htmlView_editor .line_Card_htmlView .actions_Card_htmlView {
   margin-top: 0;
 }
 

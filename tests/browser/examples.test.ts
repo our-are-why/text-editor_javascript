@@ -440,14 +440,14 @@ const itemsOf = (source: string) => opened_JavaScript.page.evaluate(async (sourc
     ink_Revise: [...element.querySelectorAll(":is(.action_htmlView, .add_Request_htmlView)[data-command=\"revise\"]")].map((button) => getComputedStyle(button).color).join()
   }))
 }, source)
-// a control pressed as you would: what it's folded behind pointed at
-// first, its request, its group's heading, its card's line or its
-// document's row, its actions unfolding, then the control itself
+// a control pressed as you would: the ellipsis it's folded behind pointed
+// at first, its actions unfolding in its place, then the control itself
 const pressedAt = async (control: ReturnType<typeof opened_JavaScript.page.locator>) => {
-  const holder = control.locator("xpath=ancestor::*[contains(concat(' ', @class, ' '), ' said_htmlView ') or contains(concat(' ', @class, ' '), ' head_Request_htmlView ') or contains(concat(' ', @class, ' '), ' line_Card_htmlView ') or contains(concat(' ', @class, ' '), ' document_Card_htmlView ')][1]")
-  if (await holder.count() > 0) {
-    await holder.scrollIntoViewIfNeeded()
-    await holder.hover()
+  const fold = control.locator("xpath=ancestor::*[contains(concat(' ', @class, ' '), ' fold_Action_htmlView ')][1]")
+  if (await fold.count() > 0) {
+    await fold.scrollIntoViewIfNeeded()
+    const box = await fold.locator(":scope > .more_htmlView").boundingBox()
+    if (box !== null) await opened_JavaScript.page.mouse.move(box.x + box.width / 2, box.y + box.height / 2)
   }
   await control.click()
 }
@@ -548,7 +548,7 @@ const headerShown = () => opened_JavaScript.page.evaluate(async () => {
     parts: [...header?.querySelectorAll(".part_Header_htmlView") ?? []].map((element) => element.textContent),
     spinners: header?.querySelectorAll(".spinner_htmlView").length ?? 0,
     document: header?.querySelector(".trigger_Document_htmlView")?.textContent ?? null,
-    card: [...header?.querySelectorAll(".card_Task_htmlView :is(.actions_Card_htmlView, .total_Document_Card_htmlView > .actions_Document_Card_htmlView) > button") ?? []].map((element) => element.textContent),
+    card: [...header?.querySelectorAll(".card_Task_htmlView :is(.actions_Card_htmlView, .total_Document_Card_htmlView .actions_Document_Card_htmlView) > button") ?? []].map((element) => element.textContent),
     card_Document: [...header?.querySelectorAll(".card_Document_htmlView .actions_Card_htmlView > button") ?? []].map((element) => element.textContent),
     isSticky: header === null ? false : getComputedStyle(header).position === "sticky"
   }
@@ -952,8 +952,8 @@ const shownOf_Starts = () => opened_JavaScript.page.evaluate(async () => {
   const said = document.querySelector(".card_Document_htmlView .said_htmlView:has(.start_Said_htmlView)")
   return {
     group: unfoldedOf(document.querySelector(".card_Document_htmlView .actions_Request_htmlView:has(> .start_Request_htmlView)")),
-    actions: unfoldedOf(said?.querySelector(":scope > .actions_Said_htmlView") ?? null),
-    more: said?.querySelector(":scope > .more_htmlView") instanceof Element ? getComputedStyle(said.querySelector(":scope > .more_htmlView") as Element).display : null
+    actions: unfoldedOf(said?.querySelector(":scope > .fold_Action_htmlView > .actions_Said_htmlView") ?? null),
+    more: said?.querySelector(":scope > .fold_Action_htmlView > .more_htmlView") instanceof Element ? getComputedStyle(said.querySelector(":scope > .fold_Action_htmlView > .more_htmlView") as Element).display : null
   }
 })
 const startedSince = async (count_Before: number) => (await opened_JavaScript.logged()).filter((entry) => "revising" in entry).slice(count_Before)
@@ -961,9 +961,17 @@ await asked_Card(".trigger_Document_htmlView", ".card_Document_htmlView", "DOCUM
 await asked_Card(".trigger_Document_htmlView", ".card_Document_htmlView", "DOCUMENT", "Name its options.")
 await opened_JavaScript.page.hover(".trigger_Document_htmlView")
 const starts_Resting = await shownOf_Starts()
+const pointedAt = async (selector: string) => {
+  const box = await opened_JavaScript.page.locator(selector).first().boundingBox()
+  if (box !== null) await opened_JavaScript.page.mouse.move(box.x + box.width / 2, box.y + box.height / 2)
+}
 await opened_JavaScript.page.hover(".card_Document_htmlView .label_Request_htmlView")
+const starts_Label = await shownOf_Starts()
+await pointedAt(".card_Document_htmlView .head_Request_htmlView .more_htmlView")
 const starts_Group = await shownOf_Starts()
 await opened_JavaScript.page.hover(".card_Document_htmlView .said_htmlView:has(.start_Said_htmlView) > .notes_Said_htmlView")
+const starts_Words = await shownOf_Starts()
+await pointedAt(".card_Document_htmlView .said_htmlView:has(.start_Said_htmlView) .more_htmlView")
 const starts_Request = await shownOf_Starts()
 const count_Logged = (await opened_JavaScript.logged()).filter((entry) => "revising" in entry).length
 const scopes_Group = await opened_JavaScript.page.evaluate(() => [...document.querySelectorAll(".header_htmlView [data-scope]")].map((element) => `${element.getAttribute("data-scope")} ${element.getAttribute("data-work")}`))
@@ -981,9 +989,11 @@ await opened_JavaScript.page.hover(".trigger_Task_htmlView")
 await pressedAt(opened_JavaScript.page.locator(".card_Task_htmlView [data-scope=\"TASK\"][data-work=\"START\"]"))
 const started_All = await startedSince(count_Logged)
 
-test("each scope's Start: a request's own actions behind an ellipsis till it's pointed at, the ellipsis becoming them, its group's behind theirs till its heading is; the document's own requests started by their group's Start, its proposals' queued revision left; the task's own by theirs; the task's Start all starting everything queued in it, the proposal's too", () => {
+test("each scope's Start: a request's own actions behind an ellipsis till the ellipsis is pointed at, not its words, the ellipsis becoming them, its group's behind theirs till theirs is, not its heading; the document's own requests started by their group's Start, its proposals' queued revision left; the task's own by theirs; the task's Start all starting everything queued in it, the proposal's too", () => {
   expect(starts_Resting).toEqual({ group: false, actions: false, more: "inline-block" })
+  expect(starts_Label).toEqual({ group: false, actions: false, more: "inline-block" })
   expect(starts_Group).toEqual({ group: true, actions: false, more: "inline-block" })
+  expect(starts_Words).toEqual({ group: false, actions: false, more: "inline-block" })
   expect(starts_Request).toEqual({ group: false, actions: true, more: "none" })
   expect(scopes_Group).toEqual(["TASK START", "TASK_REQUESTS START", "DOCUMENT START", "DOCUMENT_REQUESTS START"])
   expect(started_Document).toEqual([{ revising: "document", requests: 2 }])
@@ -1026,7 +1036,7 @@ const edited = await opened_JavaScript.page.evaluate(async () => {
   await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)))
   return {
     words: [...document.querySelectorAll(".card_Document_htmlView .notes_Said_htmlView")].map((element) => element.textContent).filter((words) => words === "Say it once." || words === "Say it twice."),
-    isEditFocused: document.activeElement?.matches(".card_Document_htmlView .said_htmlView > .actions_Said_htmlView > .edit_Said_htmlView") === true
+    isEditFocused: document.activeElement?.matches(".card_Document_htmlView .said_htmlView > .fold_Action_htmlView > .actions_Said_htmlView > .edit_Said_htmlView") === true
   }
 })
 const logged_Edit = (await opened_JavaScript.logged()).slice(count_Edited).filter((entry) => "edited" in entry)
@@ -1066,7 +1076,7 @@ const progressOf = (notes: string) => opened_JavaScript.page.evaluate(async (not
   const said = [...document.querySelectorAll(".card_Document_htmlView .said_htmlView")].find((element) => element.querySelector(".notes_Said_htmlView")?.textContent === notes)
   return {
     progress: said?.querySelector(".progress_Said_htmlView")?.textContent ?? null,
-    controls: [...said?.querySelectorAll(":scope > .actions_Said_htmlView > button") ?? []].map((element) => element.textContent)
+    controls: [...said?.querySelectorAll(":scope > .fold_Action_htmlView > .actions_Said_htmlView > button") ?? []].map((element) => element.textContent)
   }
 }, notes)
 await asked_Card(".trigger_Document_htmlView", ".card_Document_htmlView", "DOCUMENT", "Stop me.")
@@ -1114,7 +1124,7 @@ const addressedOf_Card = () => opened_JavaScript.page.evaluate(async () => {
     .filter((element) => element.querySelector(".progress_Said_htmlView")?.firstChild?.textContent === "addressed")
     .map((element) => ({
       notes: element.querySelector(".notes_Said_htmlView")?.textContent ?? null,
-      controls: [...element.querySelectorAll(":scope > .actions_Said_htmlView > button")].map((button) => button.textContent)
+      controls: [...element.querySelectorAll(":scope > .fold_Action_htmlView > .actions_Said_htmlView > button")].map((button) => button.textContent)
     }))
 })
 await opened_JavaScript.page.hover(".trigger_Document_htmlView")
@@ -1253,5 +1263,37 @@ const toggled_Card = await opened_JavaScript.page.evaluate(async () => {
 test("a card's Revise or Add pressed again while its form's open puts it away, as its Cancel would, what's written and all, the keyboard back on it", () => {
   expect(form_Before).toBe(1)
   expect(toggled_Card).toEqual({ forms: 0, isAskFocused: true, isCardShown: true, isAdded: false })
+  expect(opened_JavaScript.errors).toEqual([])
+})
+
+// then a fold opened where it is: its actions in its ellipsis's place,
+// nothing on any line, or under it, moving as they open, a request's, its
+// group's heading, a card's line, or a document's row
+await opened_JavaScript.page.keyboard.press("Escape")
+await opened_JavaScript.page.mouse.move(700, 700)
+const linesOf_Card = (card: string) => opened_JavaScript.page.evaluate(async (card) => {
+  await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)))
+  return [...document.querySelectorAll(`${card} :is(.head_Request_htmlView, .said_htmlView, .line_Card_htmlView, .document_Card_htmlView)`)].map((element) => `${Math.round(element.getBoundingClientRect().top * 100) / 100}/${Math.round(element.getBoundingClientRect().height * 100) / 100}`)
+}, card)
+const moved: Array<string> = []
+for (const card of [".card_Document_htmlView", ".card_Task_htmlView"]) {
+  const trigger = card === ".card_Task_htmlView" ? ".trigger_Task_htmlView" : ".trigger_Document_htmlView"
+  const count = await opened_JavaScript.page.locator(`${card} .fold_Action_htmlView > .more_htmlView`).count()
+  for (let index = 0; index < count; index++) {
+    await opened_JavaScript.page.mouse.move(700, 700)
+    await opened_JavaScript.page.hover(trigger)
+    const before = await linesOf_Card(card)
+    const box = await opened_JavaScript.page.locator(`${card} .fold_Action_htmlView > .more_htmlView`).nth(index).boundingBox()
+    if (box === null) continue
+    await opened_JavaScript.page.mouse.move(box.x + box.width / 2, box.y + box.height / 2)
+    const after = await linesOf_Card(card)
+    if (after.join() !== before.join()) moved.push(`${card} ${index}: ${before.join(" ")} → ${after.join(" ")}`)
+  }
+}
+const count_Folds = await opened_JavaScript.page.evaluate(() => document.querySelectorAll(".header_htmlView .fold_Action_htmlView").length)
+
+test("a fold opened where it is: nothing on any line, or under it, moving as its actions open, a request's, its group's heading, a card's line or a document's row", () => {
+  expect(count_Folds).toBeGreaterThan(3)
+  expect(moved).toEqual([])
   expect(opened_JavaScript.errors).toEqual([])
 })

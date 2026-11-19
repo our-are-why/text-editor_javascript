@@ -2798,3 +2798,17 @@ at each piece of a path, so a ring a wrap cuts, or open at a side, can't
 be fitted with one pattern; a draw puts the look's back, and it's fitted
 again. The cut sides' own fitting, `pathLength` scaled, a dash at each
 end reaching half a stroke past the ring, is gone with it.
+
+Decided 2026-11-19: folded actions open only at their ellipsis, not
+anywhere on their line: the ellipsis and its actions one fold,
+`Fold_Action$__Html`, `fold_Action_htmlView`, unfolded while the pointer's
+on it or near it, an unseen margin 0.35em past it, under its actions so
+clicks reach them, or the keyboard's on one of its actions; the actions
+in the ellipsis's place on the line, the pointer then on them, so they
+stay open till it leaves. (`fold_htmlView` is a frame's fold control's.)
+Nothing moves as a fold opens: the fold is an inline flex box, as tall as
+what it shows, as the ellipsis and the actions were as their line's own
+items, not a line of text round them, which had made a document's row
+taller than its chip folded, so it shrank opening; in a request's words,
+inline; on a card's line, a pixel's negative margin above and below, so
+actions a hair taller than the figure's chip don't grow the line.
