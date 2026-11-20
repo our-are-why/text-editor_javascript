@@ -3114,3 +3114,40 @@ chip's pointed at, and gone to from its lines. Each request a lane of its
 own, one under another where they overlapped, was tried first the same
 day and let go: it didn't scale, three lanes crowding the line under them
 and more piling onto the last.
+
+Decided 2026-11-20: an accepted proposal not yet applied has its rings
+filled, a faint wash of their own colour, `data-state="ACCEPTED"` on its
+groups: an outline what's proposed, filled what's taken, the kind of
+change still told by its colour. Laid out beside indigo rings, which said
+decided most loudly but no longer what kind of change, and a check
+stamped on each ring's corner, which crowded the words beside it; no
+other mark is a filled ring. Applied, there's nothing left to ring, and
+whether it should leave any trace is still to decide.
+
+Decided 2026-11-20: a run's underlays are drawn in layers, one for each
+thing they say, in order, bottom to top: the rings' fills, `FILLS`, the
+areas, an accepted proposal's wash among them; the rings, `RINGS`, their
+strokes, seams and laps, and notches; and the marks that are a request's,
+`MARKS`, its words' dotted line. Each layer has a group for each of the
+run's groups with something in it, carrying the group's data, so a look
+reads a group's state wherever it is; a group with nothing to draw isn't
+drawn. A request's line cuts a band out of the rings' layer under it, a
+mask, `knockout-` the view's id and the run's, the band as far round the
+line as `--view-underlay-knockout`, 2.5px given none: where the line meets
+a ring's edge, running along it, as an inner ring's bottom does, or
+crossing it, as a side does where the words leave the ring, the line
+reads whole and the ring's edge stops short of it, rather than showing
+between its dots and seeming to break it. A halo round each dot, which
+kept the rings whole, was laid out beside it and let go for now: the
+ring's edge left in slivers between the dots could read as a dashed ring,
+which says stale, and slivers under a pixel blur on a plain screen.
+
+Decided 2026-11-20: the layers' order gives way to what's pointed at. The
+proposal pointed at, its change or its item, `data-pointed` on its
+groups, has its rings drawn in a layer of their own, `POINTED`, over the
+request lines, cutting a band out of them, `knockout-marks-`, as wide as
+the band the lines cut, instead of being cut by them: while you're on a
+proposal, its rings read whole, the lines through them stopping short;
+pointed away from, the lines cut the rings again. Its fills stay in the
+fills' layer. The keyboard on a proposal's item doesn't yet count as
+pointing at it.

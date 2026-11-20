@@ -139,7 +139,7 @@ const invariants_Everything: Array<_Invariant_Scene_> = [
         groups_Everything.flatMap((group, index_Group) =>
           group.underlays.flatMap((underlay_Text, index_Underlay) => {
             if (underlay_Text.kind !== "STRETCH") return []
-            const pathElement = containerElement.querySelectorAll(".run_htmlView > .underlays_htmlView > .group_htmlView")[index_Group]?.children[index_Underlay]
+            const pathElement = containerElement.querySelectorAll(".run_htmlView > .underlays_htmlView > .layer_htmlView[data-layer=\"FILLS\"] > .group_htmlView")[index_Group]?.children[index_Underlay]
             return pathElement instanceof SVGPathElement && shapeMatches(pathElement, rowsOf__Stretch(containerElement, underlay_Text)) ? [] : [labelAt(underlay_Text.from.line)]
           })
         )

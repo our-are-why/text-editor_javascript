@@ -91,6 +91,7 @@ class _View_TextEditor_ {
   run$: Array<_Run_Lines_>
   selection: _Selection_Drawn_ | null
   ink$_Glyph: Map<string, _Ink_Glyph_>
+  id: string
   resizeObserver_containerElement: ResizeObserver
   mutationObserver_containerElement: MutationObserver
   room: _Room_View_
@@ -107,6 +108,7 @@ class _View_TextEditor_ {
     this.run$ = []
     this.selection = null
     this.ink$_Glyph = new Map()
+    this.id = crypto.randomUUID()
     this.resizeObserver_containerElement = new ResizeObserver(() => this.resized())
     this.resizeObserver_containerElement.observe(this.containerElement)
     this.mutationObserver_containerElement = new MutationObserver(() => this.measure())
@@ -199,7 +201,8 @@ class _View_TextEditor_ {
     drawTextUnderlay$__View_TextEditor({
       containerElement_View: this.containerElement,
       run$_View: this.run$,
-      ink$_Glyph_View: this.ink$_Glyph
+      ink$_Glyph_View: this.ink$_Glyph,
+      id_View: this.id
     })
     drawSelection__View_TextEditor({
       containerElement_View: this.containerElement,
@@ -2220,12 +2223,14 @@ interface _Api___drawTextUnderlay$__View_TextEditor_ {
   containerElement_View: HTMLElement
   run$_View: Array<_Run_Lines_>
   ink$_Glyph_View: Map<string, _Ink_Glyph_>
+  id_View: string
 }
 
 function drawTextUnderlay$__View_TextEditor({
   containerElement_View,
   run$_View,
-  ink$_Glyph_View
+  ink$_Glyph_View,
+  id_View
 }: _Api___drawTextUnderlay$__View_TextEditor_): void {
   const drawn$_Run = run$_View.flatMap((run_Line$) => drawn$Of__Run_Line$({
     run_Line$,
@@ -2241,46 +2246,152 @@ function drawTextUnderlay$__View_TextEditor({
   }))
   for (const {
     svgElement_underlay$,
+    id_Run,
+    knockout,
     measure$_Group
   } of measure$_Run) {
+    const d_Knockout = measure$_Group
+      .flatMap((measure_Group) => measure_Group.measure$_Underlay.map((measure_Underlay) => measure_Underlay.d_Knockout))
+      .filter((d) => d !== "")
+      .join(" ")
+    const id_Mask = `knockout-${id_View}-${id_Run}`
+    const id_Mask_Marks = `knockout-marks-${id_View}-${id_Run}`
+    const isPointed = (measure_Group: _Measure_Group_) => "data-pointed" in measure_Group.attributes
+    const d$_Pointed = d_Knockout === ""
+      ? []
+      : measure$_Group.flatMap((measure_Group) => isPointed(measure_Group)
+        ? measure_Group.measure$_Underlay.flatMap((measure_Underlay) => measure_Underlay.layer === "RINGS"
+          ? [
+            measure_Underlay.d,
+            ...measure_Underlay.d_Seam$
+          ].filter((d) => d !== "")
+          : [])
+        : [])
+    const groupsIn = (
+      layer: _Layer_Underlay_,
+      isPointed_Group: boolean | null,
+      pathsOf: (measure_Underlay: _Measure_Underlay_) => _Node_Jsx_
+    ) => measure$_Group.flatMap((measure_Group) => {
+      if (isPointed_Group !== null && isPointed(measure_Group) !== isPointed_Group) return []
+      const measure$_Underlay = measure_Group.measure$_Underlay.filter((measure_Underlay) => measure_Underlay.layer === layer)
+      return measure$_Underlay.length === 0
+        ? []
+        : [
+          <g
+            {...measure_Group.attributes}
+            class="group_htmlView"
+          >
+            {measure$_Underlay.map(pathsOf)}
+          </g>
+        ]
+    })
     draw__Node_Jsx({
       containerElement: svgElement_underlay$,
-      node_Jsx: measure$_Group.map((measure_Group) => (
+      node_Jsx: [
+        d_Knockout !== "" && (
+          <defs>
+            <mask
+              id={id_Mask}
+              maskUnits="userSpaceOnUse"
+              x="-100000"
+              y="-100000"
+              width="200000"
+              height="200000"
+            >
+              <rect
+                x="-100000"
+                y="-100000"
+                width="200000"
+                height="200000"
+                fill="white"
+              />
+              <path
+                d={d_Knockout}
+                fill="black"
+              />
+            </mask>
+            {d$_Pointed.length > 0 && (
+              <mask
+                id={id_Mask_Marks}
+                maskUnits="userSpaceOnUse"
+                x="-100000"
+                y="-100000"
+                width="200000"
+                height="200000"
+              >
+                <rect
+                  x="-100000"
+                  y="-100000"
+                  width="200000"
+                  height="200000"
+                  fill="white"
+                />
+                <path
+                  d={d$_Pointed.join(" ")}
+                  fill="none"
+                  stroke="black"
+                  stroke-width={String(2 * knockout)}
+                />
+              </mask>
+            )}
+          </defs>
+        ),
         <g
-          {...measure_Group.attributes}
-          class="group_htmlView"
+          class="layer_htmlView"
+          data-layer="FILLS"
         >
-          {measure_Group.measure$_Underlay.map((measure_Underlay) => [
-            <path
-              {...measure_Underlay.attributes}
-              class="area_htmlView"
-              d={measure_Underlay.d_Area}
-              pathLength="100"
-            />,
-            <path
-              {...measure_Underlay.attributes}
-              class="underlay_htmlView"
-              d={measure_Underlay.d}
-            />,
-            measure_Underlay.d_Seam$.map((d_Seam) => (
+          {groupsIn(
+            "RINGS",
+            null,
+            (measure_Underlay) => (
               <path
                 {...measure_Underlay.attributes}
-                class="seam_htmlView"
-                d={d_Seam}
+                class="area_htmlView"
+                d={measure_Underlay.d_Area}
+                pathLength="100"
               />
-            )),
-            measure_Underlay.lap$.map((lap_Underlay) => (
+            )
+          )}
+        </g>,
+        <g
+          class="layer_htmlView"
+          data-layer="RINGS"
+          mask={d_Knockout === "" ? undefined : `url(#${id_Mask})`}
+        >
+          {groupsIn(
+            "RINGS",
+            false,
+            pathsOf__Ring
+          )}
+        </g>,
+        <g
+          class="layer_htmlView"
+          data-layer="MARKS"
+          mask={d$_Pointed.length === 0 ? undefined : `url(#${id_Mask_Marks})`}
+        >
+          {groupsIn(
+            "MARKS",
+            null,
+            (measure_Underlay) => (
               <path
                 {...measure_Underlay.attributes}
-                class="lap_htmlView"
-                d={lap_Underlay.d}
-                pathLength={String(lap_Underlay.pathLength)}
-                style={`--phase_htmlView: ${lap_Underlay.phase}; --length_htmlView: ${lap_Underlay.length_Lap}`}
+                class="underlay_htmlView"
+                d={measure_Underlay.d}
               />
-            ))
-          ])}
+            )
+          )}
+        </g>,
+        <g
+          class="layer_htmlView"
+          data-layer="POINTED"
+        >
+          {groupsIn(
+            "RINGS",
+            true,
+            pathsOf__Ring
+          )}
         </g>
-      ))
+      ]
     })
     fit__Dash$({
       svgElement_underlay$
@@ -2289,6 +2400,34 @@ function drawTextUnderlay$__View_TextEditor({
   fit__Lap$({
     containerElement_View
   })
+}
+
+function pathsOf__Ring(
+  measure_Underlay: _Measure_Underlay_
+): _Node_Jsx_ {
+  return [
+    <path
+      {...measure_Underlay.attributes}
+      class="underlay_htmlView"
+      d={measure_Underlay.d}
+    />,
+    measure_Underlay.d_Seam$.map((d_Seam) => (
+      <path
+        {...measure_Underlay.attributes}
+        class="seam_htmlView"
+        d={d_Seam}
+      />
+    )),
+    measure_Underlay.lap$.map((lap_Underlay) => (
+      <path
+        {...measure_Underlay.attributes}
+        class="lap_htmlView"
+        d={lap_Underlay.d}
+        pathLength={String(lap_Underlay.pathLength)}
+        style={`--phase_htmlView: ${lap_Underlay.phase}; --length_htmlView: ${lap_Underlay.length_Lap}`}
+      />
+    ))
+  ]
 }
 
 interface _Api___drawn$Of__Run_Line$_ {
@@ -2396,6 +2535,7 @@ interface _Inset_Underlay_ {
   clear: number
   step: number
   nest: number
+  knockout: number
 }
 
 function insetOf__Element(
@@ -2407,7 +2547,8 @@ function insetOf__Element(
     inline: lengthOf__Value(style.getPropertyValue("--insetInline_underlay_htmlView")),
     clear: lengthOf__Value(style.getPropertyValue("--clearInline_underlay_htmlView")),
     step: lengthOf__Value(style.getPropertyValue("--step_underlay_htmlView")),
-    nest: lengthOf__Value(style.getPropertyValue("--nest_underlay_htmlView"))
+    nest: lengthOf__Value(style.getPropertyValue("--nest_underlay_htmlView")),
+    knockout: lengthOf__Value(style.getPropertyValue("--knockout_underlay_htmlView"))
   }
 }
 
@@ -2650,6 +2791,8 @@ interface _Ink_Glyph_ {
 
 interface _Measure_Run_ {
   svgElement_underlay$: Element
+  id_Run: string
+  knockout: number
   measure$_Group: Array<_Measure_Group_>
 }
 
@@ -2660,11 +2803,15 @@ interface _Measure_Group_ {
 
 interface _Measure_Underlay_ {
   attributes: _Attributes_Element_
+  layer: _Layer_Underlay_
   d_Area: string
   d: string
   d_Seam$: Array<string>
   lap$: Array<_Lap_Underlay_>
+  d_Knockout: string
 }
+
+type _Layer_Underlay_ = "RINGS" | "MARKS"
 
 interface _Lap_Underlay_ {
   d: string
@@ -2709,6 +2856,8 @@ function measureOf__Drawn_Run({
   }
   return {
     svgElement_underlay$: drawn_Run.svgElement_underlay$,
+    id_Run: drawn_Run.run_Line$.id,
+    knockout: inset_Underlay.knockout,
     measure$_Group: drawn_Run.run_Line$.groups.map((group_Underlay) => ({
       attributes: group_Underlay.attributes,
       measure$_Underlay: group_Underlay.underlays.map((underlay_Text) => measureOf__Underlay_Text({
@@ -3023,19 +3172,23 @@ function measureOf__Stretch({
   const measure_Box = context_Measure.measure$_Box.find((measure_Box_each) => measure_Box_each.underlay_Text === underlay_Text)
   return measure_Box === undefined
     ? {
+      layer: "RINGS",
       attributes: underlay_Text.attributes,
       d_Area: "",
       d: "",
       d_Seam$: [],
-      lap$: []
+      lap$: [],
+      d_Knockout: ""
     }
     : {
+      layer: "RINGS",
       attributes: underlay_Text.attributes,
       ...pathOf__Measure_Box({
         measure_Box,
         measure$_Box: context_Measure.measure$_Box,
         inset_Underlay: context_Measure.inset_Underlay
-      })
+      }),
+      d_Knockout: ""
     }
 }
 
@@ -3053,6 +3206,7 @@ function measureOf__Point({
     })
   if (caret === null) {
     return {
+      layer: "RINGS",
       attributes: {
         ...underlay_Text.attributes,
         "data-notch": "point"
@@ -3060,7 +3214,8 @@ function measureOf__Point({
       d_Area: "",
       d: "",
       d_Seam$: [],
-      lap$: []
+      lap$: [],
+      d_Knockout: ""
     }
   }
   const x = caret.x - context_Measure.origin.left
@@ -3068,6 +3223,7 @@ function measureOf__Point({
   const base = tip - size_Notch.length
   const half = size_Notch.width / 2
   return {
+    layer: "RINGS",
     attributes: {
       ...underlay_Text.attributes,
       "data-notch": "point"
@@ -3075,7 +3231,8 @@ function measureOf__Point({
     d_Area: `M ${x - half - size_Notch.reach} ${base - size_Notch.reach} H ${x + half + size_Notch.reach} V ${tip + size_Notch.reach} H ${x - half - size_Notch.reach} Z`,
     d: `M ${x - half} ${base} L ${x + half} ${base} L ${x} ${tip} Z`,
     d_Seam$: [],
-    lap$: []
+    lap$: [],
+    d_Knockout: ""
   }
 }
 
@@ -3098,6 +3255,7 @@ function measureOf__Boundary({
   }) - context_Measure.origin.left
   const half = size_Notch.width / 2
   return {
+    layer: "RINGS",
     attributes: {
       ...underlay_Text.attributes,
       "data-notch": "boundary"
@@ -3105,7 +3263,8 @@ function measureOf__Boundary({
     d_Area: `M ${x - 2 * size_Notch.reach} ${y - half - size_Notch.reach} H ${x + size_Notch.length + size_Notch.reach} V ${y + half + size_Notch.reach} H ${x - 2 * size_Notch.reach} Z`,
     d: `M ${x} ${y - half} L ${x} ${y + half} L ${x + size_Notch.length} ${y} Z`,
     d_Seam$: [],
-    lap$: []
+    lap$: [],
+    d_Knockout: ""
   }
 }
 
@@ -3113,7 +3272,8 @@ function measureOf__Underline({
   underlay_Text,
   context_Measure
 }: _Api___measureOf__Underlay_Text_<"UNDERLINE">): _Measure_Underlay_ {
-  const d$_Row = context_Measure.divElement$_text
+  const reach = context_Measure.inset_Underlay.knockout
+  const row$ = context_Measure.divElement$_text
     .slice(
       underlay_Text.from.line,
       underlay_Text.to.line + 1
@@ -3125,19 +3285,22 @@ function measureOf__Underline({
       placed$_Text: placedOf__Text$(text$Of__Element(divElement_text).filter((text) => text.parentElement?.closest(".note_htmlView") === null)),
       from: index === 0 ? underlay_Text.from.offset : 0,
       to: underlay_Text.from.line + index === underlay_Text.to.line ? underlay_Text.to.offset : Infinity
-    })).map((rect_Row) => {
-      const y = rect_Row.bottom - context_Measure.origin.top
-      return `M ${rect_Row.left - context_Measure.origin.left} ${y} L ${rect_Row.right - context_Measure.origin.left} ${y}`
-    }))
+    })).map((rect_Row) => ({
+      left: rect_Row.left - context_Measure.origin.left,
+      right: rect_Row.right - context_Measure.origin.left,
+      y: rect_Row.bottom - context_Measure.origin.top
+    })))
   return {
+    layer: "MARKS",
     attributes: {
       ...underlay_Text.attributes,
       "data-underline": ""
     },
     d_Area: "",
-    d: d$_Row.join(" "),
+    d: row$.map((row) => `M ${row.left} ${row.y} L ${row.right} ${row.y}`).join(" "),
     d_Seam$: [],
-    lap$: []
+    lap$: [],
+    d_Knockout: row$.map((row) => `M ${row.left - reach} ${row.y - reach} H ${row.right + reach} V ${row.y + reach} H ${row.left - reach} Z`).join(" ")
   }
 }
 

@@ -169,6 +169,15 @@
   }
 }
 
+/* a proposal accepted, not yet applied, its rings filled with a faint
+   wash of their own colour: an outline what's proposed, filled what's
+   taken, what kind of change it is still said by its colour; no other
+   mark a filled ring, so it's told from nothing else. Applied, its words
+   are the document's, nothing left to ring */
+[data-look~="changes"] .group_htmlView[data-state="ACCEPTED"] > .area_htmlView[data-change]:not([data-notch]) {
+  fill: color-mix(in srgb, var(--edge) 18%, transparent);
+}
+
 
 /* the proposal pointed at, `data-pointed` on its groups and its items, in
    every frame it's in, the others still showing: its rings heavier, its

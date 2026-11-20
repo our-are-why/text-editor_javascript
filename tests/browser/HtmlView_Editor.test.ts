@@ -220,7 +220,7 @@ describe("beside it: what can't live in one document", () => {
       const drawnAgain = rootElement?.getAttribute("data-seen") === null
       rootElement?.setAttribute("data-seen", "")
       return {
-        pointed: [...(containerElement?.querySelectorAll("[data-pointed]") ?? [])].map((element) => element.classList.contains("gutter_htmlView") ? `gutter ${element.getAttribute("data-pointed")}` : `${element.localName} ${element.getAttribute("data-source")}`),
+        pointed: [...(containerElement?.querySelectorAll("[data-pointed]:not(.layer_htmlView[data-layer=\"FILLS\"] *)") ?? [])].map((element) => element.classList.contains("gutter_htmlView") ? `gutter ${element.getAttribute("data-pointed")}` : `${element.localName} ${element.getAttribute("data-source")}`),
         drawnAgain
       }
     })
@@ -239,7 +239,7 @@ describe("beside it: what can't live in one document", () => {
     await at(`.item_htmlView[data-source="most"] .title_htmlView`)
     expect(await pointed()).toEqual({ pointed: ["g most", "gutter proposal", "li most"], drawnAgain: false })
     await at(`.item_htmlView[data-source="all"] .title_htmlView`)
-    expect(await pointed()).toEqual({ pointed: ["g all", "li all"], drawnAgain: true })
+    expect(await pointed()).toEqual({ pointed: ["li all"], drawnAgain: true })
     await opened.page.mouse.move(1270, 715)
     expect(await pointed()).toEqual({ pointed: [], drawnAgain: true })
     await opened.page.evaluate(() => document.getElementById("pointing")?.remove())
@@ -310,7 +310,7 @@ describe("beside it: what can't live in one document", () => {
     })
     const pointed = () => opened.page.evaluate(async () => {
       await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)))
-      return [...document.querySelectorAll("#pointing-rows .group_htmlView[data-pointed]")].map((element) => element.getAttribute("data-source")).join(" ")
+      return [...document.querySelectorAll("#pointing-rows .layer_htmlView[data-layer=\"POINTED\"] > .group_htmlView[data-pointed]")].map((element) => element.getAttribute("data-source")).join(" ")
     })
     const walked: Array<string> = []
     for (let y = at.from; y <= at.to; y++) {
@@ -1292,7 +1292,7 @@ describe("beside it: what can't live in one document", () => {
     await opened.page.evaluate(() => document.getElementById("kept")?.remove())
   })
 
-  test("each run of lines draws one svg behind its lines' text, a group for each of its groups, two paths in it for each underlay, its area and its ring, each carrying its data", async () => {
+  test("each run of lines draws one svg behind its lines' text, in layers, one for each thing its underlays say, in order: the rings' fills, the rings, the requests' marks, the pointed proposal's rings; in each, a group for each of its groups with something there, a ring's area in the first, its ring and its lap in the second, each carrying its data", async () => {
     const drawn = await opened.page.evaluate(() => {
       const containerElement = document.createElement("div")
       document.body.append(containerElement)
@@ -1325,15 +1325,19 @@ describe("beside it: what can't live in one document", () => {
           getComputedStyle(svgElement).zIndex,
           getComputedStyle(runElement?.querySelector(".text_htmlView") ?? svgElement).zIndex
         ],
-        groups: [...svgElement.children].map((groupElement) => ({
-          tag: groupElement.localName,
-          source: groupElement.getAttribute("data-source"),
-          paths: [...groupElement.children].map((pathElement) => ({
-            tag: pathElement instanceof SVGPathElement ? "path" : pathElement.localName,
-            class: pathElement.getAttribute("class"),
-            attributes: [...pathElement.attributes].map((attribute) => attribute.name).filter((name) => name.startsWith("data-")),
-            shapes: (pathElement.getAttribute("d")?.match(/M/g) ?? []).length,
-            fill: getComputedStyle(pathElement).fill
+        layers: [...svgElement.children].map((layerElement) => ({
+          tag: layerElement.localName,
+          layer: layerElement.getAttribute("data-layer"),
+          groups: [...layerElement.children].map((groupElement) => ({
+            tag: groupElement.localName,
+            source: groupElement.getAttribute("data-source"),
+            paths: [...groupElement.children].map((pathElement) => ({
+              tag: pathElement instanceof SVGPathElement ? "path" : pathElement.localName,
+              class: pathElement.getAttribute("class"),
+              attributes: [...pathElement.attributes].map((attribute) => attribute.name).filter((name) => name.startsWith("data-")),
+              shapes: (pathElement.getAttribute("d")?.match(/M/g) ?? []).length,
+              fill: getComputedStyle(pathElement).fill
+            }))
           }))
         }))
       }
@@ -1344,18 +1348,44 @@ describe("beside it: what can't live in one document", () => {
       lines: 2,
       isolated: "isolate",
       stacked: ["0", "1"],
-      groups: [{
-        tag: "g",
-        source: "most",
-        paths: [
-          { tag: "path", class: "area_htmlView", attributes: ["data-underlay"], shapes: 1, fill: "none" },
-          { tag: "path", class: "underlay_htmlView", attributes: ["data-underlay"], shapes: 1, fill: "none" },
-          { tag: "path", class: "lap_htmlView", attributes: ["data-underlay"], shapes: 1, fill: "none" },
-          { tag: "path", class: "area_htmlView", attributes: ["data-change", "data-source"], shapes: 1, fill: "none" },
-          { tag: "path", class: "underlay_htmlView", attributes: ["data-change", "data-source"], shapes: 1, fill: "none" },
-          { tag: "path", class: "lap_htmlView", attributes: ["data-change", "data-source"], shapes: 1, fill: "none" }
-        ]
-      }]
+      layers: [
+        {
+          tag: "g",
+          layer: "FILLS",
+          groups: [{
+            tag: "g",
+            source: "most",
+            paths: [
+              { tag: "path", class: "area_htmlView", attributes: ["data-underlay"], shapes: 1, fill: "none" },
+              { tag: "path", class: "area_htmlView", attributes: ["data-change", "data-source"], shapes: 1, fill: "none" }
+            ]
+          }]
+        },
+        {
+          tag: "g",
+          layer: "RINGS",
+          groups: [{
+            tag: "g",
+            source: "most",
+            paths: [
+              { tag: "path", class: "underlay_htmlView", attributes: ["data-underlay"], shapes: 1, fill: "none" },
+              { tag: "path", class: "lap_htmlView", attributes: ["data-underlay"], shapes: 1, fill: "none" },
+              { tag: "path", class: "underlay_htmlView", attributes: ["data-change", "data-source"], shapes: 1, fill: "none" },
+              { tag: "path", class: "lap_htmlView", attributes: ["data-change", "data-source"], shapes: 1, fill: "none" }
+            ]
+          }]
+        },
+        {
+          tag: "g",
+          layer: "MARKS",
+          groups: []
+        },
+        {
+          tag: "g",
+          layer: "POINTED",
+          groups: []
+        }
+      ]
     })
   })
 
@@ -2578,12 +2608,12 @@ describe("beside it: what can't live in one document", () => {
     await at("rename", "1")
     const first = await drawn()
     expect(first.rings).toEqual([
+      "other before 1: 1px none, none",
       "rename before 1: place 3px breathe_htmlView, lap_htmlView reverse",
       "rename before 2: 2px breathe_htmlView, none",
-      "other before 1: 1px none, none",
+      "other after 1: 1px none, none",
       "rename after 1: place 3px breathe_htmlView, lap_htmlView normal",
-      "rename after 2: 2px breathe_htmlView, none",
-      "other after 1: 1px none, none"
+      "rename after 2: 2px breathe_htmlView, none"
     ])
     expect(first.clockwise).toBe(true)
     expect(first.labels).toEqual(["place 400 1.3px none", "place 400 1.3px none"])

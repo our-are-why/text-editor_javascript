@@ -507,6 +507,10 @@ test("a proposal's Revise form: Add and Start there from the outset, pressable o
 
 await pressed("errors", "accept")
 const items_Accepted = await itemsOf("errors")
+const fills_Accepted = await opened_JavaScript.page.evaluate(() => ({
+  accepted: [...new Set([...document.querySelectorAll(".group_htmlView[data-source=\"errors\"] > .area_htmlView[data-change]:not([data-notch])")].map((element) => getComputedStyle(element).fill === "none" ? "outline" : "filled"))],
+  open: [...new Set([...document.querySelectorAll(".group_htmlView[data-source=\"round\"] > .area_htmlView[data-change]:not([data-notch])")].map((element) => getComputedStyle(element).fill === "none" ? "outline" : "filled"))]
+}))
 await revisedWith("hook", "Keep the hook, but call it after the delay.", "ADD")
 const items_Requested = await itemsOf("hook")
 await pressed("log", "dismiss")
@@ -653,9 +657,10 @@ await opened_JavaScript.page.mouse.click(point_Attempts_After.x, point_Attempts_
 await opened_JavaScript.page.keyboard.type("x")
 const line_Attempts_Typed = await lineOf_Attempts()
 
-test("a proposal's action pressed is asked of the host, which sends back what it now has: accepted, it's drawn accepted, Reopen its one action; a revision added, its notes asked with it, it's drawn as one requested, what you asked listed under it, still to be accepted, rejected or asked more of; dismissed, it's gone; another added, both listed, one removed; accepting one with revisions queued asked first, Cancel the keyboard's, Escape taking it back; one request started alone, from its own Start, the proposal revising, that request in progress, nothing of it to remove; one added meanwhile queued for the next round, nothing to start while a round's under way; Start under a proposal's requests starting all of them, and that proposal alone; each round back, what it answered done with, what's queued since still queued; and what's typed after goes on as before", () => {
+test("a proposal's action pressed is asked of the host, which sends back what it now has: accepted, it's drawn accepted, its rings filled, an open one's outlines, Reopen its one action; a revision added, its notes asked with it, it's drawn as one requested, what you asked listed under it, still to be accepted, rejected or asked more of; dismissed, it's gone; another added, both listed, one removed; accepting one with revisions queued asked first, Cancel the keyboard's, Escape taking it back; one request started alone, from its own Start, the proposal revising, that request in progress, nothing of it to remove; one added meanwhile queued for the next round, nothing to start while a round's under way; Start under a proposal's requests starting all of them, and that proposal alone; each round back, what it answered done with, what's queued since still queued; and what's typed after goes on as before", () => {
   expect(items_Accepted.length).toBeGreaterThan(0)
   expect(items_Accepted.every((item) => item.state === "ACCEPTED" && item.actions.join() === "Reopen")).toBe(true)
+  expect(fills_Accepted).toEqual({ accepted: ["filled"], open: ["outline"] })
   expect(items_Requested.length).toBeGreaterThan(0)
   expect(items_Requested.every((item) => item.state === "REQUESTED" && item.asked.join("|") === "Keep the hook, but call it after the delay." && item.actions.join() === "Accept,Reject" && item.adds === 1 && item.removes === 1 && item.starts === 1)).toBe(true)
   expect(items_Requested[0]?.ink_Revise).toBe(items_Back_Cap[0]?.ink_Revise)
@@ -791,6 +796,20 @@ await opened_JavaScript.page.locator(".item_htmlView[data-source=\"aborted\"] .s
 const lit_Pointed = await litOf_Words()
 await opened_JavaScript.page.mouse.move(5, 5)
 const lit_Left = await litOf_Words()
+const layersOf_Aborted = () => opened_JavaScript.page.evaluate(async () => {
+  await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)))
+  const svg = [...document.querySelectorAll(".run_htmlView[data-run$=\"-proposed\"] > .underlays_htmlView")].find((element) => element.querySelector(".group_htmlView[data-requested]") !== null && element.querySelector(".group_htmlView[data-source=\"aborted\"]") !== null)
+  return {
+    layer: svg?.querySelector(".layer_htmlView:has(> .group_htmlView[data-source=\"aborted\"] > .underlay_htmlView)")?.getAttribute("data-layer") ?? null,
+    isRingsCut: svg?.querySelector(".layer_htmlView[data-layer=\"RINGS\"]")?.hasAttribute("mask") === true,
+    isMarksCut: svg?.querySelector(".layer_htmlView[data-layer=\"MARKS\"]")?.hasAttribute("mask") === true
+  }
+})
+const layers_Resting = await layersOf_Aborted()
+const rect_Aborted_Pointed = await rectOf_Word("signal?.aborted) break", "aborted")
+await opened_JavaScript.page.mouse.move(rect_Aborted_Pointed.left + 3, rect_Aborted_Pointed.y)
+const layers_Pointed = await layersOf_Aborted()
+await opened_JavaScript.page.mouse.move(5, 5)
 const rect_Backoff = await rectOf_Word("export function backoff(round)", "backoff")
 await opened_JavaScript.page.mouse.click(rect_Backoff.left + 2, rect_Backoff.y)
 await opened_JavaScript.page.mouse.click(rect_Backoff.left + 2, rect_Backoff.y, { button: "right" })
@@ -860,7 +879,7 @@ await pressedIn(opened_JavaScript.page.locator(".card_Document_htmlView .said_ht
 const requests_Removed = await requestsOf_Document()
 await opened_JavaScript.page.keyboard.press("Escape")
 
-test("a right-click on a proposal's selected words offers a revision of the proposal with them, the first request focused; chosen, a form, the words quoted, the keyboard in it; added, the host's told, which queues a revision of the proposal, the words listed with what you asked, and underlined, dotted, behind the text, where they're proposed, no longer selected, and lit there while its chip's pointed at; on the document's words, nothing selected, a request for a change to the document, Escape closing it, the menu key opening it again at the caret", () => {
+test("a right-click on a proposal's selected words offers a revision of the proposal with them, the first request focused; chosen, a form, the words quoted, the keyboard in it; added, the host's told, which queues a revision of the proposal, the words listed with what you asked, and underlined, dotted, behind the text, where they're proposed, no longer selected, and lit there while its chip's pointed at; its line over the proposal's rings, cutting them, till the proposal's pointed at, its rings then over the line, cutting it; on the document's words, nothing selected, a request for a change to the document, Escape closing it, the menu key opening it again at the caret", () => {
   expect(menu_Words.choices.filter((choice) => choice?.includes(": Request")).slice(0, 2)).toEqual(["Proposal: Request revision, with selection", "Document: Request change, with selection"])
   expect(menu_Words.focused).toBe("Proposal: Request revision, with selection")
   expect(form_Words).toEqual({ label: "Proposal Stop retrying once the caller aborts", quote: "aborted", isFocused: true })
@@ -872,6 +891,8 @@ test("a right-click on a proposal's selected words offers a revision of the prop
   expect(lit_Pointed.length).toBeGreaterThan(0)
   expect(lit_Pointed.every((lit) => lit === "proposed aborted true")).toBe(true)
   expect(lit_Left).toEqual([])
+  expect(layers_Resting).toEqual({ layer: "RINGS", isRingsCut: true, isMarksCut: false })
+  expect(layers_Pointed).toEqual({ layer: "POINTED", isRingsCut: true, isMarksCut: true })
   expect(menu_Document.choices.filter((choice) => choice?.includes(": Request"))).toEqual(["Document: Request change", "Task: Request change"])
   expect(menu_Document.focused).toBe("Document: Request change")
   expect(isClosed_Menu).toBe(true)

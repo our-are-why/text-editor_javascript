@@ -91,6 +91,7 @@
   --clearInline_underlay_htmlView: var(--view-underlay-clear-inline, var(--view-underlay-inset-block, 0px));
   --step_underlay_htmlView: var(--view-underlay-step, 0px);
   --nest_underlay_htmlView: var(--view-underlay-nest, calc(2 * var(--view-underlay-inset-block, 0px)));
+  --knockout_underlay_htmlView: var(--view-underlay-knockout, 2.5px);
 }
 
 /* the underlays' lengths, as a look or a host gives them, in any
@@ -129,6 +130,22 @@
 }
 
 @property --nest_underlay_htmlView {
+  syntax: "<length>";
+  inherits: false;
+  initial-value: 0px;
+}
+
+/* a run's underlays drawn in layers, one for each thing they say, in
+   order: the rings' fills, under everything, then the rings, then the
+   marks that are a request's, its words' dotted line; a layer's marks
+   clearing a band out of the rings' under them, as far round them as
+   this, half their thickness and a little more, so where a request's line
+   meets a ring's edge, running along it or crossing it, the line reads
+   whole and the ring's edge stops short of it. The proposal pointed at,
+   its change or its item, has its rings over the marks instead, in a
+   layer of their own on top, clearing a band out of the marks, so while
+   it's pointed at, its rings read whole */
+@property --knockout_underlay_htmlView {
   syntax: "<length>";
   inherits: false;
   initial-value: 0px;
