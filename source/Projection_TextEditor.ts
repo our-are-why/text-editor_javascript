@@ -60,9 +60,12 @@ import {
   viewModelOf__Blocks,
   segmentsOf__Stretches,
   stretchesOf__Segments,
-  markedIn__Blocks,
-  markedOf__Run,
+  underlinedIn__Blocks,
+  underlinedOf__Run,
   headOf__Quote,
+  sizeOf__Quote,
+  peekOf__Quote,
+  type _Reference_Request_,
   type _Selected_Text_,
   type _Piece_Text_,
   isSame__Id_Text
@@ -156,7 +159,7 @@ function viewModelOf__Model<State>({
     )
   }
   return {
-    ...viewModelOf__Blocks(markedIn__Blocks({
+    ...viewModelOf__Blocks(underlinedIn__Blocks({
       blocks_ViewModel: [
         ...blocks,
         ...blocksOf__Lines({
@@ -164,8 +167,7 @@ function viewModelOf__Model<State>({
           line_First: line_Next
         })
       ],
-      pieces: (task?.requests ?? []).flatMap((request_Task) => request_Task.status !== "ADDRESSED" && request_Task.aim.kind === "SELECTION" ? request_Task.aim.selected.pieces : []),
-      ids_Run: null,
+      references: (task?.requests ?? []).flatMap((request_Task) => request_Task.status !== "ADDRESSED" && request_Task.aim.reference !== null ? [request_Task.aim.reference.pieces] : []),
       attributes: {
         "data-requested": ""
       }
@@ -321,7 +323,10 @@ function headerOf__Proposals({
           actions: task.actions.filter((action_Task) => action_Task.section === "REVISIONS")
         },
         revisions_Level: {
-          requests: requests_Whole.map(itemOf__Request_Task),
+          requests: requests_Whole.map((request_Task) => itemOf__Request_Task({
+            request_Task,
+            model_TextEditor
+          })),
           isStartable_Requests: requests_Whole.some((request_Task) => request_Task.status === "QUEUED"),
           isStoppable_Requests: requests_Whole.some((request_Task) => request_Task.status === "RUNNING"),
           ask: isPresented
@@ -369,7 +374,10 @@ function headerOf__Proposals({
         actions: (task?.actions_Document ?? []).filter((action_Task) => action_Task.section === "REVISIONS")
       },
       revisions_Level: {
-        requests: requests_Here.map(itemOf__Request_Task),
+        requests: requests_Here.map((request_Task) => itemOf__Request_Task({
+          request_Task,
+          model_TextEditor
+        })),
         isStartable_Requests: requests_Here.some((request_Task) => request_Task.status === "QUEUED"),
         isStoppable_Requests: requests_Here.some((request_Task) => request_Task.status === "RUNNING"),
         ask: isPresented
@@ -442,22 +450,23 @@ function nameOf__Path(
   return path.slice(path.lastIndexOf("/") + 1)
 }
 
-function itemOf__Request_Task(
+interface _Api___itemOf__Request_Task_ {
   request_Task: _Request_Task_
-): _Request_Item_ {
+  model_TextEditor: _Model_TextEditor_
+}
+
+function itemOf__Request_Task({
+  request_Task,
+  model_TextEditor
+}: _Api___itemOf__Request_Task_): _Request_Item_ {
   return {
     id: request_Task.id,
     notes: request_Task.notes,
-    quote: request_Task.aim.kind === "SELECTION"
-      ? headOf__Quote({
-        text: request_Task.aim.selected.text
-      })
-      : null,
-    reference: request_Task.aim.kind === "SELECTION" || request_Task.aim.reference === null
-      ? null
-      : headOf__Quote({
-        text: request_Task.aim.reference.text
-      }),
+    reference: referenceOf__Request({
+      reference: request_Task.aim.reference,
+      status: request_Task.status,
+      model_TextEditor
+    }),
     progress: PROGRESSMAP__STATUS_REQUEST[request_Task.status],
     detail_Progress: request_Task.status === "ADDRESSED" ? detailOf__Request(request_Task) : null,
     isRunning: request_Task.status === "RUNNING",
@@ -466,6 +475,66 @@ function itemOf__Request_Task(
     isEditing: false,
     isStoppable: request_Task.status === "RUNNING",
     isDismissable: request_Task.status === "ADDRESSED"
+  }
+}
+
+interface _Api___referenceOf__Request_ {
+  reference: _Selected_Text_ | null
+  status: _Status_Request_
+  model_TextEditor: _Model_TextEditor_
+}
+
+function referenceOf__Request({
+  reference,
+  status,
+  model_TextEditor
+}: _Api___referenceOf__Request_): _Reference_Request_ | null {
+  if (reference === null) return null
+  const isShown = status !== "ADDRESSED"
+  return {
+    head: headOf__Quote({
+      text: reference.text
+    }),
+    size: isShown
+      ? null
+      : sizeOf__Quote({
+        text: reference.text
+      }),
+    lines: isShown
+      ? labelOf__Lines(rangeOf__Pieces({
+        pieces: reference.pieces,
+        model_TextEditor
+      }))
+      : null,
+    peek: peekOf__Quote({
+      text: reference.text
+    }),
+    pieces: isShown ? reference.pieces : null
+  }
+}
+
+interface _Api___rangeOf__Pieces_ {
+  pieces: _Selected_Text_["pieces"]
+  model_TextEditor: _Model_TextEditor_
+}
+
+function rangeOf__Pieces({
+  pieces,
+  model_TextEditor
+}: _Api___rangeOf__Pieces_): _Range_Lines_ {
+  const line$ = pieces.flatMap((piece_Text) => {
+    const line_Start = piece_Text.id_Text.kind === "DOCUMENT"
+      ? 0
+      : model_TextEditor.proposed.find((changes_Source) => piece_Text.id_Text.kind === "CHANGE" && changes_Source.source === piece_Text.id_Text.source)?.changes[piece_Text.id_Text.index]?.range.from.line ?? 0
+    const line_Last = piece_Text.range.to.offset === 0 && piece_Text.range.to.line > piece_Text.range.from.line ? piece_Text.range.to.line - 1 : piece_Text.range.to.line
+    return [
+      line_Start + piece_Text.range.from.line,
+      line_Start + line_Last
+    ]
+  })
+  return {
+    first: Math.min(...line$) + 1,
+    last: Math.max(...line$) + 1
   }
 }
 
@@ -643,7 +712,6 @@ interface _Proposal_Host_ {
 interface _Request_Host_ {
   id: string
   notes: string
-  selected: _Selected_Text_ | null
   reference: _Selected_Text_ | null
   status: _Status_Request_
 }
@@ -2703,16 +2771,11 @@ function frameOf__Drawn({
         requests: proposal_Host.requests.map((request_Host) => ({
           id: request_Host.id,
           notes: request_Host.notes,
-          quote: request_Host.selected === null
-            ? null
-            : headOf__Quote({
-              text: request_Host.selected.text
-            }),
-          reference: request_Host.reference === null
-            ? null
-            : headOf__Quote({
-              text: request_Host.reference.text
-            }),
+          reference: referenceOf__Request({
+            reference: request_Host.reference,
+            status: request_Host.status,
+            model_TextEditor
+          }),
           progress: PROGRESSMAP__STATUS_REQUEST[request_Host.status],
           detail_Progress: null,
           isRunning: request_Host.status === "RUNNING",
@@ -2737,12 +2800,11 @@ function frameOf__Drawn({
   if (item_First === undefined) throw new Error(`a frame at line ${frame_Drawn.frame_Model.first + 1} lists no proposal`)
   const part_Proposed: _Part_Frame_ = {
     kind: "PROPOSAL_LINES",
-    run: markedOf__Run({
+    run: underlinedOf__Run({
       run_Lines: frame_Drawn.run_Proposed,
-      pieces: proposals
+      references: proposals
         .filter((proposal_Host) => frame_Drawn.sources.includes(proposal_Host.source))
-        .flatMap((proposal_Host) => proposal_Host.requests.flatMap((request_Host) => request_Host.selected?.pieces ?? [])),
-      ids_Run: null,
+        .flatMap((proposal_Host) => proposal_Host.requests.flatMap((request_Host) => request_Host.status !== "ADDRESSED" && request_Host.reference !== null ? [request_Host.reference.pieces] : [])),
       attributes: {
         "data-requested": ""
       }

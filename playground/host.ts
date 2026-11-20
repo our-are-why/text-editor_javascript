@@ -90,8 +90,8 @@ interface _Logged_Transaction_ {
 // start, asks again, on the document as it is now. Its task in the editor's
 // header, named, working while a round's under way, with Stop then, which
 // puts what's running back in the queue.
-// A request for a change on no proposal, the document's own, about what's
-// selected or the whole of it, queued with the rest, started with them, or
+// A request for a change on no proposal, the document's own or the task's,
+// with the words it was sent with, or none, queued with the rest, started with them, or
 // at once when asked to, and done with a moment later, with no agent to
 // answer it with proposals. Each reported as it's told
 function hostedOf__Editor<State>({
@@ -359,11 +359,9 @@ function hostedOf__Editor<State>({
         },
         asked: (asked_Host) => {
           if (asked_Host.kind === "REQUEST") {
-            const reference_Aim = asked_Host.aim.kind === "SELECTION" ? null : asked_Host.aim.reference
             log({
               requested: asked_Host.notes,
-              aimed: asked_Host.aim.kind === "SELECTION" ? asked_Host.aim.selected.text : null,
-              ...(reference_Aim === null ? {} : { referred: reference_Aim.text })
+              words: asked_Host.aim.reference?.text ?? null
             })
             count_Request += 1
             const id = `document-${count_Request}`
@@ -438,7 +436,6 @@ function hostedOf__Editor<State>({
                 {
                   id: `${source}-again`,
                   notes: "Again, on the document as it is now.",
-                  selected: null,
                   reference: null,
                   status: "QUEUED"
                 }
@@ -519,8 +516,7 @@ function hostedOf__Editor<State>({
               asked: asked_Action.command,
               proposal: asked_Action.source,
               notes: asked_Action.notes,
-              words: asked_Action.selected?.text ?? null,
-              ...(asked_Action.reference === null ? {} : { referred: asked_Action.reference.text })
+              words: asked_Action.reference?.text ?? null
             })
             const action_Item = proposals_Host.find((proposal_Host) => proposal_Host.source === asked_Action.source)?.actions.find((action_Each) => action_Each.command === asked_Action.command)
             if (action_Item === undefined) return
@@ -544,7 +540,6 @@ function hostedOf__Editor<State>({
                     {
                       id,
                       notes,
-                      selected: asked_Action.selected,
                       reference: asked_Action.reference,
                       status: "QUEUED"
                     }

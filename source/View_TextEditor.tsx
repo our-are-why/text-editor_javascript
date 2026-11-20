@@ -48,7 +48,7 @@ import type {
   _Point_Screen_,
   _Header_ViewModel_,
   _Form_Request_,
-  _Editing_Request_,
+  _Id_Request_,
   _Task_Header_,
   _Proposals_Card_,
   _Revisions_Scope_,
@@ -56,6 +56,8 @@ import type {
   _Document_Header_,
   _Document_Card_,
   _Menu_ViewModel_,
+  _Peek_Quote_,
+  _Reference_Request_,
   _State_Proposal_
 } from "./ViewModel_TextEditor.ts"
 
@@ -290,7 +292,7 @@ class _View_TextEditor_ {
   }
 
   focusEdited(
-    editing_Request: _Editing_Request_
+    editing_Request: _Id_Request_
   ): void {
     focusEdited__View_TextEditor({
       containerElement_View: this.containerElement,
@@ -319,6 +321,12 @@ class _View_TextEditor_ {
   revealCaret(): void {
     this.containerElement.querySelector(".caret_htmlView")?.scrollIntoView({
       block: "nearest"
+    })
+  }
+
+  revealWords(): void {
+    revealWords__View_TextEditor({
+      containerElement_View: this.containerElement
     })
   }
 
@@ -394,7 +402,7 @@ interface _Api___heldTillWritten__Form_ {
 function heldTillWritten__Form({
   containerElement_View
 }: _Api___heldTillWritten__Form_): void {
-  for (const element_Notes of containerElement_View.querySelectorAll<HTMLTextAreaElement>(":is(.asking_htmlView, .draft_htmlView) > .notes_htmlView, .said_htmlView > .notes_Edit_htmlView")) {
+  for (const element_Notes of containerElement_View.querySelectorAll<HTMLTextAreaElement>(":is(.asking_htmlView, .draft_htmlView) > .notes_htmlView, .text_Said_htmlView > .notes_Edit_htmlView")) {
     const isWritten = element_Notes.value.trim() !== ""
     for (const element_Button of element_Notes.parentElement?.querySelectorAll<HTMLButtonElement>(":scope > :is(.actions_htmlView, .actions_Edit_htmlView) > :is([data-request=ADD], [data-request=START], [data-draft=ADD], [data-draft=START], [data-edit-action=SAVE])") ?? []) {
       element_Button.disabled = !isWritten
@@ -1073,15 +1081,13 @@ function Request_TextEditor__Html({
             class="label_Asking_htmlView"
             data-head=""
           >
-            {`${form_Request.head.label_Tier}: `}
-            <span class="action_Head_Asking_htmlView">{form_Request.head.label}</span>
+            {`${form_Request.head.label_Tier} `}
+            <span class="subject_Asking_htmlView">{form_Request.head.subject}</span>
           </p>
         )}
-      {form_Request.head !== null && <p class="subject_Asking_htmlView">{form_Request.head.subject}</p>}
       {form_Request.quote !== null && (
         <p class="quote_Asking_htmlView">
           <span class="chip_Quote_htmlView">
-            {form_Request.quote.label !== "" && <span class="role_Quote_htmlView">{form_Request.quote.label}</span>}
             <q
               class="words_Quote_htmlView"
               tabindex={form_Request.quote.peek === null ? undefined : "0"}
@@ -1089,26 +1095,16 @@ function Request_TextEditor__Html({
               {form_Request.quote.head}
             </q>
             {form_Request.quote.size !== null && <span class="size_Quote_htmlView">{form_Request.quote.size}</span>}
-            {form_Request.quote.isDroppable && (
-              <button
-                type="button"
-                class="drop_Quote_htmlView"
-                data-request="DROP"
-                aria-label="Leave these words out"
-                title="Leave these words out"
-              >
-                ×
-              </button>
-            )}
-            {form_Request.quote.peek !== null && (
-              <span
-                class="peek_Quote_htmlView"
-                role="tooltip"
-              >
-                <span class="text_Peek_htmlView">{form_Request.quote.peek.text}</span>
-                {form_Request.quote.peek.more !== null && <span class="more_Peek_htmlView">{form_Request.quote.peek.more}</span>}
-              </span>
-            )}
+            <button
+              type="button"
+              class="drop_Quote_htmlView"
+              data-request="DROP"
+              aria-label="Leave these words out"
+              title="Leave these words out"
+            >
+              ×
+            </button>
+            <Peek_Quote__Html peek={form_Request.quote.peek} />
           </span>
         </p>
       )}
@@ -1146,6 +1142,26 @@ function Request_TextEditor__Html({
       </div>
     </div>
   )
+}
+
+interface _Api___Peek_Quote__Html_ {
+  peek: _Peek_Quote_ | null
+}
+
+function Peek_Quote__Html({
+  peek
+}: _Api___Peek_Quote__Html_): _Node_Jsx_ {
+  return peek === null
+    ? null
+    : (
+      <span
+        class="peek_Quote_htmlView"
+        role="tooltip"
+      >
+        <span class="text_Peek_htmlView">{peek.text}</span>
+        {peek.more !== null && <span class="more_Peek_htmlView">{peek.more}</span>}
+      </span>
+    )
 }
 
 interface _Api___Block_TextEditor__Html_<Kind extends _Block_ViewModel_["kind"]> {
@@ -1994,23 +2010,21 @@ function Request$__Html({
             data-request={request_Item.id}
             data-editing={request_Item.isEditing ? "" : undefined}
           >
-            {request_Item.quote !== null && <q class="quote_Said_htmlView">{request_Item.quote}</q>}
-            {request_Item.isEditing
-              ? <Edit_Said__Html request_Item={request_Item} />
-              : <span class="notes_Said_htmlView">{request_Item.notes}</span>}
-            {request_Item.reference !== null && (
-              <span class="reference_Said_htmlView">
-                {"with "}
-                <q class="words_Reference_htmlView">{request_Item.reference}</q>
-              </span>
-            )}
-            {request_Item.progress !== null && (
-              <span class="progress_Said_htmlView">
-                {request_Item.progress}
-                {request_Item.detail_Progress !== null && <span class="detail_Said_htmlView">{` (${request_Item.detail_Progress})`}</span>}
-              </span>
-            )}
-            <Action$_Said__Html request_Item={request_Item} />
+            <div class="row_Said_htmlView">
+              <Action$_Said__Html request_Item={request_Item} />
+              <div class="text_Said_htmlView">
+                {request_Item.isEditing
+                  ? <Edit_Said__Html request_Item={request_Item} />
+                  : <span class="notes_Said_htmlView">{request_Item.notes}</span>}
+                {request_Item.progress !== null && (
+                  <span class="progress_Said_htmlView">
+                    {request_Item.progress}
+                    {request_Item.detail_Progress !== null && <span class="detail_Said_htmlView">{` (${request_Item.detail_Progress})`}</span>}
+                  </span>
+                )}
+              </div>
+            </div>
+            {!request_Item.isEditing && <Reference_Said__Html reference={request_Item.reference} />}
           </li>
         ))}
         {children}
@@ -2103,6 +2117,7 @@ function Edit_Said__Html({
     >
       {request_Item.notes}
     </textarea>,
+    <Reference_Said__Html reference={request_Item.reference} />,
     <span class="actions_Edit_htmlView">
       <button
         type="button"
@@ -2120,6 +2135,40 @@ function Edit_Said__Html({
       </button>
     </span>
   ]
+}
+
+interface _Api___Reference_Said__Html_ {
+  reference: _Reference_Request_ | null
+}
+
+function Reference_Said__Html({
+  reference
+}: _Api___Reference_Said__Html_): _Node_Jsx_ {
+  return reference === null
+    ? null
+    : (
+      <span class="reference_Said_htmlView">
+        <span class="chip_Quote_htmlView">
+          <q
+            class="words_Quote_htmlView"
+            tabindex={reference.peek === null ? undefined : "0"}
+          >
+            {reference.head}
+          </q>
+          {reference.size !== null && <span class="size_Quote_htmlView">{reference.size}</span>}
+          <Peek_Quote__Html peek={reference.peek} />
+        </span>
+        {reference.lines !== null && (
+          <button
+            type="button"
+            class="show_Said_htmlView"
+            aria-label={`Show “${reference.head}” in the document, ${reference.lines}`}
+          >
+            {reference.lines}
+          </button>
+        )}
+      </span>
+    )
 }
 
 type _LabelMap__Scope_Work_ = {
@@ -2963,7 +3012,8 @@ type _MeasureMap__Underlay_Text_ = {
 const MEASUREMAP__UNDERLAY_TEXT: _MeasureMap__Underlay_Text_ = {
   STRETCH: measureOf__Stretch,
   POINT: measureOf__Point,
-  BOUNDARY: measureOf__Boundary
+  BOUNDARY: measureOf__Boundary,
+  UNDERLINE: measureOf__Underline
 }
 
 function measureOf__Stretch({
@@ -3054,6 +3104,38 @@ function measureOf__Boundary({
     },
     d_Area: `M ${x - 2 * size_Notch.reach} ${y - half - size_Notch.reach} H ${x + size_Notch.length + size_Notch.reach} V ${y + half + size_Notch.reach} H ${x - 2 * size_Notch.reach} Z`,
     d: `M ${x} ${y - half} L ${x} ${y + half} L ${x + size_Notch.length} ${y} Z`,
+    d_Seam$: [],
+    lap$: []
+  }
+}
+
+function measureOf__Underline({
+  underlay_Text,
+  context_Measure
+}: _Api___measureOf__Underlay_Text_<"UNDERLINE">): _Measure_Underlay_ {
+  const d$_Row = context_Measure.divElement$_text
+    .slice(
+      underlay_Text.from.line,
+      underlay_Text.to.line + 1
+    )
+    .flatMap((
+      divElement_text,
+      index
+    ) => rowsOf__Rects(rectsOf__Offsets({
+      placed$_Text: placedOf__Text$(text$Of__Element(divElement_text).filter((text) => text.parentElement?.closest(".note_htmlView") === null)),
+      from: index === 0 ? underlay_Text.from.offset : 0,
+      to: underlay_Text.from.line + index === underlay_Text.to.line ? underlay_Text.to.offset : Infinity
+    })).map((rect_Row) => {
+      const y = rect_Row.bottom - context_Measure.origin.top
+      return `M ${rect_Row.left - context_Measure.origin.left} ${y} L ${rect_Row.right - context_Measure.origin.left} ${y}`
+    }))
+  return {
+    attributes: {
+      ...underlay_Text.attributes,
+      "data-underline": ""
+    },
+    d_Area: "",
+    d: d$_Row.join(" "),
     d_Seam$: [],
     lap$: []
   }
@@ -3641,6 +3723,10 @@ interface _Api___fit__Dash$_ {
 function fit__Dash$({
   svgElement_underlay$
 }: _Api___fit__Dash$_): void {
+  const point$_End = [...svgElement_underlay$.querySelectorAll(".underlay_htmlView[data-underline]")].flatMap((pathElement) => piece$Of__D(pathElement.getAttribute("d") ?? "").flatMap((piece) => [
+    piece.point$[0],
+    piece.point$.at(-1)
+  ].flatMap((point) => point === undefined ? [] : [point])))
   for (const pathElement of svgElement_underlay$.querySelectorAll(":is(.underlay_htmlView, .seam_htmlView):not([data-notch])")) {
     if (!(pathElement instanceof SVGPathElement)) continue
     const [
@@ -3648,13 +3734,21 @@ function fit__Dash$({
       length_Gap
     ] = length$Of__Dasharray(getComputedStyle(pathElement).strokeDasharray)
     if (length_Dash === undefined || length_Gap === undefined || length_Dash + length_Gap <= 0) continue
+    const piece$ = piece$Of__D(pathElement.getAttribute("d") ?? "")
     pathElement.setAttribute(
       "d",
-      dOf__Dash$({
-        piece$: piece$Of__D(pathElement.getAttribute("d") ?? ""),
-        length_Dash,
-        pitch: length_Dash + length_Gap
-      })
+      pathElement.hasAttribute("data-underline")
+        ? dOf__Mark$({
+          piece$,
+          length_Mark: length_Dash,
+          length_Gap,
+          point$_End
+        })
+        : dOf__Dash$({
+          piece$,
+          length_Dash,
+          pitch: length_Dash + length_Gap
+        })
     )
     pathElement.style.setProperty(
       "stroke-dasharray",
@@ -3696,6 +3790,46 @@ interface _Piece_Dash_ {
 }
 
 const REGEXP_NUMBER = /-?\d*\.?\d+(?:e[-+]?\d+)?/gi
+
+interface _Api___dOf__Mark$_ {
+  piece$: Array<_Piece_Dash_>
+  length_Mark: number
+  length_Gap: number
+  point$_End: Array<_Corner_Path_>
+}
+
+function dOf__Mark$({
+  piece$,
+  length_Mark,
+  length_Gap,
+  point$_End
+}: _Api___dOf__Mark$_): string {
+  const isJoined = (point: _Corner_Path_) => point$_End.filter((point_End) => Math.abs(point_End.x - point.x) < 0.5 && Math.abs(point_End.y - point.y) < 0.5).length > 1
+  return piece$.flatMap((piece) => {
+    const point_From = piece.point$[0]
+    const point_To = piece.point$.at(-1)
+    if (point_From === undefined || point_To === undefined) return []
+    const from = point_From.x + (isJoined(point_From) ? length_Gap / 2 : 0)
+    const to = point_To.x - (isJoined(point_To) ? length_Gap / 2 : 0)
+    const length = to - from
+    if (length <= 0) return []
+    const count = Math.max(
+      1,
+      Math.round((length + length_Gap) / (length_Mark + length_Gap))
+    )
+    const length_Each = count === 1 ? length : length_Mark
+    const step = count === 1 ? 0 : (length - length_Mark) / (count - 1)
+    return Array.from(
+      {
+        length: count
+      },
+      (
+        _,
+        index
+      ) => `M ${from + index * step} ${point_From.y} L ${from + index * step + length_Each} ${point_From.y}`
+    )
+  }).join(" ")
+}
 
 interface _Api___dOf__Dash$_ {
   piece$: Array<_Piece_Dash_>
@@ -3880,6 +4014,28 @@ interface _Caret_Screen_ {
   height_Row: number
 }
 
+interface _Api___revealWords__View_TextEditor_ {
+  containerElement_View: HTMLElement
+}
+
+function revealWords__View_TextEditor({
+  containerElement_View
+}: _Api___revealWords__View_TextEditor_): void {
+  const element_Scroller = containerElement_View.querySelector(".document_htmlView")
+  const rect$_Shown = [...containerElement_View.querySelectorAll(".document_htmlView .text_htmlView > [data-shown]")].flatMap((element_Shown) => [...element_Shown.getClientRects()])
+  if (!(element_Scroller instanceof HTMLElement) || rect$_Shown.length === 0) return
+  const rect_Scroller = element_Scroller.getBoundingClientRect()
+  const top = Math.min(...rect$_Shown.map((rect_Shown) => rect_Shown.top))
+  const bottom = Math.max(...rect$_Shown.map((rect_Shown) => rect_Shown.bottom))
+  const top_Wanted = bottom - top <= rect_Scroller.height * 0.6
+    ? rect_Scroller.top + (rect_Scroller.height - (bottom - top)) / 2
+    : rect_Scroller.top + rect_Scroller.height * 0.2
+  element_Scroller.scrollBy({
+    top: top - top_Wanted,
+    behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "instant" : "smooth"
+  })
+}
+
 interface _Api___reveal__View_TextEditor_ {
   containerElement_View: HTMLElement
   target_Note: _Target_Note_
@@ -3973,7 +4129,7 @@ function isShown__Element({
 
 interface _Api___focusEdited__View_TextEditor_ {
   containerElement_View: HTMLElement
-  editing_Request: _Editing_Request_
+  editing_Request: _Id_Request_
 }
 
 function focusEdited__View_TextEditor({
@@ -3986,7 +4142,7 @@ function focusEdited__View_TextEditor({
       id_Item: editing_Request.id_Item
     })
   containerElement_View
-    .querySelector<HTMLElement>(`${selector_Holder} .said_htmlView[data-request="${CSS.escape(editing_Request.id)}"] > .fold_Action_htmlView > .actions_Said_htmlView > .edit_Said_htmlView`)
+    .querySelector<HTMLElement>(`${selector_Holder} .said_htmlView[data-request="${CSS.escape(editing_Request.id)}"] > .row_Said_htmlView > .fold_Action_htmlView > .actions_Said_htmlView > .edit_Said_htmlView`)
     ?.focus()
 }
 
@@ -4704,7 +4860,7 @@ const SELECTORMAP__FOCUS_ASKING: _SelectorMap__Focus_Asking_ = {
   CONFIRM: ".actions_htmlView[data-confirming] > [data-confirm='NO']",
   ASK_TASK: ".card_Task_htmlView [data-ask='TASK']",
   ASK_DOCUMENT: ".card_Document_htmlView [data-ask='DOCUMENT']",
-  EDIT: ".said_htmlView > .notes_Edit_htmlView"
+  EDIT: ".text_Said_htmlView > .notes_Edit_htmlView"
 }
 
 interface _Api___drawRoom__View_TextEditor_ {
@@ -4962,13 +5118,16 @@ interface _Api___peekedIf__Unseen_Quoted_ {
 function peekedIf__Unseen_Quoted({
   containerElement_View
 }: _Api___peekedIf__Unseen_Quoted_): void {
-  const element_Peek = containerElement_View.querySelector(".asking_htmlView .peek_Quote_htmlView")
-  const rect_Form = element_Peek?.closest(".asking_htmlView")?.getBoundingClientRect()
   const rect_Scroller = containerElement_View.querySelector(".document_htmlView")?.getBoundingClientRect()
-  if (!(element_Peek instanceof HTMLElement) || rect_Form === undefined || rect_Scroller === undefined) return
-  const rect$_Quoted = [...containerElement_View.querySelectorAll(".document_htmlView .text_htmlView > [data-quoted]")].flatMap((element_Quoted) => [...element_Quoted.getClientRects()])
-  const isSeen = rect$_Quoted.length > 0 && rect$_Quoted.every((rect_Quoted) => rect_Quoted.top >= rect_Scroller.top && rect_Quoted.bottom <= rect_Scroller.bottom && rect_Quoted.left >= rect_Scroller.left && rect_Quoted.right <= rect_Scroller.right && (rect_Quoted.bottom <= rect_Form.top || rect_Quoted.top >= rect_Form.bottom || rect_Quoted.right <= rect_Form.left || rect_Quoted.left >= rect_Form.right))
-  element_Peek.hidden = isSeen
+  if (rect_Scroller === undefined) return
+  for (const element_Peek of containerElement_View.querySelectorAll(".peek_Quote_htmlView")) {
+    if (!(element_Peek instanceof HTMLElement)) continue
+    const isAsking = element_Peek.closest(".asking_htmlView") !== null
+    const isPointed = isAsking || element_Peek.closest(".chip_Quote_htmlView")?.matches(":hover, :focus-within") === true
+    const rect_Over = element_Peek.closest(".asking_htmlView, .card_htmlView")?.getBoundingClientRect() ?? null
+    const rect$_Quoted = isPointed ? [...containerElement_View.querySelectorAll(`.document_htmlView .text_htmlView > ${isAsking ? "[data-quoted]" : "[data-lit]"}`)].flatMap((element_Quoted) => [...element_Quoted.getClientRects()]) : []
+    element_Peek.hidden = rect$_Quoted.length > 0 && rect$_Quoted.every((rect_Quoted) => rect_Quoted.top >= rect_Scroller.top && rect_Quoted.bottom <= rect_Scroller.bottom && rect_Quoted.left >= rect_Scroller.left && rect_Quoted.right <= rect_Scroller.right && (rect_Over === null || rect_Quoted.bottom <= rect_Over.top || rect_Quoted.top >= rect_Over.bottom || rect_Quoted.right <= rect_Over.left || rect_Quoted.left >= rect_Over.right))
+  }
 }
 
 interface _Api___shiftOf__Popover_ {

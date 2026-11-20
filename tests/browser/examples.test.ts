@@ -437,7 +437,7 @@ const itemsOf = (source: string) => opened_JavaScript.page.evaluate(async (sourc
     state: element.getAttribute("data-state"),
     actions: [...element.querySelectorAll(".action_htmlView[data-command]")].map((button) => button.textContent),
     asked: [...element.querySelectorAll(".notes_Said_htmlView")].map((said) => said.textContent),
-    quoted: [...element.querySelectorAll(".quote_Said_htmlView")].map((quote) => quote.textContent),
+    quoted: [...element.querySelectorAll(".reference_Said_htmlView .words_Quote_htmlView")].map((quote) => quote.textContent),
     removes: element.querySelectorAll(".remove_htmlView").length,
     starts: element.querySelectorAll(".request_htmlView .start_Request_htmlView").length,
     adds: element.querySelectorAll(".request_htmlView .add_Request_htmlView").length,
@@ -712,8 +712,9 @@ test("a round that landed after your edits: its changes written before them ring
 })
 
 // then a right-click, on the JavaScript example: on "aborted", the words
-// "Stop retrying once the caller aborts" puts in, selected by a drag, its menu, and the note
-// its first choice opens, written and sent with the keyboard; then on the
+// "Stop retrying once the caller aborts" puts in, selected by a drag, its menu, and the
+// revision of the proposal its first request opens, with them, written and
+// sent with the keyboard; then on the
 // document's words, nothing selected, its menu, closed with Escape, opened
 // again from the keyboard, and a request for a change to the document sent
 const rectOf_Word = (needle: string, word: string) => opened_JavaScript.page.evaluate(({ needle, word }) => {
@@ -751,14 +752,45 @@ const form_Words = await opened_JavaScript.page.evaluate(async () => {
   await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)))
   return {
     label: document.querySelector(".asking_htmlView > .label_Asking_htmlView")?.textContent ?? null,
-    quote: document.querySelector(".asking_htmlView > .quote_Asking_htmlView")?.textContent ?? null,
+    quote: document.querySelector(".asking_htmlView .words_Quote_htmlView")?.textContent ?? null,
     isFocused: document.activeElement?.matches(".asking_htmlView > .notes_htmlView") === true
   }
 })
 await opened_JavaScript.page.keyboard.type("Check it before the delay too.")
 await opened_JavaScript.page.keyboard.press("Control+Enter")
 const items_Aborted = await itemsOf("aborted")
-const requested_Aborted = await opened_JavaScript.page.evaluate(() => [...document.querySelectorAll(".run_htmlView[data-run$=\"-proposed\"] .text_htmlView > [data-requested]")].map((element) => element.textContent))
+const isSelected_Aborted = await opened_JavaScript.page.evaluate(() => document.querySelectorAll(".selected_htmlView").length > 0)
+const requested_Aborted = await opened_JavaScript.page.evaluate(async () => {
+  await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)))
+  return [...document.querySelectorAll(".run_htmlView[data-run$=\"-proposed\"] .underlay_htmlView[data-requested]")].map((element) => {
+    const rect = element.getBoundingClientRect()
+    const y = (rect.top + rect.bottom) / 2
+    const element$_Text = [...(element.closest(".run_htmlView")?.querySelectorAll(":scope > .line_htmlView > .text_htmlView") ?? [])]
+    return element$_Text.flatMap((element_Text) => {
+      const walker = document.createTreeWalker(element_Text, NodeFilter.SHOW_TEXT)
+      const characters: Array<string> = []
+      for (let node = walker.nextNode(); node instanceof Text; node = walker.nextNode()) {
+        for (let index = 0; index < node.data.length; index += 1) {
+          const range = document.createRange()
+          range.setStart(node, index)
+          range.setEnd(node, index + 1)
+          const rect_Character = range.getBoundingClientRect()
+          const x = (rect_Character.left + rect_Character.right) / 2
+          if (rect.left - 2 <= x && x <= rect.right + 2 && Math.abs(rect_Character.bottom - y) < 3) characters.push(node.data[index] ?? "")
+        }
+      }
+      return characters
+    }).join("")
+  })
+})
+const litOf_Words = () => opened_JavaScript.page.evaluate(async () => {
+  await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)))
+  return [...document.querySelectorAll(".text_htmlView > [data-lit]")].map((element) => `${element.closest(".run_htmlView")?.getAttribute("data-run")?.endsWith("-proposed") === true ? "proposed" : "current"} ${element.textContent} ${getComputedStyle(element).backgroundColor !== "rgba(0, 0, 0, 0)"}`)
+})
+await opened_JavaScript.page.locator(".item_htmlView[data-source=\"aborted\"] .said_htmlView .reference_Said_htmlView").first().hover()
+const lit_Pointed = await litOf_Words()
+await opened_JavaScript.page.mouse.move(5, 5)
+const lit_Left = await litOf_Words()
 const rect_Backoff = await rectOf_Word("export function backoff(round)", "backoff")
 await opened_JavaScript.page.mouse.click(rect_Backoff.left + 2, rect_Backoff.y)
 await opened_JavaScript.page.mouse.click(rect_Backoff.left + 2, rect_Backoff.y, { button: "right" })
@@ -828,14 +860,18 @@ await pressedIn(opened_JavaScript.page.locator(".card_Document_htmlView .said_ht
 const requests_Removed = await requestsOf_Document()
 await opened_JavaScript.page.keyboard.press("Escape")
 
-test("a right-click on a proposal's selected words offers a revision of them, then one of the whole proposal, the words for reference, the first focused; chosen, a form, what it's on quoted, the keyboard in it; added, the host's told, which queues a revision of the proposal, the words quoted before what you asked, and underlined, dotted, where they're proposed; on the document's words, nothing selected, a request for a change to the document, Escape closing it, the menu key opening it again at the caret", () => {
-  expect(menu_Words.choices.filter((choice) => choice?.includes(": Request")).slice(0, 2)).toEqual(["Selection: Request revision", "Proposal: Request revision, with selection"])
-  expect(menu_Words.focused).toBe("Selection: Request revision")
-  expect(form_Words).toEqual({ label: "Selection: Request revision", quote: "aborted", isFocused: true })
+test("a right-click on a proposal's selected words offers a revision of the proposal with them, the first request focused; chosen, a form, the words quoted, the keyboard in it; added, the host's told, which queues a revision of the proposal, the words listed with what you asked, and underlined, dotted, behind the text, where they're proposed, no longer selected, and lit there while its chip's pointed at; on the document's words, nothing selected, a request for a change to the document, Escape closing it, the menu key opening it again at the caret", () => {
+  expect(menu_Words.choices.filter((choice) => choice?.includes(": Request")).slice(0, 2)).toEqual(["Proposal: Request revision, with selection", "Document: Request change, with selection"])
+  expect(menu_Words.focused).toBe("Proposal: Request revision, with selection")
+  expect(form_Words).toEqual({ label: "Proposal Stop retrying once the caller aborts", quote: "aborted", isFocused: true })
   expect(items_Aborted.length).toBeGreaterThan(0)
   expect(items_Aborted.every((item) => item.state === "REQUESTED" && item.asked.join("|") === "Check it before the delay too." && item.quoted.join("|") === "aborted")).toBe(true)
+  expect(isSelected_Aborted).toBe(false)
   expect(requested_Aborted.length).toBeGreaterThan(0)
-  expect(requested_Aborted.join("")).toBe("aborted".repeat(requested_Aborted.join("").length / "aborted".length))
+  expect(requested_Aborted.every((words) => words === "aborted")).toBe(true)
+  expect(lit_Pointed.length).toBeGreaterThan(0)
+  expect(lit_Pointed.every((lit) => lit === "proposed aborted true")).toBe(true)
+  expect(lit_Left).toEqual([])
   expect(menu_Document.choices.filter((choice) => choice?.includes(": Request"))).toEqual(["Document: Request change", "Task: Request change"])
   expect(menu_Document.focused).toBe("Document: Request change")
   expect(isClosed_Menu).toBe(true)
@@ -843,7 +879,7 @@ test("a right-click on a proposal's selected words offers a revision of them, th
   expect(menu_Keyboard.focused).toBe(menu_Document.focused)
   expect(asked_Menu).toEqual([
     { asked: "revise", proposal: "aborted", notes: "Check it before the delay too.", words: "aborted" },
-    { requested: "Say why the delay doubles.", aimed: null }
+    { requested: "Say why the delay doubles.", words: null }
   ])
   expect(opened_JavaScript.errors).toEqual([])
 })
@@ -934,7 +970,7 @@ test("the task's card: Add a request, a form for the task as a whole, in the car
   expect(parts_Added[1]).not.toContain("Keep the README in step.")
   expect(waiting_After.accepted).toBeGreaterThan(waiting_Before)
   expect(waiting_After.offered).toBe(0)
-  expect(logged_Card).toEqual([{ requested: "Keep the README in step.", aimed: null }, { task: "accept-here" }])
+  expect(logged_Card).toEqual([{ requested: "Keep the README in step.", words: null }, { task: "accept-here" }])
   expect(opened_JavaScript.errors).toEqual([])
 })
 
@@ -956,11 +992,13 @@ const asked_Card = async (trigger: string, card: string, kind: string, notes: st
 const shownOf_Starts = () => opened_JavaScript.page.evaluate(async () => {
   await new Promise((resolve) => setTimeout(resolve, 200))
   const unfoldedOf = (element: Element | null) => element === null ? null : getComputedStyle(element).position !== "absolute"
+  const shownOf = (element: Element | null) => element === null ? null : getComputedStyle(element).opacity !== "0"
   const said = document.querySelector(".card_Document_htmlView .said_htmlView:has(.start_Said_htmlView)")
+  const more = said?.querySelector(":scope > .row_Said_htmlView > .fold_Action_htmlView > .more_htmlView") ?? null
   return {
     group: unfoldedOf(document.querySelector(".card_Document_htmlView .actions_Request_htmlView:has(> .start_Request_htmlView)")),
-    actions: unfoldedOf(said?.querySelector(":scope > .fold_Action_htmlView > .actions_Said_htmlView") ?? null),
-    more: said?.querySelector(":scope > .fold_Action_htmlView > .more_htmlView") instanceof Element ? getComputedStyle(said.querySelector(":scope > .fold_Action_htmlView > .more_htmlView") as Element).display : null
+    actions: shownOf(said?.querySelector(":scope > .row_Said_htmlView > .fold_Action_htmlView > .actions_Said_htmlView") ?? null),
+    more: more === null ? null : getComputedStyle(more).visibility === "hidden" ? "hidden" : getComputedStyle(more).display
   }
 })
 const startedSince = async (count_Before: number) => (await opened_JavaScript.logged()).filter((entry) => "revising" in entry).slice(count_Before)
@@ -976,7 +1014,7 @@ await opened_JavaScript.page.hover(".card_Document_htmlView .label_Request_htmlV
 const starts_Label = await shownOf_Starts()
 await pointedAt(".card_Document_htmlView .head_Request_htmlView .more_htmlView")
 const starts_Group = await shownOf_Starts()
-await opened_JavaScript.page.hover(".card_Document_htmlView .said_htmlView:has(.start_Said_htmlView) > .notes_Said_htmlView")
+await opened_JavaScript.page.hover(".card_Document_htmlView .said_htmlView:has(.start_Said_htmlView) .notes_Said_htmlView")
 const starts_Words = await shownOf_Starts()
 await pointedAt(".card_Document_htmlView .said_htmlView:has(.start_Said_htmlView) .more_htmlView")
 const starts_Request = await shownOf_Starts()
@@ -996,11 +1034,11 @@ await opened_JavaScript.page.hover(".trigger_Task_htmlView")
 await pressedAt(opened_JavaScript.page.locator(".card_Task_htmlView [data-scope=\"TASK\"][data-work=\"START\"]"))
 const started_All = await startedSince(count_Logged)
 
-test("each scope's Start: a request's own actions behind an ellipsis till the ellipsis is pointed at, not its words, the ellipsis becoming them, its group's behind theirs till theirs is, not its heading; the document's own requests started by their group's Start, its proposals' queued revision left; the task's own by theirs; the task's Start all starting everything queued in it, the proposal's too", () => {
-  expect(starts_Resting).toEqual({ group: false, actions: false, more: "inline-block" })
-  expect(starts_Label).toEqual({ group: false, actions: false, more: "inline-block" })
-  expect(starts_Group).toEqual({ group: true, actions: false, more: "inline-block" })
-  expect(starts_Words).toEqual({ group: false, actions: false, more: "inline-block" })
+test("each scope's Start: a request's own actions behind an ellipsis till the ellipsis is pointed at, not its words, the ellipsis becoming them, in its place, its group's behind theirs till theirs is, not its heading; the document's own requests started by their group's Start, its proposals' queued revision left; the task's own by theirs; the task's Start all starting everything queued in it, the proposal's too", () => {
+  expect(starts_Resting).toEqual({ group: false, actions: false, more: "block" })
+  expect(starts_Label).toEqual({ group: false, actions: false, more: "block" })
+  expect(starts_Group).toEqual({ group: true, actions: false, more: "block" })
+  expect(starts_Words).toEqual({ group: false, actions: false, more: "block" })
   expect(starts_Request).toEqual({ group: false, actions: true, more: "none" })
   expect(scopes_Group).toEqual(["TASK START", "TASK_REQUESTS START", "DOCUMENT START", "DOCUMENT_REQUESTS START"])
   expect(started_Document).toEqual([{ revising: "document", requests: 2 }])
@@ -1022,8 +1060,8 @@ const editing_Shown = await opened_JavaScript.page.evaluate(async () => {
   await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)))
   const said = document.querySelector(".card_Document_htmlView .said_htmlView[data-editing]")
   return {
-    box: said?.querySelector(":scope > .notes_Edit_htmlView") instanceof HTMLTextAreaElement ? (said.querySelector(":scope > .notes_Edit_htmlView") as HTMLTextAreaElement).value : null,
-    isFocused: document.activeElement?.matches(".said_htmlView > .notes_Edit_htmlView") === true,
+    box: said?.querySelector(".notes_Edit_htmlView") instanceof HTMLTextAreaElement ? (said.querySelector(".notes_Edit_htmlView") as HTMLTextAreaElement).value : null,
+    isFocused: document.activeElement?.matches(".said_htmlView .notes_Edit_htmlView") === true,
     actions: [...said?.querySelectorAll(".actions_Edit_htmlView > button") ?? []].map((element) => element.textContent)
   }
 })
@@ -1043,7 +1081,7 @@ const edited = await opened_JavaScript.page.evaluate(async () => {
   await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)))
   return {
     words: [...document.querySelectorAll(".card_Document_htmlView .notes_Said_htmlView")].map((element) => element.textContent).filter((words) => words === "Say it once." || words === "Say it twice."),
-    isEditFocused: document.activeElement?.matches(".card_Document_htmlView .said_htmlView > .fold_Action_htmlView > .actions_Said_htmlView > .edit_Said_htmlView") === true
+    isEditFocused: document.activeElement?.matches(".card_Document_htmlView .said_htmlView .fold_Action_htmlView > .actions_Said_htmlView > .edit_Said_htmlView") === true
   }
 })
 const logged_Edit = (await opened_JavaScript.logged()).slice(count_Edited).filter((entry) => "edited" in entry)
@@ -1083,7 +1121,7 @@ const progressOf = (notes: string) => opened_JavaScript.page.evaluate(async (not
   const said = [...document.querySelectorAll(".card_Document_htmlView .said_htmlView")].find((element) => element.querySelector(".notes_Said_htmlView")?.textContent === notes)
   return {
     progress: said?.querySelector(".progress_Said_htmlView")?.textContent ?? null,
-    controls: [...said?.querySelectorAll(":scope > .fold_Action_htmlView > .actions_Said_htmlView > button") ?? []].map((element) => element.textContent)
+    controls: [...said?.querySelectorAll(":scope > .row_Said_htmlView > .fold_Action_htmlView > .actions_Said_htmlView > button") ?? []].map((element) => element.textContent)
   }
 }, notes)
 await asked_Card(".trigger_Document_htmlView", ".card_Document_htmlView", "DOCUMENT", "Stop me.")
@@ -1131,7 +1169,7 @@ const addressedOf_Card = () => opened_JavaScript.page.evaluate(async () => {
     .filter((element) => element.querySelector(".progress_Said_htmlView")?.firstChild?.textContent === "addressed")
     .map((element) => ({
       notes: element.querySelector(".notes_Said_htmlView")?.textContent ?? null,
-      controls: [...element.querySelectorAll(":scope > .fold_Action_htmlView > .actions_Said_htmlView > button")].map((button) => button.textContent)
+      controls: [...element.querySelectorAll(":scope > .row_Said_htmlView > .fold_Action_htmlView > .actions_Said_htmlView > button")].map((button) => button.textContent)
     }))
 })
 await opened_JavaScript.page.hover(".trigger_Document_htmlView")
@@ -1614,8 +1652,8 @@ const formShown_Tiers = () => opened_Tiers.page.evaluate(async () => {
   const quote = document.querySelector(".asking_htmlView > .quote_Asking_htmlView")
   return {
     label: document.querySelector(".asking_htmlView > .label_Asking_htmlView")?.textContent ?? null,
-    subject: document.querySelector(".asking_htmlView > .subject_Asking_htmlView")?.textContent ?? null,
-    quote: quote === null ? null : [quote.querySelector(".role_Quote_htmlView")?.textContent ?? null, quote.querySelector(".words_Quote_htmlView")?.textContent ?? null, quote.querySelector(".drop_Quote_htmlView") !== null],
+    subject: document.querySelector(".asking_htmlView > .label_Asking_htmlView > .subject_Asking_htmlView")?.textContent ?? null,
+    quote: quote === null ? null : [quote.querySelector(".words_Quote_htmlView")?.textContent ?? null, quote.querySelector(".drop_Quote_htmlView") !== null],
     isFocused: document.activeElement?.matches(".asking_htmlView > .notes_htmlView") === true
   }
 })
@@ -1628,8 +1666,29 @@ await opened_Tiers.page.keyboard.type("Check for an abort everywhere it waits.")
 await opened_Tiers.page.keyboard.press("Control+Enter")
 const referred_Document = await opened_Tiers.page.evaluate(async () => {
   await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)))
-  return [...document.querySelectorAll(".card_Document_htmlView .said_htmlView")].map((element) => [element.querySelector(".notes_Said_htmlView")?.textContent ?? null, element.querySelector(".reference_Said_htmlView")?.textContent ?? null])
+  return [...document.querySelectorAll(".card_Document_htmlView .said_htmlView")].map((element) => [element.querySelector(".notes_Said_htmlView")?.textContent ?? null, element.querySelector(".reference_Said_htmlView .words_Quote_htmlView")?.textContent ?? null, element.querySelector(".reference_Said_htmlView .show_Said_htmlView")?.textContent ?? null])
 })
+await opened_Tiers.page.evaluate(() => {
+  const element_Scroller = document.querySelector(".document_htmlView")
+  if (element_Scroller instanceof HTMLElement) element_Scroller.scrollTop = 0
+})
+await opened_Tiers.page.hover(".trigger_Document_htmlView")
+await opened_Tiers.page.locator(".card_Document_htmlView .said_htmlView .show_Said_htmlView").click()
+await opened_Tiers.page.waitForTimeout(900)
+const shown_Document = await opened_Tiers.page.evaluate(() => {
+  const rect_Scroller = document.querySelector(".document_htmlView")?.getBoundingClientRect()
+  const element$_Shown = [...document.querySelectorAll(".text_htmlView > [data-shown]")]
+  return {
+    words: [...new Set(element$_Shown.map((element) => element.textContent))],
+    isInView: rect_Scroller !== undefined && element$_Shown.length > 0 && element$_Shown.every((element) => {
+      const rect = element.getBoundingClientRect()
+      return rect.top >= rect_Scroller.top && rect.bottom <= rect_Scroller.bottom
+    }),
+    isOnText: document.activeElement?.matches(".input_htmlView") === true
+  }
+})
+await opened_Tiers.page.waitForFunction(() => document.querySelector(".text_htmlView > [data-shown]") === null)
+await opened_Tiers.page.mouse.move(5, 5)
 await rightClickedOn_Tiers("signal?.aborted) break", "aborted")
 await opened_Tiers.page.locator(".menu_htmlView > .choice_htmlView[data-tier=\"PROPOSAL\"]", { hasText: "Request revision" }).click()
 await opened_Tiers.page.locator(".asking_htmlView .drop_Quote_htmlView").click()
@@ -1693,13 +1752,12 @@ const wheeled_OverDocument = await scrolledWith_Menu(rect_Document_Tiers.x, rect
 const isFocused_Input_Scrolled = await opened_Tiers.page.evaluate(() => document.activeElement?.matches(".input_htmlView") === true)
 
 describe("the menu's tiers", () => {
-  test("a right-click on a proposal's selected words offers the words', the proposal's, the document's and the task's tiers, the narrowest first, a hairline between each, each its proposal actions first, then its revisions', the keyboard on the first request; below the words', each request has them for reference, which the form says, \"with\" them, and × leaves out; sent, the host's told what it's on and what it refers to, and the document's card lists it with them", () => {
-    expect(menu_Tiers.map((choice) => choice === "—" ? choice : choice.slice(0, choice.indexOf(" "))).filter((tier, index, tiers) => tier !== tiers[index - 1])).toEqual(["WORDS", "—", "PROPOSAL", "—", "DOCUMENT", "—", "TASK"])
-    expect(menu_Tiers.filter((choice) => choice !== "—").every((choice) => /^(WORDS Selection|PROPOSAL Proposal|DOCUMENT Document|TASK Task): /.test(choice))).toBe(true)
-    expect(sections_Tiers.filter((section, index, sections) => section !== sections[index - 1])).toEqual(["WORDS REVISIONS", "PROPOSAL PROPOSALS", "PROPOSAL REVISIONS", "DOCUMENT PROPOSALS", "DOCUMENT REVISIONS", "TASK PROPOSALS", "TASK REVISIONS"])
-    expect(focused_Tiers).toBe("Selection: Request revision")
+  test("a right-click on a proposal's selected words offers the proposal's, the document's and the task's tiers, the narrowest first, a hairline between each, each its proposal actions first, then its revisions', the keyboard on the first request; each request has the words with it, which the form quotes, and × leaves out; sent, the host's told what it's on and the words, and the document's card lists it with them, and where they are, which, pressed, scrolls the document to them, lit a moment, the keyboard back on the text", () => {
+    expect(menu_Tiers.map((choice) => choice === "—" ? choice : choice.slice(0, choice.indexOf(" "))).filter((tier, index, tiers) => tier !== tiers[index - 1])).toEqual(["PROPOSAL", "—", "DOCUMENT", "—", "TASK"])
+    expect(menu_Tiers.filter((choice) => choice !== "—").every((choice) => /^(PROPOSAL Proposal|DOCUMENT Document|TASK Task): /.test(choice))).toBe(true)
+    expect(sections_Tiers.filter((section, index, sections) => section !== sections[index - 1])).toEqual(["PROPOSAL PROPOSALS", "PROPOSAL REVISIONS", "DOCUMENT PROPOSALS", "DOCUMENT REVISIONS", "TASK PROPOSALS", "TASK REVISIONS"])
+    expect(focused_Tiers).toBe("Proposal: Request revision, with selection")
     expect(menu_Tiers.filter((choice) => choice.includes(": Request"))).toEqual([
-      "WORDS Selection: Request revision",
       "PROPOSAL Proposal: Request revision, with selection",
       "DOCUMENT Document: Request change, with selection",
       "TASK Task: Request change, with selection"
@@ -1708,11 +1766,12 @@ describe("the menu's tiers", () => {
     expect(menu_Tiers.filter((choice) => choice.startsWith("DOCUMENT ") && !choice.includes(": Request")).every((choice) => /^DOCUMENT Document: (Accept|Start|Stop) all \(\d+\)$/.test(choice))).toBe(true)
     expect(menu_Tiers.filter((choice) => choice.startsWith("TASK ") && !choice.includes(": Request")).every((choice) => /^TASK Task: (Accept|Start|Stop) all \(\d+\)$/.test(choice))).toBe(true)
     expect(menu_Tiers.some((choice) => /^DOCUMENT Document: Accept all \(\d+\)$/.test(choice))).toBe(true)
-    expect(form_Referring).toEqual({ label: "Document: Request change", subject: "retry.js", quote: ["with", "aborted", true], isFocused: true })
-    expect(referred_Document).toEqual([["Check for an abort everywhere it waits.", "with aborted"]])
-    expect(form_Dropped).toEqual({ label: "Proposal: Request revision", subject: "Stop retrying once the caller aborts", quote: null, isFocused: true })
+    expect(form_Referring).toEqual({ label: "Document retry.js", subject: "retry.js", quote: ["aborted", true], isFocused: true })
+    expect(referred_Document).toEqual([["Check for an abort everywhere it waits.", "aborted", "line 21"]])
+    expect(shown_Document).toEqual({ words: ["aborted"], isInView: true, isOnText: true })
+    expect(form_Dropped).toEqual({ label: "Proposal Stop retrying once the caller aborts", subject: "Stop retrying once the caller aborts", quote: null, isFocused: true })
     expect(asked_Tiers).toEqual([
-      { requested: "Check for an abort everywhere it waits.", aimed: null, referred: "aborted" },
+      { requested: "Check for an abort everywhere it waits.", words: "aborted" },
       { asked: "revise", proposal: "aborted", notes: "Say why it stops there.", words: null }
     ])
     expect(opened_Tiers.errors).toEqual([])
@@ -1822,7 +1881,7 @@ await page_Popover.mouse.down()
 await page_Popover.mouse.move(at_Lines_Popover.x + 40, at_Lines_Popover.y + 2 * at_Lines_Popover.height, { steps: 6 })
 await page_Popover.mouse.up()
 await page_Popover.mouse.click(at_Lines_Popover.x + 4, at_Lines_Popover.y, { button: "right" })
-await page_Popover.locator(".menu_htmlView > .choice_htmlView[data-tier=\"WORDS\"]").click()
+await page_Popover.locator(".menu_htmlView > .choice_htmlView[data-tier=\"DOCUMENT\"]", { hasText: "Request change" }).click()
 await page_Popover.waitForSelector(".asking_htmlView .chip_Quote_htmlView")
 const litOf_Quoted_Popover = () => page_Popover.evaluate(async () => {
   await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)))

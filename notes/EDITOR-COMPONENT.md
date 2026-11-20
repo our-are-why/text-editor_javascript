@@ -2940,7 +2940,7 @@ editor leaves room for, the menu scrolling inside past that; the tiers'
 hairlines inset as the choices' words are. A
 choice is drawn in its section's ink, the proposals' indigo or the
 revisions' plum, as the ellipsis each group folds behind in the cards
-is, what it does in full, its tier, `label_Tier`, faded, to 78%,
+is, what it does in full, its tier, `label_Tier`, faded, to 85%,
 each line one colour, set apart from what follows it without a second; Start all bold, what
 it does, not its tier, as every Start is. With a selection, the words go with
 every tier's request below theirs, ", with selection", for reference,
@@ -2980,10 +2980,18 @@ it; a right-click, or the menu key, puts the keyboard back in it,
 another. Escape closes it, written or not, as Cancel does, anywhere in
 it, not only its box; pressed on its words, not a control, it keeps the
 keyboard where it is, as the menu does. Either opened and the window or
-the editor resized, it's kept in the editor. It's headed by the choice
-that opened it, in the menu's words and inks, "Proposal: Request
-revision", what it's on under it, muted, cut where it runs out: the
-proposal's title, the document's name, the task's; the words it's on, or
+the editor resized, it's kept in the editor. It's headed by where
+what's asked goes, on one line, cut where it runs out: the choice's
+tier, in the revision's plum, bold, then, after a dot, fainter, as a
+card's head's are, what it's on, in the text's ink a little faded, not
+bold, the proposal's title, the document's name, the task's, "Proposal ·
+Stop retrying once the caller aborts", the tier a kind and what it's on
+the thing itself, a colon and what it's on faded in the plum tried first
+the same day, then no colon and the text's ink in full; not what the choice
+does, "Request revision", just chosen, said by the box and its buttons,
+a change or a revision told apart by what it's on, a proposal's title or
+a file's name, decided 2026-11-20, in place of the choice's words, its
+tier faded, over what it's on, muted, on a line of its own; the words it's on, or
 goes with, a quiet chip, quoted as they'll be listed, "with" them and ×
 in it where they're for reference, ones too long for it by their start,
 cut, and how many lines they run to, "· 3 lines"; pointed at, or the
@@ -3011,6 +3019,98 @@ quoting nothing opens where the menu was.
 
 Decided 2026-11-19: the forms say nothing under their box of where what's
 written goes, "Added to T-12, for this document", as doctor's form did:
-the menu's is headed by what it's on, "Document: Request change" and the
-document's name, and a card's sits in the card it's for, the task's card
-naming the task. Its actions alone under the box, on the right.
+the menu's is headed by what it's on, "Document retry.js", and a card's
+sits in the card it's for, the task's card naming the task. Its actions alone under the box, on the right.
+
+Decided 2026-11-20: no tier for the words. A selection is never a
+request's scope, only what it goes with: "Selection: Request change"
+landed in the document's list as "Document: Request change, with
+selection" does, and "Selection: Request revision" in the proposal's as
+the proposal's own does, two choices for one thing, so both were let go,
+and with them the target and the aim `SELECTION` and a proposal's
+request's `selected`. The words a request goes with are its
+`reference`, whichever tier it's asked at: quoted in the form, ×
+leaving them out, and listed "with" them. While it's waiting or
+under way, they're underlined, dotted, in the revision's plum, wherever
+they're shown, a proposal's request's in its frame's lines as proposed,
+as before; drawn behind the text, as a ring is, by a run's underlay of
+its own kind, `UNDERLINE`, a line under each row its words are on,
+`underlinedIn__Blocks`, never the text's own underline: set on the
+words, as it was, it took the place of a link's underline and a struck
+word's strike, as a word has only one. The playground's log says the
+words a request went with as `words`, a document's or a task's as a
+proposal's.
+
+Decided 2026-11-20: the form's chip says only the words, no "with"
+before them, the menu's choice having said they go with it, ", with
+selection"; tried in the chip and found to read as clutter, a label
+outside it, "Selection", the other way offered. And a request sent from
+the menu's form lets go of the selection, the caret left where its head
+was, so the words' underline shows at once, the request done with what
+was selected; put away, Cancel, Escape or let go empty, the selection
+kept, nothing having been done with it, so another choice can be made
+on it.
+
+Decided 2026-11-20: a listed request, its words below what it says. What
+was asked leads, so a list reads down; the words it was sent with under
+it, as an attachment is, in the chip the form quotes them in, no "with",
+cut where they're longer than the line; while it's edited, under its box,
+above Save and Cancel. Its ellipsis at the right of its first line,
+every request's in one column, not wherever what's written ends; its
+actions opening in the ellipsis's place, as every ellipsis's do, ending
+where it ended, the two in one spot, the ellipsis left showing beside
+them, then its room left empty beside them, so Remove wasn't under the
+pointer, tried first and taken out; the room they take
+kept on that first line whether they're shown or not, so nothing rewraps
+as they open, the lines after it the list's whole width, as a narrow
+card's would otherwise be squeezed; hidden by being clear, not clipped,
+so the keyboard still reaches them. A word longer than the line, a name
+written out, broken where it runs out, `overflow-wrap: anywhere`, not
+left running past the list's edge. A little more room between requests.
+Laid out side by side first, words above, below and inline, and below
+taken; the words above put the list's bullet beside them, not the
+request, and inline left them mid-paragraph on a long one.
+
+Decided 2026-11-20: a listed request's words, pointed at or the keyboard
+on them, behave as the form's do: lit where they are, `data-lit`, the
+viewer told which request's by `POINT_WORDS`, `litAt__ViewModel`
+marking them, a proposal's only in its frame's lines as proposed, where
+they're underlined; and peeked at, a moment after, only where some of
+them can't be seen, scrolled away or under the card the list is in, its
+peek kept to its chip by the window, `position-anchor`, not the list, as a
+card's scrolling cut it off, under the chip or flipped over it. The chip
+the form's, its start, cut, and how many lines. Once the request's done
+with, the words aren't lit, what's there since perhaps not what was sent,
+`pieces` null, only peeked at. Words taller than the window lit where
+they're shown, and, some always out of sight, peeked at, their first six
+lines and how many more. Pointing never scrolls: the pointer passing over
+a list on its way somewhere would jump the document about; going to the
+words, if it's wanted, is a click's to ask for.
+
+Decided 2026-11-20: after a listed request's chip, where its words are,
+"lines 31–33", as a move's note says where its other end is, quiet, in the
+muted ink, in place of the chip's "· 3 lines"; words in a proposal's
+change named by the lines the change is on, `rangeOf__Pieces`, there
+being no document line of their own. Pressed, `SHOW_WORDS`: the document
+scrolled to them, in its middle, or, taller than most of it, near its
+top, `revealWords__View_TextEditor`; lit a moment, `data-shown`, fading,
+let go by the viewer after it, `DURATION_SHOWN__WORDS`; the keyboard back
+on the text, closing a card it was pressed in once the pointer's gone,
+nothing selected or moved. A link, not the chip pressed, which wouldn't
+look pressable, and lights and peeks already. Once the request's done
+with, no link, as no lighting, the chip saying how many lines again.
+
+Decided 2026-11-20: requests whose words overlap underlined with one
+line, however many are on them, dotted where one is, dashed where more
+than one overlap, `spansOf__Stretches`, `data-many`, not drawn over each
+other, which made their dots a muddle; dashed, not solid, tried first,
+as a solid line reads as the text's own underline, a link's. Their dots
+and dashes fitted to the words by their own fitter, `dOf__Mark$`, not the
+rings', which left half a dash at each end: a whole one flush with each
+end, the rest spread evenly, and a gap where a dotted stretch meets a
+dashed one, found by their ends meeting, so they don't run together.
+Which request is on what is the lists', a request's words lit when its
+chip's pointed at, and gone to from its lines. Each request a lane of its
+own, one under another where they overlapped, was tried first the same
+day and let go: it didn't scale, three lanes crowding the line under them
+and more piling onto the last.

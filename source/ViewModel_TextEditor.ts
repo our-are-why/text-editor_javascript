@@ -35,6 +35,7 @@ export {
   type _STRETCH_Underlay_Text_,
   type _POINT_Underlay_Text_,
   type _BOUNDARY_Underlay_Text_,
+  type _UNDERLINE_Underlay_Text_,
   type _Position_Run_,
   type _FRAME_Block__ViewModel_,
   type _FOLDED_Block__ViewModel_,
@@ -66,8 +67,8 @@ export {
   viewModelOf__Blocks,
   segmentsOf__Stretches,
   stretchesOf__Segments,
-  markedIn__Blocks,
-  markedOf__Run,
+  underlinedIn__Blocks,
+  underlinedOf__Run,
   headOf__Quote,
   sizeOf__Quote,
   peekOf__Quote,
@@ -77,8 +78,9 @@ export {
   draftingAt__ViewModel,
   confirmingAt__ViewModel,
   editingAt__ViewModel,
+  wordsAt__ViewModel,
   isLines__Part_Frame,
-  type _Editing_Request_,
+  type _Id_Request_,
   type _Header_ViewModel_,
   type _Document_Header_,
   type _State_Document_,
@@ -96,6 +98,7 @@ export {
   type _Part_Header_,
   type _Pending_Confirm_,
   type _Request_Item_,
+  type _Reference_Request_,
   type _Confirm_Item_,
   type _Id_Item_,
   selectedAt__ViewModel,
@@ -123,12 +126,10 @@ export {
   type _TASK_Scope_Menu_,
   type _Target_Request_,
   type __BASE_Target_Request_,
-  type _SELECTION_Target_Request_,
   type _DOCUMENT_Target_Request_,
   type _TASK_Target_Request_,
   type _Aim_Request_,
   type __BASE_Aim_Request_,
-  type _SELECTION_Aim_Request_,
   type _DOCUMENT_Aim_Request_,
   type _TASK_Aim_Request_,
   type _PROPOSAL_Target_Request_,
@@ -326,7 +327,7 @@ interface _Group_Underlay_ {
   underlays: Array<_Underlay_Text_>
 }
 
-type _Underlay_Text_ = _STRETCH_Underlay_Text_ | _POINT_Underlay_Text_ | _BOUNDARY_Underlay_Text_
+type _Underlay_Text_ = _STRETCH_Underlay_Text_ | _POINT_Underlay_Text_ | _BOUNDARY_Underlay_Text_ | _UNDERLINE_Underlay_Text_
 
 interface __BASE_Underlay_Text_<Kind extends string> {
   kind: Kind
@@ -344,6 +345,11 @@ interface _POINT_Underlay_Text_ extends __BASE_Underlay_Text_<"POINT"> {
 
 interface _BOUNDARY_Underlay_Text_ extends __BASE_Underlay_Text_<"BOUNDARY"> {
   line: number
+}
+
+interface _UNDERLINE_Underlay_Text_ extends __BASE_Underlay_Text_<"UNDERLINE"> {
+  from: _Position_Run_
+  to: _Position_Run_
 }
 
 interface _Position_Run_ {
@@ -417,8 +423,7 @@ interface _Item_Proposals_ {
 interface _Request_Item_ {
   id: string
   notes: string
-  quote: string | null
-  reference: string | null
+  reference: _Reference_Request_ | null
   progress: string | null
   detail_Progress: string | null
   isRunning: boolean
@@ -427,6 +432,14 @@ interface _Request_Item_ {
   isEditing: boolean
   isStoppable: boolean
   isDismissable: boolean
+}
+
+interface _Reference_Request_ {
+  head: string
+  size: string | null
+  lines: string | null
+  peek: _Peek_Quote_ | null
+  pieces: Array<_Piece_Text_> | null
 }
 
 type _Status_Request_ = "QUEUED" | "RUNNING" | "ADDRESSED"
@@ -686,6 +699,26 @@ function markedIn__Blocks({
   attributes
 }: _Api___markedIn__Blocks_): Array<_Block_ViewModel_> {
   if (pieces.length === 0) return blocks_ViewModel
+  return runsMappedIn__Blocks({
+    blocks_ViewModel,
+    map: (run_Lines) => markedOf__Run({
+      run_Lines,
+      pieces,
+      ids_Run,
+      attributes
+    })
+  })
+}
+
+interface _Api___runsMappedIn__Blocks_ {
+  blocks_ViewModel: Array<_Block_ViewModel_>
+  map: (run_Lines: _Run_Lines_) => _Run_Lines_
+}
+
+function runsMappedIn__Blocks({
+  blocks_ViewModel,
+  map
+}: _Api___runsMappedIn__Blocks_): Array<_Block_ViewModel_> {
   return blocks_ViewModel.map((block_ViewModel): _Block_ViewModel_ => block_ViewModel.kind === "FRAME"
     ? {
       ...block_ViewModel,
@@ -695,23 +728,13 @@ function markedIn__Blocks({
           ? part_Frame
           : {
             ...part_Frame,
-            run: markedOf__Run({
-              run_Lines: part_Frame.run,
-              pieces,
-              ids_Run,
-              attributes
-            })
+            run: map(part_Frame.run)
           }
       })
     }
     : {
       ...block_ViewModel,
-      run: markedOf__Run({
-        run_Lines: block_ViewModel.run,
-        pieces,
-        ids_Run,
-        attributes
-      })
+      run: map(block_ViewModel.run)
     })
 }
 
@@ -733,42 +756,12 @@ function markedOf__Run({
     ...run_Lines,
     lines: run_Lines.lines.map((line_Run) => {
       const text = line_Run.segments.map((segment_Line) => segment_Line.text).join("")
-      const stretches_Marked = line_Run.origins.flatMap((origin_Line) => pieces.flatMap((piece_Text): Array<_Stretch_Line_> => {
-        const isSame = isSame__Id_Text({
-          id_Text: piece_Text.id_Text,
-          id_Text_Other: origin_Line.id_Text
-        })
-        const line = origin_Line.position.line
-        if (!isSame || line < piece_Text.range.from.line || piece_Text.range.to.line < line) return []
-        const codePoints_Origin = Array.from(text.slice(
-          origin_Line.from,
-          origin_Line.to
-        ))
-        const start = origin_Line.position.offset
-        const from = Math.max(
-          line === piece_Text.range.from.line ? piece_Text.range.from.offset : 0,
-          start
-        ) - start
-        const to = Math.min(
-          line === piece_Text.range.to.line ? piece_Text.range.to.offset : start + codePoints_Origin.length,
-          start + codePoints_Origin.length
-        ) - start
-        return from < to
-          ? [
-            {
-              from: origin_Line.from + codePoints_Origin.slice(
-                0,
-                from
-              ).join("").length,
-              to: origin_Line.from + codePoints_Origin.slice(
-                0,
-                to
-              ).join("").length,
-              attributes
-            }
-          ]
-          : []
-      }))
+      const stretches_Marked = stretchesOf__Pieces({
+        line_Run,
+        text,
+        pieces,
+        attributes
+      })
       return stretches_Marked.length === 0
         ? line_Run
         : {
@@ -783,6 +776,183 @@ function markedOf__Run({
         }
     })
   }
+}
+
+interface _Api___stretchesOf__Pieces_ {
+  line_Run: _Line_Run_
+  text: string
+  pieces: Array<_Piece_Text_>
+  attributes: _Attributes_Element_
+}
+
+function stretchesOf__Pieces({
+  line_Run,
+  text,
+  pieces,
+  attributes
+}: _Api___stretchesOf__Pieces_): Array<_Stretch_Line_> {
+  return line_Run.origins.flatMap((origin_Line) => pieces.flatMap((piece_Text): Array<_Stretch_Line_> => {
+    const isSame = isSame__Id_Text({
+      id_Text: piece_Text.id_Text,
+      id_Text_Other: origin_Line.id_Text
+    })
+    const line = origin_Line.position.line
+    if (!isSame || line < piece_Text.range.from.line || piece_Text.range.to.line < line) return []
+    const codePoints_Origin = Array.from(text.slice(
+      origin_Line.from,
+      origin_Line.to
+    ))
+    const start = origin_Line.position.offset
+    const from = Math.max(
+      line === piece_Text.range.from.line ? piece_Text.range.from.offset : 0,
+      start
+    ) - start
+    const to = Math.min(
+      line === piece_Text.range.to.line ? piece_Text.range.to.offset : start + codePoints_Origin.length,
+      start + codePoints_Origin.length
+    ) - start
+    return from < to
+      ? [
+        {
+          from: origin_Line.from + codePoints_Origin.slice(
+            0,
+            from
+          ).join("").length,
+          to: origin_Line.from + codePoints_Origin.slice(
+            0,
+            to
+          ).join("").length,
+          attributes
+        }
+      ]
+      : []
+  }))
+}
+
+interface _Api___underlinedIn__Blocks_ {
+  blocks_ViewModel: Array<_Block_ViewModel_>
+  references: Array<Array<_Piece_Text_>>
+  attributes: _Attributes_Element_
+}
+
+function underlinedIn__Blocks({
+  blocks_ViewModel,
+  references,
+  attributes
+}: _Api___underlinedIn__Blocks_): Array<_Block_ViewModel_> {
+  if (references.length === 0) return blocks_ViewModel
+  return runsMappedIn__Blocks({
+    blocks_ViewModel,
+    map: (run_Lines) => underlinedOf__Run({
+      run_Lines,
+      references,
+      attributes
+    })
+  })
+}
+
+interface _Api___underlinedOf__Run_ {
+  run_Lines: _Run_Lines_
+  references: Array<Array<_Piece_Text_>>
+  attributes: _Attributes_Element_
+}
+
+function underlinedOf__Run({
+  run_Lines,
+  references,
+  attributes
+}: _Api___underlinedOf__Run_): _Run_Lines_ {
+  const underlays = run_Lines.lines.flatMap((
+    line_Run,
+    index_Line
+  ) => {
+    const text = line_Run.segments.map((segment_Line) => segment_Line.text).join("")
+    return spansOf__Stretches({
+      stretches_References: references.map((pieces) => stretchesOf__Pieces({
+        line_Run,
+        text,
+        pieces,
+        attributes
+      }))
+    }).map((span_Underline): _Underlay_Text_ => ({
+      kind: "UNDERLINE",
+      attributes: span_Underline.isMany
+        ? {
+          ...attributes,
+          "data-many": ""
+        }
+        : attributes,
+      from: {
+        line: index_Line,
+        offset: span_Underline.from
+      },
+      to: {
+        line: index_Line,
+        offset: span_Underline.to
+      }
+    }))
+  })
+  return underlays.length === 0
+    ? run_Lines
+    : {
+      ...run_Lines,
+      groups: [
+        ...run_Lines.groups,
+        {
+          attributes,
+          underlays
+        }
+      ]
+    }
+}
+
+interface _Api___spansOf__Stretches_ {
+  stretches_References: Array<Array<_Stretch_Line_>>
+}
+
+interface _Span_Underline_ {
+  from: number
+  to: number
+  isMany: boolean
+}
+
+function spansOf__Stretches({
+  stretches_References
+}: _Api___spansOf__Stretches_): Array<_Span_Underline_> {
+  const offsets = [...new Set(stretches_References.flat().flatMap((stretch_Line) => [
+    stretch_Line.from,
+    stretch_Line.to
+  ]))].sort((offset, offset_Other) => offset - offset_Other)
+  return offsets.slice(1).reduce(
+    (
+      spans: Array<_Span_Underline_>,
+      to,
+      index
+    ) => {
+      const from = offsets[index] ?? to
+      const count = stretches_References.filter((stretches) => stretches.some((stretch_Line) => stretch_Line.from < to && from < stretch_Line.to)).length
+      const span_Last = spans.at(-1)
+      return count === 0
+        ? spans
+        : span_Last !== undefined && span_Last.to === from && span_Last.isMany === count > 1
+          ? [
+            ...spans.slice(0, -1),
+            {
+              ...span_Last,
+              to
+            }
+          ]
+          : [
+            ...spans,
+            {
+              from,
+              to,
+              isMany: count > 1
+            }
+          ]
+    },
+    []
+  )
 }
 
 function stretchesOf__Segments(
@@ -1020,7 +1190,11 @@ const ISCOVERINGMAP__UNDERLAY_TEXT: _IsCoveringMap__Underlay_Text_ = {
     underlay_Text,
     index_Line
   }) => underlay_Text.at.line === index_Line,
-  BOUNDARY: () => false
+  BOUNDARY: () => false,
+  UNDERLINE: ({
+    underlay_Text,
+    index_Line
+  }) => underlay_Text.from.line <= index_Line && index_Line <= underlay_Text.to.line
 }
 
 interface _Api___foldedAt__ViewModel_ {
@@ -1109,10 +1283,10 @@ function draftingAt__ViewModel({
 
 interface _Api___editingAt__ViewModel_ {
   viewModel_TextEditor: _ViewModel_TextEditor_
-  editing_Request: _Editing_Request_ | null
+  editing_Request: _Id_Request_ | null
 }
 
-interface _Editing_Request_ {
+interface _Id_Request_ {
   id_Item: _Id_Item_ | null
   id: string
 }
@@ -1175,6 +1349,44 @@ function editingAt__ViewModel({
               : part_Frame
           })
         })
+    }
+}
+
+interface _Api___wordsAt__ViewModel_ {
+  viewModel_TextEditor: _ViewModel_TextEditor_
+  id_Request: _Id_Request_ | null
+  attributes: _Attributes_Element_
+}
+
+function wordsAt__ViewModel({
+  viewModel_TextEditor,
+  id_Request,
+  attributes
+}: _Api___wordsAt__ViewModel_): _ViewModel_TextEditor_ {
+  if (id_Request === null) return viewModel_TextEditor
+  const id_Item = id_Request.id_Item
+  const header = viewModel_TextEditor.header
+  const part$_Frame = id_Item === null
+    ? []
+    : viewModel_TextEditor.blocks.flatMap((block_ViewModel) => block_ViewModel.kind === "FRAME" && block_ViewModel.range.first === id_Item.range_Frame.first && block_ViewModel.range.last === id_Item.range_Frame.last ? block_ViewModel.parts : [])
+  const request$_Holder = id_Item === null
+    ? [
+      ...(header.task?.revisions_Level.requests ?? []),
+      ...header.document.revisions_Level.requests
+    ]
+    : part$_Frame.flatMap((part_Frame) => part_Frame.kind === "PROPOSAL_LIST" ? part_Frame.items.flatMap((item_Proposals) => item_Proposals.source === id_Item.source ? item_Proposals.requests : []) : [])
+  const blocks_Lit = markedIn__Blocks({
+    blocks_ViewModel: viewModel_TextEditor.blocks,
+    pieces: request$_Holder.find((request_Item) => request_Item.id === id_Request.id)?.reference?.pieces ?? [],
+    ids_Run: id_Item === null ? null : part$_Frame.flatMap((part_Frame) => part_Frame.kind === "PROPOSAL_LINES" ? [part_Frame.run.id] : []),
+    attributes
+  })
+  return blocks_Lit === viewModel_TextEditor.blocks
+    ? viewModel_TextEditor
+    : {
+      ...viewModel_TextEditor,
+      blocks: blocks_Lit,
+      runs: runsOf__Blocks(blocks_Lit)
     }
 }
 
@@ -1370,7 +1582,7 @@ interface __BASE_Item_Menu_<Kind extends string> {
   section: _Section_Action_
 }
 
-type _Tier_Menu_ = "WORDS" | "PROPOSAL" | "DOCUMENT" | "TASK"
+type _Tier_Menu_ = "PROPOSAL" | "DOCUMENT" | "TASK"
 
 interface _REQUEST_Item_Menu_ extends __BASE_Item_Menu_<"REQUEST"> {
   label_Form: string
@@ -1407,14 +1619,10 @@ interface _TASK_Item_Menu_ extends __BASE_Item_Menu_<"TASK"> {
   command: string
 }
 
-type _Target_Request_ = _SELECTION_Target_Request_ | _DOCUMENT_Target_Request_ | _TASK_Target_Request_ | _PROPOSAL_Target_Request_
+type _Target_Request_ = _DOCUMENT_Target_Request_ | _TASK_Target_Request_ | _PROPOSAL_Target_Request_
 
 interface __BASE_Target_Request_<Kind extends string> {
   kind: Kind
-}
-
-interface _SELECTION_Target_Request_ extends __BASE_Target_Request_<"SELECTION"> {
-  selected: _Selected_Text_
 }
 
 interface _DOCUMENT_Target_Request_ extends __BASE_Target_Request_<"DOCUMENT"> {
@@ -1425,14 +1633,10 @@ interface _TASK_Target_Request_ extends __BASE_Target_Request_<"TASK"> {
   reference: _Selected_Text_ | null
 }
 
-type _Aim_Request_ = _SELECTION_Aim_Request_ | _DOCUMENT_Aim_Request_ | _TASK_Aim_Request_
+type _Aim_Request_ = _DOCUMENT_Aim_Request_ | _TASK_Aim_Request_
 
 interface __BASE_Aim_Request_<Kind extends string> {
   kind: Kind
-}
-
-interface _SELECTION_Aim_Request_ extends __BASE_Aim_Request_<"SELECTION"> {
-  selected: _Selected_Text_
 }
 
 interface _DOCUMENT_Aim_Request_ extends __BASE_Aim_Request_<"DOCUMENT"> {
@@ -1446,7 +1650,6 @@ interface _TASK_Aim_Request_ extends __BASE_Aim_Request_<"TASK"> {
 interface _PROPOSAL_Target_Request_ extends __BASE_Target_Request_<"PROPOSAL"> {
   source: string
   command: string
-  selected: _Selected_Text_ | null
   reference: _Selected_Text_ | null
 }
 
@@ -1471,7 +1674,6 @@ interface _Form_Request_ {
 
 interface _Head_Form_ {
   label_Tier: string
-  label: string
   subject: string
 }
 
@@ -1479,8 +1681,6 @@ interface _Quote_Form_ {
   text: string
   head: string
   size: string | null
-  label: string
-  isDroppable: boolean
   peek: _Peek_Quote_ | null
   pieces: Array<_Piece_Text_>
   ids_Run: Array<string>

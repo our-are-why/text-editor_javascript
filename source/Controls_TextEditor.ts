@@ -3,7 +3,8 @@ import type {
   _SEND_Command_,
   _SEND_REQUEST__Command_,
   _SAVE_EDIT__Command_,
-  _Scope_Work_
+  _Scope_Work_,
+  _POINT_WORDS__Command_
 } from "./Viewer_TextEditor.ts"
 import type {
   _Id_Item_,
@@ -620,6 +621,48 @@ const CONTROLS__TEXTEDITOR: Array<_Adapter_Event_> = [
         isConfirmed: false
       }
       : null
+  },
+  {
+    event: "click",
+    commandOf__Event: (event) => {
+      const element_Show = event.target instanceof Element ? event.target.closest(".said_htmlView .show_Said_htmlView") : null
+      const id = element_Show?.closest(".said_htmlView")?.getAttribute("data-request")
+      return element_Show === null || element_Show === undefined || typeof id !== "string"
+        ? null
+        : {
+          kind: "SHOW_WORDS",
+          id_Request: {
+            id_Item: idOf__Item({
+              element: element_Show
+            }),
+            id
+          }
+        }
+    }
+  },
+  {
+    event: "pointerover",
+    commandOf__Event: (event) => pointedOf__Words({
+      event
+    })
+  },
+  {
+    event: "focusin",
+    commandOf__Event: (event) => pointedOf__Words({
+      event
+    })
+  },
+  {
+    event: "pointerout",
+    commandOf__Event: (event) => leftOf__Words({
+      event
+    })
+  },
+  {
+    event: "focusout",
+    commandOf__Event: (event) => leftOf__Words({
+      event
+    })
   }
 ]
 
@@ -673,7 +716,7 @@ interface _Api___savedOf__Edit_ {
 function savedOf__Edit({
   element
 }: _Api___savedOf__Edit_): _SAVE_EDIT__Command_ | null {
-  const element_Notes = element.closest(".said_htmlView")?.querySelector(":scope > .notes_Edit_htmlView")
+  const element_Notes = element.closest(".said_htmlView")?.querySelector(":scope > .row_Said_htmlView > .text_Said_htmlView > .notes_Edit_htmlView")
   return element_Notes instanceof HTMLTextAreaElement
     ? {
       kind: "SAVE_EDIT",
@@ -822,4 +865,43 @@ function isInput__Event(
   event: Event
 ): boolean {
   return event.target instanceof Element && event.target.classList.contains("input_htmlView")
+}
+
+interface _Api___pointedOf__Words_ {
+  event: Event
+}
+
+function pointedOf__Words({
+  event
+}: _Api___pointedOf__Words_): _POINT_WORDS__Command_ | null {
+  const element_Words = event.target instanceof Element ? event.target.closest(".said_htmlView .reference_Said_htmlView") : null
+  const id = element_Words?.closest(".said_htmlView")?.getAttribute("data-request")
+  return element_Words === null || element_Words === undefined || typeof id !== "string"
+    ? null
+    : {
+      kind: "POINT_WORDS",
+      id_Request: {
+        id_Item: idOf__Item({
+          element: element_Words
+        }),
+        id
+      }
+    }
+}
+
+interface _Api___leftOf__Words_ {
+  event: Event
+}
+
+function leftOf__Words({
+  event
+}: _Api___leftOf__Words_): _POINT_WORDS__Command_ | null {
+  const element_Words = event.target instanceof Element ? event.target.closest(".said_htmlView .reference_Said_htmlView") : null
+  const element_Next = event instanceof MouseEvent || event instanceof FocusEvent ? event.relatedTarget : null
+  return element_Words === null || (element_Next instanceof Node && element_Words.contains(element_Next))
+    ? null
+    : {
+      kind: "POINT_WORDS",
+      id_Request: null
+    }
 }

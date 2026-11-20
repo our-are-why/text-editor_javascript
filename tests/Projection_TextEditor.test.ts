@@ -111,6 +111,10 @@ function drawnAs(
       known(underlay, ["kind", "at", "attributes"], "notch")
       return `      POINT ${underlay.at.line}:${underlay.at.offset} ${attributes}`
     }
+    if (underlay.kind === "UNDERLINE") {
+      known(underlay, ["kind", "from", "to", "attributes"], "underline")
+      return `      UNDERLINE ${underlay.from.line}:${underlay.from.offset}-${underlay.to.line}:${underlay.to.offset} ${attributes}`
+    }
     known(underlay, ["kind", "line", "attributes"], "notch")
     return `      BOUNDARY ${underlay.line} ${attributes}`
   }
@@ -292,18 +296,20 @@ for (const scene of [proposalsCode, proposalsThread, proposalsProse]) {
   })
 }
 
-test("what's asked of a proposal: each request listed on its item, the words it's on quoted, each with its own status, queued or running; the item shown requested while some are queued, revising while one's running, in the editor's words, whatever the host says of it open, decided as the host says; each queued one, and the proposal's, startable only while it's open and no round of it's under way; and the words a request is on underlined where they're proposed, the document's and the proposal's own, each marked requested in its frame's lines as proposed, not as they are", () => {
+const underlinedIn = (run: _Run_Lines_) => run.groups.flatMap((group) => "data-requested" in group.attributes ? group.underlays.flatMap((underlay): Array<string> => underlay.kind === "UNDERLINE" ? [(run.lines[underlay.from.line]?.segments.map((segment) => segment.text).join("") ?? "").slice(underlay.from.offset, underlay.to.offset)] : []) : [])
+
+test("what's asked of a proposal: each request listed on its item, the words it was sent with quoted after what it says, and where they are, the lines of the change they're in, each with its own status, queued or running; the item shown requested while some are queued, revising while one's running, in the editor's words, whatever the host says of it open, decided as the host says; each queued one, and the proposal's, startable only while it's open and no round of it's under way; and the words a request was sent with underlined, behind the text, where they're proposed, the document's and the proposal's own, each in its frame's lines as proposed, not as they are", () => {
   const parsed = parseModel_TextEditor({
     multilineText: "one two three",
     marks: [],
     proposed: [{ source: "digit", changes: [{ kind: "REPLACE", range: { from: { line: 0, offset: 4 }, to: { line: 0, offset: 7 } }, multilineText: "2", marks: [] }] }]
   })
   if (parsed.kind === "REFUSED") throw new Error("refused")
-  const selected = { pieces: [{ id_Text: { kind: "DOCUMENT" as const }, range: { from: { line: 0, offset: 0 }, to: { line: 0, offset: 3 } } }, { id_Text: { kind: "CHANGE" as const, source: "digit", index: 0 }, range: { from: { line: 0, offset: 0 }, to: { line: 0, offset: 1 } } }] as [_Piece_Text_, ...Array<_Piece_Text_>], text: "one 2" }
+  const reference = { pieces: [{ id_Text: { kind: "DOCUMENT" as const }, range: { from: { line: 0, offset: 0 }, to: { line: 0, offset: 3 } } }, { id_Text: { kind: "CHANGE" as const, source: "digit", index: 0 }, range: { from: { line: 0, offset: 0 }, to: { line: 0, offset: 1 } } }] as [_Piece_Text_, ...Array<_Piece_Text_>], text: "one 2" }
   const viewModelIn = (state: _Decision_Proposal_, status: string, statuses: [_Status_Request_, _Status_Request_]) => viewModelOf__Model({
     model_TextEditor: parsed.model_TextEditor,
     name_Document: "notes/digits.txt",
-    proposals: [{ source: "digit", title: "Write two as a digit", state, status, rationale: "", requests: [{ id: "both", notes: "Both.", selected, reference: null, status: statuses[0] }, { id: "this", notes: "And this.", selected: null, reference: null, status: statuses[1] }], actions: actions_Review, attributes: {} }],
+    proposals: [{ source: "digit", title: "Write two as a digit", state, status, rationale: "", requests: [{ id: "both", notes: "Both.", reference, status: statuses[0] }, { id: "this", notes: "And this.", reference: null, status: statuses[1] }], actions: actions_Review, attributes: {} }],
     rounds_Landed: [],
     task: null,
     ranges_Frame: [],
@@ -311,13 +317,13 @@ test("what's asked of a proposal: each request listed on its item, the words it'
     module_Reading: MODULE_READING_TEXT
   })
   const partsOf = (viewModel: _ViewModel_TextEditor_) => viewModel.blocks.flatMap((block) => block.kind === "FRAME" ? block.parts : [])
-  const requestedIn = (viewModel: _ViewModel_TextEditor_, kind: "PROPOSAL_LINES" | "CURRENT_LINES") => partsOf(viewModel).flatMap((part) => part.kind === kind ? part.run.lines.flatMap((line) => line.segments.filter((segment) => "data-requested" in segment.attributes).map((segment): string => segment.text)) : [])
+  const requestedIn = (viewModel: _ViewModel_TextEditor_, kind: "PROPOSAL_LINES" | "CURRENT_LINES") => partsOf(viewModel).flatMap((part) => part.kind === kind ? underlinedIn(part.run) : [])
   const itemsIn = (viewModel: _ViewModel_TextEditor_) => partsOf(viewModel).flatMap((part) => part.kind === "PROPOSAL_LIST" ? part.items.map((item) => ({ state: item.state, status: item.status, isRunning: item.isRunning, isStartable: item.isStartable, requests: item.requests })) : [])
   const queued = viewModelIn("OPEN", "", ["QUEUED", "QUEUED"])
   expect(requestedIn(queued, "PROPOSAL_LINES")).toEqual(["one", "2"])
   expect(requestedIn(queued, "CURRENT_LINES")).toEqual([])
-  expect(itemsIn(queued)).toEqual([{ state: "REQUESTED", status: "Revision requested", isRunning: false, isStartable: true, requests: [{ id: "both", notes: "Both.", quote: "one 2", reference: null, progress: null, isRunning: false, isStartable: true, isRemovable: true, isEditing: false, isStoppable: false, detail_Progress: null, isDismissable: false }, { id: "this", notes: "And this.", quote: null, reference: null, progress: null, isRunning: false, isStartable: true, isRemovable: true, isEditing: false, isStoppable: false, detail_Progress: null, isDismissable: false }] }])
-  expect(itemsIn(viewModelIn("OPEN", "", ["RUNNING", "QUEUED"]))).toEqual([{ state: "REVISING", status: "Revising", isRunning: true, isStartable: false, requests: [{ id: "both", notes: "Both.", quote: "one 2", reference: null, progress: "in progress", isRunning: true, isStartable: false, isRemovable: false, isEditing: false, isStoppable: false, detail_Progress: null, isDismissable: false }, { id: "this", notes: "And this.", quote: null, reference: null, progress: null, isRunning: false, isStartable: false, isRemovable: true, isEditing: false, isStoppable: false, detail_Progress: null, isDismissable: false }] }])
+  expect(itemsIn(queued)).toEqual([{ state: "REQUESTED", status: "Revision requested", isRunning: false, isStartable: true, requests: [{ id: "both", notes: "Both.", reference: { head: "one 2", size: null, lines: "line 1", peek: null, pieces: reference.pieces }, progress: null, isRunning: false, isStartable: true, isRemovable: true, isEditing: false, isStoppable: false, detail_Progress: null, isDismissable: false }, { id: "this", notes: "And this.", reference: null, progress: null, isRunning: false, isStartable: true, isRemovable: true, isEditing: false, isStoppable: false, detail_Progress: null, isDismissable: false }] }])
+  expect(itemsIn(viewModelIn("OPEN", "", ["RUNNING", "QUEUED"]))).toEqual([{ state: "REVISING", status: "Revising", isRunning: true, isStartable: false, requests: [{ id: "both", notes: "Both.", reference: { head: "one 2", size: null, lines: "line 1", peek: null, pieces: reference.pieces }, progress: "in progress", isRunning: true, isStartable: false, isRemovable: false, isEditing: false, isStoppable: false, detail_Progress: null, isDismissable: false }, { id: "this", notes: "And this.", reference: null, progress: null, isRunning: false, isStartable: false, isRemovable: true, isEditing: false, isStoppable: false, detail_Progress: null, isDismissable: false }] }])
   expect(itemsIn(viewModelIn("ACCEPTED", "Accepted", ["QUEUED", "QUEUED"])).map((item) => [item.state, item.status, item.isStartable, item.requests.map((request) => request.isStartable)])).toEqual([["ACCEPTED", "Accepted", false, [false, false]]])
 })
 
@@ -339,9 +345,9 @@ test("the header over the document: how many of its proposals are decided, how m
     model_TextEditor: parsed.model_TextEditor,
     name_Document: "notes/digits.txt",
     proposals: [
-      { source: "digit", title: "Write two as a digit", state: "OPEN", status: "", rationale: "", requests: statuses_Digit.map((status, index) => ({ id: `digit-${index}`, notes: "Say it.", selected: null, reference: null, status })), actions: actions_Review, attributes: {} },
+      { source: "digit", title: "Write two as a digit", state: "OPEN", status: "", rationale: "", requests: statuses_Digit.map((status, index) => ({ id: `digit-${index}`, notes: "Say it.", reference: null, status })), actions: actions_Review, attributes: {} },
       { source: "first", title: "Write one as a digit", state: decision_First, status: "", rationale: "", requests: [], actions: actions_Review, attributes: {} },
-      { source: "unseen", title: "Nothing here", state: "OPEN", status: "", rationale: "", requests: [{ id: "unseen-0", notes: "Never drawn.", selected: null, reference: null, status: "QUEUED" }], actions: actions_Review, attributes: {} }
+      { source: "unseen", title: "Nothing here", state: "OPEN", status: "", rationale: "", requests: [{ id: "unseen-0", notes: "Never drawn.", reference: null, status: "QUEUED" }], actions: actions_Review, attributes: {} }
     ],
     task: task_Host,
     rounds_Landed: [],
@@ -396,7 +402,7 @@ test("a round that landed after your edits: each change of it written before the
   const viewModelOf = (indexes_Stale: Array<number>, count_Dropped: number, status: _Status_Request_ | null) => viewModelOf__Model({
     model_TextEditor: parsed.model_TextEditor,
     name_Document: "notes/digits.txt",
-    proposals: [{ source: "digits", title: "Write them as digits", state: "OPEN", status: "", rationale: "", requests: status === null ? [] : [{ id: "again", notes: "Again.", selected: null, reference: null, status }], actions: actions_Review, attributes: {} }],
+    proposals: [{ source: "digits", title: "Write them as digits", state: "OPEN", status: "", rationale: "", requests: status === null ? [] : [{ id: "again", notes: "Again.", reference: null, status }], actions: actions_Review, attributes: {} }],
     rounds_Landed: [{ source: "digits", indexes_Stale, count_Dropped }],
     task: null,
     ranges_Frame: [],
@@ -415,7 +421,29 @@ test("a round that landed after your edits: each change of it written before the
   expect(placesStale(viewModelOf([], 0, null))).toEqual([])
 })
 
-test("a task's own requests, on no proposal, aimed at what's selected, the whole document, or the task itself: those aimed here listed for this document, those at the task for the task, all counted, each startable and removable while it's queued, in progress while it's worked on, and, addressed, saying by how many proposals, or that nothing needed changing; listed in the document's card, counted with the rest, its Start there while one's queued; the words one's about underlined wherever the document's text is drawn, outside frames, and in a frame's lines as they are and as proposed", () => {
+test("requests' words underlined with one line however many requests are on them: dotted where one is, dashed where more than one overlap, each stretch as long as the words it's on", () => {
+  const parsed = parseModel_TextEditor({
+    multilineText: "one two three four",
+    marks: [],
+    proposed: []
+  })
+  if (parsed.kind === "REFUSED") throw new Error("refused")
+  const requestOf = (id: string, from: number, to: number) => ({ id, notes: "Say it.", aim: { kind: "DOCUMENT" as const, reference: { pieces: [{ id_Text: { kind: "DOCUMENT" as const }, range: { from: { line: 0, offset: from }, to: { line: 0, offset: to } } }] as [_Piece_Text_, ...Array<_Piece_Text_>], text: "" } }, status: "QUEUED" as const, sources_Answering: [] })
+  const viewModel = viewModelOf__Model({
+    model_TextEditor: parsed.model_TextEditor,
+    name_Document: "notes/count.txt",
+    proposals: [],
+    task: { id: "T-3", name: "Tidy", state: "WORKING", summary: "", requests: [requestOf("a", 0, 7), requestOf("b", 4, 13), requestOf("c", 14, 18), requestOf("d", 14, 18)], reason: "", documents: [], summary_Document: "", actions: [], actions_Document: [] },
+    rounds_Landed: [],
+    ranges_Frame: [],
+    module_Language: MODULE_PLAINTEXT,
+    module_Reading: MODULE_READING_TEXT
+  })
+  const text = "one two three four"
+  expect(viewModel.runs.flatMap((run) => run.groups.flatMap((group) => group.underlays.flatMap((underlay) => underlay.kind === "UNDERLINE" ? [`${text.slice(underlay.from.offset, underlay.to.offset)}|${"data-many" in underlay.attributes ? "dashed" : "dotted"}`] : [])))).toEqual(["one |dotted", "two|dashed", " three|dotted", "four|dashed"])
+})
+
+test("a task's own requests, on no proposal, aimed at the whole document or the task itself, with words for reference or none: those aimed here listed for this document, those at the task for the task, the words one's sent with quoted, and where they are while it waits or is under way, not once it's done with, all counted, each startable and removable while it's queued, in progress while it's worked on, and, addressed, saying by how many proposals, or that nothing needed changing; listed in the document's card, counted with the rest, its Start there while one's queued; the words one was sent with underlined, behind the text, while it's waiting or under way, wherever the document's text is drawn, outside frames, and in a frame's lines as they are and as proposed", () => {
   const parsed = parseModel_TextEditor({
     multilineText: "one two three\nfour five",
     marks: [],
@@ -432,10 +460,10 @@ test("a task's own requests, on no proposal, aimed at what's selected, the whole
       state: "WORKING",
       summary: "",
       requests: [
-        { id: "both", notes: "Say what they count.", aim: { kind: "SELECTION", selected: { pieces: [{ id_Text: { kind: "DOCUMENT" }, range: { from: { line: 0, offset: 0 }, to: { line: 0, offset: 3 } } }, { id_Text: { kind: "DOCUMENT" }, range: { from: { line: 1, offset: 0 }, to: { line: 1, offset: 4 } } }], text: "one four" } }, status: "QUEUED", sources_Answering: [] },
+        { id: "both", notes: "Say what they count.", aim: { kind: "DOCUMENT", reference: { pieces: [{ id_Text: { kind: "DOCUMENT" }, range: { from: { line: 0, offset: 0 }, to: { line: 0, offset: 3 } } }, { id_Text: { kind: "DOCUMENT" }, range: { from: { line: 1, offset: 0 }, to: { line: 1, offset: 4 } } }], text: "one four" } }, status: "QUEUED", sources_Answering: [] },
         { id: "all", notes: "Number them all.", aim: { kind: "DOCUMENT", reference: null }, status: "RUNNING", sources_Answering: [] },
         { id: "whole", notes: "Tidy it all.", aim: { kind: "TASK", reference: null }, status: "QUEUED", sources_Answering: [] },
-        { id: "digit", notes: "Write two as a digit.", aim: { kind: "SELECTION", selected: { pieces: [{ id_Text: { kind: "DOCUMENT" }, range: { from: { line: 1, offset: 5 }, to: { line: 1, offset: 9 } } }], text: "five" } }, status: "ADDRESSED", sources_Answering: ["digit"] },
+        { id: "digit", notes: "Write two as a digit.", aim: { kind: "DOCUMENT", reference: { pieces: [{ id_Text: { kind: "DOCUMENT" }, range: { from: { line: 1, offset: 5 }, to: { line: 1, offset: 9 } } }], text: "five" } }, status: "ADDRESSED", sources_Answering: ["digit"] },
         { id: "none", notes: "Check the rest.", aim: { kind: "DOCUMENT", reference: null }, status: "ADDRESSED", sources_Answering: [] }
       ],
       reason: "",
@@ -449,7 +477,7 @@ test("a task's own requests, on no proposal, aimed at what's selected, the whole
     module_Language: MODULE_PLAINTEXT,
     module_Reading: MODULE_READING_TEXT
   })
-  const request_Whole = { id: "whole", notes: "Tidy it all.", quote: null, reference: null, progress: null, isRunning: false, isStartable: true, isRemovable: true, isEditing: false, isStoppable: false, detail_Progress: null, isDismissable: false }
+  const request_Whole = { id: "whole", notes: "Tidy it all.", reference: null, progress: null, isRunning: false, isStartable: true, isRemovable: true, isEditing: false, isStoppable: false, detail_Progress: null, isDismissable: false }
   expect(viewModel.header).toEqual({
     task: {
       id: "count",
@@ -492,10 +520,10 @@ test("a task's own requests, on no proposal, aimed at what's selected, the whole
       },
       revisions_Level: {
         requests: [
-          { id: "both", notes: "Say what they count.", quote: "one four", reference: null, progress: null, isRunning: false, isStartable: true, isRemovable: true, isEditing: false, isStoppable: false, detail_Progress: null, isDismissable: false },
-          { id: "all", notes: "Number them all.", quote: null, reference: null, progress: "in progress", isRunning: true, isStartable: false, isRemovable: false, isEditing: false, isStoppable: true, detail_Progress: null, isDismissable: false },
-          { id: "digit", notes: "Write two as a digit.", quote: "five", reference: null, progress: "addressed", isRunning: false, isStartable: false, isRemovable: false, isEditing: false, isStoppable: false, detail_Progress: "1 proposal", isDismissable: true },
-          { id: "none", notes: "Check the rest.", quote: null, reference: null, progress: "addressed", isRunning: false, isStartable: false, isRemovable: false, isEditing: false, isStoppable: false, detail_Progress: "nothing to change", isDismissable: true }
+          { id: "both", notes: "Say what they count.", reference: { head: "one four", size: null, lines: "lines 1–2", peek: null, pieces: [{ id_Text: { kind: "DOCUMENT" }, range: { from: { line: 0, offset: 0 }, to: { line: 0, offset: 3 } } }, { id_Text: { kind: "DOCUMENT" }, range: { from: { line: 1, offset: 0 }, to: { line: 1, offset: 4 } } }] }, progress: null, isRunning: false, isStartable: true, isRemovable: true, isEditing: false, isStoppable: false, detail_Progress: null, isDismissable: false },
+          { id: "all", notes: "Number them all.", reference: null, progress: "in progress", isRunning: true, isStartable: false, isRemovable: false, isEditing: false, isStoppable: true, detail_Progress: null, isDismissable: false },
+          { id: "digit", notes: "Write two as a digit.", reference: { head: "five", size: null, lines: null, peek: null, pieces: null }, progress: "addressed", isRunning: false, isStartable: false, isRemovable: false, isEditing: false, isStoppable: false, detail_Progress: "1 proposal", isDismissable: true },
+          { id: "none", notes: "Check the rest.", reference: null, progress: "addressed", isRunning: false, isStartable: false, isRemovable: false, isEditing: false, isStoppable: false, detail_Progress: "nothing to change", isDismissable: true }
         ],
         isStartable_Requests: true,
         isStoppable_Requests: true,
@@ -503,6 +531,5 @@ test("a task's own requests, on no proposal, aimed at what's selected, the whole
       }
     }
   })
-  const requestedIn = (run: _Run_Lines_) => run.lines.flatMap((line) => line.segments.filter((segment) => "data-requested" in segment.attributes).map((segment): string => segment.text))
-  expect(viewModel.blocks.map((block) => block.kind === "FRAME" ? block.parts.map((part) => isLines__Part_Frame(part) ? requestedIn(part.run) : []) : requestedIn(block.run))).toEqual([[["one"], ["one"], [], []], ["four"]])
+  expect(viewModel.blocks.map((block) => block.kind === "FRAME" ? block.parts.map((part) => isLines__Part_Frame(part) ? underlinedIn(part.run) : []) : underlinedIn(block.run))).toEqual([[["one"], ["one"], [], []], ["four"]])
 })

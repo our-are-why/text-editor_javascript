@@ -692,15 +692,11 @@
 
 /* the fold as tall as what it shows, the ellipsis or its actions, as if
    they were its line's own, no line of text round them, so nothing moves
-   as it opens; in a request's words, inline, as they are */
+   as it opens */
 .htmlView_editor .fold_Action_htmlView {
   position: relative;
   isolation: isolate;
   display: inline-flex;
-}
-
-.htmlView_editor .said_htmlView > .fold_Action_htmlView {
-  display: inline;
 }
 
 /* on a card's line, set on its baseline as the figure beside it is, its
@@ -778,10 +774,6 @@
   --ink_More_htmlView: var(--view-placeholder-ink, color-mix(in srgb, CanvasText 58%, transparent));
 }
 
-.htmlView_editor .said_htmlView > .fold_Action_htmlView {
-  margin-left: 0.5em;
-}
-
 .htmlView_editor .actions_Said_htmlView {
   display: inline-flex;
   align-items: baseline;
@@ -823,42 +815,155 @@
 }
 
 .htmlView_editor .said_htmlView + .said_htmlView {
-  margin-top: 0.35rem;
+  margin-top: 0.55rem;
+}
+
+/* a request's line: what it says, and how it's getting on, and, at the
+   right of its first line, its ellipsis, every request's in one column,
+   its actions opening in its place, as every ellipsis's do, ending where
+   it ended, the two in one spot; the room they take kept on that line
+   whether they're shown or not, so what's written never rewraps as they
+   open, the lines after it the list's whole width; they're hidden by
+   being clear, not clipped, so the keyboard still reaches them, and
+   unfolds them as it does */
+.htmlView_editor .row_Said_htmlView {
+  display: flow-root;
+}
+
+/* a word longer than the line broken where it runs out, not left running
+   past the list's edge, nor dropped below the ellipsis, as a line that
+   can't fit beside it would be */
+.htmlView_editor .text_Said_htmlView {
+  overflow-wrap: anywhere;
+}
+
+.htmlView_editor .row_Said_htmlView > .fold_Action_htmlView {
+  float: right;
+  display: grid;
+  justify-items: end;
+  align-items: baseline;
+  margin-left: 0.75em;
+}
+
+.htmlView_editor .row_Said_htmlView > .fold_Action_htmlView > * {
+  grid-area: 1 / 1;
+}
+
+.htmlView_editor .row_Said_htmlView > .fold_Action_htmlView > .folded_htmlView {
+  position: static;
+  width: auto;
+  height: auto;
+  overflow: visible;
+  clip-path: none;
+  opacity: 0;
+}
+
+.htmlView_editor .row_Said_htmlView > .fold_Action_htmlView:is(:hover, :has(:focus-visible)) > .folded_htmlView {
+  opacity: 1;
+}
+
+@media (hover: none) {
+  .htmlView_editor .row_Said_htmlView > .fold_Action_htmlView > .folded_htmlView {
+    opacity: 1;
+  }
 }
 
 .htmlView_editor .said_htmlView::marker {
   color: var(--ink_state_htmlView);
 }
 
-.htmlView_editor :is(.quote_Said_htmlView, .words_Reference_htmlView) {
-  display: inline-block;
-  max-width: 22em;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  vertical-align: bottom;
+/* the words a request was sent with, under what it says, as an
+   attachment is, the chip the form quotes them in, cut where they're
+   longer than the line, and, as there, pointed at or the keyboard on
+   them, lit where they are while the request waits or is under way, and
+   peeked at where some of them can't be seen; once it's done with, only
+   peeked at, what's there since perhaps not what was sent */
+.htmlView_editor .said_htmlView .reference_Said_htmlView {
+  display: flex;
+  align-items: baseline;
+  gap: 0.6em;
+  min-width: 0;
+  margin-top: 0.2rem;
 }
 
-.htmlView_editor .quote_Said_htmlView {
-  margin-right: 0.4em;
-  font-family: var(--view-font, ui-monospace, "SF Mono", Menlo, Consolas, monospace);
+/* after them, where they are, "lines 31–33", as a move's note says where
+   its other end is, quiet, in the muted ink, pressed to go to them: the
+   document scrolled to show them, put in its middle, or, taller than
+   that, near its top, lit a moment and fading, the keyboard back on the
+   text, nothing selected or moved */
+.htmlView_editor .show_Said_htmlView {
+  flex: none;
+  padding: 0;
+  border: none;
+  background: none;
   color: var(--view-placeholder-ink, color-mix(in srgb, CanvasText 58%, transparent));
+  font: inherit;
+  font-size: 0.82em;
+  font-variant-numeric: tabular-nums;
+  cursor: pointer;
 }
 
-/* the words a request was sent with, for reference, not to change: after
-   what it says, muted, "with" them, quoted as words aimed at are */
-.htmlView_editor .reference_Said_htmlView {
-  margin-left: 0.4em;
-  color: var(--view-placeholder-ink, color-mix(in srgb, CanvasText 58%, transparent));
+.htmlView_editor .show_Said_htmlView:hover {
+  color: inherit;
+  text-decoration: underline;
 }
 
-.htmlView_editor .words_Reference_htmlView {
-  font-family: var(--view-font, ui-monospace, "SF Mono", Menlo, Consolas, monospace);
+.htmlView_editor .show_Said_htmlView:focus-visible {
+  outline: 2px solid var(--accent_revision_htmlView);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+.htmlView_editor .text_htmlView > [data-shown] {
+  border-radius: 2px;
+  animation: shown_Words_htmlView 1.8s ease-in both;
+}
+
+@keyframes shown_Words_htmlView {
+  from {
+    background: color-mix(in srgb, var(--accent_revision_htmlView) 30%, transparent);
+  }
+
+  to {
+    background: transparent;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .htmlView_editor .text_htmlView > [data-shown] {
+    animation: none;
+    background: color-mix(in srgb, var(--accent_revision_htmlView) 22%, transparent);
+  }
+}
+
+.htmlView_editor .notes_Edit_htmlView + .reference_Said_htmlView {
+  margin-top: 0.35rem;
+}
+
+/* its peek kept to its chip, as the form's is, but placed in the window,
+   not the list, so a card's scrolling doesn't cut it off: under the
+   chip, or over it where there's no room under it */
+.htmlView_editor .said_htmlView .chip_Quote_htmlView {
+  anchor-name: --chip_Said;
+  anchor-scope: --chip_Said;
+}
+
+.htmlView_editor .said_htmlView .peek_Quote_htmlView {
+  position: fixed;
+  position-anchor: --chip_Said;
+  top: calc(anchor(bottom) + 0.4rem);
+  left: anchor(left);
+  position-try-fallbacks: flip-block;
+}
+
+.htmlView_editor .text_htmlView > [data-lit] {
+  border-radius: 2px;
+  background: color-mix(in srgb, var(--accent_revision_htmlView) 22%, transparent);
 }
 
 /* Edit, pressed: the request its own box, what it says in it, Save,
    plum, as Add is, and Cancel, under it, on the right */
-.htmlView_editor .said_htmlView > .notes_Edit_htmlView {
+.htmlView_editor .text_Said_htmlView > .notes_Edit_htmlView {
   display: block;
   margin-top: 0.2rem;
 }
@@ -928,13 +1033,28 @@
   font-weight: 600;
 }
 
-/* the words a queued or revising request is on, as proposed: underlined,
-   dotted, in the revision's plum, as doctor marked them, whatever the look,
-   as what you asked is yours, not a look's */
-.htmlView_editor .text_htmlView > [data-requested] {
-  text-decoration: underline dotted var(--accent_revision_htmlView);
-  text-decoration-thickness: 2px;
-  text-underline-offset: 0.2em;
+/* the words a request waiting its turn or under way was sent with,
+   wherever they're shown: a dotted line under them, in the revision's
+   plum, as doctor marked them, whatever the look, as what you asked is
+   yours, not a look's; drawn behind the text, as a ring is, never the
+   text's own underline, which a link's or a struck word's would have
+   given way to, and a little below where that is, so both show */
+.htmlView_editor .underlay_htmlView[data-requested] {
+  fill: none;
+  stroke: var(--accent_revision_htmlView);
+  stroke-width: 2px;
+  stroke-dasharray: 2 2;
+}
+
+/* one line however many requests are on the words, dashed where more
+   than one is, not solid, which would read as the text's own underline, a
+   link's, so it never crowds the line under it; which request is on what
+   is the lists', each request's words lit when its chip's pointed at. Its
+   dots and dashes fitted to the words, not the rings' way: a whole one
+   flush with each end of them, the rest spread evenly between, and a gap
+   where a dotted stretch meets a dashed one, so they don't run together */
+.htmlView_editor .underlay_htmlView[data-requested][data-many] {
+  stroke-dasharray: 6 3;
 }
 
 .htmlView_editor :is(.places_htmlView, .rationale_htmlView, .request_htmlView, .status_htmlView):empty {
@@ -2048,8 +2168,8 @@
 
 
 /* what a right-click opens, or the menu key, over the text: what you can
-   ask, a request for a change, aimed at what's selected or the whole
-   document, or a note on a proposal, on its words or the whole of it; a
+   ask, in tiers, a proposal's, the document's and the task's, each with
+   what's selected, if anything is, and each tier's own actions; a
    list of choices at the pointer, in the interface's font, as a list of
    proposals is, on the proposals' band, made solid over the text, a faint
    edge round it, flat, as all of the editor is, with no shadow; each
@@ -2126,7 +2246,7 @@
 }
 
 .htmlView_editor .choice_htmlView[data-section] {
-  color: color-mix(in srgb, var(--ink_Choice_htmlView) 78%, transparent);
+  color: color-mix(in srgb, var(--ink_Choice_htmlView) 85%, transparent);
 }
 
 .htmlView_editor .choice_htmlView[data-section] > .label_Choice_htmlView {
@@ -2156,29 +2276,32 @@
   font-weight: 600;
 }
 
-/* a form opened from the menu headed by the choice that opened it, in
-   the menu's words and inks, its tier faded, what it does in full; under
-   it, muted, on a line of its own, cut where it runs out, what it's on:
-   the proposal's title, the document's name or the task's */
+/* a form opened from the menu headed by where what's asked goes, on one
+   line, cut where it runs out: the choice's tier, in the revision's plum,
+   bold, then, after a dot, what it's on, the proposal's title, the
+   document's name or the task's, in the text's ink, a little faded, not
+   bold, the dot fainter, as a card's head's are; not what the choice
+   does, just chosen, and said by the box and the buttons under it */
 .htmlView_editor .label_Asking_htmlView[data-head] {
-  color: color-mix(in srgb, var(--accent_revision_htmlView) 78%, transparent);
-}
-
-.htmlView_editor .action_Head_Asking_htmlView {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
   color: var(--accent_revision_htmlView);
 }
 
 .htmlView_editor .subject_Asking_htmlView {
-  margin: -0.35rem 0 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  color: color-mix(in srgb, var(--view-ink, CanvasText) 72%, transparent);
+  font-weight: 400;
+}
+
+.htmlView_editor .subject_Asking_htmlView::before {
+  content: "· ";
   color: var(--view-placeholder-ink, color-mix(in srgb, CanvasText 58%, transparent));
 }
 
-/* the words it's on, or goes with, as a quiet chip, as a card's figures
-   are, quoted as they're listed once it's sent, "with" them where they're
-   for reference, × in the chip to leave them out */
+/* the words it goes with, as a quiet chip, as a card's figures are,
+   quoted, nothing more, the menu's choice having said they go with it,
+   × in the chip to leave them out */
 .htmlView_editor .quote_Asking_htmlView {
   display: flex;
   min-width: 0;

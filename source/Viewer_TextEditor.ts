@@ -61,8 +61,9 @@ import {
   type _Header_ViewModel_,
   type _Revisions_Level_,
   type _Task_Header_,
+  wordsAt__ViewModel,
   editingAt__ViewModel,
-  type _Editing_Request_
+  type _Id_Request_
 } from "./ViewModel_TextEditor.ts"
 import type {
   _Id_Text_,
@@ -85,6 +86,8 @@ export {
   type _Command_TextEditor_,
   type __BASE_Command_,
   type _POINT_Command_,
+  type _POINT_WORDS__Command_,
+  type _SHOW_WORDS__Command_,
   type _JUMP_Command_,
   type _FOLD_Command_,
   type _DRAFT_Command_,
@@ -165,6 +168,7 @@ class _Viewer_TextEditor_ {
   state: _State__Viewer_TextEditor_
   request_Draw: number | null
   point_Screen: _Point_Screen_ | null
+  timeout_Shown: ReturnType<typeof setTimeout> | null
   edit: (request_Edit: _Request_Edit_) => _Answer_Edit_ | null
   ask: (asked_Host: _Asked_Host_) => void
   editContext: EditContext
@@ -213,10 +217,14 @@ class _Viewer_TextEditor_ {
       focus_Asking: null,
       confirm_Item: null,
       editing_Request: null,
-      focus_Edited: null
+      focus_Edited: null,
+      words_Pointed: null,
+      words_Shown: null,
+      isRevealing_Words: false
     }
     this.request_Draw = null
     this.point_Screen = null
+    this.timeout_Shown = null
     this.adapters = [
       ...CONTROLS__TEXTEDITOR,
       ...this.modules.flatMap((module_TextEditor) => module_TextEditor.adapters)
@@ -436,6 +444,24 @@ class _Viewer_TextEditor_ {
           isRevealing_Caret: false
         }
       }
+      if (this.state.isRevealing_Words) {
+        this.view.revealWords()
+        this.state = {
+          ...this.state,
+          isRevealing_Words: false
+        }
+        if (this.timeout_Shown !== null) clearTimeout(this.timeout_Shown)
+        this.timeout_Shown = setTimeout(
+          () => {
+            this.timeout_Shown = null
+            this.dispatch({
+              kind: "SHOW_WORDS",
+              id_Request: null
+            })
+          },
+          DURATION_SHOWN__WORDS
+        )
+      }
       if (this.state.visit_Item !== null) {
         this.view.visit(this.state.visit_Item)
         this.state = {
@@ -483,7 +509,6 @@ interface _ACTION_Asked_Host_ extends __BASE_Asked_Host_<"ACTION"> {
   source: string
   command: string
   notes: string | null
-  selected: _Selected_Text_ | null
   reference: _Selected_Text_ | null
 }
 
@@ -576,7 +601,7 @@ interface _Adapter_Event_ {
   commandOf__Event: (event: Event) => _Command_TextEditor_ | null
 }
 
-type _Command_TextEditor_ = _POINT_Command_ | _JUMP_Command_ | _FOLD_Command_ | _DRAFT_Command_ | _ACT_Command_ | _ACCEPT_ALL__Command_ | _CONFIRM_Command_ | _REMOVE_Command_ | _DISMISS_Command_ | _START_Command_ | _STOP_Command_ | _TASK_Command_ | _RERUN_Command_ | _SEND_Command_ | _OPEN_MENU__Command_ | _STEP_MENU__Command_ | _CHOOSE_MENU__Command_ | _CLOSE_MENU__Command_ | _FOCUS_REQUEST__Command_ | _SCROLL_Command_ | _OPEN_REQUEST__Command_ | _CLOSE_CARD__Command_ | _SEND_REQUEST__Command_ | _CLOSE_REQUEST__Command_ | _DROP_QUOTE__Command_ | _LEAVE_REQUEST__Command_ | _EDIT_Command_ | _SAVE_EDIT__Command_ | _CLOSE_EDIT__Command_ | _DISCARD_Command_ | _VISIT_Command_ | _PLACE_Command_ | _DRAG_Command_ | _RELEASE_Command_ | _MOVE_Command_ | _EXTEND_Command_ | _INSERT_Command_ | _REPLACE_Command_ | _DELETE_Command_ | _UNDO_Command_ | _REDO_Command_ | _COPY_Command_ | _CUT_Command_ | _PASTE_Command_
+type _Command_TextEditor_ = _POINT_Command_ | _POINT_WORDS__Command_ | _SHOW_WORDS__Command_ | _JUMP_Command_ | _FOLD_Command_ | _DRAFT_Command_ | _ACT_Command_ | _ACCEPT_ALL__Command_ | _CONFIRM_Command_ | _REMOVE_Command_ | _DISMISS_Command_ | _START_Command_ | _STOP_Command_ | _TASK_Command_ | _RERUN_Command_ | _SEND_Command_ | _OPEN_MENU__Command_ | _STEP_MENU__Command_ | _CHOOSE_MENU__Command_ | _CLOSE_MENU__Command_ | _FOCUS_REQUEST__Command_ | _SCROLL_Command_ | _OPEN_REQUEST__Command_ | _CLOSE_CARD__Command_ | _SEND_REQUEST__Command_ | _CLOSE_REQUEST__Command_ | _DROP_QUOTE__Command_ | _LEAVE_REQUEST__Command_ | _EDIT_Command_ | _SAVE_EDIT__Command_ | _CLOSE_EDIT__Command_ | _DISCARD_Command_ | _VISIT_Command_ | _PLACE_Command_ | _DRAG_Command_ | _RELEASE_Command_ | _MOVE_Command_ | _EXTEND_Command_ | _INSERT_Command_ | _REPLACE_Command_ | _DELETE_Command_ | _UNDO_Command_ | _REDO_Command_ | _COPY_Command_ | _CUT_Command_ | _PASTE_Command_
 
 interface __BASE_Command_<Kind extends string> {
   kind: Kind
@@ -584,6 +609,14 @@ interface __BASE_Command_<Kind extends string> {
 
 interface _POINT_Command_ extends __BASE_Command_<"POINT"> {
   point_Screen: _Point_Screen_ | null
+}
+
+interface _POINT_WORDS__Command_ extends __BASE_Command_<"POINT_WORDS"> {
+  id_Request: _Id_Request_ | null
+}
+
+interface _SHOW_WORDS__Command_ extends __BASE_Command_<"SHOW_WORDS"> {
+  id_Request: _Id_Request_ | null
 }
 
 interface _JUMP_Command_ extends __BASE_Command_<"JUMP"> {
@@ -774,8 +807,11 @@ interface _State__Viewer_TextEditor_ {
   request: _Form_Request_ | null
   focus_Asking: _Focus_Asking_ | null
   confirm_Item: _Pending_Confirm_ | null
-  editing_Request: _Editing_Request_ | null
-  focus_Edited: _Editing_Request_ | null
+  editing_Request: _Id_Request_ | null
+  focus_Edited: _Id_Request_ | null
+  words_Pointed: _Id_Request_ | null
+  words_Shown: _Id_Request_ | null
+  isRevealing_Words: boolean
 }
 
 
@@ -790,19 +826,33 @@ const EVENTS_UNBUBBLED = [
   "scrollend"
 ]
 
+const DURATION_SHOWN__WORDS = 1800
+
 function viewModelOf__State(
   state: _State__Viewer_TextEditor_
 ): _ViewModel_TextEditor_ {
-  return editingAt__ViewModel({
-    viewModel_TextEditor: askingAt__ViewModel({
-      viewModel_TextEditor: {
-        ...selectedOf__State(state),
-        header: state.viewModel_TextEditor.header
-      },
-      menu: state.menu,
-      request: state.request
+  return wordsAt__ViewModel({
+    viewModel_TextEditor: wordsAt__ViewModel({
+      viewModel_TextEditor: editingAt__ViewModel({
+        viewModel_TextEditor: askingAt__ViewModel({
+          viewModel_TextEditor: {
+            ...selectedOf__State(state),
+            header: state.viewModel_TextEditor.header
+          },
+          menu: state.menu,
+          request: state.request
+        }),
+        editing_Request: state.editing_Request
+      }),
+      id_Request: state.words_Pointed,
+      attributes: {
+        "data-lit": ""
+      }
     }),
-    editing_Request: state.editing_Request
+    id_Request: state.words_Shown,
+    attributes: {
+      "data-shown": ""
+    }
   })
 }
 
@@ -878,6 +928,37 @@ function POINT_stateAfter__Command({
       place_Pointed,
       target_Pointed,
       range_Peeked
+    }
+}
+
+function POINT_WORDS_stateAfter__Command({
+  state,
+  command
+}: _Api___stateAfter__Command_<"POINT_WORDS">): _State__Viewer_TextEditor_ {
+  return command.id_Request?.id === state.words_Pointed?.id && command.id_Request?.id_Item?.source === state.words_Pointed?.id_Item?.source
+    ? state
+    : {
+      ...state,
+      words_Pointed: command.id_Request
+    }
+}
+
+function SHOW_WORDS_stateAfter__Command({
+  state,
+  command
+}: _Api___stateAfter__Command_<"SHOW_WORDS">): _State__Viewer_TextEditor_ {
+  return command.id_Request === null
+    ? state.words_Shown === null
+      ? state
+      : {
+        ...state,
+        words_Shown: null
+      }
+    : {
+      ...state,
+      words_Shown: command.id_Request,
+      isRevealing_Words: true,
+      isFocusing_Input: true
     }
 }
 
@@ -958,7 +1039,6 @@ function ACT_stateAfter__Command({
     source: command.id_Item.source,
     command: command.command,
     notes: null,
-    selected: null,
     reference: null
   })
   return state
@@ -1003,7 +1083,6 @@ function ACCEPT_ALL_stateAfter__Command({
       source: action_Decided.source,
       command: action_Decided.command,
       notes: null,
-      selected: null,
       reference: null
     })
   }
@@ -1022,7 +1101,6 @@ function CONFIRM_stateAfter__Command({
       source: state.confirm_Item.id_Item.source,
       command: state.confirm_Item.command,
       notes: null,
-      selected: null,
       reference: null
     })
   }
@@ -1119,7 +1197,6 @@ function SEND_stateAfter__Command({
       source: command.id_Item.source,
       command: command.command,
       notes: command.notes,
-      selected: null,
       reference: null
     })
   }
@@ -1240,12 +1317,6 @@ function itemsOf__Menu({
     ? piece_First.id_Text.source
     : null
   return [
-    ...itemsOf__Tier_Words({
-      selected,
-      ids_Run_Selected,
-      listed_Words: listedOf(source_Words),
-      name_Document: viewModel_TextEditor.header.document.name
-    }),
     ...itemsOf__Tier_Proposal({
       listed_Proposal: listedOf(source_Words ?? source_Pointed),
       selected,
@@ -1264,96 +1335,15 @@ function itemsOf__Menu({
   ]
 }
 
-interface _Api___itemsOf__Tier_Words_ {
+interface _Api___itemsOf__Tier_Proposal_ {
+  listed_Proposal: _Listed_Proposals_ | null
   selected: _Selected_Text_ | null
   ids_Run_Selected: Array<string>
-  listed_Words: _Listed_Proposals_ | null
-  name_Document: string
 }
 
 interface _Listed_Proposals_ {
   id_Item: _Id_Item_
   item_Proposals: _Item_Proposals_
-}
-
-function itemsOf__Tier_Words({
-  selected,
-  ids_Run_Selected,
-  listed_Words,
-  name_Document
-}: _Api___itemsOf__Tier_Words_): Array<_Item_Menu_> {
-  if (selected === null) return []
-  const revise_Words = listed_Words === null
-    ? null
-    : reviseOf__Item({
-      item_Proposals: listed_Words.item_Proposals
-    })
-  const quote = quoteOf__Selected({
-    selected,
-    ids_Run: ids_Run_Selected,
-    label: "",
-    isDroppable: false
-  })
-  return [
-    listed_Words === null || revise_Words === null
-      ? {
-        kind: "REQUEST",
-        tier: "WORDS",
-        section: "REVISIONS",
-        label_Tier: "Selection",
-        label: "Request change",
-        label_Form: "Request a change to these words",
-        head: {
-          label_Tier: "Selection",
-          label: "Request change",
-          subject: name_Document
-        },
-        quote,
-        target: {
-          kind: "SELECTION",
-          selected
-        }
-      }
-      : {
-        kind: "REQUEST",
-        tier: "WORDS",
-        section: "REVISIONS",
-        label_Tier: "Selection",
-        label: "Request revision",
-        label_Form: "Request a revision of these words",
-        head: {
-          label_Tier: "Selection",
-          label: "Request revision",
-          subject: listed_Words.item_Proposals.title
-        },
-        quote,
-        target: {
-          kind: "PROPOSAL",
-          source: listed_Words.id_Item.source,
-          command: revise_Words.command,
-          selected,
-          reference: null
-        }
-      }
-  ]
-}
-
-interface _Api___reviseOf__Item_ {
-  item_Proposals: _Item_Proposals_
-}
-
-function reviseOf__Item({
-  item_Proposals
-}: _Api___reviseOf__Item_): _Action_Item_ | null {
-  return ISNOTABLEMAP__STATE_PROPOSAL[item_Proposals.state]
-    ? item_Proposals.actions.find((action_Each) => action_Each.stateAfter === "REQUESTED") ?? null
-    : null
-}
-
-interface _Api___itemsOf__Tier_Proposal_ {
-  listed_Proposal: _Listed_Proposals_ | null
-  selected: _Selected_Text_ | null
-  ids_Run_Selected: Array<string>
 }
 
 function itemsOf__Tier_Proposal({
@@ -1394,7 +1384,6 @@ function itemsOf__Tier_Proposal({
           label_Form: `Request a revision of “${item_Proposals.title}”`,
           head: {
             label_Tier: "Proposal",
-            label: "Request revision",
             subject: item_Proposals.title
           },
           quote: referenceOf__Selected({
@@ -1405,7 +1394,6 @@ function itemsOf__Tier_Proposal({
             kind: "PROPOSAL",
             source: item_Proposals.source,
             command: revise_Proposal.command,
-            selected: null,
             reference: selected
           }
         },
@@ -1418,6 +1406,18 @@ function itemsOf__Tier_Proposal({
       }
     })
   ]
+}
+
+interface _Api___reviseOf__Item_ {
+  item_Proposals: _Item_Proposals_
+}
+
+function reviseOf__Item({
+  item_Proposals
+}: _Api___reviseOf__Item_): _Action_Item_ | null {
+  return ISNOTABLEMAP__STATE_PROPOSAL[item_Proposals.state]
+    ? item_Proposals.actions.find((action_Each) => action_Each.stateAfter === "REQUESTED") ?? null
+    : null
 }
 
 interface _Api___withOf__Selected_ {
@@ -1441,43 +1441,20 @@ function referenceOf__Selected({
 }: _Api___referenceOf__Selected_): _Quote_Form_ | null {
   return selected === null
     ? null
-    : quoteOf__Selected({
-      selected,
-      ids_Run,
-      label: "with",
-      isDroppable: true
-    })
-}
-
-interface _Api___quoteOf__Selected_ {
-  selected: _Selected_Text_
-  ids_Run: Array<string>
-  label: string
-  isDroppable: boolean
-}
-
-function quoteOf__Selected({
-  selected,
-  ids_Run,
-  label,
-  isDroppable
-}: _Api___quoteOf__Selected_): _Quote_Form_ {
-  return {
-    text: selected.text,
-    head: headOf__Quote({
-      text: selected.text
-    }),
-    size: sizeOf__Quote({
-      text: selected.text
-    }),
-    label,
-    isDroppable,
-    peek: peekOf__Quote({
-      text: selected.text
-    }),
-    pieces: selected.pieces,
-    ids_Run
-  }
+    : {
+      text: selected.text,
+      head: headOf__Quote({
+        text: selected.text
+      }),
+      size: sizeOf__Quote({
+        text: selected.text
+      }),
+      peek: peekOf__Quote({
+        text: selected.text
+      }),
+      pieces: selected.pieces,
+      ids_Run
+    }
 }
 
 interface _Api___itemsOf__Revisions_Menu_ {
@@ -1595,7 +1572,6 @@ function itemsOf__Tier_Document({
         label_Form: "Request a change to this document",
         head: {
           label_Tier: "Document",
-          label: "Request change",
           subject: document_Header.name
         },
         quote: referenceOf__Selected({
@@ -1651,7 +1627,6 @@ function itemsOf__Tier_Task({
           label_Form: "Request a change to the task",
           head: {
             label_Tier: "Task",
-            label: "Request change",
             subject: task_Header.name
           },
           quote: referenceOf__Selected({
@@ -1919,10 +1894,19 @@ function SEND_REQUEST_stateAfter__Command({
       }
     })
   }
-  return closedOf__Request({
+  const state_Closed = closedOf__Request({
     state,
     form_Request: state.request
   })
+  return state.request.place.kind === "POINT" && state.selection !== null
+    ? {
+      ...state_Closed,
+      selection: {
+        anchor: state.selection.head,
+        head: state.selection.head
+      }
+    }
+    : state_Closed
 }
 
 interface _Api___closedOf__Request_ {
@@ -1992,19 +1976,6 @@ interface _Api___asked__Kind_Target_<Kind extends _Target_Request_["kind"]> {
 }
 
 const ASKEDMAP__KIND_TARGET: _AskedMap__Kind_Target_ = {
-  SELECTION: ({
-    target,
-    notes,
-    isStarting
-  }) => ({
-    kind: "REQUEST",
-    aim: {
-      kind: "SELECTION",
-      selected: target.selected
-    },
-    notes,
-    isStarting
-  }),
   DOCUMENT: ({
     target,
     notes,
@@ -2039,7 +2010,6 @@ const ASKEDMAP__KIND_TARGET: _AskedMap__Kind_Target_ = {
     source: target.source,
     command: target.command,
     notes,
-    selected: target.selected,
     reference: target.reference
   })
 }
@@ -2048,7 +2018,7 @@ function DROP_QUOTE_stateAfter__Command({
   state
 }: _Api___stateAfter__Command_<"DROP_QUOTE">): _State__Viewer_TextEditor_ {
   const target = state.request?.target
-  return state.request === null || target === undefined || target.kind === "SELECTION" || state.request.quote?.isDroppable !== true
+  return state.request === null || target === undefined || state.request.quote === null
     ? state
     : {
       ...state,
@@ -3314,6 +3284,8 @@ type _HandlerMap__TextEditor_ = {
 
 const HANDLERMAP__TEXTEDITOR: _HandlerMap__TextEditor_ = {
   POINT: POINT_stateAfter__Command,
+  POINT_WORDS: POINT_WORDS_stateAfter__Command,
+  SHOW_WORDS: SHOW_WORDS_stateAfter__Command,
   JUMP: JUMP_stateAfter__Command,
   FOLD: FOLD_stateAfter__Command,
   DRAFT: DRAFT_stateAfter__Command,

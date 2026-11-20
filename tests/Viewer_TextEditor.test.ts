@@ -2,7 +2,7 @@ import { expect, test } from "bun:test"
 import { parseModel_TextEditor, type _Changes_Host_ } from "../source/Model_TextEditor.ts"
 import { viewModelOf__Model } from "../source/Projection_TextEditor.ts"
 import { MODULE_READING_TEXT } from "../source/readings/text.ts"
-import { MODULE_PLAINTEXT, confirmingAt__ViewModel, editingAt__ViewModel, askingAt__ViewModel, headOf__Quote, sizeOf__Quote, peekOf__Quote, placeIn__Line, positionIn__Run, textOf__Line, type _Selection_TextEditor_, type _End_Selection_ } from "../source/ViewModel_TextEditor.ts"
+import { MODULE_PLAINTEXT, confirmingAt__ViewModel, editingAt__ViewModel, askingAt__ViewModel, wordsAt__ViewModel, headOf__Quote, sizeOf__Quote, peekOf__Quote, placeIn__Line, positionIn__Run, textOf__Line, type _Selection_TextEditor_, type _End_Selection_, type _Piece_Text_ } from "../source/ViewModel_TextEditor.ts"
 import { HANDLERMAP__TEXTEDITOR, type _State__Viewer_TextEditor_, type _Command_TextEditor_ } from "../source/Viewer_TextEditor.ts"
 import type { _Request_Edit_ } from "../source/Editing_TextEditor.ts"
 import type { _Layout_View_ } from "../source/View_TextEditor.tsx"
@@ -57,7 +57,7 @@ const layout_View: _Layout_View_ = {
 function stateOf(
   selection: _Selection_TextEditor_ | null
 ): _State__Viewer_TextEditor_ {
-  return { viewModel_TextEditor: viewModel, source_Pointed: null, place_Pointed: null, target_Pointed: null, target_Revealed: null, ranges_Folded: [], range_Peeked: null, items_Drafted: [], focus_Draft: null, visit_Item: null, selection, isSelecting: false, x_Goal: null, isRevealing_Caret: false, isFocusing_Input: false, menu: null, request: null, focus_Asking: null, confirm_Item: null, editing_Request: null, focus_Edited: null }
+  return { viewModel_TextEditor: viewModel, source_Pointed: null, place_Pointed: null, target_Pointed: null, target_Revealed: null, ranges_Folded: [], range_Peeked: null, items_Drafted: [], focus_Draft: null, visit_Item: null, selection, isSelecting: false, x_Goal: null, isRevealing_Caret: false, isFocusing_Input: false, menu: null, request: null, focus_Asking: null, confirm_Item: null, editing_Request: null, focus_Edited: null, words_Pointed: null, words_Shown: null, isRevealing_Words: false }
 }
 
 // the state after each command in turn, as the viewer works it out
@@ -366,7 +366,7 @@ test("a frame's Accept all asks the host for each open proposal it lists, its ow
   const items = viewModel.blocks.flatMap((block) => block.kind === "FRAME" && block.range.first === range_Frame.first ? block.parts.flatMap((part) => part.kind === "PROPOSAL_LIST" ? part.items : []) : [])
   const opens = items.filter((item) => item.state === "OPEN").map((item) => item.source)
   expect(opens.length).toBeGreaterThan(0)
-  expect(accepted(range_Frame)).toEqual({ isSame: true, asked: opens.map((source) => ({ kind: "ACTION", source, command: "accept", notes: null, selected: null, reference: null })) })
+  expect(accepted(range_Frame)).toEqual({ isSame: true, asked: opens.map((source) => ({ kind: "ACTION", source, command: "accept", notes: null, reference: null })) })
   expect(accepted({ first: 900, last: 901 }).asked).toEqual([])
 })
 
@@ -382,55 +382,53 @@ test("a proposal's action pressed is asked of the host, its command, the viewer 
   const drafting = { ...state, items_Drafted: [id_Item] }
   const sent = HANDLERMAP__TEXTEDITOR.SEND({ state: drafting, command: { kind: "SEND", id_Item, command: "revise", notes: "Say what it's for." , isStarting: false }, layout_View, module_Words: MODULE_WORDS_TEXT, edit_View: () => null, ask_View })
   expect(sent.items_Drafted).toEqual([])
-  expect(asked).toEqual([{ kind: "ACTION", source: "digit", command: "accept", notes: null, selected: null, reference: null }, { kind: "ACTION", source: "digit", command: "revise", notes: "Say what it's for.", selected: null, reference: null }])
+  expect(asked).toEqual([{ kind: "ACTION", source: "digit", command: "accept", notes: null, reference: null }, { kind: "ACTION", source: "digit", command: "revise", notes: "Say what it's for.", reference: null }])
 })
 
-test("a right-click's menu offers what can be asked there, in tiers, the narrowest first: on a proposal's words, a revision of them, then the proposal's tier, a revision of it with the words for reference, and its own actions, then the document's, a change to it with the words; on the document's words, a request for a change aimed at them, then the document's tier; with nothing selected, the document's tier alone; a choice opens a form, what it's aimed at quoted, and what's written there's asked of the host, with where it was aimed, never an empty one", () => {
+test("a right-click's menu offers what can be asked there, in tiers, the narrowest first: on a proposal's words, the proposal's tier, its own actions, then a revision of it with the words, then the document's, a change to it with them; on the document's words, the document's tier alone, with them; with nothing selected, the document's tier alone, with nothing; a request chosen opens a form, the words quoted, and what's written there's asked of the host with them, never an empty one; sent, the selection let go, the caret where it was; put away, the selection kept", () => {
   const menuOf = (selection: _Selection_TextEditor_) => HANDLERMAP__TEXTEDITOR.OPEN_MENU({ state: stateOf(selection), command: { kind: "OPEN_MENU", point_Screen: { x: 40, y: 40 } }, layout_View, module_Words: MODULE_WORDS_TEXT, edit_View: () => null, ask_View: () => {} })
   const digit_Text = { kind: "CHANGE" as const, source: "digit", index: 0 }
   const over_Digit: _Selection_TextEditor_ = { anchor: { id_Run: "frame-1-proposed", id_Text: digit_Text, position: { line: 0, offset: 0 } }, head: { id_Run: "frame-1-proposed", id_Text: digit_Text, position: { line: 0, offset: 1 } } }
   const over_One: _Selection_TextEditor_ = { anchor: caretOf("frame-1-proposed", 0, 0).anchor, head: caretOf("frame-1-proposed", 0, 3).head }
   expect(choicesOf(menuOf(over_Digit))).toEqual([
-    "WORDS REVISIONS Selection: Request revision | 2",
     "PROPOSAL PROPOSALS Proposal: Accept",
     "PROPOSAL PROPOSALS Proposal: Reject",
-    "PROPOSAL REVISIONS Proposal: Request revision, with selection | with 2 ×",
-    "DOCUMENT REVISIONS Document: Request change, with selection | with 2 ×"
+    "PROPOSAL REVISIONS Proposal: Request revision, with selection | 2",
+    "DOCUMENT REVISIONS Document: Request change, with selection | 2"
   ])
   expect(choicesOf(menuOf(over_One))).toEqual([
-    "WORDS REVISIONS Selection: Request change | one",
-    "DOCUMENT REVISIONS Document: Request change, with selection | with one ×"
+    "DOCUMENT REVISIONS Document: Request change, with selection | one"
   ])
   expect(choicesOf(menuOf(caretOf("lines-2", 1, 2)))).toEqual(["DOCUMENT REVISIONS Document: Request change"])
   const asked: Array<unknown> = []
   const ask_View = (asked_Host: unknown) => {
     asked.push(asked_Host)
   }
-  const chosen = HANDLERMAP__TEXTEDITOR.CHOOSE_MENU({ state: menuOf(over_Digit), command: { kind: "CHOOSE_MENU", index: 0 }, layout_View, module_Words: MODULE_WORDS_TEXT, edit_View: () => null, ask_View })
+  const chosen = HANDLERMAP__TEXTEDITOR.CHOOSE_MENU({ state: menuOf(over_Digit), command: { kind: "CHOOSE_MENU", index: 2 }, layout_View, module_Words: MODULE_WORDS_TEXT, edit_View: () => null, ask_View })
   expect(chosen.menu).toBe(null)
-  expect(chosen.request).toMatchObject({ place: { kind: "POINT", point_Screen: { x: 40, y: 40 } }, label: "Request a revision of these words", quote: { text: "2", label: "", isDroppable: false } })
-  expect(HANDLERMAP__TEXTEDITOR.DROP_QUOTE({ state: chosen, command: { kind: "DROP_QUOTE" }, layout_View, module_Words: MODULE_WORDS_TEXT, edit_View: () => null, ask_View })).toBe(chosen)
+  expect(chosen.request).toMatchObject({ place: { kind: "POINT", point_Screen: { x: 40, y: 40 } }, label: "Request a revision of “Write two as a digit”", quote: { text: "2" } })
   const unsent = HANDLERMAP__TEXTEDITOR.SEND_REQUEST({ state: chosen, command: { kind: "SEND_REQUEST", notes: "  ", isStarting: false }, layout_View, module_Words: MODULE_WORDS_TEXT, edit_View: () => null, ask_View })
   expect(unsent).toBe(chosen)
   const sent = HANDLERMAP__TEXTEDITOR.SEND_REQUEST({ state: chosen, command: { kind: "SEND_REQUEST", notes: "Spell it out.", isStarting: false }, layout_View, module_Words: MODULE_WORDS_TEXT, edit_View: () => null, ask_View })
   expect(sent.request).toBe(null)
+  expect(sent.selection).toEqual({ anchor: over_Digit.head, head: over_Digit.head })
+  expect(HANDLERMAP__TEXTEDITOR.CLOSE_REQUEST({ state: chosen, command: { kind: "CLOSE_REQUEST" }, layout_View, module_Words: MODULE_WORDS_TEXT, edit_View: () => null, ask_View }).selection).toBe(chosen.selection)
   const requested = HANDLERMAP__TEXTEDITOR.SEND_REQUEST({ state: HANDLERMAP__TEXTEDITOR.CHOOSE_MENU({ state: menuOf(over_One), command: { kind: "CHOOSE_MENU", index: 0 }, layout_View, module_Words: MODULE_WORDS_TEXT, edit_View: () => null, ask_View }), command: { kind: "SEND_REQUEST", notes: "Say which one.", isStarting: false }, layout_View, module_Words: MODULE_WORDS_TEXT, edit_View: () => null, ask_View })
   expect(requested.request).toBe(null)
   expect(asked).toEqual([
-    { kind: "ACTION", source: "digit", command: "revise", notes: "Spell it out.", selected: { pieces: [{ id_Text: digit_Text, range: { from: { line: 0, offset: 0 }, to: { line: 0, offset: 1 } } }], text: "2" }, reference: null },
-    { kind: "REQUEST", aim: { kind: "SELECTION", selected: { pieces: [{ id_Text: { kind: "DOCUMENT" }, range: { from: { line: 0, offset: 0 }, to: { line: 0, offset: 3 } } }], text: "one" } }, notes: "Say which one.", isStarting: false }
+    { kind: "ACTION", source: "digit", command: "revise", notes: "Spell it out.", reference: { pieces: [{ id_Text: digit_Text, range: { from: { line: 0, offset: 0 }, to: { line: 0, offset: 1 } } }], text: "2" } },
+    { kind: "REQUEST", aim: { kind: "DOCUMENT", reference: { pieces: [{ id_Text: { kind: "DOCUMENT" }, range: { from: { line: 0, offset: 0 }, to: { line: 0, offset: 3 } } }], text: "one" } }, notes: "Say which one.", isStarting: false }
   ])
 })
 
 // each choice in a menu, as a line: its tier, its section, its label, which names it, and, for a
-// request, the words it quotes, "with" them where they're for reference,
-// × where they can be left out
+// request, the words it goes with
 function choicesOf(
   state: _State__Viewer_TextEditor_
 ): Array<string> | undefined {
   return state.menu?.items.map((item) => {
     const quote = item.kind === "REQUEST" && item.quote !== null
-      ? ` | ${item.quote.label === "" ? "" : `${item.quote.label} `}${item.quote.text}${item.quote.isDroppable ? " ×" : ""}`
+      ? ` | ${item.quote.text}`
       : ""
     return `${item.tier} ${item.section} ${item.label_Tier}: ${item.label}${quote}`
   })
@@ -459,10 +457,10 @@ test("a right-click on a proposal, nothing selected, offers its tier and the doc
   const digit_Text = { kind: "CHANGE" as const, source: "digit", index: 0 }
   const over_Digit: _Selection_TextEditor_ = { anchor: { id_Run: "frame-1-proposed", id_Text: digit_Text, position: { line: 0, offset: 0 } }, head: { id_Run: "frame-1-proposed", id_Text: digit_Text, position: { line: 0, offset: 1 } } }
   const selected_Digit = { pieces: [{ id_Text: digit_Text, range: { from: { line: 0, offset: 0 }, to: { line: 0, offset: 1 } } }], text: "2" }
-  const referring = choose(menuAt(over_Digit, layout_View), 3)
-  expect(referring.request).toMatchObject({ label: "Request a revision of “Write two as a digit”", head: { label_Tier: "Proposal", label: "Request revision", subject: "Write two as a digit" }, quote: { text: "2", label: "with", isDroppable: true }, target: { kind: "PROPOSAL", selected: null, reference: selected_Digit } })
+  const referring = choose(menuAt(over_Digit, layout_View), 2)
+  expect(referring.request).toMatchObject({ label: "Request a revision of “Write two as a digit”", head: { label_Tier: "Proposal", subject: "Write two as a digit" }, quote: { text: "2" }, target: { kind: "PROPOSAL", reference: selected_Digit } })
   const dropped = HANDLERMAP__TEXTEDITOR.DROP_QUOTE({ state: referring, command: { kind: "DROP_QUOTE" }, ...handlerOf(layout_View) })
-  expect(dropped.request).toMatchObject({ label: "Request a revision of “Write two as a digit”", quote: null, target: { kind: "PROPOSAL", selected: null, reference: null } })
+  expect(dropped.request).toMatchObject({ label: "Request a revision of “Write two as a digit”", quote: null, target: { kind: "PROPOSAL", reference: null } })
   expect(dropped.focus_Asking).toBe("REQUEST")
   const marked = askingAt__ViewModel({ viewModel_TextEditor: viewModel, menu: null, request: referring.request })
   expect(marked.runs.flatMap((run_Lines) => run_Lines.lines.flatMap((line_Run) => line_Run.segments.filter((segment_Line) => "data-quoted" in segment_Line.attributes).map((segment_Line) => `${run_Lines.id} ${segment_Line.text}`)))).toEqual(["frame-1-proposed 2"])
@@ -484,16 +482,50 @@ test("a right-click on a proposal, nothing selected, offers its tier and the doc
   expect(scrolled(referring, layout_Moved, false).request).toBe(null)
   send(referring, "Keep it as a word here.")
   send(dropped, "Spell it out.")
-  send(choose(menuAt(over_Digit, layout_View), 4), "Use digits throughout.")
+  send(choose(menuAt(over_Digit, layout_View), 3), "Use digits throughout.")
   expect(asked).toEqual([
-    { kind: "ACTION", source: "digit", command: "revise", notes: "Keep it as a word here.", selected: null, reference: selected_Digit },
-    { kind: "ACTION", source: "digit", command: "revise", notes: "Spell it out.", selected: null, reference: null },
+    { kind: "ACTION", source: "digit", command: "revise", notes: "Keep it as a word here.", reference: selected_Digit },
+    { kind: "ACTION", source: "digit", command: "revise", notes: "Spell it out.", reference: null },
     { kind: "REQUEST", aim: { kind: "DOCUMENT", reference: selected_Digit }, notes: "Use digits throughout.", isStarting: false }
   ])
   asked.length = 0
-  const accepted = choose(menuAt(over_Digit, layout_View), 1)
+  const accepted = choose(menuAt(over_Digit, layout_View), 0)
   expect([accepted.menu, accepted.request]).toEqual([null, null])
-  expect(asked).toEqual([{ kind: "ACTION", source: "digit", command: "accept", notes: null, selected: null, reference: null }])
+  expect(asked).toEqual([{ kind: "ACTION", source: "digit", command: "accept", notes: null, reference: null }])
+})
+
+test("a listed request's words pointed at, by the pointer or the keyboard, lit where they are while it waits or is under way: a proposal's in its frame's lines as proposed, where they're underlined, the document's own wherever the document's text is drawn; once it's done with, not lit, what's there since perhaps not what was sent; pointed away from, nothing lit; pointed at again, nothing new; its lines pressed, the words shown, the document to scroll to them and the keyboard back on the text, and, a moment after, let go", () => {
+  const digit_Text = { kind: "CHANGE" as const, source: "digit", index: 0 }
+  const reference_Digit = { pieces: [{ id_Text: digit_Text, range: { from: { line: 0, offset: 0 }, to: { line: 0, offset: 1 } } }] as [_Piece_Text_, ...Array<_Piece_Text_>], text: "2" }
+  const reference_One = { pieces: [{ id_Text: { kind: "DOCUMENT" as const }, range: { from: { line: 0, offset: 0 }, to: { line: 0, offset: 3 } } }] as [_Piece_Text_, ...Array<_Piece_Text_>], text: "one" }
+  const reference_Four = { pieces: [{ id_Text: { kind: "DOCUMENT" as const }, range: { from: { line: 1, offset: 0 }, to: { line: 1, offset: 4 } } }] as [_Piece_Text_, ...Array<_Piece_Text_>], text: "four" }
+  const viewModel_Referring = viewModelOf__Model({
+    model_TextEditor: result.model_TextEditor,
+    name_Document: "notes/digits.txt",
+    proposals: [{ source: "digit", title: "Write two as a digit", state: "OPEN", status: "", rationale: "", requests: [{ id: "spell", notes: "Spell it.", reference: reference_Digit, status: "QUEUED" }], actions: actions_Review, attributes: {} }],
+    rounds_Landed: [],
+    task: { id: "T-3", name: "Tidy", state: "WORKING", summary: "", requests: [{ id: "count", notes: "Count them.", aim: { kind: "DOCUMENT", reference: reference_One }, status: "QUEUED", sources_Answering: [] }, { id: "done", notes: "Say it.", aim: { kind: "DOCUMENT", reference: reference_Four }, status: "ADDRESSED", sources_Answering: [] }], reason: "", documents: [], summary_Document: "", actions: [], actions_Document: [] },
+    ranges_Frame: [],
+    module_Language: MODULE_PLAINTEXT,
+    module_Reading: MODULE_READING_TEXT
+  })
+  const state_Referring = { ...stateOf(null), viewModel_TextEditor: viewModel_Referring }
+  const pointedAt = (state: _State__Viewer_TextEditor_, id_Request: { id_Item: { source: string, range_Frame: { first: number, last: number } } | null, id: string } | null) => HANDLERMAP__TEXTEDITOR.POINT_WORDS({ state, command: { kind: "POINT_WORDS", id_Request }, layout_View, module_Words: MODULE_WORDS_TEXT, edit_View: () => null, ask_View: () => {} })
+  const litIn = (state: _State__Viewer_TextEditor_) => wordsAt__ViewModel({ viewModel_TextEditor: state.viewModel_TextEditor, id_Request: state.words_Pointed, attributes: { "data-lit": "" } }).runs.flatMap((run_Lines) => run_Lines.lines.flatMap((line_Run) => line_Run.segments.filter((segment_Line) => "data-lit" in segment_Line.attributes).map((segment_Line) => `${run_Lines.id} ${segment_Line.text}`)))
+  const id_Item = { source: "digit", range_Frame: { first: 1, last: 1 } }
+  const pointed_Spell = pointedAt(state_Referring, { id_Item, id: "spell" })
+  expect(litIn(pointed_Spell)).toEqual(["frame-1-proposed 2"])
+  expect(litIn(pointedAt(state_Referring, { id_Item: null, id: "count" }))).toEqual(["frame-1-current one", "frame-1-proposed one"])
+  expect(litIn(pointedAt(state_Referring, { id_Item: null, id: "done" }))).toEqual([])
+  expect(pointedAt(pointed_Spell, null).words_Pointed).toBe(null)
+  expect(litIn(pointedAt(pointed_Spell, null))).toEqual([])
+  expect(pointedAt(pointed_Spell, { id_Item, id: "spell" })).toBe(pointed_Spell)
+  expect(pointedAt(state_Referring, null)).toBe(state_Referring)
+  const shown = (state: _State__Viewer_TextEditor_, id_Request: { id_Item: { source: string, range_Frame: { first: number, last: number } } | null, id: string } | null) => HANDLERMAP__TEXTEDITOR.SHOW_WORDS({ state, command: { kind: "SHOW_WORDS", id_Request }, layout_View, module_Words: MODULE_WORDS_TEXT, edit_View: () => null, ask_View: () => {} })
+  const state_Shown = shown(state_Referring, { id_Item: null, id: "count" })
+  expect([state_Shown.words_Shown, state_Shown.isRevealing_Words, state_Shown.isFocusing_Input]).toEqual([{ id_Item: null, id: "count" }, true, true])
+  expect(shown(state_Shown, null).words_Shown).toBe(null)
+  expect(shown(state_Referring, null)).toBe(state_Referring)
 })
 
 test("words quoted in a form are shown by their start, cut where there's more, and how many lines they run to; ones too long for the chip peeked at, their first six lines and how many more", () => {
@@ -507,7 +539,7 @@ test("words quoted in a form are shown by their start, cut where there's more, a
   expect(peekOf__Quote({ text: lines_Many.slice(0, 7).join("\n") })?.more).toBe("… 1 more line")
 })
 
-test("revisions queued: a revision's notes added, asked of the host, its draft closed; with Start, its proposal's queued requests started after them, and with nothing written, Start alone; with nothing written, not now, nothing; from the menu's form, a note on a proposal queued the same, and a request for a change, on what's selected or the document, queued the same, the document's own, Start asked with it, as the host starts it at once", () => {
+test("revisions queued: a revision's notes added, asked of the host, its draft closed; with Start, its proposal's queued requests started after them, and with nothing written, Start alone; with nothing written, not now, nothing; from the menu's form, a revision of a proposal queued the same, and a request for a change to the document, the words with it, queued the same, the document's own, Start asked with it, as the host starts it at once", () => {
   const id_Item = { source: "digit", range_Frame: { first: 1, last: 1 } }
   const asked: Array<unknown> = []
   const ask_View = (asked_Host: unknown) => {
@@ -518,12 +550,15 @@ test("revisions queued: a revision's notes added, asked of the host, its draft c
   expect(sent("  ", false)).toBe(drafting)
   expect(sent("Say it.", true).items_Drafted).toEqual([])
   expect(sent("", true).items_Drafted).toEqual([])
-  expect(asked).toEqual([{ kind: "ACTION", source: "digit", command: "revise", notes: "Say it.", selected: null, reference: null }, { kind: "START", scope: { kind: "PROPOSAL", source: "digit" } }, { kind: "START", scope: { kind: "PROPOSAL", source: "digit" } }])
+  expect(asked).toEqual([{ kind: "ACTION", source: "digit", command: "revise", notes: "Say it.", reference: null }, { kind: "START", scope: { kind: "PROPOSAL", source: "digit" } }, { kind: "START", scope: { kind: "PROPOSAL", source: "digit" } }])
   asked.length = 0
   const digit_Text = { kind: "CHANGE" as const, source: "digit", index: 0 }
   const over_Digit: _Selection_TextEditor_ = { anchor: { id_Run: "frame-1-proposed", id_Text: digit_Text, position: { line: 0, offset: 0 } }, head: { id_Run: "frame-1-proposed", id_Text: digit_Text, position: { line: 0, offset: 1 } } }
   const over_One: _Selection_TextEditor_ = { anchor: caretOf("frame-1-proposed", 0, 0).anchor, head: caretOf("frame-1-proposed", 0, 3).head }
-  const formOf = (selection: _Selection_TextEditor_) => HANDLERMAP__TEXTEDITOR.CHOOSE_MENU({ state: HANDLERMAP__TEXTEDITOR.OPEN_MENU({ state: stateOf(selection), command: { kind: "OPEN_MENU", point_Screen: { x: 40, y: 40 } }, layout_View, module_Words: MODULE_WORDS_TEXT, edit_View: () => null, ask_View }), command: { kind: "CHOOSE_MENU", index: 0 }, layout_View, module_Words: MODULE_WORDS_TEXT, edit_View: () => null, ask_View })
+  const formOf = (selection: _Selection_TextEditor_) => {
+    const opened = HANDLERMAP__TEXTEDITOR.OPEN_MENU({ state: stateOf(selection), command: { kind: "OPEN_MENU", point_Screen: { x: 40, y: 40 } }, layout_View, module_Words: MODULE_WORDS_TEXT, edit_View: () => null, ask_View })
+    return HANDLERMAP__TEXTEDITOR.CHOOSE_MENU({ state: opened, command: { kind: "CHOOSE_MENU", index: opened.menu?.index_Focused ?? 0 }, layout_View, module_Words: MODULE_WORDS_TEXT, edit_View: () => null, ask_View })
+  }
   expect([formOf(over_Digit).request?.isStartable, formOf(over_One).request?.isStartable]).toEqual([true, true])
   const startedFrom = (selection: _Selection_TextEditor_, notes: string) => HANDLERMAP__TEXTEDITOR.SEND_REQUEST({ state: formOf(selection), command: { kind: "SEND_REQUEST", notes, isStarting: true }, layout_View, module_Words: MODULE_WORDS_TEXT, edit_View: () => null, ask_View })
   expect(startedFrom(over_Digit, "Spell it out.").request).toBe(null)
@@ -531,10 +566,10 @@ test("revisions queued: a revision's notes added, asked of the host, its draft c
   expect(startedFrom(over_One, "").request).not.toBe(null)
   expect(startedFrom(over_One, "Say which one.").request).toBe(null)
   expect(asked).toEqual([
-    { kind: "ACTION", source: "digit", command: "revise", notes: "Spell it out.", selected: { pieces: [{ id_Text: digit_Text, range: { from: { line: 0, offset: 0 }, to: { line: 0, offset: 1 } } }], text: "2" }, reference: null },
+    { kind: "ACTION", source: "digit", command: "revise", notes: "Spell it out.", reference: { pieces: [{ id_Text: digit_Text, range: { from: { line: 0, offset: 0 }, to: { line: 0, offset: 1 } } }], text: "2" } },
     { kind: "START", scope: { kind: "PROPOSAL", source: "digit" } },
     { kind: "START", scope: { kind: "PROPOSAL", source: "digit" } },
-    { kind: "REQUEST", aim: { kind: "SELECTION", selected: { pieces: [{ id_Text: { kind: "DOCUMENT" }, range: { from: { line: 0, offset: 0 }, to: { line: 0, offset: 3 } } }], text: "one" } }, notes: "Say which one.", isStarting: true }
+    { kind: "REQUEST", aim: { kind: "DOCUMENT", reference: { pieces: [{ id_Text: { kind: "DOCUMENT" }, range: { from: { line: 0, offset: 0 }, to: { line: 0, offset: 3 } } }], text: "one" } }, notes: "Say which one.", isStarting: true }
   ])
 })
 
@@ -543,7 +578,7 @@ test("an action that would drop revisions queued is asked first: pressed, nothin
   const viewModel_Queued = viewModelOf__Model({
     model_TextEditor: result.model_TextEditor,
     name_Document: "notes/digits.txt",
-    proposals: [{ source: "digit", title: "Write two as a digit", state: "OPEN", status: "", rationale: "", requests: [{ id: "say", notes: "Say it.", selected: null, reference: null, status: "QUEUED" }, { id: "spell", notes: "Spell it.", selected: null, reference: null, status: "QUEUED" }], actions: actions_Review, attributes: {} }],
+    proposals: [{ source: "digit", title: "Write two as a digit", state: "OPEN", status: "", rationale: "", requests: [{ id: "say", notes: "Say it.", reference: null, status: "QUEUED" }, { id: "spell", notes: "Spell it.", reference: null, status: "QUEUED" }], actions: actions_Review, attributes: {} }],
     rounds_Landed: [],
     task: null,
     ranges_Frame: [],
@@ -622,7 +657,7 @@ test("an action that would drop revisions queued is asked first: pressed, nothin
           ...header_Queued.document,
           revisions_Level: {
             ...header_Queued.document.revisions_Level,
-            requests: [{ id: "all", notes: "Number them all.", quote: null, reference: null, progress: null, isRunning: false, isStartable: true, isRemovable: true, isEditing: false, isStoppable: false, detail_Progress: null, isDismissable: false }]
+            requests: [{ id: "all", notes: "Number them all.", reference: null, progress: null, isRunning: false, isStartable: true, isRemovable: true, isEditing: false, isStoppable: false, detail_Progress: null, isDismissable: false }]
           }
         }
       }
@@ -631,8 +666,8 @@ test("an action that would drop revisions queued is asked first: pressed, nothin
   const editing_Card = handled(state_Requested, { kind: "EDIT", id_Item: null, id: "all" })
   expect(editingAt__ViewModel({ viewModel_TextEditor: editing_Card.viewModel_TextEditor, editing_Request: editing_Card.editing_Request }).header.document.revisions_Level.requests.map((request) => `${request.id} ${request.isEditing}`)).toEqual(["all true"])
   expect(asked).toEqual([
-    { kind: "ACTION", source: "digit", command: "accept", notes: null, selected: null, reference: null },
-    { kind: "ACTION", source: "digit", command: "reject", notes: null, selected: null, reference: null },
+    { kind: "ACTION", source: "digit", command: "accept", notes: null, reference: null },
+    { kind: "ACTION", source: "digit", command: "reject", notes: null, reference: null },
     { kind: "REMOVE", source: "digit", id: "spell" },
     { kind: "START", scope: { kind: "REQUEST", source: "digit", id: "say" } },
     { kind: "START", scope: { kind: "PROPOSAL", source: "digit" } },
@@ -650,7 +685,7 @@ test("an action that would drop revisions queued is asked first: pressed, nothin
   const viewModel_Running = viewModelOf__Model({
     model_TextEditor: result.model_TextEditor,
     name_Document: "notes/digits.txt",
-    proposals: [{ source: "digit", title: "Write two as a digit", state: "OPEN", status: "", rationale: "", requests: [{ id: "say", notes: "Say it.", selected: null, reference: null, status: "RUNNING" }, { id: "spell", notes: "Spell it.", selected: null, reference: null, status: "QUEUED" }], actions: actions_Review, attributes: {} }],
+    proposals: [{ source: "digit", title: "Write two as a digit", state: "OPEN", status: "", rationale: "", requests: [{ id: "say", notes: "Say it.", reference: null, status: "RUNNING" }, { id: "spell", notes: "Spell it.", reference: null, status: "QUEUED" }], actions: actions_Review, attributes: {} }],
     rounds_Landed: [],
     task: null,
     ranges_Frame: [],
