@@ -339,7 +339,7 @@ const requests_readme: Array<_Request_Task_> = [
   {
     id: "asked-1",
     notes: "Link the section on why they grow, not the whole guide.",
-    aim: { kind: "DOCUMENT", reference: { pieces: [{ id_Text: { kind: "DOCUMENT" }, range: quoteOf(43, "why the waits grow") }], text: "why the waits grow" } },
+    aim: { kind: "DOCUMENT", reference: { pieces: [{ id_Text: { kind: "DOCUMENT" }, range: quoteOf(43, "why the waits grow") }], text: "why the waits grow", side: "CURRENT" } },
     status: "QUEUED",
     sources_Answering: []
   }

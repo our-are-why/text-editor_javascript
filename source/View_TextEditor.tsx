@@ -580,14 +580,6 @@ function Task_Header__Html({
             data-state={task_Header.state}
           >
             {task_Header.label_State}
-            <span
-              class="dots_htmlView"
-              aria-hidden="true"
-            >
-              <span class="dot_htmlView">.</span>
-              <span class="dot_htmlView">.</span>
-              <span class="dot_htmlView">.</span>
-            </span>
           </span>
         </p>
         {task_Header.summary !== "" && (
@@ -974,14 +966,6 @@ function Document_Header__Html({
                 data-state={document_Header.state}
               >
                 {document_Header.label_State}
-                <span
-                  class="dots_htmlView"
-                  aria-hidden="true"
-                >
-                  <span class="dot_htmlView">.</span>
-                  <span class="dot_htmlView">.</span>
-                  <span class="dot_htmlView">.</span>
-                </span>
               </span>
             )}
           </p>
@@ -1590,14 +1574,6 @@ function Item_ProposalList__Html({
       <p class="heading_htmlView">
         <span class="title_htmlView">{item_ProposalList.title}</span>
         <span class="status_htmlView">{item_ProposalList.status}</span>
-        <span
-          class="dots_htmlView"
-          aria-hidden="true"
-        >
-          <span class="dot_htmlView">.</span>
-          <span class="dot_htmlView">.</span>
-          <span class="dot_htmlView">.</span>
-        </span>
       </p>
       <Places_Item__Html
         componentMap_View={componentMap_View}
@@ -2020,7 +1996,10 @@ function Request$__Html({
                   ? <Edit_Said__Html request_Item={request_Item} />
                   : <span class="notes_Said_htmlView">{request_Item.notes}</span>}
                 {request_Item.progress !== null && (
-                  <span class="progress_Said_htmlView">
+                  <span
+                    class="progress_Said_htmlView"
+                    data-running={request_Item.isRunning ? "" : undefined}
+                  >
                     {request_Item.progress}
                     {request_Item.detail_Progress !== null && <span class="detail_Said_htmlView">{` (${request_Item.detail_Progress})`}</span>}
                   </span>

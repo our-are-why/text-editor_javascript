@@ -2,7 +2,7 @@ import type { _Document_, _Section_Document_ } from "../document.ts"
 import { MODULE_PLAINTEXT } from "../../source/ViewModel_TextEditor.ts"
 import type { _Change_Host_ } from "../../source/Model_TextEditor.ts"
 import type { _Proposal_Host_, _Request_Host_ } from "../../source/Projection_TextEditor.ts"
-import type { _Piece_Text_ } from "../../source/ViewModel_TextEditor.ts"
+import type { _Piece_Text_, _Side_Text_ } from "../../source/ViewModel_TextEditor.ts"
 import { MODULE_READING_TEXT } from "../../source/readings/text.ts"
 import { projectedOf } from "../projected.ts"
 import { actions_Review, actions_Reopen } from "../items.ts"
@@ -1003,7 +1003,7 @@ const requests: _Section_Document_ = {
         proposals: [
           requestedOf({
             proposal: proposalOf({ source: "delay", title: "Start from a quarter of a second", rationale: "A tenth of a second is gone before most servers have noticed." }),
-            requests: [requestOf({ id: "why", notes: "Say why 250, in a comment.", pieces: [{ id_Text: { kind: "CHANGE", source: "delay", index: 0 }, range: { from: { line: 0, offset: 0 }, to: { line: 0, offset: 3 } } }], text: "250" })]
+            requests: [requestOf({ id: "why", notes: "Say why 250, in a comment.", pieces: [{ id_Text: { kind: "CHANGE", source: "delay", index: 0 }, range: { from: { line: 0, offset: 0 }, to: { line: 0, offset: 3 } } }], text: "250", side: "PROPOSED" })]
           })
         ],
         rounds_Landed: [],
@@ -1029,8 +1029,8 @@ const requests: _Section_Document_ = {
           requestedOf({
             proposal: proposalOf({ source: "third", title: "Add up to a third more", rationale: "Half again spreads the retries further than they need." }),
             requests: [
-              requestOf({ id: "jitter", notes: "Name the jitter.", pieces: [{ id_Text: { kind: "DOCUMENT" }, range: { from: { line: 0, offset: 9 }, to: { line: 0, offset: 28 } } }], text: "delay + Math.random" }),
-              requestOf({ id: "share", notes: "Say what share of the delay it adds.", pieces: [{ id_Text: { kind: "DOCUMENT" }, range: { from: { line: 0, offset: 17 }, to: { line: 0, offset: 39 } } }], text: "Math.random() * (delay" })
+              requestOf({ id: "jitter", notes: "Name the jitter.", pieces: [{ id_Text: { kind: "DOCUMENT" }, range: { from: { line: 0, offset: 9 }, to: { line: 0, offset: 28 } } }], text: "delay + Math.random", side: "PROPOSED" }),
+              requestOf({ id: "share", notes: "Say what share of the delay it adds.", pieces: [{ id_Text: { kind: "DOCUMENT" }, range: { from: { line: 0, offset: 17 }, to: { line: 0, offset: 39 } } }], text: "Math.random() * (delay", side: "PROPOSED" })
             ]
           })
         ],
@@ -1056,7 +1056,7 @@ const requests: _Section_Document_ = {
         proposals: [
           requestedOf({
             proposal: proposalOf({ source: "errors", title: "Keep every error, not only the last", rationale: "The first is often the telling one." }),
-            requests: [requestOf({ id: "count", notes: "Count them too, for the message.", pieces: [{ id_Text: { kind: "CHANGE", source: "errors", index: 0 }, range: { from: { line: 0, offset: 7 }, to: { line: 0, offset: 18 } } }, { id_Text: { kind: "DOCUMENT" }, range: { from: { line: 0, offset: 23 }, to: { line: 0, offset: 24 } } }], text: "push(error);" })]
+            requests: [requestOf({ id: "count", notes: "Count them too, for the message.", pieces: [{ id_Text: { kind: "CHANGE", source: "errors", index: 0 }, range: { from: { line: 0, offset: 7 }, to: { line: 0, offset: 18 } } }, { id_Text: { kind: "DOCUMENT" }, range: { from: { line: 0, offset: 23 }, to: { line: 0, offset: 24 } } }], text: "push(error);", side: "PROPOSED" })]
           })
         ],
         rounds_Landed: [],
@@ -1083,7 +1083,7 @@ const requests: _Section_Document_ = {
           proposalOf({ source: "order", title: "Ask about the error before the round", rationale: "An error that can't be retried ends the loop in any round." }),
           requestedOf({
             proposal: proposalOf({ source: "round", title: "Call the attempt counter round", rationale: "n says nothing; round says what it counts." }),
-            requests: [requestOf({ id: "which", notes: "Say which round it gives up at.", pieces: [{ id_Text: { kind: "CHANGE", source: "round", index: 0 }, range: { from: { line: 0, offset: 0 }, to: { line: 0, offset: 5 } } }, { id_Text: { kind: "DOCUMENT" }, range: { from: { line: 0, offset: 9 }, to: { line: 0, offset: 22 } } }], text: "round === attempts" })]
+            requests: [requestOf({ id: "which", notes: "Say which round it gives up at.", pieces: [{ id_Text: { kind: "CHANGE", source: "round", index: 0 }, range: { from: { line: 0, offset: 0 }, to: { line: 0, offset: 5 } } }, { id_Text: { kind: "DOCUMENT" }, range: { from: { line: 0, offset: 9 }, to: { line: 0, offset: 22 } } }], text: "round === attempts", side: "PROPOSED" })]
           })
         ],
         rounds_Landed: [],
@@ -1164,14 +1164,17 @@ interface _Api___requestOf_ {
   notes: string
   pieces: [_Piece_Text_, ...Array<_Piece_Text_>]
   text: string
+  side: _Side_Text_
 }
 
-// a request queued, sent with words: where they are and what they say
+// a request queued, sent with words: where they are, what they say, and
+// the side they were selected on, as they are or as proposed
 function requestOf({
   id,
   notes,
   pieces,
-  text
+  text,
+  side
 }: _Api___requestOf_): _Request_Host_ {
-  return { id, notes, reference: { pieces, text }, status: "QUEUED" }
+  return { id, notes, reference: { pieces, text, side }, status: "QUEUED" }
 }

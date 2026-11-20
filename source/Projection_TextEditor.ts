@@ -167,7 +167,7 @@ function viewModelOf__Model<State>({
           line_First: line_Next
         })
       ],
-      references: (task?.requests ?? []).flatMap((request_Task) => request_Task.status !== "ADDRESSED" && request_Task.aim.reference !== null ? [request_Task.aim.reference.pieces] : []),
+      references: (task?.requests ?? []).flatMap((request_Task) => request_Task.status !== "ADDRESSED" && request_Task.aim.reference !== null ? [request_Task.aim.reference] : []),
       attributes: {
         "data-requested": ""
       }
@@ -225,7 +225,7 @@ function headerOf__Proposals({
       ? []
       : [
         {
-          text: `${count_Running} in progress`,
+          text: `${count_Running} running`,
           isBusy: true
         }
       ]
@@ -318,7 +318,7 @@ function headerOf__Proposals({
             ? null
             : {
               label: `Stop all (${counts_Requests_Task.RUNNING})`,
-              title: "Stops everything in progress in the task, in every document it touches, putting it back in the queue"
+              title: "Stops everything running in the task, in every document it touches, putting it back in the queue"
             },
           actions: task.actions.filter((action_Task) => action_Task.section === "REVISIONS")
         },
@@ -369,7 +369,7 @@ function headerOf__Proposals({
           ? null
           : {
             label: `Stop all (${counts_Requests_Here.RUNNING})`,
-            title: `Stops all ${counts_Requests_Here.RUNNING} in progress in this document, its own and its proposals', putting them back in the queue`
+            title: `Stops all ${counts_Requests_Here.RUNNING} running in this document, its own and its proposals', putting them back in the queue`
           },
         actions: (task?.actions_Document ?? []).filter((action_Task) => action_Task.section === "REVISIONS")
       },
@@ -399,7 +399,7 @@ function figureOf__Counts_Requests(
 ): _Figure_Card_ | null {
   const parts = [
     ...counts_Requests.QUEUED === 0 ? [] : [`${counts_Requests.QUEUED} queued`],
-    ...counts_Requests.RUNNING === 0 ? [] : [`${counts_Requests.RUNNING} in progress`]
+    ...counts_Requests.RUNNING === 0 ? [] : [`${counts_Requests.RUNNING} running`]
   ]
   return parts.length === 0
     ? null
@@ -492,6 +492,7 @@ function referenceOf__Request({
   if (reference === null) return null
   const isShown = status !== "ADDRESSED"
   return {
+    side: reference.side,
     head: headOf__Quote({
       text: reference.text
     }),
@@ -628,8 +629,8 @@ type _ProgressMap__Status_Request_ = {
 
 const PROGRESSMAP__STATUS_REQUEST: _ProgressMap__Status_Request_ = {
   QUEUED: null,
-  RUNNING: "in progress",
-  ADDRESSED: "addressed"
+  RUNNING: "running",
+  ADDRESSED: "done"
 }
 
 function detailOf__Request(
@@ -2798,13 +2799,14 @@ function frameOf__Drawn({
       }
     })
   if (item_First === undefined) throw new Error(`a frame at line ${frame_Drawn.frame_Model.first + 1} lists no proposal`)
+  const references_Frame = proposals
+    .filter((proposal_Host) => frame_Drawn.sources.includes(proposal_Host.source))
+    .flatMap((proposal_Host) => proposal_Host.requests.flatMap((request_Host) => request_Host.status !== "ADDRESSED" && request_Host.reference !== null ? [request_Host.reference] : []))
   const part_Proposed: _Part_Frame_ = {
     kind: "PROPOSAL_LINES",
     run: underlinedOf__Run({
       run_Lines: frame_Drawn.run_Proposed,
-      references: proposals
-        .filter((proposal_Host) => frame_Drawn.sources.includes(proposal_Host.source))
-        .flatMap((proposal_Host) => proposal_Host.requests.flatMap((request_Host) => request_Host.status !== "ADDRESSED" && request_Host.reference !== null ? [request_Host.reference.pieces] : [])),
+      references: references_Frame.filter((reference) => reference.side === "PROPOSED"),
       attributes: {
         "data-requested": ""
       }
@@ -2841,7 +2843,13 @@ function frameOf__Drawn({
       : [
         {
           kind: "CURRENT_LINES",
-          run: frame_Drawn.run_Current
+          run: underlinedOf__Run({
+            run_Lines: frame_Drawn.run_Current,
+            references: references_Frame.filter((reference) => reference.side === "CURRENT"),
+            attributes: {
+              "data-requested": ""
+            }
+          })
         },
         part_Proposed,
         part_Head,
@@ -2922,7 +2930,7 @@ function headOf__Frame({
         ? null
         : {
           label: `Stop all (${counts_Requests.RUNNING})`,
-          title: `Stops all ${counts_Requests.RUNNING} in progress for the proposals listed in ${label_Range}, putting them back in the queue`
+          title: `Stops all ${counts_Requests.RUNNING} running for the proposals listed in ${label_Range}, putting them back in the queue`
         },
       actions: []
     }

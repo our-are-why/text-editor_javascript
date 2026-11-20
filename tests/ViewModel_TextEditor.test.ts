@@ -203,6 +203,19 @@ test("folding a frame makes it a block of its own, its range and its lines as pr
   expect(foldedAt__ViewModel({ viewModel_TextEditor: viewModel, ranges_Folded: [], range_Peeked: null })).toBe(viewModel)
 })
 
+test("a folded frame's lines carry no notes, a move's saying where it's from hidden with its rings, as review, not the preview; peeked at, its notes back with its rings; an unfolded frame's kept", () => {
+  const [line_First, ...lines_Rest] = parseLines_ViewModel({ multilineText: "one\ntwo", module_Language: MODULE_PLAINTEXT })
+  if (line_First === undefined) throw new Error("no line")
+  const lines = [{ ...line_First, note: { label: "from line 9", target: { source: "move", side: "removed" } } }, ...lines_Rest]
+  const viewModel = viewModelOf__Blocks([
+    { kind: "FRAME", range: { first: 1, last: 2 }, parts: [{ kind: "PROPOSAL_LINES", run: { id: "folded", lines, groups: [] } }, { kind: "PROPOSAL_LIST", items: [itemOf("move")] }] },
+    { kind: "FRAME", range: { first: 4, last: 5 }, parts: [{ kind: "PROPOSAL_LINES", run: { id: "open", lines, groups: [] } }, { kind: "PROPOSAL_LIST", items: [itemOf("move")] }] }
+  ])
+  const notesOf = (viewModel_TextEditor: typeof viewModel) => viewModel_TextEditor.runs.map((run) => `${run.id}: ${run.lines.map((line) => line.note?.label ?? "none").join(", ")}`)
+  expect(notesOf(foldedAt__ViewModel({ viewModel_TextEditor: viewModel, ranges_Folded: [{ first: 1, last: 2 }], range_Peeked: null }))).toEqual(["folded: none, none", "open: from line 9, none"])
+  expect(notesOf(foldedAt__ViewModel({ viewModel_TextEditor: viewModel, ranges_Folded: [{ first: 1, last: 2 }], range_Peeked: { first: 1, last: 2 } }))).toEqual(["folded: from line 9, none", "open: from line 9, none"])
+})
+
 test("a folded frame peeked has its rings, all of them, every proposal's; another folded frame, none", () => {
   const lines = parseLines_ViewModel({ multilineText: "one\ntwo", module_Language: MODULE_PLAINTEXT })
   const ring = (from: [number, number], to: [number, number]) => ({ kind: "STRETCH" as const, from: { line: from[0], offset: from[1] }, to: { line: to[0], offset: to[1] }, attributes: {} })

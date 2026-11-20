@@ -416,8 +416,8 @@ test("a right-click's menu offers what can be asked there, in tiers, the narrowe
   const requested = HANDLERMAP__TEXTEDITOR.SEND_REQUEST({ state: HANDLERMAP__TEXTEDITOR.CHOOSE_MENU({ state: menuOf(over_One), command: { kind: "CHOOSE_MENU", index: 0 }, layout_View, module_Words: MODULE_WORDS_TEXT, edit_View: () => null, ask_View }), command: { kind: "SEND_REQUEST", notes: "Say which one.", isStarting: false }, layout_View, module_Words: MODULE_WORDS_TEXT, edit_View: () => null, ask_View })
   expect(requested.request).toBe(null)
   expect(asked).toEqual([
-    { kind: "ACTION", source: "digit", command: "revise", notes: "Spell it out.", reference: { pieces: [{ id_Text: digit_Text, range: { from: { line: 0, offset: 0 }, to: { line: 0, offset: 1 } } }], text: "2" } },
-    { kind: "REQUEST", aim: { kind: "DOCUMENT", reference: { pieces: [{ id_Text: { kind: "DOCUMENT" }, range: { from: { line: 0, offset: 0 }, to: { line: 0, offset: 3 } } }], text: "one" } }, notes: "Say which one.", isStarting: false }
+    { kind: "ACTION", source: "digit", command: "revise", notes: "Spell it out.", reference: { pieces: [{ id_Text: digit_Text, range: { from: { line: 0, offset: 0 }, to: { line: 0, offset: 1 } } }], text: "2", side: "PROPOSED" } },
+    { kind: "REQUEST", aim: { kind: "DOCUMENT", reference: { pieces: [{ id_Text: { kind: "DOCUMENT" }, range: { from: { line: 0, offset: 0 }, to: { line: 0, offset: 3 } } }], text: "one", side: "PROPOSED" } }, notes: "Say which one.", isStarting: false }
   ])
 })
 
@@ -456,7 +456,7 @@ test("a right-click on a proposal, nothing selected, offers its tier and the doc
   expect([menuAt(caretOf("lines-2", 1, 2), layout_Pointed).menu?.isFocusShown, opened_Keyboard.menu?.isFocusShown, stepped.menu?.isFocusShown, stepped.menu?.index_Focused]).toEqual([false, true, true, 3])
   const digit_Text = { kind: "CHANGE" as const, source: "digit", index: 0 }
   const over_Digit: _Selection_TextEditor_ = { anchor: { id_Run: "frame-1-proposed", id_Text: digit_Text, position: { line: 0, offset: 0 } }, head: { id_Run: "frame-1-proposed", id_Text: digit_Text, position: { line: 0, offset: 1 } } }
-  const selected_Digit = { pieces: [{ id_Text: digit_Text, range: { from: { line: 0, offset: 0 }, to: { line: 0, offset: 1 } } }], text: "2" }
+  const selected_Digit = { pieces: [{ id_Text: digit_Text, range: { from: { line: 0, offset: 0 }, to: { line: 0, offset: 1 } } }], text: "2", side: "PROPOSED" as const }
   const referring = choose(menuAt(over_Digit, layout_View), 2)
   expect(referring.request).toMatchObject({ label: "Request a revision of “Write two as a digit”", head: { label_Tier: "Proposal", subject: "Write two as a digit" }, quote: { text: "2" }, target: { kind: "PROPOSAL", reference: selected_Digit } })
   const dropped = HANDLERMAP__TEXTEDITOR.DROP_QUOTE({ state: referring, command: { kind: "DROP_QUOTE" }, ...handlerOf(layout_View) })
@@ -494,11 +494,11 @@ test("a right-click on a proposal, nothing selected, offers its tier and the doc
   expect(asked).toEqual([{ kind: "ACTION", source: "digit", command: "accept", notes: null, reference: null }])
 })
 
-test("a listed request's words pointed at, by the pointer or the keyboard, lit where they are while it waits or is under way: a proposal's in its frame's lines as proposed, where they're underlined, the document's own wherever the document's text is drawn; once it's done with, not lit, what's there since perhaps not what was sent; pointed away from, nothing lit; pointed at again, nothing new; its lines pressed, the words shown, the document to scroll to them and the keyboard back on the text, and, a moment after, let go", () => {
+test("a listed request's words pointed at, by the pointer or the keyboard, lit where they are while it waits or is under way: only on the side they were selected on, as they are or as proposed, where they're underlined, not in a frame's other showing of the same words; once it's done with, not lit, what's there since perhaps not what was sent; pointed away from, nothing lit; pointed at again, nothing new; its lines pressed, the words shown, the document to scroll to them and the keyboard back on the text, and, a moment after, let go", () => {
   const digit_Text = { kind: "CHANGE" as const, source: "digit", index: 0 }
-  const reference_Digit = { pieces: [{ id_Text: digit_Text, range: { from: { line: 0, offset: 0 }, to: { line: 0, offset: 1 } } }] as [_Piece_Text_, ...Array<_Piece_Text_>], text: "2" }
-  const reference_One = { pieces: [{ id_Text: { kind: "DOCUMENT" as const }, range: { from: { line: 0, offset: 0 }, to: { line: 0, offset: 3 } } }] as [_Piece_Text_, ...Array<_Piece_Text_>], text: "one" }
-  const reference_Four = { pieces: [{ id_Text: { kind: "DOCUMENT" as const }, range: { from: { line: 1, offset: 0 }, to: { line: 1, offset: 4 } } }] as [_Piece_Text_, ...Array<_Piece_Text_>], text: "four" }
+  const reference_Digit = { pieces: [{ id_Text: digit_Text, range: { from: { line: 0, offset: 0 }, to: { line: 0, offset: 1 } } }] as [_Piece_Text_, ...Array<_Piece_Text_>], text: "2", side: "PROPOSED" as const }
+  const reference_One = { pieces: [{ id_Text: { kind: "DOCUMENT" as const }, range: { from: { line: 0, offset: 0 }, to: { line: 0, offset: 3 } } }] as [_Piece_Text_, ...Array<_Piece_Text_>], text: "one", side: "CURRENT" as const }
+  const reference_Four = { pieces: [{ id_Text: { kind: "DOCUMENT" as const }, range: { from: { line: 1, offset: 0 }, to: { line: 1, offset: 4 } } }] as [_Piece_Text_, ...Array<_Piece_Text_>], text: "four", side: "CURRENT" as const }
   const viewModel_Referring = viewModelOf__Model({
     model_TextEditor: result.model_TextEditor,
     name_Document: "notes/digits.txt",
@@ -515,7 +515,7 @@ test("a listed request's words pointed at, by the pointer or the keyboard, lit w
   const id_Item = { source: "digit", range_Frame: { first: 1, last: 1 } }
   const pointed_Spell = pointedAt(state_Referring, { id_Item, id: "spell" })
   expect(litIn(pointed_Spell)).toEqual(["frame-1-proposed 2"])
-  expect(litIn(pointedAt(state_Referring, { id_Item: null, id: "count" }))).toEqual(["frame-1-current one", "frame-1-proposed one"])
+  expect(litIn(pointedAt(state_Referring, { id_Item: null, id: "count" }))).toEqual(["frame-1-current one"])
   expect(litIn(pointedAt(state_Referring, { id_Item: null, id: "done" }))).toEqual([])
   expect(pointedAt(pointed_Spell, null).words_Pointed).toBe(null)
   expect(litIn(pointedAt(pointed_Spell, null))).toEqual([])
@@ -566,10 +566,10 @@ test("revisions queued: a revision's notes added, asked of the host, its draft c
   expect(startedFrom(over_One, "").request).not.toBe(null)
   expect(startedFrom(over_One, "Say which one.").request).toBe(null)
   expect(asked).toEqual([
-    { kind: "ACTION", source: "digit", command: "revise", notes: "Spell it out.", reference: { pieces: [{ id_Text: digit_Text, range: { from: { line: 0, offset: 0 }, to: { line: 0, offset: 1 } } }], text: "2" } },
+    { kind: "ACTION", source: "digit", command: "revise", notes: "Spell it out.", reference: { pieces: [{ id_Text: digit_Text, range: { from: { line: 0, offset: 0 }, to: { line: 0, offset: 1 } } }], text: "2", side: "PROPOSED" } },
     { kind: "START", scope: { kind: "PROPOSAL", source: "digit" } },
     { kind: "START", scope: { kind: "PROPOSAL", source: "digit" } },
-    { kind: "REQUEST", aim: { kind: "DOCUMENT", reference: { pieces: [{ id_Text: { kind: "DOCUMENT" }, range: { from: { line: 0, offset: 0 }, to: { line: 0, offset: 3 } } }], text: "one" } }, notes: "Say which one.", isStarting: true }
+    { kind: "REQUEST", aim: { kind: "DOCUMENT", reference: { pieces: [{ id_Text: { kind: "DOCUMENT" }, range: { from: { line: 0, offset: 0 }, to: { line: 0, offset: 3 } } }], text: "one", side: "PROPOSED" } }, notes: "Say which one.", isStarting: true }
   ])
 })
 

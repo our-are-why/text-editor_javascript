@@ -402,6 +402,10 @@ const seeded_JavaScript = await opened_JavaScript.page.evaluate(async () => {
     isDotted: document.querySelectorAll(".underlay_htmlView[data-requested]:not([data-many])").length > 0,
     isDashed: document.querySelectorAll(".underlay_htmlView[data-requested][data-many]").length > 0,
     isCut: document.querySelectorAll(".layer_htmlView[data-layer=\"RINGS\"][mask]").length > 0,
+    runs_Requested: [...document.querySelectorAll(".run_htmlView")].flatMap((run) => {
+      const count = run.querySelectorAll(".underlay_htmlView[data-requested]").length
+      return count === 0 ? [] : [`${run.getAttribute("data-run")}: ${count}`]
+    }),
     document: [...document.querySelectorAll(".card_Document_htmlView .said_htmlView")].map(saidOf),
     task: [...document.querySelectorAll(".card_Task_htmlView .said_htmlView")].map(saidOf),
     dropped: [...new Set([...document.querySelectorAll(".item_htmlView[data-source=\"order\"] .stale_htmlView")].map((element) => element.textContent))],
@@ -409,7 +413,7 @@ const seeded_JavaScript = await opened_JavaScript.page.evaluate(async () => {
   }
 })
 
-test("the JavaScript example opens with a case of each kind of thing asked and decided: an accepted proposal not yet applied, its move's rings filled; a request on a proposal sent with words its change puts in, dotted under them, its chip and its line; a revising one with more queued for its next round; the document's own requests, one cutting through a ring's edge, two overlapping, dashed there, one over two lines in progress, one with a link too long for its line kept inside it, two done with, by a proposal and with nothing to change; the task's own; and a round that dropped a move", () => {
+test("the JavaScript example opens with a case of each kind of thing asked and decided: an accepted proposal not yet applied, its move's rings filled; a request on a proposal sent with words its change puts in, dotted under them, its chip and its line; a revising one with more queued for its next round; the document's own requests, one cutting through a ring's edge, two overlapping, dashed there, one over two lines in progress, one with a link too long for its line kept inside it, two done with, by a proposal and with nothing to change, each request's words marked only on the side of a frame they were selected on, as they are or as proposed, not mirrored in its other; the task's own; and a round that dropped a move", () => {
   expect(seeded_JavaScript).toEqual({
     status: ["filled"],
     cap: [
@@ -417,20 +421,21 @@ test("the JavaScript example opens with a case of each kind of thing asked and d
       "Name it MAX_DELAY_MS, up with the other constants. | 30_000 | line 33 | "
     ],
     timeout: [
-      "only when the request is safe to send twice, a GET or a PUT. |  |  | in progress",
+      "only when the request is safe to send twice, a GET or a PUT. |  |  | running",
       "Say timed out, as the status means, not before any answer. | before any answer | line 37 | "
     ],
     isDotted: true,
     isDashed: true,
     isCut: true,
+    runs_Requested: ["frame-13-current: 5", "lines-28: 2", "frame-31-proposed: 1", "frame-36-proposed: 1"],
     document: [
       "Count the errors too, for the message. | lastError = error; | line 20 | ",
       "Say which round it gives up at. | n === attempts | line 21 | ",
       "Give up on an error that can't be retried before the count's checked. | attempts || !isRetryable(error) | line 21 | ",
-      "Say why half a delay at random, not a whole one. | // 100ms, 200ms, 400ms, ..., and up to half as long again at random, so that… | lines 29–30 | in progress",
+      "Say why half a delay at random, not a whole one. | // 100ms, 200ms, 400ms, ..., and up to half as long again at random, so that… | lines 29–30 | running",
       "Say what this throws: https://developer.mozilla.org/en-US/docs/Web/API/AbortSignal/throwIfAborted | signal?.throwIfAborted(); | line 16 | ",
-      "Keep every error the attempts throw, not only the last. |  |  | addressed (1 proposal)",
-      "Check the doc comment still says what retry takes. |  |  | addressed (nothing to change)"
+      "Keep every error the attempts throw, not only the last. |  |  | done (1 proposal)",
+      "Check the doc comment still says what retry takes. |  |  | done (nothing to change)"
     ],
     task: ["Say in the README that onRetry is gone. |  |  | "],
     dropped: ["1 dropped, its text goneRun again"],
@@ -770,8 +775,8 @@ test("a proposal's action pressed is asked of the host, which sends back what it
 test("the header over the document stays put as it scrolls, saying the host's task, its mark where it stands, the agent at work or your turn, its state in words for what reads it aloud, and the document, by its file's name, at its end, nothing between them; the task's card hidden until the task's hovered: its id and where it stands, what the agent says of it, how far its proposals have got across the documents it touches, and each document, this one marked, how far its own have got, each figure's breakdown when hovered, Add a request for the task as a whole, and the host's actions for it; the document's card, hovered, what the agent says the task does here, how far its proposals have got, and the host's action for them, how many revisions are queued and in progress, Revise, Start all and Stop all, saying how many when they're hovered; the task's Stop all putting what's in progress back in the queue; the document's Start setting every proposal's queued requests going at once, each proposal's round its own; nothing asked, nothing to start", () => {
   expect(header_Working).toEqual({ task: ["Tidy the retry loop", "WORKING", "Working"], parts: [], spinners: 0, document: ["retry.js", "WORKING", "Working"], card: ["Accept all (10)", "Start all (6)", "Stop all (3)"], card_Document: ["Accept all (7)", "Start all (5)", "Stop all (2)"], isSticky: true })
   expect(card_Resting.isShown).toBe(false)
-  expect(card_Hovered).toEqual({ isShown: true, head: "T-12Working...", summary: "Keeps every error, names the attempt counter round, caps the delay, and stops once the caller aborts; drops the onRetry hook and the opening comment.", id: "T-12", figures: ["Proposals: 6 of 20 decided (11 to review · 1 revision requested · 2 revising · 5 accepted · 1 rejected)", "Scope Revisions: 7 queued · 3 in progress", "Level Revisions: "], documents: ["retry.js (this document): 4 of 14 decided (8 to review · 1 revision requested · 1 revising · 3 accepted · 1 rejected)", "README.md: 2 of 6 decided (3 to review · 1 revising · 2 accepted)"], parts: ["head_Card_htmlView", "summary_Card_htmlView", "section_Card_htmlView", "section_Card_htmlView", "section_Card_htmlView"] })
-  expect(card_Document).toEqual({ isShown: true, label: "retry.js", summary: "In retry.js: the loop's errors, its counter's name, its delays and its abort, and two things it no longer needs.", figures: ["Proposals: 4 of 14 decided (8 to review · 1 revision requested · 1 revising · 3 accepted · 1 rejected)", "Scope Revisions: 6 queued · 2 in progress", "Level Revisions: "], actions: ["Accept all (7)", "Starts all 5 requests queued in this document, its own and its proposals'", "Stops all 2 in progress in this document, its own and its proposals', putting them back in the queue"] })
+  expect(card_Hovered).toEqual({ isShown: true, head: "T-12Working", summary: "Keeps every error, names the attempt counter round, caps the delay, and stops once the caller aborts; drops the onRetry hook and the opening comment.", id: "T-12", figures: ["Proposals: 6 of 20 decided (11 to review · 1 revision requested · 2 revising · 5 accepted · 1 rejected)", "Scope Revisions: 7 queued · 3 running", "Level Revisions: "], documents: ["retry.js (this document): 4 of 14 decided (8 to review · 1 revision requested · 1 revising · 3 accepted · 1 rejected)", "README.md: 2 of 6 decided (3 to review · 1 revising · 2 accepted)"], parts: ["head_Card_htmlView", "summary_Card_htmlView", "section_Card_htmlView", "section_Card_htmlView", "section_Card_htmlView"] })
+  expect(card_Document).toEqual({ isShown: true, label: "retry.js", summary: "In retry.js: the loop's errors, its counter's name, its delays and its abort, and two things it no longer needs.", figures: ["Proposals: 4 of 14 decided (8 to review · 1 revision requested · 1 revising · 3 accepted · 1 rejected)", "Scope Revisions: 6 queued · 2 running", "Level Revisions: "], actions: ["Accept all (7)", "Starts all 5 requests queued in this document, its own and its proposals'", "Stops all 2 running in this document, its own and its proposals', putting them back in the queue"] })
   expect(header_Stopped).toEqual({ task: ["Tidy the retry loop", "YOUR_TURN", "Your turn"], parts: [], spinners: 0, document: ["retry.js", "YOUR_TURN", "Your turn"], card: ["Accept all (10)", "Start all (10)"], card_Document: ["Accept all (7)", "Start all (8)"], isSticky: true })
   expect(header_Started).toEqual({ task: ["Tidy the retry loop", "WORKING", "Working"], parts: [], spinners: 0, document: ["retry.js", "WORKING", "Working"], card: ["Accept all (10)", "Start all (2)", "Stop all (8)"], card_Document: ["Accept all (7)", "Stop all (8)"], isSticky: true })
   expect(header_Done).toEqual({ task: ["Tidy the retry loop", "YOUR_TURN", "Your turn"], parts: [], spinners: 0, document: ["retry.js", "YOUR_TURN", "Your turn"], card: ["Accept all (12)", "Start all (2)"], card_Document: ["Accept all (9)"], isSticky: true })
@@ -944,7 +949,7 @@ const isAskFocused_Document = await opened_JavaScript.page.evaluate(async () => 
 const requests_Added_Inline = await requestsOf_Document()
 await pressedIn(opened_JavaScript.page.locator(".card_Document_htmlView .said_htmlView", { hasText: "Name the module's exports." }), ".start_Said_htmlView")
 const requests_Started = await requestsOf_Document()
-await opened_JavaScript.page.waitForFunction(() => ![...document.querySelectorAll(".card_Document_htmlView .progress_Said_htmlView")].some((element) => element.textContent === "in progress"))
+await opened_JavaScript.page.waitForFunction(() => ![...document.querySelectorAll(".card_Document_htmlView .progress_Said_htmlView")].some((element) => element.textContent === "running"))
 const requests_Done = await requestsOf_Document()
 await pressedIn(opened_JavaScript.page.locator(".card_Document_htmlView .said_htmlView:has(.remove_htmlView)").first(), ".remove_htmlView")
 const requests_Removed = await requestsOf_Document()
@@ -982,9 +987,9 @@ test("a request on no proposal, the document's own, queued and listed in the doc
   expect(form_Header).toEqual({ isInCard: true, isReviseGone: true, isCardShown: true, label: "Revise this document", actions: ["Add", "Cancel"], isFocused: true, isUnder: true })
   expect(requests_Added_Inline).toEqual(["Say why the delay doubles.", "Name the module's exports."])
   expect(label_Requests).toEqual(["Requests", true, "solid"])
-  expect(requests_Started).toEqual(["Say why the delay doubles.", "Name the module's exports. (in progress)"])
-  expect(requests_Done).toEqual(["Say why the delay doubles.", "Name the module's exports. (addressed (nothing to change))"])
-  expect(requests_Removed).toEqual(["Name the module's exports. (addressed (nothing to change))"])
+  expect(requests_Started).toEqual(["Say why the delay doubles.", "Name the module's exports. (running)"])
+  expect(requests_Done).toEqual(["Say why the delay doubles.", "Name the module's exports. (done (nothing to change))"])
+  expect(requests_Removed).toEqual(["Name the module's exports. (done (nothing to change))"])
   expect(opened_JavaScript.errors).toEqual([])
 })
 
@@ -1241,7 +1246,7 @@ const stop_Group = await progressOf("Stop me.")
 const logged_Stops = (await opened_JavaScript.logged()).slice(count_Stopping).filter((entry) => "stopped" in entry)
 
 test("each scope's Stop: a document's request in progress, Stop after it, pressed, back in the queue, its Start again, the card kept open though the pointer's gone, its button gone with what it did; its group's Stop, by its heading, while any of them is in progress, putting them back; each asked of the host by its scope", () => {
-  expect(stop_Running).toEqual({ progress: "in progress", controls: ["Stop"] })
+  expect(stop_Running).toEqual({ progress: "running", controls: ["Stop"] })
   expect(stop_Stopped).toEqual({ progress: null, controls: ["Edit", "Start", "Remove"] })
   expect(card_Kept).toBe(true)
   expect(head_Running).toEqual(["Stop", "Add"])
@@ -1258,7 +1263,7 @@ test("each scope's Stop: a document's request in progress, Stop after it, presse
 const addressedOf_Card = () => opened_JavaScript.page.evaluate(async () => {
   await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)))
   return [...document.querySelectorAll(".card_Document_htmlView .said_htmlView")]
-    .filter((element) => element.querySelector(".progress_Said_htmlView")?.firstChild?.textContent === "addressed")
+    .filter((element) => element.querySelector(".progress_Said_htmlView")?.firstChild?.textContent === "done")
     .map((element) => ({
       notes: element.querySelector(".notes_Said_htmlView")?.textContent ?? null,
       controls: [...element.querySelectorAll(":scope > .row_Said_htmlView > .fold_Action_htmlView > .actions_Said_htmlView > button")].map((button) => button.textContent)
@@ -1586,6 +1591,49 @@ test("the room a jump makes, above the first line or past the last, is only as m
   expect(opened_JavaScript.errors).toEqual([])
 })
 
+// then a move's note pressed where its other end's in a folded frame: the
+// frame folded by its control, its own note gone with its rings; the note
+// at the move's other end pressed, the frame unfolded as the jump goes
+// there, the note there arrived at at the height the one pressed was, the
+// keyboard on it, the frame left unfolded
+const frame_Sleep = opened_JavaScript.page.locator(".frame_htmlView[aria-label=\"before line 6\"]")
+await frame_Sleep.scrollIntoViewIfNeeded()
+await frame_Sleep.hover()
+await frame_Sleep.locator(":scope > .fold_htmlView").click()
+await opened_JavaScript.page.mouse.move(5, 5)
+await stilled()
+const foldedOf_Notes = () => opened_JavaScript.page.evaluate(() => ({
+  folded: [...document.querySelectorAll(".fold_htmlView[aria-expanded=\"false\"]")].map((element) => element.getAttribute("aria-label")),
+  notes: [...document.querySelectorAll(".note_htmlView")].map((element) => element.getAttribute("aria-label"))
+}))
+const folded_Sleep = await foldedOf_Notes()
+const note_Moved_Sleep = opened_JavaScript.page.locator(".note_htmlView[data-target-source=\"sleep\"][data-target-side=\"after\"]")
+await note_Moved_Sleep.scrollIntoViewIfNeeded()
+await stilled()
+const box_Moved = await note_Moved_Sleep.boundingBox()
+if (box_Moved !== null) {
+  await opened_JavaScript.page.mouse.move(box_Moved.x + box_Moved.width / 2, box_Moved.y + box_Moved.height / 2)
+  await opened_JavaScript.page.mouse.down()
+  await opened_JavaScript.page.mouse.up()
+}
+await stilled()
+const unfolded_Sleep = await foldedOf_Notes()
+const arrived_Sleep = await opened_JavaScript.page.evaluate(() => {
+  const note = document.querySelector(".note_htmlView[data-target-source=\"sleep\"][data-target-side=\"before\"]")
+  return {
+    top: note?.getBoundingClientRect().top ?? null,
+    isFocused: note !== null && document.activeElement === note
+  }
+})
+
+test("a move's note pressed where its other end's in a folded frame unfolds that frame as it goes there, landing on the note there at the height the one pressed was, the keyboard on it; folded, that frame's note had gone with its rings", () => {
+  expect(folded_Sleep).toEqual({ folded: ["Unfold before line 6"], notes: ["moved", "from line 38", "moved"] })
+  expect(unfolded_Sleep).toEqual({ folded: [], notes: ["from lines 41–50", "moved", "from line 38", "moved"] })
+  expect(arrived_Sleep.isFocused).toBe(true)
+  expect(Math.abs((arrived_Sleep.top ?? Number.NaN) - (box_Moved?.y ?? Number.NaN))).toBeLessThan(1)
+  expect(opened_JavaScript.errors).toEqual([])
+})
+
 // then the same jumps on a display of twice the density, as a laptop's,
 // scroll positions rounded to its pixels, where the browser ends the
 // instant first step of a jump up, keeping what's shown still as room's
@@ -1690,7 +1738,7 @@ test("a frame's head says its lines and how far its proposals have got; its Star
     "line 10 0 of 2 decided Accept all (2)",
     "lines 13–27 1 of 6 decided Accept all (5)",
     "lines 31–34 1 of 3 decided Accept all (1) | 2 queued",
-    "lines 36–40 2 of 3 decided  | 1 queued · 1 in progress",
+    "lines 36–40 2 of 3 decided  | 1 queued · 1 running",
     "lines 41–50 0 of 2 decided Accept all (2)"
   ])
   expect(started_Frame).toEqual([{ revising: "cap", requests: 2 }])

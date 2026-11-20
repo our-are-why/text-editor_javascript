@@ -33,6 +33,8 @@ import {
   askingAt__ViewModel,
   confirmingAt__ViewModel,
   type _Pending_Confirm_,
+  type _Block_ViewModel_,
+  isLines__Part_Frame,
   type _Item_Proposals_,
   type _State_Proposal_,
   type _Menu_ViewModel_,
@@ -55,6 +57,7 @@ import {
   type _TASK_Target_Request_,
   type _Aim_Request_,
   type _Selected_Text_,
+  sideOf__Run,
   type _Piece_Text_,
   type _Form_Request_,
   type _Place_Form_,
@@ -966,10 +969,29 @@ function JUMP_stateAfter__Command({
   state,
   command
 }: _Api___stateAfter__Command_<"JUMP">): _State__Viewer_TextEditor_ {
+  const ranges_Target = rangesOf__Target_Note({
+    blocks_ViewModel: state.viewModel_TextEditor.blocks,
+    target_Note: command.target_Note
+  })
   return {
     ...state,
-    target_Revealed: command.target_Note
+    target_Revealed: command.target_Note,
+    ranges_Folded: state.ranges_Folded.filter((range_Lines) => !ranges_Target.some((range_Target) => range_Target.first === range_Lines.first && range_Target.last === range_Lines.last))
   }
+}
+
+interface _Api___rangesOf__Target_Note_ {
+  blocks_ViewModel: Array<_Block_ViewModel_>
+  target_Note: _Target_Note_
+}
+
+function rangesOf__Target_Note({
+  blocks_ViewModel,
+  target_Note
+}: _Api___rangesOf__Target_Note_): Array<_Range_Lines_> {
+  return blocks_ViewModel.flatMap((block_ViewModel) => block_ViewModel.kind === "FRAME" && block_ViewModel.parts.some((part_Frame) => isLines__Part_Frame(part_Frame) && part_Frame.run.lines.some((line_Run) => line_Run.segments.some((segment_Line) => segment_Line.attributes["data-source"] === target_Note.source && segment_Line.attributes["data-side"] === target_Note.side)))
+    ? [block_ViewModel.range]
+    : [])
 }
 
 function FOLD_stateAfter__Command({
@@ -1288,7 +1310,13 @@ function itemsOf__Menu({
         pieceOf(piece_First),
         ...pieces_Rest.map(pieceOf)
       ],
-      text: textOf__Selection(viewModel_TextEditor) ?? ""
+      text: textOf__Selection(viewModel_TextEditor) ?? "",
+      side: selection_Drawn === null || pieces.some((piece) => piece.id_Text.kind === "CHANGE")
+        ? "PROPOSED"
+        : sideOf__Run({
+          blocks_ViewModel: viewModel_TextEditor.blocks,
+          id_Run: selection_Drawn.anchor.id_Run
+        })
     }
   const index$_Selected = selection_Drawn === null
     ? []

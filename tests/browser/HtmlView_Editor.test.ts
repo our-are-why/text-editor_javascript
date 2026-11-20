@@ -328,7 +328,7 @@ describe("beside it: what can't live in one document", () => {
     await opened.page.evaluate(() => document.getElementById("pointing-rows")?.remove())
   })
 
-  test("each state's item has its icon beside it, its status word after its title, the two in the proposals' indigo, decided by you, or their plum, a revision requested or under way, or a grey, withdrawn by the agent, never the item's words', an open one's other actions on their grey, their words the colour of the state each leads to, one's with revisions queued or under way too, still to be decided, none of its the main one, neutral once it's decided, so colour keeps its meaning in the rings, or in a host's colour for its state, if it gives one; an open one no icon; a revising one's dots, the view's, waving as its icon goes round, its word still, the dots all there and still where motion's asked to be reduced; its title the same whatever its state", async () => {
+  test("each state's item has its icon beside it, its status word after its title, the two in the proposals' indigo, decided by you, or their plum, a revision requested or under way, or a grey, withdrawn by the agent, never the item's words', an open one's other actions on their grey, their words the colour of the state each leads to, one's with revisions queued or under way too, still to be decided, none of its the main one, neutral once it's decided, so colour keeps its meaning in the rings, or in a host's colour for its state, if it gives one; an open one no icon; a revising one's word shimmering as its icon goes round, no dots after it, the word plain and the icon still where motion's asked to be reduced; its title the same whatever its state", async () => {
     const inksOf = () => opened.page.evaluate(async () => {
       const containerElement = document.createElement("div")
       containerElement.dataset["look"] = "changes"
@@ -351,12 +351,9 @@ describe("beside it: what can't live in one document", () => {
         const icon = getComputedStyle(itemElement, "::before")
         const word = itemElement.querySelector(".status_htmlView")
         const style = word === null ? null : getComputedStyle(word)
-        const dots = itemElement.querySelector(".dots_htmlView")
         const title = getComputedStyle(itemElement.querySelector(".title_htmlView") ?? itemElement)
         return [itemElement.getAttribute("data-state"), {
           title: `${title.color} ${title.fontWeight}`,
-          // whether it has dots, and what moves them
-          dots: dots === null || getComputedStyle(dots).display === "none" ? null : [...new Set([...dots.children].map((dot) => getComputedStyle(dot).animationName))].join(" "),
           icon: icon.content === "none" ? null : `${icon.backgroundColor}${icon.animationName === "none" ? "" : ` ${icon.animationName}`}`,
           // its ink, or, moving, what moves it
           word: style === null || word?.textContent === "" ? null : style.animationName === "none" ? style.color : style.animationName
@@ -414,12 +411,12 @@ describe("beside it: what can't live in one document", () => {
     const withdrawn = moving.withdrawn
     const title = moving.inks["OPEN"]?.title
     expect(moving.inks).toEqual({
-      OPEN: { title, dots: null, icon: null, word: null },
-      REQUESTED: { title, dots: null, icon: revision, word: revision },
-      REVISING: { title, dots: "wave_htmlView", icon: `${revision} revising_htmlView`, word: revision },
-      ACCEPTED: { title, dots: null, icon: muted, word: muted },
-      REJECTED: { title, dots: null, icon: "rgb(1, 2, 3)", word: "rgb(1, 2, 3)" },
-      WITHDRAWN: { title, dots: null, icon: moving.inks["WITHDRAWN"]?.icon, word: withdrawn }
+      OPEN: { title, icon: null, word: null },
+      REQUESTED: { title, icon: revision, word: revision },
+      REVISING: { title, icon: `${revision} revising_htmlView`, word: "shimmer_htmlView" },
+      ACCEPTED: { title, icon: muted, word: muted },
+      REJECTED: { title, icon: "rgb(1, 2, 3)", word: "rgb(1, 2, 3)" },
+      WITHDRAWN: { title, icon: moving.inks["WITHDRAWN"]?.icon, word: withdrawn }
     })
     expect(muted).not.toBe("rgb(1, 2, 3)")
     expect(muted).not.toBe(moving.words)
@@ -461,16 +458,17 @@ describe("beside it: what can't live in one document", () => {
     expect(moving.buttons.revisingToRevise).toEqual(onGrey(revision))
     await opened.page.emulateMedia({ reducedMotion: "reduce" })
     const still = await inksOf()
-    expect(still.inks["REVISING"]).toEqual({ title, dots: "none", icon: revision, word: revision })
+    expect(still.inks["REVISING"]).toEqual({ title, icon: revision, word: revision })
     await opened.page.emulateMedia({ reducedMotion: "no-preference" })
   })
 
-  test("a revising item's three dots, the view's, always there, brighten in turn, a wave along them, a third of a pass apart, its arc going round once a wave; its word still, and the dot before it; the dots unread, as the word says it", async () => {
+  test("a revising item's word shimmers, the view's, a soft band passing through its letters, left to right, easing in and out, dimming it to half at its middle, then resting, a pass every two turns of its arc, begun as a turn is; a request in progress shimmering on the same beat, one queued plain; no dots after the word, which would read as an ellipsis; the dot before it still", async () => {
     await opened.page.evaluate(() => {
       const containerElement = document.createElement("div")
       containerElement.id = "revising"
       containerElement.dataset["look"] = "changes"
       document.body.prepend(containerElement)
+      const requestOf = (id: string, isRunning: boolean) => ({ id, notes: "Say so.", reference: null, progress: isRunning ? "running" : null, detail_Progress: null, isRunning, isStartable: !isRunning, isRemovable: !isRunning, isEditing: false, isStoppable: isRunning, isDismissable: false })
       new window._View_TextEditor_({
         containerElement,
         componentMap: window.COMPONENTMAP__VIEW_TEXTEDITOR
@@ -479,45 +477,58 @@ describe("beside it: what can't live in one document", () => {
         range: { first: 1, last: 1 },
         parts: [
           { kind: "CURRENT_LINES", run: { id: "current", lines: window.parseLines_ViewModel({ multilineText: "one", module_Language: window.MODULE_PLAINTEXT }), groups: [] } },
-          { kind: "PROPOSAL_LIST", items: [{ source: "timeout", title: "Retry a timeout", state: "REVISING" as const, status: "Revising", places: { kind: "NONE" as const }, rationale: "", requests: [], actions: [], isRunning: false, isStartable: false, stale: null, isDrafting: false, confirming: null, neighbors: { range_Previous: null, range_Next: null }, attributes: {} }] }
+          { kind: "PROPOSAL_LIST", items: [{ source: "timeout", title: "Retry a timeout", state: "REVISING" as const, status: "Revising", places: { kind: "NONE" as const }, rationale: "", requests: [requestOf("running", true), requestOf("queued", false)], actions: [], isRunning: true, isStartable: true, stale: null, isDrafting: false, confirming: null, neighbors: { range_Previous: null, range_Next: null }, attributes: {} }] }
         ]
       }]))
     })
-    // the dots' and the arc's passes: each one's delay and length
-    const timing = await opened.page.evaluate(() => {
+    // the word's, the request's and the arc's passes: each one's delay and
+    // length; the word's band in its letters, the word itself unpainted;
+    // where the band is, early in a pass, midway, and resting; and whether
+    // anything follows the word
+    const shimmer = await opened.page.evaluate(() => {
       const item = document.querySelector("#revising .item_htmlView")
-      if (item === null) throw new Error("no item")
+      const word = document.querySelector("#revising .status_htmlView")
+      if (item === null || word === null) throw new Error("no item")
       const timingOf = (animation: Animation | undefined) => {
         const computed = animation?.effect?.getComputedTiming()
-        return `${Math.round(Number(computed?.delay ?? Number.NaN))} ${Math.round(Number(computed?.duration ?? Number.NaN))}`
+        return `${animation instanceof CSSAnimation ? animation.animationName : ""} ${Math.round(Number(computed?.delay ?? Number.NaN))} ${Math.round(Number(computed?.duration ?? Number.NaN))}`
       }
       const arc = item.getAnimations({ subtree: true }).find((animation) => animation instanceof CSSAnimation && animation.animationName === "revising_htmlView")
+      const [pass] = word.getAnimations()
+      const style = getComputedStyle(word)
+      const positionAt = (time: number) => {
+        pass?.pause()
+        if (pass !== undefined) pass.currentTime = time
+        return getComputedStyle(word).backgroundPosition
+      }
       return {
-        dots: [...item.querySelectorAll(".dots_htmlView > .dot_htmlView")].map((dot) => `${dot.textContent} ${dot.getAnimations().map((animation) => animation instanceof CSSAnimation ? animation.animationName : "").join("")} ${timingOf(dot.getAnimations()[0])}`),
+        word: timingOf(pass),
         arc: timingOf(arc),
-        unread: item.querySelector(".dots_htmlView")?.getAttribute("aria-hidden")
+        requests: [...item.querySelectorAll(".said_htmlView")].map((said) => {
+          const progress = said.querySelector(".progress_Said_htmlView")
+          return `${said.getAttribute("data-request")}: ${progress === null ? "plain" : timingOf(progress.getAnimations()[0])}`
+        }),
+        band: `${style.backgroundClip} ${style.color} ${style.backgroundSize}`,
+        positions: [positionAt(0), positionAt(900), positionAt(1800), positionAt(2700)],
+        after: word.nextSibling === null && word.children.length === 0
       }
     })
-    // each dot a third of a pass after the one before, begun already
-    expect(timing).toEqual({ dots: [". wave_htmlView 0 1500", ". wave_htmlView -1000 1500", ". wave_htmlView -500 1500"], arc: "0 1500", unread: "true" })
-    // sampled: one dot always bright, none ever gone
-    const samples = []
-    for (let index = 0; index < 12; index++) {
-      samples.push(await opened.page.evaluate(() => [...document.querySelectorAll("#revising .dot_htmlView")].map((dot) => Number(getComputedStyle(dot).opacity))))
-      await opened.page.waitForTimeout(130)
-    }
-    expect(samples.every((opacities) => Math.max(...opacities) >= 0.55 && Math.min(...opacities) >= 0.25)).toBe(true)
-    expect(new Set(samples.map((opacities) => opacities.indexOf(Math.max(...opacities)))).size).toBe(3)
-    // the word still, and the dot between title and state, the title's
+    expect(shimmer).toEqual({
+      word: "shimmer_htmlView 0 3000",
+      arc: "revising_htmlView 0 1500",
+      requests: ["running: shimmer_htmlView 0 3000", "queued: plain"],
+      band: "text rgba(0, 0, 0, 0) 250% 100%",
+      positions: ["100% 0px", "50% 0px", "0px 0px", "0px 0px"],
+      after: true
+    })
+    // the dot between title and state, the title's, still
     expect(await opened.page.evaluate(() => {
       const title = document.querySelector("#revising .title_htmlView")
-      const word = document.querySelector("#revising .status_htmlView")
       return {
         dot: title === null ? "" : getComputedStyle(title, "::after").content,
-        dotStill: title === null ? false : getComputedStyle(title, "::after").animationName === "none",
-        wordStill: word === null ? false : getComputedStyle(word).animationName === "none" && getComputedStyle(word).maskImage === "none"
+        dotStill: title === null ? false : getComputedStyle(title, "::after").animationName === "none"
       }
-    })).toEqual({ dot: '" · "', dotStill: true, wordStill: true })
+    })).toEqual({ dot: '" · "', dotStill: true })
     await opened.page.evaluate(() => document.getElementById("revising")?.remove())
   })
 

@@ -1119,8 +1119,8 @@
    bad, each colour the rings use keeping its one meaning; a host's
    own colour for a state, if it gives one: --view-state-accepted,
    --view-state-requested, --view-state-revising, --view-state-rejected,
-   --view-state-withdrawn. Being revised, its arc goes round, and the dots
-   after its word wave, below */
+   --view-state-withdrawn. Being revised, its arc goes round, and its word
+   shimmers, below */
 .htmlView_editor .item_htmlView {
   position: relative;
   --ink_state_htmlView: var(--view-status-ink, var(--accent_proposals_htmlView));
@@ -1194,23 +1194,28 @@
   --icon_state_htmlView: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none' stroke='black' stroke-width='1.9' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='8' cy='8' r='5.6'/%3E%3Cpath d='M4.1 11.9l7.8-7.8'/%3E%3C/svg%3E");
 }
 
-/* three dots after a revising one's word, the view's, always there,
-   brightening in turn, a wave along them, a third of a pass apart, as its
-   arc goes round once a wave, one rhythm, the word itself still; each
-   begun already, its delay back in its pass, as one waiting out a delay
-   would be drawn bright, not faded, till its turn; none after any other's;
-   still, all three there, where motion's asked to be reduced */
-.htmlView_editor .dots_htmlView {
-  display: none;
+/* the agent at work, its word shimmering, the view's: a revising
+   proposal's status, the task's or the document's Working in its card, a
+   request's "in progress"; a soft band passing through the word's letters,
+   left to right, easing in and out, dimming it to half at its middle, then
+   resting, a pass every two turns of the arc, begun as a turn is, one
+   rhythm, the beat said once for whatever keeps it; never three dots after
+   it, which read as an ellipsis, its actions folded behind it; the word
+   plain, in its ink, where motion's asked to be reduced */
+.htmlView_editor .item_htmlView .status_htmlView {
+  --ink_Shimmer_htmlView: var(--ink_state_htmlView);
 }
 
-.htmlView_editor .item_htmlView[data-state="REVISING"] .dots_htmlView {
-  display: inline;
-  color: var(--ink_state_htmlView);
+.htmlView_editor .state_Card_htmlView {
+  --ink_Shimmer_htmlView: var(--ink_Mark_htmlView);
+}
+
+.htmlView_editor .progress_Said_htmlView {
+  --ink_Shimmer_htmlView: var(--accent_revision_htmlView);
 }
 
 @media (prefers-reduced-motion: no-preference) {
-  .htmlView_editor .item_htmlView[data-state="REVISING"] {
+  .htmlView_editor {
     --time_revising_htmlView: 1.5s;
   }
 
@@ -1218,28 +1223,24 @@
     animation: revising_htmlView var(--time_revising_htmlView) linear infinite;
   }
 
-  .htmlView_editor .item_htmlView[data-state="REVISING"] .dot_htmlView {
-    animation: wave_htmlView var(--time_revising_htmlView) ease-in-out infinite;
-  }
-
-  .htmlView_editor .item_htmlView[data-state="REVISING"] .dot_htmlView:nth-child(2) {
-    animation-delay: calc(var(--time_revising_htmlView) * -2 / 3);
-  }
-
-  .htmlView_editor .item_htmlView[data-state="REVISING"] .dot_htmlView:nth-child(3) {
-    animation-delay: calc(var(--time_revising_htmlView) / -3);
+  .htmlView_editor :is(.item_htmlView[data-state="REVISING"] .status_htmlView, .state_Card_htmlView[data-state="WORKING"], .progress_Said_htmlView[data-running]) {
+    background-image: linear-gradient(100deg, var(--ink_Shimmer_htmlView) 40%, color-mix(in srgb, var(--ink_Shimmer_htmlView) 75%, transparent) 45%, color-mix(in srgb, var(--ink_Shimmer_htmlView) 50%, transparent) 50%, color-mix(in srgb, var(--ink_Shimmer_htmlView) 75%, transparent) 55%, var(--ink_Shimmer_htmlView) 60%);
+    background-size: 250% 100%;
+    background-clip: text;
+    color: transparent;
+    animation: shimmer_htmlView calc(var(--time_revising_htmlView) * 2) linear infinite;
   }
 }
 
-@keyframes wave_htmlView {
-  0%,
-  66.7%,
-  100% {
-    opacity: 0.3;
+@keyframes shimmer_htmlView {
+  0% {
+    background-position: 100% 0;
+    animation-timing-function: ease-in-out;
   }
 
-  33.3% {
-    opacity: 1;
+  60%,
+  100% {
+    background-position: 0 0;
   }
 }
 
@@ -1694,34 +1695,12 @@
   border-right-color: transparent;
 }
 
-/* working, the dots after its word in the card, as a revising proposal's
-   are after its, waving on the beat its mark turns on, one rhythm, as a
-   revising proposal's arc and dots keep; still, all three there, where
-   motion's asked to be reduced */
-.htmlView_editor .state_Card_htmlView[data-state="WORKING"] .dots_htmlView {
-  display: inline;
-  color: var(--ink_Mark_htmlView);
-}
-
+/* working, the mark turning on the beat a revising proposal's arc turns
+   on, its word in the card shimmering, as a revising proposal's does,
+   above */
 @media (prefers-reduced-motion: no-preference) {
-  .htmlView_editor :is(.mark_Task_htmlView, .mark_Document_htmlView, .state_Card_htmlView)[data-state="WORKING"] {
-    --time_revising_htmlView: 1.5s;
-  }
-
   .htmlView_editor :is(.mark_Task_htmlView, .mark_Document_htmlView)[data-state="WORKING"]::before {
     animation: revising_htmlView var(--time_revising_htmlView) linear infinite;
-  }
-
-  .htmlView_editor .state_Card_htmlView[data-state="WORKING"] .dot_htmlView {
-    animation: wave_htmlView var(--time_revising_htmlView) ease-in-out infinite;
-  }
-
-  .htmlView_editor .state_Card_htmlView[data-state="WORKING"] .dot_htmlView:nth-child(2) {
-    animation-delay: calc(var(--time_revising_htmlView) * -2 / 3);
-  }
-
-  .htmlView_editor .state_Card_htmlView[data-state="WORKING"] .dot_htmlView:nth-child(3) {
-    animation-delay: calc(var(--time_revising_htmlView) / -3);
   }
 }
 

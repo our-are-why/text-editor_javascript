@@ -3170,3 +3170,56 @@ request's on, requests overlapping, across a ring's edge and along a
 nested one's. A run's underlays aren't measured while the editor's not
 in the page, as a document's cases are drawn before they're put in it,
 which had drawn rings from nothing, NaN, till they were measured again.
+
+Decided 2026-11-20: a request's words carry the side of a frame they were
+selected on, `side`, `CURRENT` as they are or `PROPOSED` as proposed,
+the host keeping it with them: words in a proposal's change only ever
+proposed, words outside any frame as they are, staying so if a frame
+forms round them later. They're marked only on that side, underlined,
+lit and gone to, a proposal's request's in its frame's lines of that
+side, the document's and the task's wherever lines of that side show
+them, never mirrored in a frame's other showing of the same words, which
+had marked one request in two places; mirrored only where the words match
+word for word was weighed and let go, as two places are two places, and
+marks coming and going as another proposal touches a line would puzzle.
+
+Decided 2026-11-20: the agent at work said by a shimmer through its word,
+never three dots after it, which read as the ellipsis its actions fold
+behind, a line or two below: a revising proposal's status, the task's and
+the document's Working in their cards, and a request's "in progress",
+which had had nothing moving, `data-running`. A soft band passes through
+the word's letters, left to right, easing in and out, dimming it to half
+at its middle, in 1.8 seconds, then rests 1.2, a pass every two turns of
+the arc, `--time_revising_htmlView` said once, on the editor, so each
+pass begins as a turn does; the word plain, in its ink, where motion's
+asked to be reduced. Mocked live beside the waving dots: the word left
+still; an arc after it, which put two arcs on a revising proposal; the
+word breathing, which, halfway, looked greyed out, as withdrawn is; and a
+first shimmer, a pass a turn, a narrow band dimming the word under a
+third, too quick and too strong. Of three slower ones, a pass every two
+turns with no rest, the one with a rest, and a faint band as wide as the
+word every three, the one with a rest was taken.
+
+Decided 2026-11-20: a request's status in fewer letters, "running", not "in
+progress", as Start makes it and Stop ends it, and "done", not
+"addressed", what came of it still after it, "done (1 proposal)", "done
+(nothing to change)"; the counts "7 queued · 3 running", and Stop's
+titles "Stops all 2 running in this document…". A task's Done is the
+same finished, at a larger scope. The task and the document stay
+"Working", covering whatever's under way in them, a first pass on one
+document and revisions on another at once; a proposal "Revising", the one
+thing that happens to one already proposed; Proposing and Revising for
+the task and the document weighed and let go, as their work is mixed.
+
+Decided 2026-11-20: a folded frame's lines carry no notes, a move's "from
+lines 41–50" hidden with its rings, review, not the preview of the lines
+as they'd read once taken, which had stayed where its rings had gone;
+peeked at, its notes back with its rings, as it'd be unfolded. Its gutter
+signs stay, saying which lines change, as decided for folding. A move's
+note pressed where its other end's in a folded frame unfolds that frame
+as it goes there, the frame holding the words it goes to, by their
+`data-source` and `data-side`, taken out of `ranges_Folded` with the
+jump, so it lands on the note there, at the height the one pressed was,
+the keyboard on it, as any jump does; the frame left unfolded, as you'd
+leave it. Its other "later", keys to fold and unfold, and to fold every
+decided frame, still later.

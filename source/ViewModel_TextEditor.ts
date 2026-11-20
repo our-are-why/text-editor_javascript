@@ -134,6 +134,8 @@ export {
   type _TASK_Aim_Request_,
   type _PROPOSAL_Target_Request_,
   type _Selected_Text_,
+  type _Side_Text_,
+  sideOf__Run,
   type _Piece_Text_,
   type _Form_Request_,
   type _Head_Form_,
@@ -435,6 +437,7 @@ interface _Request_Item_ {
 }
 
 interface _Reference_Request_ {
+  side: _Side_Text_
   head: string
   size: string | null
   lines: string | null
@@ -712,7 +715,10 @@ function markedIn__Blocks({
 
 interface _Api___runsMappedIn__Blocks_ {
   blocks_ViewModel: Array<_Block_ViewModel_>
-  map: (run_Lines: _Run_Lines_) => _Run_Lines_
+  map: (
+    run_Lines: _Run_Lines_,
+    side: _Side_Text_
+  ) => _Run_Lines_
 }
 
 function runsMappedIn__Blocks({
@@ -728,14 +734,31 @@ function runsMappedIn__Blocks({
           ? part_Frame
           : {
             ...part_Frame,
-            run: map(part_Frame.run)
+            run: map(
+              part_Frame.run,
+              SIDEMAP__KIND_RUN[part_Frame.kind]
+            )
           }
       })
     }
     : {
       ...block_ViewModel,
-      run: map(block_ViewModel.run)
+      run: map(
+        block_ViewModel.run,
+        SIDEMAP__KIND_RUN[block_ViewModel.kind]
+      )
     })
+}
+
+type _SideMap__Kind_Run_ = {
+  [Kind in "LINES" | "FOLDED" | "CURRENT_LINES" | "PROPOSAL_LINES"]: _Side_Text_
+}
+
+const SIDEMAP__KIND_RUN: _SideMap__Kind_Run_ = {
+  LINES: "CURRENT",
+  FOLDED: "PROPOSED",
+  CURRENT_LINES: "CURRENT",
+  PROPOSAL_LINES: "PROPOSED"
 }
 
 interface _Api___markedOf__Run_ {
@@ -831,7 +854,7 @@ function stretchesOf__Pieces({
 
 interface _Api___underlinedIn__Blocks_ {
   blocks_ViewModel: Array<_Block_ViewModel_>
-  references: Array<Array<_Piece_Text_>>
+  references: Array<_Selected_Text_>
   attributes: _Attributes_Element_
 }
 
@@ -843,9 +866,12 @@ function underlinedIn__Blocks({
   if (references.length === 0) return blocks_ViewModel
   return runsMappedIn__Blocks({
     blocks_ViewModel,
-    map: (run_Lines) => underlinedOf__Run({
+    map: (
       run_Lines,
-      references,
+      side
+    ) => underlinedOf__Run({
+      run_Lines,
+      references: references.filter((reference) => reference.side === side),
       attributes
     })
   })
@@ -853,7 +879,7 @@ function underlinedIn__Blocks({
 
 interface _Api___underlinedOf__Run_ {
   run_Lines: _Run_Lines_
-  references: Array<Array<_Piece_Text_>>
+  references: Array<_Selected_Text_>
   attributes: _Attributes_Element_
 }
 
@@ -868,10 +894,10 @@ function underlinedOf__Run({
   ) => {
     const text = line_Run.segments.map((segment_Line) => segment_Line.text).join("")
     return spansOf__Stretches({
-      stretches_References: references.map((pieces) => stretchesOf__Pieces({
+      stretches_References: references.map((reference) => stretchesOf__Pieces({
         line_Run,
         text,
-        pieces,
+        pieces: reference.pieces,
         attributes
       }))
     }).map((span_Underline): _Underlay_Text_ => ({
@@ -1227,12 +1253,18 @@ function foldedOf__Frame({
   isPeeked
 }: _Api___foldedOf__Frame_): _FOLDED_Block__ViewModel_ {
   const part_Proposed = block_Frame.parts.find((part_Frame) => part_Frame.kind === "PROPOSAL_LINES")
+  const lines = part_Proposed?.run.lines ?? []
   return {
     kind: "FOLDED",
     range: block_Frame.range,
     run: {
       id: part_Proposed?.run.id ?? `folded ${block_Frame.range.first} ${block_Frame.range.last}`,
-      lines: part_Proposed?.run.lines ?? [],
+      lines: isPeeked
+        ? lines
+        : lines.map((line_Run) => ({
+          ...line_Run,
+          note: null
+        })),
       groups: isPeeked ? part_Proposed?.run.groups ?? [] : []
     }
   }
@@ -1375,12 +1407,20 @@ function wordsAt__ViewModel({
       ...header.document.revisions_Level.requests
     ]
     : part$_Frame.flatMap((part_Frame) => part_Frame.kind === "PROPOSAL_LIST" ? part_Frame.items.flatMap((item_Proposals) => item_Proposals.source === id_Item.source ? item_Proposals.requests : []) : [])
-  const blocks_Lit = markedIn__Blocks({
-    blocks_ViewModel: viewModel_TextEditor.blocks,
-    pieces: request$_Holder.find((request_Item) => request_Item.id === id_Request.id)?.reference?.pieces ?? [],
-    ids_Run: id_Item === null ? null : part$_Frame.flatMap((part_Frame) => part_Frame.kind === "PROPOSAL_LINES" ? [part_Frame.run.id] : []),
-    attributes
-  })
+  const reference = request$_Holder.find((request_Item) => request_Item.id === id_Request.id)?.reference ?? null
+  const blocks_Lit = reference === null || reference.pieces === null
+    ? viewModel_TextEditor.blocks
+    : markedIn__Blocks({
+      blocks_ViewModel: viewModel_TextEditor.blocks,
+      pieces: reference.pieces,
+      ids_Run: (id_Item === null ? runsOf__Blocks(viewModel_TextEditor.blocks) : part$_Frame.flatMap((part_Frame) => isLines__Part_Frame(part_Frame) ? [part_Frame.run] : []))
+        .filter((run_Lines) => sideOf__Run({
+          blocks_ViewModel: viewModel_TextEditor.blocks,
+          id_Run: run_Lines.id
+        }) === reference.side)
+        .map((run_Lines) => run_Lines.id),
+      attributes
+    })
   return blocks_Lit === viewModel_TextEditor.blocks
     ? viewModel_TextEditor
     : {
@@ -1656,6 +1696,24 @@ interface _PROPOSAL_Target_Request_ extends __BASE_Target_Request_<"PROPOSAL"> {
 interface _Selected_Text_ {
   pieces: _NonEmpty_<_Piece_Text_>
   text: string
+  side: _Side_Text_
+}
+
+type _Side_Text_ = "CURRENT" | "PROPOSED"
+
+interface _Api___sideOf__Run_ {
+  blocks_ViewModel: Array<_Block_ViewModel_>
+  id_Run: string
+}
+
+function sideOf__Run({
+  blocks_ViewModel,
+  id_Run
+}: _Api___sideOf__Run_): _Side_Text_ {
+  const side$ = blocks_ViewModel.flatMap((block_ViewModel) => block_ViewModel.kind === "FRAME"
+    ? block_ViewModel.parts.flatMap((part_Frame) => isLines__Part_Frame(part_Frame) && part_Frame.run.id === id_Run ? [SIDEMAP__KIND_RUN[part_Frame.kind]] : [])
+    : block_ViewModel.run.id === id_Run ? [SIDEMAP__KIND_RUN[block_ViewModel.kind]] : [])
+  return side$[0] ?? "CURRENT"
 }
 
 interface _Piece_Text_ {
