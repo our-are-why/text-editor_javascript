@@ -2908,23 +2908,72 @@ function box$Of__Underlay_Text({
   origin,
   ink$_Glyph_View
 }: _Api___box$Of__Underlay_Text_): Array<_Box_Row_> {
-  return divElement$_text
-    .slice(
-      underlay_Text.from.line,
-      underlay_Text.to.line + 1
-    )
-    .flatMap((
-      divElement_text,
-      index
-    ) => box$Of__Stretch_Line({
-      divElement_text,
-      from: index === 0 ? underlay_Text.from.offset : 0,
-      to: underlay_Text.from.line + index === underlay_Text.to.line ? underlay_Text.to.offset : Infinity,
-      isStart: index === 0,
-      isEnd: underlay_Text.from.line + index === underlay_Text.to.line,
-      origin,
-      ink$_Glyph_View
+  const divElement$_Stretch = divElement$_text.slice(
+    underlay_Text.from.line,
+    underlay_Text.to.line + 1
+  )
+  const box$_Line$ = divElement$_Stretch.map((
+    divElement_text,
+    index
+  ) => box$Of__Stretch_Line({
+    divElement_text,
+    from: index === 0 ? underlay_Text.from.offset : 0,
+    to: underlay_Text.from.line + index === underlay_Text.to.line ? underlay_Text.to.offset : Infinity,
+    isStart: index === 0,
+    isEnd: underlay_Text.from.line + index === underlay_Text.to.line,
+    origin,
+    ink$_Glyph_View
+  }))
+  return box$_Line$.flatMap((
+    box$_Line,
+    index
+  ) => box$_Line.length > 0
+    ? box$_Line
+    : bridge$Of__Line_Empty({
+      divElement_text: divElement$_Stretch[index] ?? null,
+      box_Row_Above: box$_Line$.slice(
+        0,
+        index
+      ).findLast((box$_Line_Above) => box$_Line_Above.length > 0)?.at(-1) ?? null,
+      box_Row_Below: box$_Line$.slice(index + 1).find((box$_Line_Below) => box$_Line_Below.length > 0)?.[0] ?? null,
+      origin
     }))
+}
+
+interface _Api___bridge$Of__Line_Empty_ {
+  divElement_text: Element | null
+  box_Row_Above: _Box_Row_ | null
+  box_Row_Below: _Box_Row_ | null
+  origin: DOMRect
+}
+
+function bridge$Of__Line_Empty({
+  divElement_text,
+  box_Row_Above,
+  box_Row_Below,
+  origin
+}: _Api___bridge$Of__Line_Empty_): Array<_Box_Row_> {
+  if (divElement_text === null || box_Row_Above === null || box_Row_Below === null) return []
+  const left = Math.max(
+    box_Row_Above.left,
+    box_Row_Below.left
+  )
+  const right = Math.min(
+    box_Row_Above.right,
+    box_Row_Below.right
+  )
+  if (right <= left) return []
+  const top = divElement_text.getBoundingClientRect().top - origin.top
+  return [
+    {
+      left,
+      top,
+      right,
+      bottom: top + parseFloat(getComputedStyle(divElement_text).lineHeight),
+      free_Left: Infinity,
+      free_Right: Infinity
+    }
+  ]
 }
 
 interface _Api___box$Of__Stretch_Line_ {

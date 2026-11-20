@@ -3223,3 +3223,14 @@ jump, so it lands on the note there, at the height the one pressed was,
 the keyboard on it, as any jump does; the frame left unfolded, as you'd
 leave it. Its other "later", keys to fold and unfold, and to fold every
 decided frame, still later.
+
+Decided 2026-11-20: a ring across an empty line is one shape. An empty
+line has no text to measure, so it gave a ring no box, and a ring across
+one was cut there, its parts each with their seams, the dotted sides that
+say a ring goes on; a moved block, a heading, a paragraph and a table with
+blank lines between them, was three rings and four seams. Now an empty line
+inside a ring is bridged, a box as wide as the narrower of the rows either
+side of it, so the ring's side steps down from one to the next, one path
+round the whole block, `bridge$Of__Line_Empty`. Where the rows either
+side aren't one over the other, there's nothing to bridge, and the ring's
+cut there with its seams, as across any line break.

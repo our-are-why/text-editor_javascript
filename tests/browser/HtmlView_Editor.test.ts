@@ -1887,6 +1887,59 @@ describe("beside it: what can't live in one document", () => {
     ])
   })
 
+  test("a ring across an empty line, as a moved block's across the blank lines between its heading, its paragraph and its table, is one shape, closed, no seams, each empty line bridged as wide as the narrower of the lines either side of it; one whose lines either side of an empty line aren't one over the other still cut there, with seams", async () => {
+    const rings = await opened.page.evaluate(async () => {
+      const containerElement = document.createElement("div")
+      containerElement.style.width = "40rem"
+      containerElement.dataset["look"] = "changes"
+      document.body.append(containerElement)
+      const view = new window._View_TextEditor_({
+        containerElement,
+        componentMap: window.COMPONENTMAP__VIEW_TEXTEDITOR
+      })
+      const lines = window.parseLines_ViewModel({ multilineText: "## a heading\n\na longer paragraph under the heading\n\n| a | table |", module_Language: window.MODULE_PLAINTEXT })
+      const change = { "data-change": "moved", "data-side": "before", "data-source": "most" }
+      const ringOf = async (from: { line: number, offset: number }, to: { line: number, offset: number }) => {
+        view.draw(window.viewModelOf__Blocks([{
+          kind: "LINES",
+          run: { id: "document", lines, groups: [{ attributes: { "data-source": "most" }, underlays: [{ kind: "STRETCH" as const, from, to, attributes: change }] }] }
+        }]))
+        await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)))
+        const ringElement = containerElement.querySelector(".underlay_htmlView")
+        const box = ringElement instanceof SVGPathElement ? ringElement.getBBox() : new DOMRect()
+        const textElements = [...containerElement.querySelectorAll(".text_htmlView")]
+        const top_Svg = ringElement instanceof SVGPathElement ? ringElement.ownerSVGElement?.getBoundingClientRect().top ?? 0 : 0
+        const top_First = (textElements[from.line]?.getBoundingClientRect().top ?? 0) - top_Svg
+        const bottom_Last = (textElements[to.line]?.getBoundingClientRect().bottom ?? 0) - top_Svg
+        const top_Third = (textElements[from.line + 2]?.getBoundingClientRect().top ?? 0) - top_Svg
+        const number$ = (ringElement?.getAttribute("d")?.match(/-?[\d.]+/g) ?? []).map(Number)
+        const point$ = number$.flatMap((number, index) => index % 2 === 0 ? [[number, number$[index + 1] ?? 0] as const] : [])
+        const right_First = Math.max(...point$.filter(([, y]) => Math.abs(y - box.y) < 0.01).map(([x]) => x))
+        return {
+          shapes: (ringElement?.getAttribute("d")?.match(/M/g) ?? []).length,
+          isClosed: ringElement?.getAttribute("d")?.includes("Z") ?? false,
+          seams: containerElement.querySelectorAll(".seam_htmlView").length,
+          spansItsLines: Math.abs(box.y - top_First) < 2 && Math.abs(box.y + box.height - bottom_Last) < 2,
+          // its right side running straight down from its first row's right
+          // to the top of the line after the empty one, the empty line as
+          // wide as the first row, the narrower
+          isBridged_Narrower: point$.some(([x, y]) => Math.abs(x - right_First) < 0.01 && Math.abs(y - top_Third) < 1)
+        }
+      }
+      // the heading to the table, across the two empty lines, a ring's
+      // height inside its lines' tops and bottoms; then from the
+      // paragraph's last word, past where the table's line ends, across
+      // the empty line to the table's first three characters
+      const result = [await ringOf({ line: 0, offset: 0 }, { line: 4, offset: 13 }), await ringOf({ line: 2, offset: 29 }, { line: 4, offset: 3 })]
+      containerElement.remove()
+      return result
+    })
+    expect(rings).toEqual([
+      { shapes: 1, isClosed: true, seams: 0, spansItsLines: true, isBridged_Narrower: true },
+      { shapes: 2, isClosed: false, seams: 2, spansItsLines: true, isBridged_Narrower: false }
+    ])
+  })
+
   test("a line's note, as the view model says it, is a button after its text, its label shown, going where it says, but holding no text, so it's never part of the line's; a line without one has none", async () => {
     const notes = await opened.page.evaluate(() => {
       const containerElement = document.createElement("div")
