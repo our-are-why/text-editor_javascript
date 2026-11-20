@@ -4,7 +4,7 @@ import type { _Setup_TextEditor_, _Perspective_TextEditor_ } from "../../source/
 import { MODULE_MOUSE } from "../../source/modules/mouse.ts"
 import { MODULE_KEYBOARD } from "../../source/modules/keyboard.ts"
 import { parseTexts_Line, type _Range_Text_, type _Changes_Host_, type _Change_Host_ } from "../../source/Model_TextEditor.ts"
-import type { _Proposal_Host_ } from "../../source/Projection_TextEditor.ts"
+import type { _Proposal_Host_, _Request_Task_ } from "../../source/Projection_TextEditor.ts"
 import type { _Range_Lines_ } from "../../source/ViewModel_TextEditor.ts"
 import { MODULE_WORDS_TEXT } from "../../source/words/text.ts"
 import { PERSPECTIVE_CHANGES } from "../../source/perspectives/changes.ts"
@@ -333,10 +333,22 @@ const labels_Perspective = new Map<_Perspective_TextEditor_, string>([
   [PERSPECTIVE_CHANGES, "As text"],
 ])
 
+// what's asked of the README on no proposal: words a link's, its own
+// underline kept, the request's dotted line under it
+const requests_readme: Array<_Request_Task_> = [
+  {
+    id: "asked-1",
+    notes: "Link the section on why they grow, not the whole guide.",
+    aim: { kind: "DOCUMENT", reference: { pieces: [{ id_Text: { kind: "DOCUMENT" }, range: quoteOf(43, "why the waits grow") }], text: "why the waits grow" } },
+    status: "QUEUED",
+    sources_Answering: []
+  }
+]
+
 const markdown: _Example_ = {
   name: "markdown",
   title: "Markdown",
-  about: "The JavaScript example's module's README, in Markdown, drawn whole as its source, its syntax worked out by a language module, the playground's Markdown tokenizer, and styled by the playground, as a host's theme: its syntax kept as it's written, faint, and what that marks shown as it marks it, headings and strong words bold, emphasis italic, code and links coloured. Its marks are its syntax, so the document holds none, and a proposal that makes words bold puts in asterisks. Its changes are read two ways, a button over it for each, both in the editor's changes look: as Markdown, the playground's reading, first, what a change means, a word made bold one dashed ring, restyled, round it and its asterisks, as it was and as it becomes; and as text, the editor's reading, every character that changed ringed, the asterisks put in green, as code's are. The fenced JavaScript is the JavaScript module's to colour, the Markdown module handing its lines on. Eleven proposals, keeping the README in step with the module's: in its opening words, how a caller gives up, inline code put in; a signal passed in the example's call, inside the fence; in the options, framed whole, a default made bold, words replaced, and onRetry's line taken out; what it retries, its heading, words and table, moved up before the options, carrying a row put in, being revised, and a row taken out, rejected, so not ringed; and in how long it waits, framed from its words to its link, the base delay's name, accepted and applied, its words the README's already, so nothing to ring, the quote's last words changed, a revision asked for, and the link's address, withdrawn, so not ringed. Point at a ring or an item to see a proposal; press a move's note to go to its other end.",
+  about: "The JavaScript example's module's README, in Markdown, drawn whole as its source, its syntax worked out by a language module, the playground's Markdown tokenizer, and styled by the playground, as a host's theme: its syntax kept as it's written, faint, and what that marks shown as it marks it, headings and strong words bold, emphasis italic, code and links coloured. Its marks are its syntax, so the document holds none, and a proposal that makes words bold puts in asterisks. Its changes are read two ways, a button over it for each, both in the editor's changes look: as Markdown, the playground's reading, first, what a change means, a word made bold one dashed ring, restyled, round it and its asterisks, as it was and as it becomes; and as text, the editor's reading, every character that changed ringed, the asterisks put in green, as code's are. The fenced JavaScript is the JavaScript module's to colour, the Markdown module handing its lines on. Eleven proposals, keeping the README in step with the module's: in its opening words, how a caller gives up, inline code put in; a signal passed in the example's call, inside the fence; in the options, framed whole, a default made bold, words replaced, and onRetry's line taken out; what it retries, its heading, words and table, moved up before the options, carrying a row put in, being revised, and a row taken out, rejected, so not ringed; and in how long it waits, framed from its words to its link, the base delay's name, accepted and applied, its words the README's already, so nothing to ring, the quote's last words changed, a revision asked for, and the link's address, withdrawn, so not ringed. The README has a request of its own, on the link's words: the link keeps its own underline, the request's dotted line drawn under it. Point at a ring or an item to see a proposal; press a move's note to go to its other end.",
   // the editor, put together as above, drawing the README and its
   // proposals into the stage, over it a button for each perspective, the
   // one shown pressed; pressing another shows it, and reports which; and
@@ -359,6 +371,7 @@ const markdown: _Example_ = {
         name: "Bring the README up to date",
         summary: "Says what retry retries and how long it waits, with the module's cap and its options.",
         summary_Document: "In the README: what's retried, the delays, and the options, moved before the example.",
+        requests: requests_readme,
         documents_Elsewhere: []
       },
       ranges_Frame: ranges_readme,

@@ -50,6 +50,7 @@ interface _About_Task_ {
   name: string
   summary: string
   summary_Document: string
+  requests: Array<_Request_Task_>
   documents_Elsewhere: Array<_Elsewhere_Task_>
 }
 
@@ -108,7 +109,7 @@ function hostedOf__Editor<State>({
   let model_Host = model_TextEditor
   let proposals_Host = proposals
   let rounds_Host = rounds_Landed
-  let requests_Task: Array<_Request_Task_> = []
+  let requests_Task: Array<_Request_Task_> = about_Task.requests
   let count_Request = 0
   let version = 0
   let count_Round = 0

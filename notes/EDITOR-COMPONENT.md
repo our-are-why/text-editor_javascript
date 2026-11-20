@@ -3151,3 +3151,22 @@ proposal, its rings read whole, the lines through them stopping short;
 pointed away from, the lines cut the rings again. Its fills stay in the
 fills' layer. The keyboard on a proposal's item doesn't yet count as
 pointing at it.
+
+Decided 2026-11-20: the examples caught up with what's handled, a case of
+each opening as the example does, the host starting with requests as it
+had them, `about_Task.requests`. The JavaScript example: Work out the
+status first accepted, not yet applied, its move's rings filled; Cap the
+delay's second request sent with words its change puts in, 30_000;
+Retry a request that timed out with one more queued for its next round
+beside the one in progress; Ask about the error before the round's last
+round having dropped a move; the module's own requests, on lastError =
+error;, cut through the ring it crosses, two overlapping on the loop's
+condition, one in progress over two lines, one whose link is too long for
+its line, and two done with, by a proposal and with nothing to change;
+and the task's own. The Markdown example: a request on a link's words,
+the link keeping its underline. The Changes document: accepted, not yet
+applied, among what a ring says, and a section of request lines, words a
+request's on, requests overlapping, across a ring's edge and along a
+nested one's. A run's underlays aren't measured while the editor's not
+in the page, as a document's cases are drawn before they're put in it,
+which had drawn rings from nothing, NaN, till they were measured again.

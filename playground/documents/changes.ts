@@ -1,10 +1,11 @@
 import type { _Document_, _Section_Document_ } from "../document.ts"
 import { MODULE_PLAINTEXT } from "../../source/ViewModel_TextEditor.ts"
 import type { _Change_Host_ } from "../../source/Model_TextEditor.ts"
-import type { _Proposal_Host_ } from "../../source/Projection_TextEditor.ts"
+import type { _Proposal_Host_, _Request_Host_ } from "../../source/Projection_TextEditor.ts"
+import type { _Piece_Text_ } from "../../source/ViewModel_TextEditor.ts"
 import { MODULE_READING_TEXT } from "../../source/readings/text.ts"
 import { projectedOf } from "../projected.ts"
-import { actions_Review } from "../items.ts"
+import { actions_Review, actions_Reopen } from "../items.ts"
 import { attributesOf__Marks } from "../looks.ts"
 import { module_JavaScript } from "../syntax.ts"
 
@@ -20,11 +21,11 @@ export {
 // what a ring says: its colour, what the change does; its dash, whether
 // only the look changes, or it was written before your edits, dotted,
 // whether the words change too; its strength, whether it applies only if
-// another proposal's rejected
+// another proposal's rejected; filled, that it's accepted, not yet applied
 const kinds: _Section_Document_ = {
   name: "kinds",
   title: "What a ring says",
-  about: "A ring's colour says what the change does: red taken out, yellow replaced, green put in, brown moved. Its dash says only the look changes, or that its round wrote it before your edits; dotted, that the words change as well as their look; half strength, that it applies only if another proposal's rejected.",
+  about: "A ring's colour says what the change does: red taken out, yellow replaced, green put in, brown moved. Its dash says only the look changes, or that its round wrote it before your edits; dotted, that the words change as well as their look; half strength, that it applies only if another proposal's rejected; filled, that it's accepted and waiting to be applied.",
   cases: [
     {
       name: "kinds-removed",
@@ -134,6 +135,31 @@ const kinds: _Section_Document_ = {
         ],
         proposals: [
           proposalOf({ source: "wait", title: "Say the longer wait, and stress it", rationale: "The cap went up to two seconds." })
+        ],
+        rounds_Landed: [],
+        ranges_Frame: []
+      })
+    },
+    {
+      name: "kinds-accepted",
+      title: "Accepted, not yet applied",
+      status: "normal",
+      size: "wide",
+      drawn: "Yellow, as any replacement, but each ring filled with a faint wash of its own colour: an outline is what's proposed, filled is what's taken. The host applies it when it chooses, perhaps once the whole task's settled; applied, its words are the document's and there's nothing left to ring.",
+      open: {
+        question: "Once it's applied, nothing marks where it was: the lines read as if they'd always been so.",
+        recommend: "Leave it for now; decide whether an applied proposal leaves a trace once a task's history is shown."
+      },
+      viewModel_TextEditor: projectedOf({
+        multilineText: "export function backoff(n) {\n  return DELAY_MS * 2 ** (n - 1);\n}",
+        marks: [],
+        module_Language: module_JavaScript,
+        module_Reading: MODULE_READING_TEXT,
+        proposed: [
+          { source: "round", changes: [replacing([0, 0], [1, 33], "export function backoff(round) {\n  return DELAY_MS * 2 ** (round - 1);")] }
+        ],
+        proposals: [
+          { ...proposalOf({ source: "round", title: "Call the attempt counter round", rationale: "n says nothing; round says what it counts." }), state: "ACCEPTED", status: "Accepted", actions: actions_Reopen }
         ],
         rounds_Landed: [],
         ranges_Frame: []
@@ -950,11 +976,128 @@ const marks: _Section_Document_ = {
   ],
 }
 
+// what's asked of a proposal, its words marked where they are: a dotted
+// line under them, behind the text; where requests overlap, dashed; where
+// the line meets a ring, the line over it, the ring's edge stopping short;
+// the proposal pointed at, its rings over the line
+const requests: _Section_Document_ = {
+  name: "requests",
+  title: "Request lines",
+  about: "A request sent with words marks them where they are, while it waits or is worked on: a dotted line under them, in the revision's plum, behind the text, never the text's own underline. Where requests overlap, one line, dashed. Where the line meets a ring, along its edge or across it, the line goes over and the ring's edge stops short of it; point at the ring's proposal and it's the other way round.",
+  cases: [
+    {
+      name: "requests-words",
+      title: "Words a request's on",
+      status: "normal",
+      size: "wide",
+      drawn: "A dotted plum line under the words the request was sent with, here in what the change puts in, a whole dot flush with each end of them. The proposal's item lists the request with its words in a chip, and where they are, \"line 1\", to go to them.",
+      open: null,
+      viewModel_TextEditor: projectedOf({
+        multilineText: "const DELAY_MS = 100;",
+        marks: [],
+        module_Language: module_JavaScript,
+        module_Reading: MODULE_READING_TEXT,
+        proposed: [
+          { source: "delay", changes: [replacing([0, 17], [0, 20], "250")] }
+        ],
+        proposals: [
+          requestedOf({
+            proposal: proposalOf({ source: "delay", title: "Start from a quarter of a second", rationale: "A tenth of a second is gone before most servers have noticed." }),
+            requests: [requestOf({ id: "why", notes: "Say why 250, in a comment.", pieces: [{ id_Text: { kind: "CHANGE", source: "delay", index: 0 }, range: { from: { line: 0, offset: 0 }, to: { line: 0, offset: 3 } } }], text: "250" })]
+          })
+        ],
+        rounds_Landed: [],
+        ranges_Frame: []
+      })
+    },
+    {
+      name: "requests-overlap",
+      title: "Requests on the same words",
+      status: "edge",
+      size: "wide",
+      drawn: "One line, however many requests are on the words: dotted where one is, dashed where two overlap, on Math.random, with a gap where the dots meet the dashes so they don't run together. Which request is on what is the list's to say: point at a request's chip to light its words.",
+      open: null,
+      viewModel_TextEditor: projectedOf({
+        multilineText: "  return delay + Math.random() * (delay / 2);",
+        marks: [],
+        module_Language: module_JavaScript,
+        module_Reading: MODULE_READING_TEXT,
+        proposed: [
+          { source: "third", changes: [replacing([0, 42], [0, 43], "3")] }
+        ],
+        proposals: [
+          requestedOf({
+            proposal: proposalOf({ source: "third", title: "Add up to a third more", rationale: "Half again spreads the retries further than they need." }),
+            requests: [
+              requestOf({ id: "jitter", notes: "Name the jitter.", pieces: [{ id_Text: { kind: "DOCUMENT" }, range: { from: { line: 0, offset: 9 }, to: { line: 0, offset: 28 } } }], text: "delay + Math.random" }),
+              requestOf({ id: "share", notes: "Say what share of the delay it adds.", pieces: [{ id_Text: { kind: "DOCUMENT" }, range: { from: { line: 0, offset: 17 }, to: { line: 0, offset: 39 } } }], text: "Math.random() * (delay" })
+            ]
+          })
+        ],
+        rounds_Landed: [],
+        ranges_Frame: []
+      })
+    },
+    {
+      name: "requests-crossing",
+      title: "Across a ring's edge",
+      status: "edge",
+      size: "wide",
+      drawn: "The request's words start inside the replacement's ring and end past it. The line runs on whole, and the ring's side stops short of it, a band cut from the ring as far round the line as --view-underlay-knockout, 2.5px given none.",
+      open: null,
+      viewModel_TextEditor: projectedOf({
+        multilineText: "      lastError = error;",
+        marks: [],
+        module_Language: module_JavaScript,
+        module_Reading: MODULE_READING_TEXT,
+        proposed: [
+          { source: "errors", changes: [replacing([0, 6], [0, 23], "errors.push(error)")] }
+        ],
+        proposals: [
+          requestedOf({
+            proposal: proposalOf({ source: "errors", title: "Keep every error, not only the last", rationale: "The first is often the telling one." }),
+            requests: [requestOf({ id: "count", notes: "Count them too, for the message.", pieces: [{ id_Text: { kind: "CHANGE", source: "errors", index: 0 }, range: { from: { line: 0, offset: 7 }, to: { line: 0, offset: 18 } } }, { id_Text: { kind: "DOCUMENT" }, range: { from: { line: 0, offset: 23 }, to: { line: 0, offset: 24 } } }], text: "push(error);" })]
+          })
+        ],
+        rounds_Landed: [],
+        ranges_Frame: []
+      })
+    },
+    {
+      name: "requests-nested",
+      title: "Along a nested ring's edge",
+      status: "edge",
+      size: "wide",
+      drawn: "The request's words, round === attempts, sit in the move's ring, and the rename's ring inside it has its bottom edge where the line runs. The line goes over, and that stretch of the rename's bottom edge is cut away under it; its top and sides still say what it rings. Point at the rename: its ring comes over the line instead, and the line's cut away under it.",
+      open: null,
+      viewModel_TextEditor: projectedOf({
+        multilineText: "    if (n === attempts || !isRetryable(error)) break;",
+        marks: [],
+        module_Language: module_JavaScript,
+        module_Reading: MODULE_READING_TEXT,
+        proposed: [
+          { source: "order", changes: [moving([0, 8], [0, 22], [0, 45]), moving([0, 26], [0, 45], [0, 8])] },
+          { source: "round", changes: [replacing([0, 8], [0, 9], "round")] }
+        ],
+        proposals: [
+          proposalOf({ source: "order", title: "Ask about the error before the round", rationale: "An error that can't be retried ends the loop in any round." }),
+          requestedOf({
+            proposal: proposalOf({ source: "round", title: "Call the attempt counter round", rationale: "n says nothing; round says what it counts." }),
+            requests: [requestOf({ id: "which", notes: "Say which round it gives up at.", pieces: [{ id_Text: { kind: "CHANGE", source: "round", index: 0 }, range: { from: { line: 0, offset: 0 }, to: { line: 0, offset: 5 } } }, { id_Text: { kind: "DOCUMENT" }, range: { from: { line: 0, offset: 9 }, to: { line: 0, offset: 22 } } }], text: "round === attempts" })]
+          })
+        ],
+        rounds_Landed: [],
+        ranges_Frame: []
+      })
+    },
+  ],
+}
+
 const changes: _Document_ = {
   name: "changes",
   title: "Changes",
-  about: "Every case of how the view draws a change, enumerated: the rings round words, and the marks planned for where words are taken out. Each case is drawn by the editor, in the changes look, from a few lines and the changes proposed for them, as an agent would write them, the editor working out what to draw; under it, what it shows, and what's still to decide. Normal cases are the usual; edge cases, where something presses on the usual; planned ones, settled but not built, drawn as the view draws them now. Point at changes and items, and fold frames, as the cases say.",
-  sections: [kinds, shape, moves, lines, threads, pointing, folding, marks],
+  about: "Every case of how the view draws a change, enumerated: the rings round words, the marks planned for where words are taken out, and the lines under words a request's on. Each case is drawn by the editor, in the changes look, from a few lines and the changes proposed for them, as an agent would write them, the editor working out what to draw; under it, what it shows, and what's still to decide. Normal cases are the usual; edge cases, where something presses on the usual; planned ones, settled but not built, drawn as the view draws them now. Point at changes and items, and fold frames, as the cases say.",
+  sections: [kinds, shape, moves, lines, threads, pointing, folding, marks, requests],
 }
 
 // a span of a case's lines, from a line and a character in it to another,
@@ -1001,4 +1144,34 @@ function proposalOf({
   rationale
 }: _Api___proposalOf_): _Proposal_Host_ {
   return { source, title, state: "OPEN", status: "", rationale, requests: [], actions: actions_Review, attributes: {} }
+}
+
+interface _Api___requestedOf_ {
+  proposal: _Proposal_Host_
+  requests: Array<_Request_Host_>
+}
+
+// a proposal with what's been asked of it
+function requestedOf({
+  proposal,
+  requests
+}: _Api___requestedOf_): _Proposal_Host_ {
+  return { ...proposal, requests }
+}
+
+interface _Api___requestOf_ {
+  id: string
+  notes: string
+  pieces: [_Piece_Text_, ...Array<_Piece_Text_>]
+  text: string
+}
+
+// a request queued, sent with words: where they are and what they say
+function requestOf({
+  id,
+  notes,
+  pieces,
+  text
+}: _Api___requestOf_): _Request_Host_ {
+  return { id, notes, reference: { pieces, text }, status: "QUEUED" }
 }

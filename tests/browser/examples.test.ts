@@ -26,6 +26,13 @@ const drawnAfter = async (label: string | null) => {
 const shown_Markdown = await drawnAfter(null)
 const shown_Text = await drawnAfter("As text")
 const shown_Again = await drawnAfter("As Markdown")
+const linked_Requested = await opened.page.evaluate(() => {
+  const link = [...document.querySelectorAll(".text_htmlView [data-syntax~=\"link\"]")].find((element) => element.textContent === "why the waits grow")
+  return {
+    link: link === undefined ? null : getComputedStyle(link).textDecorationLine,
+    lines: document.querySelectorAll(".underlay_htmlView[data-requested]").length > 0
+  }
+})
 
 describe("the Markdown example: a perspective for each way to read its changes, the buttons over it switching them, both in the changes look", () => {
   test("read as Markdown, a word made bold is one ring, restyled, round it and its asterisks", () => {
@@ -37,6 +44,9 @@ describe("the Markdown example: a perspective for each way to read its changes, 
   test("switched back, it's read as Markdown again, and each switch is reported", async () => {
     expect(shown_Again).toEqual(shown_Markdown)
     expect((await opened.logged()).filter((entry) => "perspective" in entry)).toEqual([{ perspective: "changes" }, { perspective: "markdown" }])
+  })
+  test("a request on the link's words: the link keeps its own underline, the request's dotted line drawn under it, behind the text", () => {
+    expect(linked_Requested).toEqual({ link: "underline", lines: true })
   })
   test("opens and switches with no error reported", () => {
     expect(opened.errors).toEqual([])
@@ -371,6 +381,62 @@ const opened_JavaScript = await openExample(
   1
 )
 afterAll(() => opened_JavaScript.close())
+
+// the JavaScript example as it opens, before anything's pressed: a case of
+// each kind of thing asked and decided, as its host lists them
+const seeded_JavaScript = await opened_JavaScript.page.evaluate(async () => {
+  await document.fonts.ready
+  await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)))
+  const saidOf = (element: Element) => [
+    element.querySelector(".notes_Said_htmlView")?.textContent ?? "",
+    element.querySelector(".reference_Said_htmlView .words_Quote_htmlView")?.textContent ?? "",
+    element.querySelector(".reference_Said_htmlView .show_Said_htmlView")?.textContent ?? "",
+    element.querySelector(".progress_Said_htmlView")?.textContent ?? ""
+  ].join(" | ")
+  const said_Url = [...document.querySelectorAll(".card_Document_htmlView .said_htmlView")].find((element) => (element.textContent ?? "").includes("https://"))
+  const rect_Said_Url = said_Url?.getBoundingClientRect()
+  return {
+    status: [...new Set([...document.querySelectorAll(".group_htmlView[data-source=\"status\"] > .area_htmlView[data-change]:not([data-notch])")].map((element) => getComputedStyle(element).fill === "none" ? "outline" : "filled"))],
+    cap: [...(document.querySelector(".item_htmlView[data-source=\"cap\"]")?.querySelectorAll(".said_htmlView") ?? [])].map(saidOf),
+    timeout: [...(document.querySelector(".item_htmlView[data-source=\"timeout\"]")?.querySelectorAll(".said_htmlView") ?? [])].map(saidOf),
+    isDotted: document.querySelectorAll(".underlay_htmlView[data-requested]:not([data-many])").length > 0,
+    isDashed: document.querySelectorAll(".underlay_htmlView[data-requested][data-many]").length > 0,
+    isCut: document.querySelectorAll(".layer_htmlView[data-layer=\"RINGS\"][mask]").length > 0,
+    document: [...document.querySelectorAll(".card_Document_htmlView .said_htmlView")].map(saidOf),
+    task: [...document.querySelectorAll(".card_Task_htmlView .said_htmlView")].map(saidOf),
+    dropped: [...new Set([...document.querySelectorAll(".item_htmlView[data-source=\"order\"] .stale_htmlView")].map((element) => element.textContent))],
+    isUrlKept: rect_Said_Url !== undefined && [...(said_Url?.querySelector(".notes_Said_htmlView")?.getClientRects() ?? [])].every((rect) => rect.right <= rect_Said_Url.right + 1)
+  }
+})
+
+test("the JavaScript example opens with a case of each kind of thing asked and decided: an accepted proposal not yet applied, its move's rings filled; a request on a proposal sent with words its change puts in, dotted under them, its chip and its line; a revising one with more queued for its next round; the document's own requests, one cutting through a ring's edge, two overlapping, dashed there, one over two lines in progress, one with a link too long for its line kept inside it, two done with, by a proposal and with nothing to change; the task's own; and a round that dropped a move", () => {
+  expect(seeded_JavaScript).toEqual({
+    status: ["filled"],
+    cap: [
+      "make the cap an option, 30 seconds unless the caller gives another. |  |  | ",
+      "Name it MAX_DELAY_MS, up with the other constants. | 30_000 | line 33 | "
+    ],
+    timeout: [
+      "only when the request is safe to send twice, a GET or a PUT. |  |  | in progress",
+      "Say timed out, as the status means, not before any answer. | before any answer | line 37 | "
+    ],
+    isDotted: true,
+    isDashed: true,
+    isCut: true,
+    document: [
+      "Count the errors too, for the message. | lastError = error; | line 20 | ",
+      "Say which round it gives up at. | n === attempts | line 21 | ",
+      "Give up on an error that can't be retried before the count's checked. | attempts || !isRetryable(error) | line 21 | ",
+      "Say why half a delay at random, not a whole one. | // 100ms, 200ms, 400ms, ..., and up to half as long again at random, so that… | lines 29–30 | in progress",
+      "Say what this throws: https://developer.mozilla.org/en-US/docs/Web/API/AbortSignal/throwIfAborted | signal?.throwIfAborted(); | line 16 | ",
+      "Keep every error the attempts throw, not only the last. |  |  | addressed (1 proposal)",
+      "Check the doc comment still says what retry takes. |  |  | addressed (nothing to change)"
+    ],
+    task: ["Say in the README that onRetry is gone. |  |  | "],
+    dropped: ["1 dropped, its text goneRun again"],
+    isUrlKept: true
+  })
+})
 const ringsAt = (needle: string) => opened_JavaScript.page.evaluate(async (needle) => {
   await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)))
   const element_Line = [...document.querySelectorAll(".run_htmlView[data-run$=\"-proposed\"] > .line_htmlView > .text_htmlView")].find((element) => (element.textContent ?? "").includes(needle))
@@ -454,6 +520,11 @@ const pressedAt = async (control: ReturnType<typeof opened_JavaScript.page.locat
     await fold.scrollIntoViewIfNeeded()
     const box = await fold.locator(":scope > .more_htmlView").boundingBox()
     if (box !== null) await opened_JavaScript.page.mouse.move(box.x + box.width / 2, box.y + box.height / 2)
+    const box_Control = await control.boundingBox()
+    if (box !== null && box_Control !== null && box_Control.width > 1) {
+      await opened_JavaScript.page.mouse.click(box_Control.x + box_Control.width / 2, box_Control.y + box_Control.height / 2)
+      return
+    }
   }
   await control.click()
 }
@@ -674,7 +745,7 @@ test("a proposal's action pressed is asked of the host, which sends back what it
   expect(draft_Running).toEqual(["Add", "Cancel"])
   expect(shape(items_Meanwhile)).toEqual([JSON.stringify(["REVISING", ["Name what it's given.", "And document it."], 1, 1, 0, 0])])
   expect(items_Meanwhile.every((item) => item.actions.join() === "Accept,Reject" && item.adds === 1)).toBe(true)
-  expect(shape(items_Capped)).toEqual([JSON.stringify(["REVISING", ["make the cap an option, 30 seconds unless the caller gives another.", "Say why 30."], 2, 0, 0, 0])])
+  expect(shape(items_Capped)).toEqual([JSON.stringify(["REVISING", ["make the cap an option, 30 seconds unless the caller gives another.", "Name it MAX_DELAY_MS, up with the other constants.", "Say why 30."], 3, 0, 0, 0])])
   expect(shape(items_Back_Hook)).toEqual([JSON.stringify(["REQUESTED", ["And document it."], 0, 1, 1, 1])])
   expect(shape(items_Back_Cap)).toEqual([JSON.stringify(["OPEN", [], 0, 0, 0, 0])])
   expect(asked_JavaScript).toEqual([
@@ -688,7 +759,7 @@ test("a proposal's action pressed is asked of the host, which sends back what it
   expect(queued_JavaScript).toEqual([
     { removed: "hook-1", proposal: "hook" },
     { revising: "hook", requests: 1 },
-    { revising: "cap", requests: 2 },
+    { revising: "cap", requests: 3 },
     { revised: "hook" },
     { revised: "cap" }
   ])
@@ -697,14 +768,14 @@ test("a proposal's action pressed is asked of the host, which sends back what it
 })
 
 test("the header over the document stays put as it scrolls, saying the host's task, its mark where it stands, the agent at work or your turn, its state in words for what reads it aloud, and the document, by its file's name, at its end, nothing between them; the task's card hidden until the task's hovered: its id and where it stands, what the agent says of it, how far its proposals have got across the documents it touches, and each document, this one marked, how far its own have got, each figure's breakdown when hovered, Add a request for the task as a whole, and the host's actions for it; the document's card, hovered, what the agent says the task does here, how far its proposals have got, and the host's action for them, how many revisions are queued and in progress, Revise, Start all and Stop all, saying how many when they're hovered; the task's Stop all putting what's in progress back in the queue; the document's Start setting every proposal's queued requests going at once, each proposal's round its own; nothing asked, nothing to start", () => {
-  expect(header_Working).toEqual({ task: ["Tidy the retry loop", "WORKING", "Working"], parts: [], spinners: 0, document: ["retry.js", "WORKING", "Working"], card: ["Accept all (11)", "Start all (1)", "Stop all (2)", "Revise"], card_Document: ["Accept all (8)", "Start all (1)", "Stop all (1)", "Revise"], isSticky: true })
+  expect(header_Working).toEqual({ task: ["Tidy the retry loop", "WORKING", "Working"], parts: [], spinners: 0, document: ["retry.js", "WORKING", "Working"], card: ["Accept all (10)", "Start all (6)", "Stop all (3)"], card_Document: ["Accept all (7)", "Start all (5)", "Stop all (2)"], isSticky: true })
   expect(card_Resting.isShown).toBe(false)
-  expect(card_Hovered).toEqual({ isShown: true, head: "T-12Working...", summary: "Keeps every error, names the attempt counter round, caps the delay, and stops once the caller aborts; drops the onRetry hook and the opening comment.", id: "T-12", figures: ["Proposals: 5 of 20 decided (12 to review · 1 revision requested · 2 revising · 4 accepted · 1 rejected)", "Scope Revisions: 1 queued · 2 in progress", "Level Revisions: "], documents: ["retry.js (this document): 3 of 14 decided (9 to review · 1 revision requested · 1 revising · 2 accepted · 1 rejected)", "README.md: 2 of 6 decided (3 to review · 1 revising · 2 accepted)"], parts: ["head_Card_htmlView", "summary_Card_htmlView", "section_Card_htmlView", "section_Card_htmlView", "section_Card_htmlView"] })
-  expect(card_Document).toEqual({ isShown: true, label: "retry.js", summary: "In retry.js: the loop's errors, its counter's name, its delays and its abort, and two things it no longer needs.", figures: ["Proposals: 3 of 14 decided (9 to review · 1 revision requested · 1 revising · 2 accepted · 1 rejected)", "Scope Revisions: 1 queued · 1 in progress", "Level Revisions: "], actions: ["Accept all (8)", "Starts all 1 request queued in this document, its own and its proposals'", "Stops all 1 in progress in this document, its own and its proposals', putting them back in the queue", "Revise"] })
-  expect(header_Stopped).toEqual({ task: ["Tidy the retry loop", "YOUR_TURN", "Your turn"], parts: [], spinners: 0, document: ["retry.js", "YOUR_TURN", "Your turn"], card: ["Accept all (11)", "Start all (3)", "Revise"], card_Document: ["Accept all (8)", "Start all (2)", "Revise"], isSticky: true })
-  expect(header_Started).toEqual({ task: ["Tidy the retry loop", "WORKING", "Working"], parts: [], spinners: 0, document: ["retry.js", "WORKING", "Working"], card: ["Accept all (11)", "Start all (1)", "Stop all (2)", "Revise"], card_Document: ["Accept all (8)", "Stop all (2)", "Revise"], isSticky: true })
-  expect(header_Done).toEqual({ task: ["Tidy the retry loop", "YOUR_TURN", "Your turn"], parts: [], spinners: 0, document: ["retry.js", "YOUR_TURN", "Your turn"], card: ["Accept all (13)", "Start all (1)", "Revise"], card_Document: ["Accept all (10)", "Revise"], isSticky: true })
-  expect(logged_Stopped).toEqual([{ stopped: "TASK", requests: 1 }, { revising: "hook, timeout", requests: 2 }, { revised: "hook, timeout" }])
+  expect(card_Hovered).toEqual({ isShown: true, head: "T-12Working...", summary: "Keeps every error, names the attempt counter round, caps the delay, and stops once the caller aborts; drops the onRetry hook and the opening comment.", id: "T-12", figures: ["Proposals: 6 of 20 decided (11 to review · 1 revision requested · 2 revising · 5 accepted · 1 rejected)", "Scope Revisions: 7 queued · 3 in progress", "Level Revisions: "], documents: ["retry.js (this document): 4 of 14 decided (8 to review · 1 revision requested · 1 revising · 3 accepted · 1 rejected)", "README.md: 2 of 6 decided (3 to review · 1 revising · 2 accepted)"], parts: ["head_Card_htmlView", "summary_Card_htmlView", "section_Card_htmlView", "section_Card_htmlView", "section_Card_htmlView"] })
+  expect(card_Document).toEqual({ isShown: true, label: "retry.js", summary: "In retry.js: the loop's errors, its counter's name, its delays and its abort, and two things it no longer needs.", figures: ["Proposals: 4 of 14 decided (8 to review · 1 revision requested · 1 revising · 3 accepted · 1 rejected)", "Scope Revisions: 6 queued · 2 in progress", "Level Revisions: "], actions: ["Accept all (7)", "Starts all 5 requests queued in this document, its own and its proposals'", "Stops all 2 in progress in this document, its own and its proposals', putting them back in the queue"] })
+  expect(header_Stopped).toEqual({ task: ["Tidy the retry loop", "YOUR_TURN", "Your turn"], parts: [], spinners: 0, document: ["retry.js", "YOUR_TURN", "Your turn"], card: ["Accept all (10)", "Start all (10)"], card_Document: ["Accept all (7)", "Start all (8)"], isSticky: true })
+  expect(header_Started).toEqual({ task: ["Tidy the retry loop", "WORKING", "Working"], parts: [], spinners: 0, document: ["retry.js", "WORKING", "Working"], card: ["Accept all (10)", "Start all (2)", "Stop all (8)"], card_Document: ["Accept all (7)", "Stop all (8)"], isSticky: true })
+  expect(header_Done).toEqual({ task: ["Tidy the retry loop", "YOUR_TURN", "Your turn"], parts: [], spinners: 0, document: ["retry.js", "YOUR_TURN", "Your turn"], card: ["Accept all (12)", "Start all (2)"], card_Document: ["Accept all (9)"], isSticky: true })
+  expect(logged_Stopped).toEqual([{ stopped: "TASK", requests: 2 }, { revising: "hook, timeout, document", requests: 8 }, { revised: "hook, timeout, document" }])
   expect(opened_JavaScript.errors).toEqual([])
 })
 
@@ -836,7 +907,7 @@ const asked_Menu = (await opened_JavaScript.logged()).filter((entry) => "request
 // other removed
 const requestsOf_Document = () => opened_JavaScript.page.evaluate(async () => {
   await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)))
-  return [...document.querySelectorAll(".card_Document_htmlView .said_htmlView")].map((element) => {
+  return [...document.querySelectorAll(".card_Document_htmlView .said_htmlView:not([data-request^=\"asked-\"])")].map((element) => {
     const progress = element.querySelector(".progress_Said_htmlView")?.textContent
     return `${element.querySelector(".notes_Said_htmlView")?.textContent}${progress === undefined ? "" : ` (${progress})`}`
   })
@@ -982,12 +1053,12 @@ await opened_JavaScript.page.waitForFunction(() => {
 const form_Left = await cardShown()
 
 test("the task's card: Add a request, a form for the task as a whole, in the card, at its foot, the card held open while it's there; added, the keyboard back on Add a request, the card still open; opened again and left empty, put away by a click in the text; added, listed in the task's card, not the document's; the host's action for the document, in its card, the proposals waiting on nothing but you accepted at once, nothing left waiting to offer it for", () => {
-  expect(form_Task).toEqual({ isCardShown: true, label: "Revise the task", isLast: true, isFocused: true, isAskFocused: false, buttons: ["Add disabled", "Start disabled"], forms_Elsewhere: 0 })
+  expect(form_Task).toEqual({ isCardShown: true, label: "Revise the task", isLast: true, isFocused: true, isAskFocused: false, buttons: ["Add disabled"], forms_Elsewhere: 0 })
   expect(card_Added).toEqual({ isCardShown: true, label: null, isLast: false, isFocused: false, isAskFocused: true, buttons: [], forms_Elsewhere: 0 })
   expect([form_Again.label, form_Again.isFocused]).toEqual(["Revise the task", true])
-  expect(form_Typed.buttons).toEqual(["Add enabled", "Start enabled"])
+  expect(form_Typed.buttons).toEqual(["Add enabled"])
   expect(form_Left).toEqual({ isCardShown: false, label: null, isLast: false, isFocused: false, isAskFocused: false, buttons: [], forms_Elsewhere: 0 })
-  expect(parts_Added[0]).toEqual(["Keep the README in step."])
+  expect(parts_Added[0]).toEqual(["Say in the README that onRetry is gone.", "Keep the README in step."])
   expect(parts_Added[1]).not.toContain("Keep the README in step.")
   expect(waiting_After.accepted).toBeGreaterThan(waiting_Before)
   expect(waiting_After.offered).toBe(0)
@@ -1063,7 +1134,7 @@ test("each scope's Start: a request's own actions behind an ellipsis till the el
   expect(starts_Request).toEqual({ group: false, actions: true, more: "none" })
   expect(scopes_Group).toEqual(["TASK START", "TASK_REQUESTS START", "DOCUMENT START", "DOCUMENT_REQUESTS START"])
   expect(started_Document).toEqual([{ revising: "document", requests: 2 }])
-  expect(started_Task).toEqual([{ revising: "document", requests: 2 }, { revising: "task", requests: 1 }])
+  expect(started_Task).toEqual([{ revising: "document", requests: 2 }, { revising: "task", requests: 2 }])
   expect(started_All.slice(2)).toEqual([{ revising: "aborted, document, task", requests: 3 }])
   expect(opened_JavaScript.errors).toEqual([])
 })
@@ -1618,11 +1689,11 @@ test("a frame's head says its lines and how far its proposals have got; its Star
     "before line 6 0 of 2 decided Accept all (2)",
     "line 10 0 of 2 decided Accept all (2)",
     "lines 13–27 1 of 6 decided Accept all (5)",
-    "lines 31–34 1 of 3 decided Accept all (1) | 1 queued",
-    "lines 36–40 1 of 3 decided Accept all (1) | 1 in progress",
+    "lines 31–34 1 of 3 decided Accept all (1) | 2 queued",
+    "lines 36–40 2 of 3 decided  | 1 queued · 1 in progress",
     "lines 41–50 0 of 2 decided Accept all (2)"
   ])
-  expect(started_Frame).toEqual([{ revising: "cap", requests: 1 }])
+  expect(started_Frame).toEqual([{ revising: "cap", requests: 2 }])
   expect(accepted_Frame).toEqual(opens_First.map((source) => ({ asked: "accept", proposal: source, notes: null, words: null })))
   expect(states_First).toEqual(["ACCEPTED"])
   expect(opened_Dense.errors).toEqual([])
@@ -1694,7 +1765,7 @@ await opened_Tiers.page.evaluate(() => {
   if (element_Scroller instanceof HTMLElement) element_Scroller.scrollTop = 0
 })
 await opened_Tiers.page.hover(".trigger_Document_htmlView")
-await opened_Tiers.page.locator(".card_Document_htmlView .said_htmlView .show_Said_htmlView").click()
+await opened_Tiers.page.locator(".card_Document_htmlView .said_htmlView", { hasText: "Check for an abort everywhere it waits." }).locator(".show_Said_htmlView").click()
 await opened_Tiers.page.waitForTimeout(900)
 const shown_Document = await opened_Tiers.page.evaluate(() => {
   const rect_Scroller = document.querySelector(".document_htmlView")?.getBoundingClientRect()
@@ -1710,6 +1781,7 @@ const shown_Document = await opened_Tiers.page.evaluate(() => {
 })
 await opened_Tiers.page.waitForFunction(() => document.querySelector(".text_htmlView > [data-shown]") === null)
 await opened_Tiers.page.mouse.move(5, 5)
+await opened_Tiers.page.waitForFunction(() => getComputedStyle(document.querySelector(".card_Document_htmlView") ?? document.body).visibility === "hidden")
 await rightClickedOn_Tiers("signal?.aborted) break", "aborted")
 await opened_Tiers.page.locator(".menu_htmlView > .choice_htmlView[data-tier=\"PROPOSAL\"]", { hasText: "Request revision" }).click()
 await opened_Tiers.page.locator(".asking_htmlView .drop_Quote_htmlView").click()
@@ -1788,7 +1860,7 @@ describe("the menu's tiers", () => {
     expect(menu_Tiers.filter((choice) => choice.startsWith("TASK ") && !choice.includes(": Request")).every((choice) => /^TASK Task: (Accept|Start|Stop) all \(\d+\)$/.test(choice))).toBe(true)
     expect(menu_Tiers.some((choice) => /^DOCUMENT Document: Accept all \(\d+\)$/.test(choice))).toBe(true)
     expect(form_Referring).toEqual({ label: "Document retry.js", subject: "retry.js", quote: ["aborted", true], isFocused: true })
-    expect(referred_Document).toEqual([["Check for an abort everywhere it waits.", "aborted", "line 21"]])
+    expect(referred_Document.filter((said) => said[0] === "Check for an abort everywhere it waits.")).toEqual([["Check for an abort everywhere it waits.", "aborted", "line 21"]])
     expect(shown_Document).toEqual({ words: ["aborted"], isInView: true, isOnText: true })
     expect(form_Dropped).toEqual({ label: "Proposal Stop retrying once the caller aborts", subject: "Stop retrying once the caller aborts", quote: null, isFocused: true })
     expect(asked_Tiers).toEqual([

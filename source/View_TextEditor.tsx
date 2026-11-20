@@ -2236,6 +2236,7 @@ function drawTextUnderlay$__View_TextEditor({
     run_Line$,
     containerElement_View
   }))
+  if (!containerElement_View.isConnected) return
   makeRoom$__Drawn$_Run({
     drawn$_Run,
     ink$_Glyph_View
