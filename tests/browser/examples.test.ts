@@ -541,6 +541,20 @@ test("a request's ellipsis in a proposal's item sits on its first line, just pas
   expect(inks_Said.actions.length).toBeGreaterThan(1)
   expect(inks_Said.actions.every((ink) => ink === "plum")).toBe(true)
 })
+
+// then a running request's own dotted line shimmering under the words
+// it's on, the agent at work on them, the view's band dimming it as it
+// dims a word, the words themselves still, so a revising proposal's words
+// shimmering on the same text are told apart; a queued one's line still
+const words_Running = await opened_JavaScript.page.evaluate(() => ({
+  running: [...document.querySelectorAll(".underlay_htmlView[data-underline][data-running]")].map((line) => `${line.closest(".run_htmlView")?.getAttribute("data-run")} ${line.hasAttribute("data-requested") ? "dotted" : ""} ${getComputedStyle(line).animationName} ${getComputedStyle(line).maskOrigin}`),
+  words: document.querySelectorAll(".text_htmlView [data-running]").length
+}))
+
+test("a running request's own line shimmers under the words it's on, the agent at work on them, the view's band dimming it as it dims a word, the words still, so a revising proposal's words shimmering on the same text are told apart; a queued one's words and line still", () => {
+  expect(words_Running.running).toEqual(["lines-28 dotted shimmer_htmlView stroke-box", "lines-28 dotted shimmer_htmlView stroke-box"])
+  expect(words_Running.words).toBe(0)
+})
 const ringsAt = (needle: string) => opened_JavaScript.page.evaluate(async (needle) => {
   await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)))
   const element_Line = [...document.querySelectorAll(".run_htmlView[data-run$=\"-proposed\"] > .line_htmlView > .text_htmlView")].find((element) => (element.textContent ?? "").includes(needle))

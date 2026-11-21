@@ -695,13 +695,15 @@ interface _Api___litIn__Blocks_ {
   pieces: Array<_Piece_Text_>
   ids_Run: Array<string> | null
   attributes: _Attributes_Element_
+  isRunning: boolean
 }
 
 function litIn__Blocks({
   blocks_ViewModel,
   pieces,
   ids_Run,
-  attributes
+  attributes,
+  isRunning
 }: _Api___litIn__Blocks_): Array<_Block_ViewModel_> {
   if (pieces.length === 0) return blocks_ViewModel
   return runsMappedIn__Blocks({
@@ -716,6 +718,7 @@ function litIn__Blocks({
           attributes
         }),
         pieces_References: [pieces],
+        pieces_Running: isRunning ? pieces : [],
         attributes
       })
   })
@@ -863,12 +866,14 @@ function stretchesOf__Pieces({
 interface _Api___underlinedIn__Blocks_ {
   blocks_ViewModel: Array<_Block_ViewModel_>
   references: Array<_Selected_Text_>
+  references_Running: Array<_Selected_Text_>
   attributes: _Attributes_Element_
 }
 
 function underlinedIn__Blocks({
   blocks_ViewModel,
   references,
+  references_Running,
   attributes
 }: _Api___underlinedIn__Blocks_): Array<_Block_ViewModel_> {
   if (references.length === 0) return blocks_ViewModel
@@ -880,6 +885,7 @@ function underlinedIn__Blocks({
     ) => underlinedOf__Run({
       run_Lines,
       pieces_References: references.filter((reference) => reference.side === side).map((reference) => reference.pieces),
+      pieces_Running: references_Running.filter((reference) => reference.side === side).flatMap((reference) => reference.pieces),
       attributes
     })
   })
@@ -888,12 +894,14 @@ function underlinedIn__Blocks({
 interface _Api___underlinedOf__Run_ {
   run_Lines: _Run_Lines_
   pieces_References: Array<Array<_Piece_Text_>>
+  pieces_Running: Array<_Piece_Text_>
   attributes: _Attributes_Element_
 }
 
 function underlinedOf__Run({
   run_Lines,
   pieces_References,
+  pieces_Running,
   attributes
 }: _Api___underlinedOf__Run_): _Run_Lines_ {
   const underlays = run_Lines.lines.flatMap((
@@ -907,15 +915,28 @@ function underlinedOf__Run({
         text,
         pieces,
         attributes
-      }))
+      })),
+      stretches_Running: stretchesOf__Pieces({
+        line_Run,
+        text,
+        pieces: pieces_Running,
+        attributes
+      })
     }).map((span_Underline): _Underlay_Text_ => ({
       kind: "UNDERLINE",
-      attributes: span_Underline.isMany
-        ? {
-          ...attributes,
-          "data-many": ""
-        }
-        : attributes,
+      attributes: {
+        ...attributes,
+        ...span_Underline.isMany
+          ? {
+            "data-many": ""
+          }
+          : {},
+        ...span_Underline.isRunning
+          ? {
+            "data-running": ""
+          }
+          : {}
+      },
       from: {
         line: index_Line,
         offset: span_Underline.from
@@ -942,18 +963,24 @@ function underlinedOf__Run({
 
 interface _Api___spansOf__Stretches_ {
   stretches_References: Array<Array<_Stretch_Line_>>
+  stretches_Running: Array<_Stretch_Line_>
 }
 
 interface _Span_Underline_ {
   from: number
   to: number
   isMany: boolean
+  isRunning: boolean
 }
 
 function spansOf__Stretches({
-  stretches_References
+  stretches_References,
+  stretches_Running
 }: _Api___spansOf__Stretches_): Array<_Span_Underline_> {
-  const offsets = [...new Set(stretches_References.flat().flatMap((stretch_Line) => [
+  const offsets = [...new Set([
+    ...stretches_References.flat(),
+    ...stretches_Running
+  ].flatMap((stretch_Line) => [
     stretch_Line.from,
     stretch_Line.to
   ]))].sort((offset, offset_Other) => offset - offset_Other)
@@ -965,10 +992,11 @@ function spansOf__Stretches({
     ) => {
       const from = offsets[index] ?? to
       const count = stretches_References.filter((stretches) => stretches.some((stretch_Line) => stretch_Line.from < to && from < stretch_Line.to)).length
+      const isRunning = stretches_Running.some((stretch_Line) => stretch_Line.from < to && from < stretch_Line.to)
       const span_Last = spans.at(-1)
       return count === 0
         ? spans
-        : span_Last !== undefined && span_Last.to === from && span_Last.isMany === count > 1
+        : span_Last !== undefined && span_Last.to === from && span_Last.isMany === count > 1 && span_Last.isRunning === isRunning
           ? [
             ...spans.slice(0, -1),
             {
@@ -981,7 +1009,8 @@ function spansOf__Stretches({
             {
               from,
               to,
-              isMany: count > 1
+              isMany: count > 1,
+              isRunning
             }
           ]
     },
@@ -1425,7 +1454,8 @@ function wordsAt__ViewModel({
       ...header.document.revisions_Level.requests
     ]
     : part$_Frame.flatMap((part_Frame) => part_Frame.kind === "PROPOSAL_LIST" ? part_Frame.items.flatMap((item_Proposals) => item_Proposals.source === id_Item.source ? item_Proposals.requests : []) : [])
-  const reference = request$_Holder.find((request_Item) => request_Item.id === id_Request.id)?.reference ?? null
+  const request_Item = request$_Holder.find((request_Item_each) => request_Item_each.id === id_Request.id) ?? null
+  const reference = request_Item?.reference ?? null
   const blocks_Lit = reference === null || reference.pieces === null
     ? viewModel_TextEditor.blocks
     : litIn__Blocks({
@@ -1437,7 +1467,8 @@ function wordsAt__ViewModel({
           id_Run: run_Lines.id
         }) === reference.side)
         .map((run_Lines) => run_Lines.id),
-      attributes
+      attributes,
+      isRunning: request_Item?.status === "RUNNING"
     })
   return blocks_Lit === viewModel_TextEditor.blocks
     ? viewModel_TextEditor
@@ -1607,7 +1638,8 @@ function askingAt__ViewModel({
     ids_Run: request?.quote?.ids_Run ?? [],
     attributes: {
       "data-quoted": ""
-    }
+    },
+    isRunning: false
   })
   return {
     ...viewModel_TextEditor,

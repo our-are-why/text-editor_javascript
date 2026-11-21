@@ -3385,3 +3385,16 @@ jump's own line, blinking twice from when it was pressed, is hidden, the
 lit line's blink alone, as the two, begun half a beat apart, had blinked
 out of step over the same words; it shows if the row's left before its
 blinks are over.
+
+Decided 2026-11-21: a running request's line shimmers under its words,
+not the words: its dotted line where it's under them, `data-running`,
+split from the rest where they begin and end, and, while they're lit,
+the lit line too, the view's band passing along it as it passes through
+a word, dimming it to half, then resting, in step with every shimmer,
+the mask laid on the line's stroke, as a line has no height of its own
+for one to cover. The words shimmering was tried first, and let go, so
+that where a revising proposal's ring is on the same words, its words
+shimmering, the two are told apart; then a light laid over the line, a
+solid band of plum, thicker than the lit line so it showed on that too,
+let go as it brightened where every other shimmer dims, and read apart
+from them. Still where motion's asked to be reduced.

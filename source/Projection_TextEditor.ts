@@ -168,6 +168,7 @@ function viewModelOf__Model<State>({
         })
       ],
       references: (task?.requests ?? []).flatMap((request_Task) => request_Task.status !== "ADDRESSED" && request_Task.aim.reference !== null ? [request_Task.aim.reference] : []),
+      references_Running: (task?.requests ?? []).flatMap((request_Task) => request_Task.status === "RUNNING" && request_Task.aim.reference !== null ? [request_Task.aim.reference] : []),
       attributes: {
         "data-requested": ""
       }
@@ -2804,11 +2805,15 @@ function frameOf__Drawn({
   const references_Frame = proposals
     .filter((proposal_Host) => frame_Drawn.sources.includes(proposal_Host.source))
     .flatMap((proposal_Host) => proposal_Host.requests.flatMap((request_Host) => request_Host.status !== "ADDRESSED" && request_Host.reference !== null ? [request_Host.reference] : []))
+  const references_Running = proposals
+    .filter((proposal_Host) => frame_Drawn.sources.includes(proposal_Host.source))
+    .flatMap((proposal_Host) => proposal_Host.requests.flatMap((request_Host) => request_Host.status === "RUNNING" && request_Host.reference !== null ? [request_Host.reference] : []))
   const part_Proposed: _Part_Frame_ = {
     kind: "PROPOSAL_LINES",
     run: underlinedOf__Run({
       run_Lines: frame_Drawn.run_Proposed,
       pieces_References: references_Frame.filter((reference) => reference.side === "PROPOSED").map((reference) => reference.pieces),
+      pieces_Running: references_Running.filter((reference) => reference.side === "PROPOSED").flatMap((reference) => reference.pieces),
       attributes: {
         "data-requested": ""
       }
@@ -2848,6 +2853,7 @@ function frameOf__Drawn({
           run: underlinedOf__Run({
             run_Lines: frame_Drawn.run_Current,
             pieces_References: references_Frame.filter((reference) => reference.side === "CURRENT").map((reference) => reference.pieces),
+            pieces_Running: references_Running.filter((reference) => reference.side === "CURRENT").flatMap((reference) => reference.pieces),
             attributes: {
               "data-requested": ""
             }
