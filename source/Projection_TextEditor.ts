@@ -2806,7 +2806,7 @@ function frameOf__Drawn({
     kind: "PROPOSAL_LINES",
     run: underlinedOf__Run({
       run_Lines: frame_Drawn.run_Proposed,
-      references: references_Frame.filter((reference) => reference.side === "PROPOSED"),
+      pieces_References: references_Frame.filter((reference) => reference.side === "PROPOSED").map((reference) => reference.pieces),
       attributes: {
         "data-requested": ""
       }
@@ -2845,7 +2845,7 @@ function frameOf__Drawn({
           kind: "CURRENT_LINES",
           run: underlinedOf__Run({
             run_Lines: frame_Drawn.run_Current,
-            references: references_Frame.filter((reference) => reference.side === "CURRENT"),
+            pieces_References: references_Frame.filter((reference) => reference.side === "CURRENT").map((reference) => reference.pieces),
             attributes: {
               "data-requested": ""
             }

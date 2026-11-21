@@ -3234,3 +3234,39 @@ side of it, so the ring's side steps down from one to the next, one path
 round the whole block, `bridge$Of__Line_Empty`. Where the rows either
 side aren't one over the other, there's nothing to bridge, and the ring's
 cut there with its seams, as across any line break.
+
+Decided 2026-11-20: a revising proposal's words shimmer with its status,
+not breathing on a beat of their own, the view's band passing through
+them, then resting; its rings swelling as the band passes and resting
+with it, `swell_htmlView`, where they'd breathed every 2.4 seconds. The
+band's a mask, `--band_Shimmer_htmlView`, dimming whatever it passes,
+a word's own ink, whatever it is, and any light behind it: tried first
+as the word's background, clipped to its letters, it hid a word's light,
+which is a background too, so words lit from a request's pill were held
+still, as if their request had stopped; masked, they shimmer lit, the
+band dimming their light with them, and words shown, after a jump, fade
+as well. Everything at work kept in step by the view: after it draws,
+every turn of an arc or a mark, pass of a band and swell of a ring
+begins at one moment, `inStep__Working`, however its element was drawn,
+an item drawn again as it's pointed at no longer starting its arc and
+its word over, out of step with its words and its rings. Each run of
+words in one ink carries its own band, so a change of several tokens
+has them side by side, in step, not one band across it.
+
+Decided 2026-11-21: a request's words lit by a line, not a fill. A
+proposal's request's words are almost always in one of its rings, often
+filling it, and lit with a plum fill they read as the ring filled, which
+is what an accepted proposal's is, only the colour telling them apart. So
+the fills are gone: lit, while its chip's pointed at, shown, a moment
+once its "line N" is pressed, and quoted, by the form while the form's
+chip is pointed at, its words get a line under them, solid and heavier
+than the request's own dotted one, over it, in the revision's plum,
+`litIn__Blocks`, marking its words as before, for the peek and the jump
+to measure, and drawing the line, as a request's line is drawn, with its
+own attributes. Shown, it fades back to the dotted line; quoted, it shows
+only while the form's chip is pointed at. It cuts no ring, nor shapes the
+dots' ends, as a request's own line does, being only for a moment, and
+the form's words having no line of their own yet. A filled ring means
+only accepted. Mocked beside the fill and a highlighter's band across the
+lower half of the words, which, inside a ring, was still a plum wash, and
+sat on the dotted line.

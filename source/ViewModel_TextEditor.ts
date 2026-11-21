@@ -688,28 +688,34 @@ function runsOf__Blocks(
   )
 }
 
-interface _Api___markedIn__Blocks_ {
+interface _Api___litIn__Blocks_ {
   blocks_ViewModel: Array<_Block_ViewModel_>
   pieces: Array<_Piece_Text_>
   ids_Run: Array<string> | null
   attributes: _Attributes_Element_
 }
 
-function markedIn__Blocks({
+function litIn__Blocks({
   blocks_ViewModel,
   pieces,
   ids_Run,
   attributes
-}: _Api___markedIn__Blocks_): Array<_Block_ViewModel_> {
+}: _Api___litIn__Blocks_): Array<_Block_ViewModel_> {
   if (pieces.length === 0) return blocks_ViewModel
   return runsMappedIn__Blocks({
     blocks_ViewModel,
-    map: (run_Lines) => markedOf__Run({
-      run_Lines,
-      pieces,
-      ids_Run,
-      attributes
-    })
+    map: (run_Lines) => ids_Run !== null && !ids_Run.includes(run_Lines.id)
+      ? run_Lines
+      : underlinedOf__Run({
+        run_Lines: markedOf__Run({
+          run_Lines,
+          pieces,
+          ids_Run,
+          attributes
+        }),
+        pieces_References: [pieces],
+        attributes
+      })
   })
 }
 
@@ -871,7 +877,7 @@ function underlinedIn__Blocks({
       side
     ) => underlinedOf__Run({
       run_Lines,
-      references: references.filter((reference) => reference.side === side),
+      pieces_References: references.filter((reference) => reference.side === side).map((reference) => reference.pieces),
       attributes
     })
   })
@@ -879,13 +885,13 @@ function underlinedIn__Blocks({
 
 interface _Api___underlinedOf__Run_ {
   run_Lines: _Run_Lines_
-  references: Array<_Selected_Text_>
+  pieces_References: Array<Array<_Piece_Text_>>
   attributes: _Attributes_Element_
 }
 
 function underlinedOf__Run({
   run_Lines,
-  references,
+  pieces_References,
   attributes
 }: _Api___underlinedOf__Run_): _Run_Lines_ {
   const underlays = run_Lines.lines.flatMap((
@@ -894,10 +900,10 @@ function underlinedOf__Run({
   ) => {
     const text = line_Run.segments.map((segment_Line) => segment_Line.text).join("")
     return spansOf__Stretches({
-      stretches_References: references.map((reference) => stretchesOf__Pieces({
+      stretches_References: pieces_References.map((pieces) => stretchesOf__Pieces({
         line_Run,
         text,
-        pieces: reference.pieces,
+        pieces,
         attributes
       }))
     }).map((span_Underline): _Underlay_Text_ => ({
@@ -1410,7 +1416,7 @@ function wordsAt__ViewModel({
   const reference = request$_Holder.find((request_Item) => request_Item.id === id_Request.id)?.reference ?? null
   const blocks_Lit = reference === null || reference.pieces === null
     ? viewModel_TextEditor.blocks
-    : markedIn__Blocks({
+    : litIn__Blocks({
       blocks_ViewModel: viewModel_TextEditor.blocks,
       pieces: reference.pieces,
       ids_Run: (id_Item === null ? runsOf__Blocks(viewModel_TextEditor.blocks) : part$_Frame.flatMap((part_Frame) => isLines__Part_Frame(part_Frame) ? [part_Frame.run] : []))
@@ -1583,7 +1589,7 @@ function askingAt__ViewModel({
   request
 }: _Api___askingAt__ViewModel_): _ViewModel_TextEditor_ {
   if (menu === null && request === null) return viewModel_TextEditor
-  const blocks_Quoted = markedIn__Blocks({
+  const blocks_Quoted = litIn__Blocks({
     blocks_ViewModel: viewModel_TextEditor.blocks,
     pieces: request?.quote?.pieces ?? [],
     ids_Run: request?.quote?.ids_Run ?? [],

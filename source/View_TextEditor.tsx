@@ -208,6 +208,9 @@ class _View_TextEditor_ {
       containerElement_View: this.containerElement,
       selection_View: this.selection
     })
+    inStep__Working({
+      containerElement_View: this.containerElement
+    })
   }
 
   positionAt(
@@ -3329,7 +3332,9 @@ function measureOf__Underline({
     d: row$.map((row) => `M ${row.left} ${row.y} L ${row.right} ${row.y}`).join(" "),
     d_Seam$: [],
     lap$: [],
-    d_Knockout: row$.map((row) => `M ${row.left - reach} ${row.y - reach} H ${row.right + reach} V ${row.y + reach} H ${row.left - reach} Z`).join(" ")
+    d_Knockout: underlay_Text.attributes["data-requested"] === undefined
+      ? ""
+      : row$.map((row) => `M ${row.left - reach} ${row.y - reach} H ${row.right + reach} V ${row.y + reach} H ${row.left - reach} Z`).join(" ")
   }
 }
 
@@ -3915,7 +3920,7 @@ interface _Api___fit__Dash$_ {
 function fit__Dash$({
   svgElement_underlay$
 }: _Api___fit__Dash$_): void {
-  const point$_End = [...svgElement_underlay$.querySelectorAll(".underlay_htmlView[data-underline]")].flatMap((pathElement) => piece$Of__D(pathElement.getAttribute("d") ?? "").flatMap((piece) => [
+  const point$_End = [...svgElement_underlay$.querySelectorAll(".underlay_htmlView[data-underline][data-requested]")].flatMap((pathElement) => piece$Of__D(pathElement.getAttribute("d") ?? "").flatMap((piece) => [
     piece.point$[0],
     piece.point$.at(-1)
   ].flatMap((point) => point === undefined ? [] : [point])))
@@ -4909,6 +4914,26 @@ function elementOf__Rect({
   element.style.height = `${rect.height}px`
   return element
 }
+
+interface _Api___inStep__Working_ {
+  containerElement_View: HTMLElement
+}
+
+function inStep__Working({
+  containerElement_View
+}: _Api___inStep__Working_): void {
+  for (const animation of containerElement_View.getAnimations({
+    subtree: true
+  })) {
+    if (animation instanceof CSSAnimation && NAME$__ANIMATION_WORKING.includes(animation.animationName) && animation.startTime !== 0) animation.startTime = 0
+  }
+}
+
+const NAME$__ANIMATION_WORKING = [
+  "revising_htmlView",
+  "shimmer_htmlView",
+  "swell_htmlView"
+]
 
 interface _Api___positionAt__View_TextEditor_ {
   containerElement_View: HTMLElement

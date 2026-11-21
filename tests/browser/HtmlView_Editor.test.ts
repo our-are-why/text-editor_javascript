@@ -462,7 +462,7 @@ describe("beside it: what can't live in one document", () => {
     await opened.page.emulateMedia({ reducedMotion: "no-preference" })
   })
 
-  test("a revising item's word shimmers, the view's, a soft band passing through its letters, left to right, easing in and out, dimming it to half at its middle, then resting, a pass every two turns of its arc, begun as a turn is; a request in progress shimmering on the same beat, one queued plain; no dots after the word, which would read as an ellipsis; the dot before it still", async () => {
+  test("a revising item's word shimmers, the view's, a soft band passing through its letters, left to right, easing in and out, dimming it to half at its middle, then resting, a pass every two turns of its arc, begun as a turn is; the band a mask over the word, dimming its ink; a request running shimmering on the same beat, one queued plain; no dots after the word, which would read as an ellipsis; the dot before it still", async () => {
     await opened.page.evaluate(() => {
       const containerElement = document.createElement("div")
       containerElement.id = "revising"
@@ -482,7 +482,7 @@ describe("beside it: what can't live in one document", () => {
       }]))
     })
     // the word's, the request's and the arc's passes: each one's delay and
-    // length; the word's band in its letters, the word itself unpainted;
+    // length; the word's band a mask over it, the word in its ink;
     // where the band is, early in a pass, midway, and resting; and whether
     // anything follows the word
     const shimmer = await opened.page.evaluate(() => {
@@ -499,7 +499,7 @@ describe("beside it: what can't live in one document", () => {
       const positionAt = (time: number) => {
         pass?.pause()
         if (pass !== undefined) pass.currentTime = time
-        return getComputedStyle(word).backgroundPosition
+        return getComputedStyle(word).maskPosition
       }
       return {
         word: timingOf(pass),
@@ -508,7 +508,7 @@ describe("beside it: what can't live in one document", () => {
           const progress = said.querySelector(".progress_Said_htmlView")
           return `${said.getAttribute("data-request")}: ${progress === null ? "plain" : timingOf(progress.getAnimations()[0])}`
         }),
-        band: `${style.backgroundClip} ${style.color} ${style.backgroundSize}`,
+        band: `${style.maskImage.startsWith("linear-gradient")} ${style.color !== "rgba(0, 0, 0, 0)"} ${style.maskSize}`,
         positions: [positionAt(0), positionAt(900), positionAt(1800), positionAt(2700)],
         after: word.nextSibling === null && word.children.length === 0
       }
@@ -517,7 +517,7 @@ describe("beside it: what can't live in one document", () => {
       word: "shimmer_htmlView 0 3000",
       arc: "revising_htmlView 0 1500",
       requests: ["running: shimmer_htmlView 0 3000", "queued: plain"],
-      band: "text rgba(0, 0, 0, 0) 250% 100%",
+      band: "true true 250% 100%",
       positions: ["100% 0px", "50% 0px", "0px 0px", "0px 0px"],
       after: true
     })
@@ -2515,7 +2515,7 @@ describe("beside it: what can't live in one document", () => {
     await opened.page.evaluate(() => document.getElementById("notches")?.remove())
   })
 
-  test("a proposal being revised has its rings faded and the words it proposes faded, breathing, an open one beside it as it was, and still where motion's asked to be reduced", async () => {
+  test("a proposal being revised has its rings faded and the words it proposes faded, the words shimmering as its status does, lit or shown too, with no fill behind them, and its rings swelling as the band passes, all of it in step with its status and its arc, begun at one moment; an open one beside it as it was; and still where motion's asked to be reduced", async () => {
     await opened.page.mouse.move(1270, 715)
     await opened.page.evaluate(() => {
       const containerElement = document.createElement("div")
@@ -2565,6 +2565,9 @@ describe("beside it: what can't live in one document", () => {
       const container = document.getElementById("states")
       return {
         rings: [...container?.querySelectorAll(".underlay_htmlView") ?? []].map((ring) => `${ring.getAttribute("data-source")} ${ring.getAttribute("data-side")}: ${Math.round(parseFloat(getComputedStyle(ring).strokeOpacity) * 100) / 100} ${getComputedStyle(ring).animationName}`),
+        // when each of the agent's passes and turns began, the item's arc
+        // and status, the words and the rings
+        starts: [...new Set((container?.getAnimations({ subtree: true }) ?? []).filter((animation) => animation instanceof CSSAnimation && ["revising_htmlView", "shimmer_htmlView", "swell_htmlView"].includes(animation.animationName)).map((animation) => `${(animation as CSSAnimation).animationName} ${animation.startTime}`))].sort(),
         words: [...container?.querySelectorAll(".proposed_htmlView .text_htmlView [data-source]") ?? []].map((span) => `${span.getAttribute("data-source")}: ${Math.round(parseFloat(getComputedStyle(span).opacity) * 100) / 100} ${getComputedStyle(span).animationName}`)
       }
     })
@@ -2575,8 +2578,28 @@ describe("beside it: what can't live in one document", () => {
       const [value = "", animation = ""] = rest.split(" ")
       return parseFloat(value) < ceiling ? `${label}: faded ${animation}` : each
     }
-    expect(moving.rings.map((ring) => faded(ring, 0.7))).toEqual(["timeout before: faded breathe_htmlView", "rename before: 1 none", "timeout after: faded breathe_htmlView", "rename after: 1 none"])
-    expect(moving.words.map((word) => faded(word, 0.85))).toEqual(["timeout: faded revise_htmlView", "rename: 1 none"])
+    expect(moving.rings.map((ring) => faded(ring, 0.75))).toEqual(["timeout before: faded swell_htmlView", "rename before: 1 none", "timeout after: faded swell_htmlView", "rename after: 1 none"])
+    expect(moving.words.map((word) => faded(word, 0.85))).toEqual(["timeout: faded shimmer_htmlView", "rename: 1 none"])
+    expect(moving.starts).toEqual(["revising_htmlView 0", "shimmer_htmlView 0", "swell_htmlView 0"])
+    // lit, as from its request's pill, or shown, as a jump to it leaves it,
+    // the words still shimmering, and no fill behind them, their light a
+    // line under them, which a ring's fill would be confused with
+    const lit = await opened.page.evaluate(() => {
+      const word = document.querySelector("#states .proposed_htmlView .text_htmlView [data-source=\"timeout\"]")
+      if (word === null) throw new Error("no word")
+      const lookOf = () => {
+        const style = getComputedStyle(word)
+        return `${style.animationName} ${style.backgroundColor !== "rgba(0, 0, 0, 0)"} ${style.maskImage.startsWith("linear-gradient")}`
+      }
+      word.setAttribute("data-lit", "")
+      const look_Lit = lookOf()
+      word.removeAttribute("data-lit")
+      word.setAttribute("data-shown", "")
+      const look_Shown = lookOf()
+      word.removeAttribute("data-shown")
+      return [look_Lit, look_Shown]
+    })
+    expect(lit).toEqual(["shimmer_htmlView false true", "shimmer_htmlView false true"])
     // still, at rest, where motion's asked to be reduced
     await opened.page.emulateMedia({ reducedMotion: "reduce" })
     expect((await looks()).rings).toEqual(["timeout before: 0.45 none", "rename before: 1 none", "timeout after: 0.45 none", "rename after: 1 none"])

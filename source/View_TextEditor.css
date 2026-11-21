@@ -931,28 +931,6 @@
   border-radius: 2px;
 }
 
-.htmlView_editor .text_htmlView > [data-shown] {
-  border-radius: 2px;
-  animation: shown_Words_htmlView 1.8s ease-in both;
-}
-
-@keyframes shown_Words_htmlView {
-  from {
-    background: color-mix(in srgb, var(--accent_revision_htmlView) 30%, transparent);
-  }
-
-  to {
-    background: transparent;
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .htmlView_editor .text_htmlView > [data-shown] {
-    animation: none;
-    background: color-mix(in srgb, var(--accent_revision_htmlView) 22%, transparent);
-  }
-}
-
 .htmlView_editor .notes_Edit_htmlView + .reference_Said_htmlView {
   margin-top: 0.35rem;
 }
@@ -971,11 +949,6 @@
   top: calc(anchor(bottom) + 0.4rem);
   left: anchor(left);
   position-try-fallbacks: flip-block;
-}
-
-.htmlView_editor .text_htmlView > [data-lit] {
-  border-radius: 2px;
-  background: color-mix(in srgb, var(--accent_revision_htmlView) 22%, transparent);
 }
 
 /* Edit, pressed: the request its own box, what it says in it, Save,
@@ -1072,6 +1045,50 @@
    where a dotted stretch meets a dashed one, so they don't run together */
 .htmlView_editor .underlay_htmlView[data-requested][data-many] {
   stroke-dasharray: 6 3;
+}
+
+/* a request's words lit while its chip's pointed at, shown a moment once
+   its "line N" is pressed, or quoted by the form while the form's chip is
+   pointed at: a line under them, solid and heavier, over the request's
+   own dotted one, in the revision's plum; never a fill, which inside a
+   ring would read as the ring filled, an accepted proposal's. Shown, it
+   fades back to the dotted line; still, solid, while it's shown, where
+   motion's asked to be reduced. Cutting no ring, as a request's own line
+   does, as it's only for a moment, and the form's words have no line of
+   their own yet to cut it */
+.htmlView_editor .underlay_htmlView[data-underline]:is([data-lit], [data-shown], [data-quoted]) {
+  fill: none;
+  stroke: var(--accent_revision_htmlView);
+  stroke-width: 2.5px;
+  stroke-linecap: round;
+}
+
+.htmlView_editor .underlay_htmlView[data-underline][data-shown] {
+  animation: shown_Line_htmlView 1.8s ease-in both;
+}
+
+@keyframes shown_Line_htmlView {
+  from {
+    stroke-opacity: 1;
+  }
+
+  to {
+    stroke-opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .htmlView_editor .underlay_htmlView[data-underline][data-shown] {
+    animation: none;
+  }
+}
+
+.htmlView_editor .underlay_htmlView[data-underline][data-quoted] {
+  visibility: hidden;
+}
+
+.htmlView_editor:has(.asking_htmlView :is(.chip_Quote_htmlView:hover, .words_Quote_htmlView:focus-visible)) .underlay_htmlView[data-underline][data-quoted] {
+  visibility: visible;
 }
 
 .htmlView_editor :is(.places_htmlView, .rationale_htmlView, .request_htmlView, .status_htmlView):empty {
@@ -1199,24 +1216,19 @@
    request's "in progress"; a soft band passing through the word's letters,
    left to right, easing in and out, dimming it to half at its middle, then
    resting, a pass every two turns of the arc, begun as a turn is, one
-   rhythm, the beat said once for whatever keeps it; never three dots after
-   it, which read as an ellipsis, its actions folded behind it; the word
-   plain, in its ink, where motion's asked to be reduced */
-.htmlView_editor .item_htmlView .status_htmlView {
-  --ink_Shimmer_htmlView: var(--ink_state_htmlView);
-}
-
-.htmlView_editor .state_Card_htmlView {
-  --ink_Shimmer_htmlView: var(--ink_Mark_htmlView);
-}
-
-.htmlView_editor .progress_Said_htmlView {
-  --ink_Shimmer_htmlView: var(--accent_revision_htmlView);
-}
-
+   rhythm, the beat said once for whatever keeps it, the band too, a mask
+   dimming whatever it passes, the word's own ink and any light behind it,
+   so a look can pass it through what else is at work, lit or not, as the
+   changes look does a revising proposal's words; every pass and turn kept
+   in step by
+   the view, begun at one moment however its element was drawn,
+   `inStep__Working`; never three dots after it, which read as an
+   ellipsis, its actions folded behind it; the word plain, in its ink,
+   where motion's asked to be reduced */
 @media (prefers-reduced-motion: no-preference) {
   .htmlView_editor {
     --time_revising_htmlView: 1.5s;
+    --band_Shimmer_htmlView: linear-gradient(100deg, #000 40%, rgb(0 0 0 / 0.75) 45%, rgb(0 0 0 / 0.5) 50%, rgb(0 0 0 / 0.75) 55%, #000 60%);
   }
 
   .htmlView_editor .item_htmlView[data-state="REVISING"]::before {
@@ -1224,23 +1236,21 @@
   }
 
   .htmlView_editor :is(.item_htmlView[data-state="REVISING"] .status_htmlView, .state_Card_htmlView[data-state="WORKING"], .progress_Said_htmlView[data-running]) {
-    background-image: linear-gradient(100deg, var(--ink_Shimmer_htmlView) 40%, color-mix(in srgb, var(--ink_Shimmer_htmlView) 75%, transparent) 45%, color-mix(in srgb, var(--ink_Shimmer_htmlView) 50%, transparent) 50%, color-mix(in srgb, var(--ink_Shimmer_htmlView) 75%, transparent) 55%, var(--ink_Shimmer_htmlView) 60%);
-    background-size: 250% 100%;
-    background-clip: text;
-    color: transparent;
+    mask-image: var(--band_Shimmer_htmlView);
+    mask-size: 250% 100%;
     animation: shimmer_htmlView calc(var(--time_revising_htmlView) * 2) linear infinite;
   }
 }
 
 @keyframes shimmer_htmlView {
   0% {
-    background-position: 100% 0;
+    mask-position: 100% 0;
     animation-timing-function: ease-in-out;
   }
 
   60%,
   100% {
-    background-position: 0 0;
+    mask-position: 0 0;
   }
 }
 
@@ -2401,10 +2411,6 @@
   color: var(--view-placeholder-ink, color-mix(in srgb, CanvasText 58%, transparent));
 }
 
-.htmlView_editor:has(.asking_htmlView :is(.chip_Quote_htmlView:hover, .words_Quote_htmlView:focus-visible)) .text_htmlView > [data-quoted] {
-  border-radius: 2px;
-  background: color-mix(in srgb, var(--accent_revision_htmlView) 22%, transparent);
-}
 
 .htmlView_editor .drop_Quote_htmlView {
   flex: none;

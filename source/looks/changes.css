@@ -141,9 +141,12 @@
 }
 
 /* a proposal being revised, the agent at it, its rings faded and the words
-   it proposes faded, breathing, as doctor's revised lines pulsed, so it's
-   seen to be on its way, not yet to decide; still where motion's asked to
-   be reduced. Its state is its item's, `data-state` on its groups and its
+   it proposes faded, so it's seen to be on its way, not yet to decide; its
+   words shimmering with its status, the view's band passing through them,
+   then resting, and its rings swelling as it passes, then resting with
+   it, one rhythm, in step; words lit, shown or quoted shimmering as any
+   are, their light a line under them. Still where motion's asked to be
+   reduced. Its state is its item's, `data-state` on its groups and its
    words */
 [data-look~="changes"] .group_htmlView[data-state="REVISING"] > :is(.underlay_htmlView, .seam_htmlView)[data-change] {
   stroke-opacity: 0.45;
@@ -155,17 +158,30 @@
 
 @media (prefers-reduced-motion: no-preference) {
   [data-look~="changes"] .group_htmlView[data-state="REVISING"]:not([data-pointed]) > :is(.underlay_htmlView, .seam_htmlView)[data-change] {
-    animation: breathe_htmlView 2.4s ease-in-out infinite;
+    animation: swell_htmlView calc(var(--time_revising_htmlView) * 2) linear infinite;
   }
 
   [data-look~="changes"] .text_htmlView [data-state="REVISING"][data-side="after"] {
-    animation: revise_htmlView 2.4s ease-in-out infinite;
+    mask-image: var(--band_Shimmer_htmlView);
+    mask-size: 250% 100%;
+    animation: shimmer_htmlView calc(var(--time_revising_htmlView) * 2) linear infinite;
   }
 }
 
-@keyframes revise_htmlView {
-  50% {
-    opacity: 0.8;
+@keyframes swell_htmlView {
+  0% {
+    stroke-opacity: 0.45;
+    animation-timing-function: ease-in-out;
+  }
+
+  30% {
+    stroke-opacity: 0.7;
+    animation-timing-function: ease-in-out;
+  }
+
+  60%,
+  100% {
+    stroke-opacity: 0.45;
   }
 }
 

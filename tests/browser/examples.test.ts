@@ -864,9 +864,20 @@ const requested_Aborted = await opened_JavaScript.page.evaluate(async () => {
     }).join("")
   })
 })
+// each word lit, where it is, and whether it's lit as it should be: a
+// solid line under it, showing, and no fill behind it, which inside a ring
+// would read as the ring filled, an accepted proposal's
 const litOf_Words = () => opened_JavaScript.page.evaluate(async () => {
   await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)))
-  return [...document.querySelectorAll(".text_htmlView > [data-lit]")].map((element) => `${element.closest(".run_htmlView")?.getAttribute("data-run")?.endsWith("-proposed") === true ? "proposed" : "current"} ${element.textContent} ${getComputedStyle(element).backgroundColor !== "rgba(0, 0, 0, 0)"}`)
+  return [...document.querySelectorAll(".text_htmlView > [data-lit]")].map((element) => {
+    const rect = element.getBoundingClientRect()
+    const isLined = [...element.closest(".run_htmlView")?.querySelectorAll(".underlay_htmlView[data-underline][data-lit]") ?? []].some((line) => {
+      const rect_Line = line.getBoundingClientRect()
+      const style = getComputedStyle(line)
+      return style.visibility === "visible" && style.strokeDasharray === "none" && rect_Line.left <= rect.left + 4 && rect_Line.right >= rect.right - 4 && rect_Line.top > rect.bottom - 3 && rect_Line.top < rect.bottom + 8
+    })
+    return `${element.closest(".run_htmlView")?.getAttribute("data-run")?.endsWith("-proposed") === true ? "proposed" : "current"} ${element.textContent} ${isLined && getComputedStyle(element).backgroundColor === "rgba(0, 0, 0, 0)"}`
+  })
 })
 await opened_JavaScript.page.locator(".item_htmlView[data-source=\"aborted\"] .said_htmlView .reference_Said_htmlView").first().hover()
 const lit_Pointed = await litOf_Words()
@@ -2027,7 +2038,8 @@ await page_Popover.waitForSelector(".asking_htmlView .chip_Quote_htmlView")
 const litOf_Quoted_Popover = () => page_Popover.evaluate(async () => {
   await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)))
   const element$_Quoted = [...document.querySelectorAll(".text_htmlView > [data-quoted]")]
-  return element$_Quoted.length > 0 && element$_Quoted.every((element) => getComputedStyle(element).backgroundColor !== "rgba(0, 0, 0, 0)")
+  const line$_Quoted = [...document.querySelectorAll(".underlay_htmlView[data-underline][data-quoted]")]
+  return element$_Quoted.length > 0 && line$_Quoted.length > 0 && line$_Quoted.every((line) => getComputedStyle(line).visibility === "visible") && element$_Quoted.every((element) => getComputedStyle(element).backgroundColor === "rgba(0, 0, 0, 0)")
 })
 const chip_Popover = await page_Popover.evaluate(() => ({
   head: document.querySelector(".asking_htmlView .words_Quote_htmlView")?.textContent ?? null,
