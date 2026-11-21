@@ -3398,3 +3398,14 @@ shimmering, the two are told apart; then a light laid over the line, a
 solid band of plum, thicker than the lit line so it showed on that too,
 let go as it brightened where every other shimmer dims, and read apart
 from them. Still where motion's asked to be reduced.
+
+Decided 2026-11-21: a request's ellipsis, and its actions as they open,
+line up on its first line as if they were on it, where, floated beside
+it, they'd sat over it: a space in the line's own size, unseen, in the
+fold, its `::after`, as its `::before` is the ground it's pressed on,
+making the fold as tall as the line and giving it the line's baseline,
+the actions' smaller words on it, where they'd been 2px over it, and the
+ellipsis centred on the fold, on the middle of the line's letters, where
+it had been a little over it. The tests read both, the actions' baseline
+against the words' and the ellipsis against their middle, each within
+half a pixel.

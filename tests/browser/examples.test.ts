@@ -504,7 +504,29 @@ const hugged_Folds = await opened_JavaScript.page.evaluate(() => [...document.qu
   const rect_More = more.getBoundingClientRect()
   const rect_Actions = actions.getBoundingClientRect()
   const rect_Row = row.getBoundingClientRect()
+  // where the line's letters' middle is, half their height over their
+  // baseline, for the ellipsis to sit on
+  const probe = document.createElement("span")
+  probe.style.cssText = "display: inline-block; width: 0; height: 0; vertical-align: middle"
+  text.prepend(probe)
+  const middle = probe.getBoundingClientRect().top
+  probe.remove()
+  // each baseline, where the first letter's box ends less its face's
+  // descent, the request's words' and its first action's
+  const context = document.createElement("canvas").getContext("2d")
+  const baselineOf = (element: Element | null) => {
+    const node = [...element?.childNodes ?? []].find((child) => child instanceof Text && (child.textContent ?? "").trim() !== "")
+    if (!(node instanceof Text) || element === null || context === null) return Number.NaN
+    const range_First = document.createRange()
+    range_First.setStart(node, 0)
+    range_First.setEnd(node, 1)
+    const style = getComputedStyle(element)
+    context.font = `${style.fontStyle} ${style.fontWeight} ${style.fontSize} ${style.fontFamily}`
+    return range_First.getBoundingClientRect().bottom - context.measureText("x").fontBoundingBoxDescent
+  }
   return [{
+    isCentred: Math.abs((rect_More.top + rect_More.bottom) / 2 - middle) < 0.5,
+    isOnBaseline: Math.abs(baselineOf(actions.querySelector("button")) - baselineOf(row.querySelector(".notes_Said_htmlView"))) < 0.5,
     isOnFirstLine: rect_More.top < first.bottom && rect_More.bottom > first.top,
     gap: rect_More.left - right_First,
     isActionsInRow: rect_Actions.right <= rect_Row.right + 0.5 && Math.abs(rect_Actions.left - rect_More.left) < 0.5
@@ -526,9 +548,9 @@ const inks_Said = await opened_JavaScript.page.evaluate(() => {
   }
 })
 
-test("a request's ellipsis in a proposal's item sits on its first line, just past its last word, close to what it's for, the same gap after it in each, its actions opening from where it is into room kept at the end of that line; in a card, at the right of its first line, every request's in one column, as the card's other ellipses are; a group's always just after its heading; a request's ellipsis and actions in the revision's plum, as its group's are", () => {
+test("a request's ellipsis in a proposal's item sits on its first line, on its letters' middle, its actions on their baseline, just past its last word, close to what it's for, the same gap after it in each, its actions opening from where it is into room kept at the end of that line; in a card, at the right of its first line, every request's in one column, as the card's other ellipses are; a group's always just after its heading; a request's ellipsis and actions in the revision's plum, as its group's are", () => {
   expect(hugged_Folds.length).toBeGreaterThan(1)
-  expect(hugged_Folds.every((fold) => fold.isOnFirstLine && fold.isActionsInRow)).toBe(true)
+  expect(hugged_Folds.every((fold) => fold.isOnFirstLine && fold.isActionsInRow && fold.isCentred && fold.isOnBaseline)).toBe(true)
   const gaps = hugged_Folds.map((fold) => fold.gap)
   expect(Math.max(...gaps) - Math.min(...gaps)).toBeLessThan(1)
   expect(gaps[0]).toBeGreaterThan(4)

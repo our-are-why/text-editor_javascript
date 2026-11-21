@@ -921,6 +921,24 @@
   grid-area: 1 / 1;
 }
 
+/* the fold floated beside the request's first line, not on it, so lined
+   up on that line as if it were: a space in the line's own size and
+   height, unseen, after it, as before it is the ground it's pressed on,
+   its actions' words on the line's baseline, as they'd be if they were
+   on it, where, lined up by their own smaller size, they'd sat 2px over
+   it; and the ellipsis on the line's middle, centred on the fold, now as
+   tall as the line, which is where its letters' middle is, half their
+   height over their baseline, as a heading's ellipsis is, beside its
+   words on their line */
+.htmlView_editor .row_Said_htmlView > .fold_Action_htmlView::after {
+  content: "\a0";
+  grid-area: 1 / 1;
+}
+
+.htmlView_editor .row_Said_htmlView > .fold_Action_htmlView > .more_htmlView {
+  align-self: center;
+}
+
 .htmlView_editor .row_Said_htmlView > .fold_Action_htmlView > .folded_htmlView {
   position: static;
   width: auto;
