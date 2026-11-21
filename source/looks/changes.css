@@ -140,25 +140,30 @@
   color: var(--view-moved-label, light-dark(#a2733f, #977254));
 }
 
-/* a proposal being revised, the agent at it, its rings faded and the words
-   it proposes faded, so it's seen to be on its way, not yet to decide; its
-   words shimmering with its status, the view's band passing through them,
-   then resting, and its rings swelling as it passes, then resting with
-   it, one rhythm, in step; words lit, shown or quoted shimmering as any
-   are, their light a line under them. Still where motion's asked to be
-   reduced. Its state is its item's, `data-state` on its groups and its
-   words */
-[data-look~="changes"] .group_htmlView[data-state="REVISING"] > :is(.underlay_htmlView, .seam_htmlView)[data-change] {
-  stroke-opacity: 0.45;
-}
+/* a proposal being revised, the agent at it, so it's seen to be on its
+   way, not yet to decide: the words it proposes shimmering with its
+   status, the view's band passing through them, dimming them to half,
+   then resting, and its rings dimming to half as it passes, then resting
+   with it, at full, one rhythm, in step, as everything at work does; not
+   faded as well, which said the same, and took the band down to a
+   quarter, apart from its status's; words lit, shown or quoted
+   shimmering as any are, their light a line under them. Where motion's
+   asked to be reduced, still, its rings and words faded instead, as
+   nothing moves to say it. Its state is its item's, `data-state` on its
+   groups and its words */
+@media (prefers-reduced-motion: reduce) {
+  [data-look~="changes"] .group_htmlView[data-state="REVISING"] > :is(.underlay_htmlView, .seam_htmlView)[data-change] {
+    stroke-opacity: 0.45;
+  }
 
-[data-look~="changes"] .text_htmlView [data-state="REVISING"][data-side="after"] {
-  opacity: 0.55;
+  [data-look~="changes"] .text_htmlView [data-state="REVISING"][data-side="after"] {
+    opacity: 0.55;
+  }
 }
 
 @media (prefers-reduced-motion: no-preference) {
   [data-look~="changes"] .group_htmlView[data-state="REVISING"]:not([data-pointed]) > :is(.underlay_htmlView, .seam_htmlView)[data-change] {
-    animation: swell_htmlView calc(var(--time_revising_htmlView) * 2) linear infinite;
+    animation: shimmer_Ring_htmlView calc(var(--time_revising_htmlView) * 2) linear infinite;
   }
 
   [data-look~="changes"] .text_htmlView [data-state="REVISING"][data-side="after"] {
@@ -168,20 +173,20 @@
   }
 }
 
-@keyframes swell_htmlView {
+@keyframes shimmer_Ring_htmlView {
   0% {
-    stroke-opacity: 0.45;
+    stroke-opacity: 1;
     animation-timing-function: ease-in-out;
   }
 
   30% {
-    stroke-opacity: 0.7;
+    stroke-opacity: 0.5;
     animation-timing-function: ease-in-out;
   }
 
   60%,
   100% {
-    stroke-opacity: 0.45;
+    stroke-opacity: 1;
   }
 }
 

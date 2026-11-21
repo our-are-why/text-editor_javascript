@@ -3409,3 +3409,12 @@ ellipsis centred on the fold, on the middle of the line's letters, where
 it had been a little over it. The tests read both, the actions' baseline
 against the words' and the ellipsis against their middle, each within
 half a pixel.
+
+Decided 2026-11-21: a proposal being revised isn't faded as well as
+shimmering, as the two said the same, the agent at it, not yet to
+decide, and the band, dimming words already at 55%, took them down to a
+quarter, apart from its status's and a running request's line. Its
+words shimmer at full ink, and its rings rest at full and dim to half
+as the band passes, `shimmer_Ring_htmlView`, where they'd rested faded
+and swelled, brightening as every other shimmer dims. Faded only where
+motion's asked to be reduced, as nothing moves there to say it.

@@ -4947,7 +4947,7 @@ function inStep__Working({
 const NAME$__ANIMATION_WORKING = [
   "revising_htmlView",
   "shimmer_htmlView",
-  "swell_htmlView"
+  "shimmer_Ring_htmlView"
 ]
 
 interface _Api___hugged__Fold$_Said_ {

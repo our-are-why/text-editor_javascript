@@ -2515,7 +2515,7 @@ describe("beside it: what can't live in one document", () => {
     await opened.page.evaluate(() => document.getElementById("notches")?.remove())
   })
 
-  test("a proposal being revised has its rings faded and the words it proposes faded, the words shimmering as its status does, lit or shown too, with no fill behind them, and its rings swelling as the band passes, all of it in step with its status and its arc, begun at one moment; an open one beside it as it was; and still where motion's asked to be reduced", async () => {
+  test("a proposal being revised has the words it proposes shimmering as its status does, at full ink, not faded as well, lit or shown too, with no fill behind them, and its rings dimming to half as the band passes, as the words do, resting at full, all of it in step with its status and its arc, begun at one moment; an open one beside it as it was; and where motion's asked to be reduced, still, its rings and words faded instead", async () => {
     await opened.page.mouse.move(1270, 715)
     await opened.page.evaluate(() => {
       const containerElement = document.createElement("div")
@@ -2567,20 +2567,31 @@ describe("beside it: what can't live in one document", () => {
         rings: [...container?.querySelectorAll(".underlay_htmlView") ?? []].map((ring) => `${ring.getAttribute("data-source")} ${ring.getAttribute("data-side")}: ${Math.round(parseFloat(getComputedStyle(ring).strokeOpacity) * 100) / 100} ${getComputedStyle(ring).animationName}`),
         // when each of the agent's passes and turns began, the item's arc
         // and status, the words and the rings
-        starts: [...new Set((container?.getAnimations({ subtree: true }) ?? []).filter((animation) => animation instanceof CSSAnimation && ["revising_htmlView", "shimmer_htmlView", "swell_htmlView"].includes(animation.animationName)).map((animation) => `${(animation as CSSAnimation).animationName} ${animation.startTime}`))].sort(),
+        starts: [...new Set((container?.getAnimations({ subtree: true }) ?? []).filter((animation) => animation instanceof CSSAnimation && ["revising_htmlView", "shimmer_htmlView", "shimmer_Ring_htmlView"].includes(animation.animationName)).map((animation) => `${(animation as CSSAnimation).animationName} ${animation.startTime}`))].sort(),
         words: [...container?.querySelectorAll(".proposed_htmlView .text_htmlView [data-source]") ?? []].map((span) => `${span.getAttribute("data-source")}: ${Math.round(parseFloat(getComputedStyle(span).opacity) * 100) / 100} ${getComputedStyle(span).animationName}`)
       }
     })
-    // moving, faded, between where they rest and a little above
+    // moving, the rings between half, as the band passes, and full, where
+    // they rest, the words at full, the band dimming them
     const moving = await looks()
-    const faded = (each: string, ceiling: number) => {
+    const dimming = (each: string) => {
       const [label = "", rest = ""] = each.split(": ")
       const [value = "", animation = ""] = rest.split(" ")
-      return parseFloat(value) < ceiling ? `${label}: faded ${animation}` : each
+      return parseFloat(value) >= 0.5 && parseFloat(value) < 1 ? `${label}: dimming ${animation}` : each
     }
-    expect(moving.rings.map((ring) => faded(ring, 0.75))).toEqual(["timeout before: faded swell_htmlView", "rename before: 1 none", "timeout after: faded swell_htmlView", "rename after: 1 none"])
-    expect(moving.words.map((word) => faded(word, 0.85))).toEqual(["timeout: faded shimmer_htmlView", "rename: 1 none"])
-    expect(moving.starts).toEqual(["revising_htmlView 0", "shimmer_htmlView 0", "swell_htmlView 0"])
+    expect(moving.rings.map(dimming).map((ring) => ring.replace(": 1 shimmer", ": dimming shimmer"))).toEqual(["timeout before: dimming shimmer_Ring_htmlView", "rename before: 1 none", "timeout after: dimming shimmer_Ring_htmlView", "rename after: 1 none"])
+    expect(moving.words).toEqual(["timeout: 1 shimmer_htmlView", "rename: 1 none"])
+    expect(moving.starts).toEqual(["revising_htmlView 0", "shimmer_Ring_htmlView 0", "shimmer_htmlView 0"])
+    // the rings at half as the band passes the words' middle, and at full
+    // where it rests
+    const ring_Dimmed = await opened.page.evaluate(() => [900, 2400].map((time) => {
+      const ring = document.querySelector("#states .underlay_htmlView[data-source=\"timeout\"]")
+      const animation = ring?.getAnimations().find((each) => each instanceof CSSAnimation && each.animationName === "shimmer_Ring_htmlView")
+      if (ring === null || animation === undefined) return Number.NaN
+      animation.currentTime = time
+      return Math.round(parseFloat(getComputedStyle(ring).strokeOpacity) * 100) / 100
+    }))
+    expect(ring_Dimmed).toEqual([0.5, 1])
     // lit, as from its request's pill, or shown, as a jump to it leaves it,
     // the words still shimmering, and no fill behind them, their light a
     // line under them, which a ring's fill would be confused with
