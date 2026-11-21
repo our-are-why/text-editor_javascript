@@ -3429,3 +3429,14 @@ seen going round, where a fifth was a sliver of a corner. Mocked on
 solid rings beside it: wider, wider and stronger, and, before, a deeper
 shade, a pale glint, the text's ink and a solid swell, each let go, the
 faint fringe reading best.
+
+Decided 2026-11-21: the room a jump makes is taken back once the
+document's scroll ends, `scrollend`, in `settled`, not at each scroll
+as it goes. Taking back room above the first line sets where the
+document's scrolled, to keep what's shown where it is, and setting it
+stops a smooth scroll where it is: a request's words shown from the
+document's card, with room left above by a move's note's jump, went
+two pixels at each press and stopped, as did anything else the view
+scrolled smoothly without its being a jump. What's taken back is only
+room scrolled out of view, so taking it back a moment later looks the
+same.

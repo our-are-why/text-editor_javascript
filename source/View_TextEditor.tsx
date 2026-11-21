@@ -372,7 +372,7 @@ class _View_TextEditor_ {
         () => {
           if (!this.isJumping || element_Document.scrollTop !== top) return
           this.isJumping = false
-          this.scrolled()
+          this.settled(element_Document)
         },
         150
       )
@@ -380,6 +380,10 @@ class _View_TextEditor_ {
     }
     this.isJumping = false
     this.scrolled()
+    this.room = roomScrolled__View_TextEditor({
+      containerElement_View: this.containerElement,
+      room_View: this.room
+    })
   }
 
   scrolled(): void {
@@ -387,10 +391,6 @@ class _View_TextEditor_ {
     if (this.isJumping) return
     released__Focus_Jump({
       containerElement_View: this.containerElement
-    })
-    this.room = roomScrolled__View_TextEditor({
-      containerElement_View: this.containerElement,
-      room_View: this.room
     })
   }
 }

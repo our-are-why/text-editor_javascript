@@ -1890,6 +1890,40 @@ test("the keyboard after a move's note's jump: on the note at its other end; tha
   expect(opened_Dense.errors).toEqual([])
 })
 
+// then, the room made above the first line by a move's note's jump, a
+// request's words shown from the document's card, its "lines 29–30"
+// pressed: the document goes to them, the room taken back once it's
+// there, not as it starts, which, setting where the document's scrolled,
+// had stopped it a pixel or two along, again at each press
+await opened_Dense.page.locator(note_Moved).scrollIntoViewIfNeeded()
+await stilled_Dense()
+await landedOf_Dense(note_Moved, note_From)
+const room_Shown = await opened_Dense.page.evaluate(() => {
+  const scroller = document.querySelector(".document_htmlView")
+  return scroller === null ? null : parseFloat(getComputedStyle(scroller, "::before").height)
+})
+await opened_Dense.page.hover(".trigger_Document_htmlView")
+await stilled_Dense()
+await opened_Dense.page.locator(".card_Document_htmlView .said_htmlView[data-request=\"asked-4\"] .show_Said_htmlView").click()
+await stilled_Dense()
+const shown_Room = await opened_Dense.page.evaluate(() => {
+  const scroller = document.querySelector(".document_htmlView")
+  const line = document.querySelector(".underlay_htmlView[data-underline][data-running]")
+  if (scroller === null || line === null) return null
+  const rect_Scroller = scroller.getBoundingClientRect()
+  const rect_Line = line.getBoundingClientRect()
+  return {
+    isShown: rect_Line.top >= rect_Scroller.top && rect_Line.bottom <= rect_Scroller.bottom,
+    above: parseFloat(getComputedStyle(scroller, "::before").height)
+  }
+})
+
+test("with room made above the first line by a jump, a request's words shown from the document's card are gone to, the room taken back once the document's there, not as it starts, which stopped it a pixel or two along", () => {
+  expect(room_Shown).toBeGreaterThan(0)
+  expect(shown_Room).toEqual({ isShown: true, above: 0 })
+  expect(opened_Dense.errors).toEqual([])
+})
+
 // then a frame's head, above its list: "Proposals", its lines, how far its
 // proposals have got; Accept all for its open proposals, behind an
 // ellipsis; while anything's queued or in progress for them,
