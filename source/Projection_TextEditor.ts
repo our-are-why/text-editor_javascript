@@ -467,6 +467,7 @@ function itemOf__Request_Task({
       status: request_Task.status,
       model_TextEditor
     }),
+    status: request_Task.status,
     progress: PROGRESSMAP__STATUS_REQUEST[request_Task.status],
     detail_Progress: request_Task.status === "ADDRESSED" ? detailOf__Request(request_Task) : null,
     isRunning: request_Task.status === "RUNNING",
@@ -624,11 +625,11 @@ const LABELMAP__STATE_TASK: _LabelMap__State_Task_ = {
 }
 
 type _ProgressMap__Status_Request_ = {
-  [Status in _Status_Request_]: string | null
+  [Status in _Status_Request_]: string
 }
 
 const PROGRESSMAP__STATUS_REQUEST: _ProgressMap__Status_Request_ = {
-  QUEUED: null,
+  QUEUED: "queued",
   RUNNING: "running",
   ADDRESSED: "done"
 }
@@ -2777,6 +2778,7 @@ function frameOf__Drawn({
             status: request_Host.status,
             model_TextEditor
           }),
+          status: request_Host.status,
           progress: PROGRESSMAP__STATUS_REQUEST[request_Host.status],
           detail_Progress: null,
           isRunning: request_Host.status === "RUNNING",

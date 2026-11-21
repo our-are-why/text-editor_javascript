@@ -427,7 +427,8 @@ interface _Request_Item_ {
   id: string
   notes: string
   reference: _Reference_Request_ | null
-  progress: string | null
+  status: _Status_Request_
+  progress: string
   detail_Progress: string | null
   isRunning: boolean
   isStartable: boolean

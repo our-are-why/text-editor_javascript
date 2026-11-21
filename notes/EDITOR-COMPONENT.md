@@ -3296,3 +3296,92 @@ place's ring stays smooth: a light going round, not a shade changing.
 What's at work, a revising proposal's arc, status and words, the
 header's marks and a request's running, stays smooth too, a shimmer and
 a swell: under way, not where you are.
+
+Decided 2026-11-21: a request's row is pointed at, or has the keyboard,
+as a proposal's item is. Anywhere in it, not only its chip, it lights its
+words, if it was sent with some, as the chip did; and it's marked on its
+list's rule, beside it, the rule thicker there, in its ink. A request
+sent with words, `data-words`, is what you're on, not its proposal: the
+pointer in its row points at no proposal, so its proposal's rings don't
+blink, nor its gutter's marked, only its words lit; its item still lit,
+by the pointer or the keyboard in it, as being in it, which losing its
+light in an item would distort; one sent with none points at its
+proposal, as the rest of its item does, being about the whole of it. Mocked against a larger bullet, small
+and easily lost in a long list, and a band on the row, which, in an item
+lit as its proposal's pointed at, was a band inside a band; marked on
+its list's rule, beside it, the rule thicker there, in its plum, as long
+as it is, and its bullet stroked, a ring of plum, its middle empty,
+joined to the bar by a stroke as thick as the ring's, from the bar's
+middle into the ring's edge on its middle line, painted as the bullet is
+so the two meet true; the bar stroked too, filled with the ground, tried
+and let go.
+Mocked beside the bullet haloed, a ring round it as a radio button
+checked has, and joined to the bar by a short stroke, each tried and let
+go once seen, and a chevron, louder than the list. Tried in between: the page's ink inside its plum, a dot in its
+bullet and a line down the middle of the rule, then the ground showing
+there instead, a ring for its bullet and a thinner line of the ground
+down the rule, which was too subtle. The bullets are the view's own
+discs, drawn the same whatever the font. It never lays a background in
+an item, and is the same in the cards.
+
+Decided 2026-11-21: in a proposal's item, a request's ellipsis sits on
+its first line, just past its last word, close to what it's for, where it
+had been off at the list's right edge, every request's in one column,
+which, beside a short request, left it a long way from what it's for. In
+a card it stays at the right, every request's in one column, as the
+card's other ellipses are, its actions ending where it ended. A group's
+ellipsis is always just after its heading, in a card too. A request's
+ellipsis and its actions are in the revision's plum, as its group's are,
+where they'd been a quiet neutral, its status the one plum thing in it. Its actions open from
+where it is, starting where it started, into room kept at the end of
+that first line whether they're shown or not, so nothing rewraps as they
+open, the lines after it the list's whole width. A float keeps the room
+but can't follow where a wrapped first line ends, so the view measures
+it, after it draws and as it's resized, and draws the ellipsis back from
+the room to just past it, `hugged__Fold$_Said`, `--offset_Fold_htmlView`.
+
+Decided 2026-11-21: a request item rebuilt from first principles: what
+you asked leads, and reads uninterrupted; where it stands is in the same
+place in every row, always said, queued too; what it's about, its words
+and their place, is there but quieter, together on one line; what you
+can do is on demand, in one place in each list. So what you asked is
+alone on its first line, its ellipsis where it was, and under it one
+quiet line, `meta_Said_htmlView`, smaller, all of it in the muted ink,
+nothing in an item plum but what can be done with it: where it stands
+first, "queued", "running", leaning, shimmering, "done" and what it came
+to after it, "done · 1 proposal", then, a dot between, its words' chip,
+a little smaller, and where they are, all on the one line, the chip cut
+shorter to keep it so, and in a card ending short of the ellipses'
+column, so nothing's under them.
+A request item carries its status, `status`, and "queued" is a word as
+the others are, where it had been nothing. It had trailed the text, where
+it landed wherever the text ended, and "done (1 proposal)" ran into what
+was asked; queued said nothing, so a list couldn't be scanned for what's
+waiting; and the words were a heavy line of their own, a column of grey
+chips more than of requests. Mocked against the state as the bullet, a
+ring waiting, an arc turning, a check done, which a ring for a pointed
+row would clash with, and what it's about first, a caption over what was
+asked, as a review comment shows its line, which puts the request second.
+
+Decided 2026-11-21: nothing in a card shrinks to fit the card's height,
+`flex-shrink: 0` on its parts, the card scrolling instead: a card's a
+column held to 70% of the window's height, and as its requests' lists
+grew, its summary, cut at three lines and hiding what's past them, was
+what shrank, to nothing, in a window short enough.
+
+Decided 2026-11-21: a request's row, pointed at anywhere, its place too,
+lights its words as its chip does, the two one in that; but its words are
+peeked at, where they can't be seen, only as its chip's pointed at, not
+the rest of the row, tried and let go. More room between requests, 0.8rem
+where it was 0.55rem, and between what's asked and the line under it,
+0.25rem where it was 0.15rem, a list of them having felt cramped.
+
+Decided 2026-11-21: a request's words stay lit, blinking, as long as the
+pointer's anywhere on its row: pressing "line N" puts the keyboard back
+on the text, and the focus leaving the row had let its words go, so the
+jump's two blinks were the last of them; the focus leaving it lets them
+go now only where the pointer's left it too. And while they're lit, the
+jump's own line, blinking twice from when it was pressed, is hidden, the
+lit line's blink alone, as the two, begun half a beat apart, had blinked
+out of step over the same words; it shows if the row's left before its
+blinks are over.

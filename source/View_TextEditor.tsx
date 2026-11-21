@@ -212,6 +212,9 @@ class _View_TextEditor_ {
     inStep__Working({
       containerElement_View: this.containerElement
     })
+    hugged__Fold$_Said({
+      containerElement_View: this.containerElement
+    })
   }
 
   positionAt(
@@ -1991,6 +1994,7 @@ function Request$__Html({
           <li
             class="said_htmlView"
             data-request={request_Item.id}
+            data-words={request_Item.reference === null ? undefined : ""}
             data-editing={request_Item.isEditing ? "" : undefined}
           >
             <div class="row_Said_htmlView">
@@ -1999,18 +2003,20 @@ function Request$__Html({
                 {request_Item.isEditing
                   ? <Edit_Said__Html request_Item={request_Item} />
                   : <span class="notes_Said_htmlView">{request_Item.notes}</span>}
-                {request_Item.progress !== null && (
-                  <span
-                    class="progress_Said_htmlView"
-                    data-running={request_Item.isRunning ? "" : undefined}
-                  >
-                    {request_Item.progress}
-                    {request_Item.detail_Progress !== null && <span class="detail_Said_htmlView">{` (${request_Item.detail_Progress})`}</span>}
-                  </span>
-                )}
               </div>
             </div>
-            {!request_Item.isEditing && <Reference_Said__Html reference={request_Item.reference} />}
+            {!request_Item.isEditing && (
+              <p class="meta_Said_htmlView">
+                <span
+                  class="progress_Said_htmlView"
+                  data-status={request_Item.status}
+                >
+                  {request_Item.progress}
+                  {request_Item.detail_Progress !== null && <span class="detail_Said_htmlView">{` · ${request_Item.detail_Progress}`}</span>}
+                </span>
+                <Reference_Said__Html reference={request_Item.reference} />
+              </p>
+            )}
           </li>
         ))}
         {children}
@@ -4606,7 +4612,7 @@ function changeAt__View_TextEditor({
   }) ?? areaAt__Frame({
     element_Frame: element.closest(".frame_htmlView"),
     point_Screen
-  }) ?? element.closest("[data-source]")
+  }) ?? (element.closest(".said_htmlView[data-words]") === null ? element.closest("[data-source]") : null)
 }
 
 interface _Api___areaAt__Frame_ {
@@ -4943,6 +4949,42 @@ const NAME$__ANIMATION_WORKING = [
   "shimmer_htmlView",
   "swell_htmlView"
 ]
+
+interface _Api___hugged__Fold$_Said_ {
+  containerElement_View: HTMLElement
+}
+
+function hugged__Fold$_Said({
+  containerElement_View
+}: _Api___hugged__Fold$_Said_): void {
+  for (const element_Row of containerElement_View.querySelectorAll(".item_htmlView .said_htmlView > .row_Said_htmlView")) {
+    const element_Fold = element_Row.querySelector(":scope > .fold_Action_htmlView")
+    const element_Text = element_Row.querySelector(":scope > .text_Said_htmlView")
+    if (!(element_Fold instanceof HTMLElement) || element_Text === null) continue
+    const range = document.createRange()
+    range.selectNodeContents(element_Text)
+    const [
+      rect_First,
+      ...rect$_Rest
+    ] = [...range.getClientRects()].filter((rect) => rect.width > 0)
+    if (rect_First === undefined) {
+      element_Fold.style.removeProperty("--offset_Fold_htmlView")
+      continue
+    }
+    const right_First = Math.max(
+      rect_First.right,
+      ...rect$_Rest.filter((rect) => rect.top < rect_First.bottom - 1).map((rect) => rect.right)
+    )
+    const left_Room = element_Row.getBoundingClientRect().right - element_Fold.offsetWidth
+    element_Fold.style.setProperty(
+      "--offset_Fold_htmlView",
+      `${Math.min(
+        0,
+        right_First + parseFloat(getComputedStyle(element_Fold).marginLeft) - left_Room
+      )}px`
+    )
+  }
+}
 
 interface _Api___positionAt__View_TextEditor_ {
   containerElement_View: HTMLElement

@@ -283,8 +283,10 @@
 /* an item lit, its proposal pointed at, from the code or from the item,
    or the keyboard on one of its actions, so it's seen whose they are: on
    the proposed lines' own ground, their tint on the view's, as the lines
-   it proposes are, the whole row, its gutter too */
-[data-look~="changes"] .item_htmlView:is([data-pointed], :has(:focus-visible)) {
+   it proposes are, the whole row, its gutter too; and the pointer on one
+   of its requests sent with words, which points at no proposal, the item
+   still lit, as being in it, its proposal's rings not */
+[data-look~="changes"] .item_htmlView:is([data-pointed], :has(:focus-visible), :has(.said_htmlView[data-words]:hover)) {
   background:
     linear-gradient(var(--view-proposed, color-mix(in srgb, CanvasText 4%, transparent)), var(--view-proposed, color-mix(in srgb, CanvasText 4%, transparent))),
     var(--view-ground, Canvas);

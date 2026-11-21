@@ -657,7 +657,7 @@ test("an action that would drop revisions queued is asked first: pressed, nothin
           ...header_Queued.document,
           revisions_Level: {
             ...header_Queued.document.revisions_Level,
-            requests: [{ id: "all", notes: "Number them all.", reference: null, progress: null, isRunning: false, isStartable: true, isRemovable: true, isEditing: false, isStoppable: false, detail_Progress: null, isDismissable: false }]
+            requests: [{ id: "all", notes: "Number them all.", reference: null, status: "QUEUED" as const, progress: "queued", isRunning: false, isStartable: true, isRemovable: true, isEditing: false, isStoppable: false, detail_Progress: null, isDismissable: false }]
           }
         }
       }

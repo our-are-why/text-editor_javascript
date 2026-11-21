@@ -417,30 +417,129 @@ test("the JavaScript example opens with a case of each kind of thing asked and d
   expect(seeded_JavaScript).toEqual({
     status: ["filled"],
     cap: [
-      "make the cap an option, 30 seconds unless the caller gives another. |  |  | ",
-      "Name it MAX_DELAY_MS, up with the other constants. | 30_000 | line 33 | "
+      "make the cap an option, 30 seconds unless the caller gives another. |  |  | queued",
+      "Name it MAX_DELAY_MS, up with the other constants. | 30_000 | line 33 | queued"
     ],
     timeout: [
       "only when the request is safe to send twice, a GET or a PUT. |  |  | running",
-      "Say timed out, as the status means, not before any answer. | before any answer | line 37 | "
+      "Say timed out, as the status means, not before any answer. | before any answer | line 37 | queued"
     ],
     isDotted: true,
     isDashed: true,
     isCut: true,
     runs_Requested: ["frame-13-current: 5", "lines-28: 2", "frame-31-proposed: 1", "frame-36-proposed: 1"],
     document: [
-      "Count the errors too, for the message. | lastError = error; | line 20 | ",
-      "Say which round it gives up at. | n === attempts | line 21 | ",
-      "Give up on an error that can't be retried before the count's checked. | attempts || !isRetryable(error) | line 21 | ",
+      "Count the errors too, for the message. | lastError = error; | line 20 | queued",
+      "Say which round it gives up at. | n === attempts | line 21 | queued",
+      "Give up on an error that can't be retried before the count's checked. | attempts || !isRetryable(error) | line 21 | queued",
       "Say why half a delay at random, not a whole one. | // 100ms, 200ms, 400ms, ..., and up to half as long again at random, so that… | lines 29–30 | running",
-      "Say what this throws: https://developer.mozilla.org/en-US/docs/Web/API/AbortSignal/throwIfAborted | signal?.throwIfAborted(); | line 16 | ",
-      "Keep every error the attempts throw, not only the last. |  |  | done (1 proposal)",
-      "Check the doc comment still says what retry takes. |  |  | done (nothing to change)"
+      "Say what this throws: https://developer.mozilla.org/en-US/docs/Web/API/AbortSignal/throwIfAborted | signal?.throwIfAborted(); | line 16 | queued",
+      "Keep every error the attempts throw, not only the last. |  |  | done · 1 proposal",
+      "Check the doc comment still says what retry takes. |  |  | done · nothing to change"
     ],
-    task: ["Say in the README that onRetry is gone. |  |  | "],
+    task: ["Say in the README that onRetry is gone. |  |  | queued"],
     dropped: ["1 dropped, its text goneRun again"],
     isUrlKept: true
   })
+})
+
+// then a request's row pointed at, or the keyboard in it: one sent with
+// words, its words lit, a line under them, its proposal not pointed at,
+// its rings still, its item lit as being in it; one sent with none, its proposal pointed at, as the
+// rest of its item does; each marked on its list's rule beside it, the
+// rule thicker there, in its bullet's plum, its bullet stroked, hollow,
+// joined to the bar by a stroke
+const lookOf_Row = (request: string) => opened_JavaScript.page.evaluate(async (request) => {
+  await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)))
+  const item = document.querySelector(".item_htmlView[data-source=\"timeout\"]")
+  const row = document.querySelector(`.said_htmlView[data-request="${request}"]`)
+  const line = row === null ? null : getComputedStyle(row, "::before")
+  const bullet = row === null ? null : getComputedStyle(row, "::after")
+  return {
+    isProposalPointed: item?.hasAttribute("data-pointed") === true || document.querySelector(".group_htmlView[data-source=\"timeout\"][data-pointed]") !== null,
+    isItemLit: item !== null && getComputedStyle(item).backgroundImage !== "none",
+    isWordsLit: document.querySelector(".underlay_htmlView[data-underline][data-lit]") !== null,
+    isMarked: line !== null && line.content !== "none" && line.width === "4px" && line.backgroundImage === "none" && line.backgroundColor === getComputedStyle(row?.closest(".request_htmlView") ?? document.body).borderLeftColor && bullet !== null && bullet.backgroundImage.includes("rgba(0, 0, 0, 0) 24%") && bullet.backgroundImage.includes("linear-gradient")
+  }
+}, request)
+await opened_JavaScript.page.locator(".frame_htmlView[aria-label=\"lines 36 to 40\"]").evaluate((element) => element.scrollIntoView({ block: "center" }))
+await opened_JavaScript.page.locator(".said_htmlView[data-request=\"timeout-1\"] .notes_Said_htmlView").hover()
+const row_Words = await lookOf_Row("timeout-1")
+await opened_JavaScript.page.locator(".said_htmlView[data-request=\"timeout-0\"] .notes_Said_htmlView").hover()
+const row_Plain = await lookOf_Row("timeout-0")
+await opened_JavaScript.page.locator(".item_htmlView[data-source=\"timeout\"] .title_htmlView").hover()
+const row_Item = await lookOf_Row("timeout-1")
+await opened_JavaScript.page.mouse.move(5, 5)
+await opened_JavaScript.page.keyboard.press("Tab")
+await opened_JavaScript.page.focus(".said_htmlView[data-request=\"timeout-1\"] .show_Said_htmlView")
+const row_Keyed = await lookOf_Row("timeout-1")
+await opened_JavaScript.page.evaluate(() => {
+  if (document.activeElement instanceof HTMLElement) document.activeElement.blur()
+})
+
+test("a request's row pointed at, or the keyboard in it, is marked on its list's rule beside it, the rule thicker there, in its bullet's plum, its bullet stroked, hollow, joined to the bar by a stroke; one sent with words lights its words, its proposal not pointed at, its rings not blinking, the request what you're on, its item still lit, as being in it; one sent with none points at its proposal, as the rest of its item does", () => {
+  expect(row_Words).toEqual({ isProposalPointed: false, isItemLit: true, isWordsLit: true, isMarked: true })
+  expect(row_Plain).toEqual({ isProposalPointed: true, isItemLit: true, isWordsLit: false, isMarked: true })
+  expect(row_Item).toEqual({ isProposalPointed: true, isItemLit: true, isWordsLit: false, isMarked: false })
+  expect(row_Keyed).toEqual({ isProposalPointed: false, isItemLit: true, isWordsLit: true, isMarked: true })
+  expect(opened_JavaScript.errors).toEqual([])
+})
+
+// then each request's ellipsis in a proposal's item: on its first line,
+// just past its last word, the same gap after it in each, its actions
+// starting where it is and kept in its row; and in the document's card,
+// at the right of its first line, every request's in one column; a
+// group's always just after its heading, wherever it is; and a request's
+// ellipsis and actions in the revision's plum, as its group's are
+const hugged_Folds = await opened_JavaScript.page.evaluate(() => [...document.querySelectorAll(".item_htmlView .said_htmlView > .row_Said_htmlView")].flatMap((row) => {
+  const more = row.querySelector(":scope > .fold_Action_htmlView > .more_htmlView")
+  const actions = row.querySelector(":scope > .fold_Action_htmlView > .actions_Said_htmlView")
+  const text = row.querySelector(":scope > .text_Said_htmlView")
+  if (more === null || actions === null || text === null) return []
+  const range = document.createRange()
+  range.selectNodeContents(text)
+  const [first, ...rest] = [...range.getClientRects()].filter((rect) => rect.width > 0)
+  if (first === undefined) return []
+  const right_First = Math.max(first.right, ...rest.filter((rect) => rect.top < first.bottom - 1).map((rect) => rect.right))
+  const rect_More = more.getBoundingClientRect()
+  const rect_Actions = actions.getBoundingClientRect()
+  const rect_Row = row.getBoundingClientRect()
+  return [{
+    isOnFirstLine: rect_More.top < first.bottom && rect_More.bottom > first.top,
+    gap: rect_More.left - right_First,
+    isActionsInRow: rect_Actions.right <= rect_Row.right + 0.5 && Math.abs(rect_Actions.left - rect_More.left) < 0.5
+  }]
+}))
+const rights_Card = await opened_JavaScript.page.evaluate(() => [...document.querySelectorAll(".card_Document_htmlView .said_htmlView > .row_Said_htmlView > .fold_Action_htmlView > .more_htmlView")].map((more) => more.getBoundingClientRect().right))
+const gaps_Head = await opened_JavaScript.page.evaluate(() => [...document.querySelectorAll(".head_Request_htmlView")].flatMap((head) => {
+  const label = head.querySelector(".label_Request_htmlView")
+  const more = head.querySelector(":scope > .fold_Action_htmlView > .more_htmlView")
+  return label === null || more === null ? [] : [more.getBoundingClientRect().left - label.getBoundingClientRect().right]
+}))
+const inks_Said = await opened_JavaScript.page.evaluate(() => {
+  const said = document.querySelector(".card_Document_htmlView .said_htmlView:has(.edit_Said_htmlView)")
+  const more = said?.querySelector(".more_htmlView")
+  const label = document.querySelector(".card_Document_htmlView .label_Request_htmlView")
+  return {
+    more: more === null || more === undefined ? null : getComputedStyle(more).backgroundImage.includes(getComputedStyle(label ?? more).color) ? "plum" : getComputedStyle(more).backgroundImage.slice(0, 80),
+    actions: [...said?.querySelectorAll(".actions_Said_htmlView > button") ?? []].map((button) => getComputedStyle(button).color === getComputedStyle(label ?? button).color ? "plum" : getComputedStyle(button).color)
+  }
+})
+
+test("a request's ellipsis in a proposal's item sits on its first line, just past its last word, close to what it's for, the same gap after it in each, its actions opening from where it is into room kept at the end of that line; in a card, at the right of its first line, every request's in one column, as the card's other ellipses are; a group's always just after its heading; a request's ellipsis and actions in the revision's plum, as its group's are", () => {
+  expect(hugged_Folds.length).toBeGreaterThan(1)
+  expect(hugged_Folds.every((fold) => fold.isOnFirstLine && fold.isActionsInRow)).toBe(true)
+  const gaps = hugged_Folds.map((fold) => fold.gap)
+  expect(Math.max(...gaps) - Math.min(...gaps)).toBeLessThan(1)
+  expect(gaps[0]).toBeGreaterThan(4)
+  expect(gaps[0]).toBeLessThan(16)
+  expect(rights_Card.length).toBeGreaterThan(3)
+  expect(Math.max(...rights_Card) - Math.min(...rights_Card)).toBeLessThan(1)
+  expect(gaps_Head.length).toBeGreaterThan(1)
+  expect(gaps_Head.every((gap) => gap > 0 && gap < 16)).toBe(true)
+  expect(inks_Said.more).toBe("plum")
+  expect(inks_Said.actions.length).toBeGreaterThan(1)
+  expect(inks_Said.actions.every((ink) => ink === "plum")).toBe(true)
 })
 const ringsAt = (needle: string) => opened_JavaScript.page.evaluate(async (needle) => {
   await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)))
@@ -513,7 +612,7 @@ const itemsOf = (source: string) => opened_JavaScript.page.evaluate(async (sourc
     starts: element.querySelectorAll(".request_htmlView .start_Request_htmlView").length,
     adds: element.querySelectorAll(".request_htmlView .add_Request_htmlView").length,
     starts_Request: element.querySelectorAll(".start_Said_htmlView").length,
-    progress: element.querySelectorAll(".progress_Said_htmlView").length,
+    progress: element.querySelectorAll(".progress_Said_htmlView[data-status=\"RUNNING\"]").length,
     ink_Revise: [...element.querySelectorAll(":is(.action_htmlView, .add_Request_htmlView)[data-command=\"revise\"]")].map((button) => getComputedStyle(button).color).join()
   }))
 }, source)
@@ -994,14 +1093,14 @@ test("a right-click on a proposal's selected words offers a revision of the prop
 })
 
 test("a request on no proposal, the document's own, queued and listed in the document's card, as a proposal's are under its item, its heading and its rule in the same plum; Add, at the foot of the document's requests, Revise gone, there being some, a form for the whole document there, under it, the card held open, the keyboard in it, Add and Cancel, no Start, the group having its own, the keyboard back on Add after; added, then started by its own Start, in progress, the rest still queued; addressed, still listed, saying by how many proposals, here none, nothing to remove; a queued one removed, gone", () => {
-  expect(requests_Added).toEqual(["Say why the delay doubles."])
+  expect(requests_Added).toEqual(["Say why the delay doubles. (queued)"])
   expect(isAskFocused_Document).toBe(true)
   expect(form_Header).toEqual({ isInCard: true, isReviseGone: true, isCardShown: true, label: "Revise this document", actions: ["Add", "Cancel"], isFocused: true, isUnder: true })
-  expect(requests_Added_Inline).toEqual(["Say why the delay doubles.", "Name the module's exports."])
+  expect(requests_Added_Inline).toEqual(["Say why the delay doubles. (queued)", "Name the module's exports. (queued)"])
   expect(label_Requests).toEqual(["Requests", true, "solid"])
-  expect(requests_Started).toEqual(["Say why the delay doubles.", "Name the module's exports. (running)"])
-  expect(requests_Done).toEqual(["Say why the delay doubles.", "Name the module's exports. (done (nothing to change))"])
-  expect(requests_Removed).toEqual(["Name the module's exports. (done (nothing to change))"])
+  expect(requests_Started).toEqual(["Say why the delay doubles. (queued)", "Name the module's exports. (running)"])
+  expect(requests_Done).toEqual(["Say why the delay doubles. (queued)", "Name the module's exports. (done · nothing to change)"])
+  expect(requests_Removed).toEqual(["Name the module's exports. (done · nothing to change)"])
   expect(opened_JavaScript.errors).toEqual([])
 })
 
@@ -1259,10 +1358,10 @@ const logged_Stops = (await opened_JavaScript.logged()).slice(count_Stopping).fi
 
 test("each scope's Stop: a document's request in progress, Stop after it, pressed, back in the queue, its Start again, the card kept open though the pointer's gone, its button gone with what it did; its group's Stop, by its heading, while any of them is in progress, putting them back; each asked of the host by its scope", () => {
   expect(stop_Running).toEqual({ progress: "running", controls: ["Stop"] })
-  expect(stop_Stopped).toEqual({ progress: null, controls: ["Edit", "Start", "Remove"] })
+  expect(stop_Stopped).toEqual({ progress: "queued", controls: ["Edit", "Start", "Remove"] })
   expect(card_Kept).toBe(true)
   expect(head_Running).toEqual(["Stop", "Add"])
-  expect(stop_Group).toEqual({ progress: null, controls: ["Edit", "Start", "Remove"] })
+  expect(stop_Group).toEqual({ progress: "queued", controls: ["Edit", "Start", "Remove"] })
   expect(logged_Stops.map((entry) => entry["stopped"])).toEqual(["REQUEST", "DOCUMENT_REQUESTS"])
   expect(logged_Stops[0]).toEqual({ stopped: "REQUEST", requests: 1 })
   expect(Number(logged_Stops[1]?.["requests"])).toBeGreaterThan(0)
@@ -1838,7 +1937,9 @@ const shown_Document = await opened_Tiers.page.evaluate(() => {
     }),
     isOnText: document.activeElement?.matches(".input_htmlView") === true,
     // the line under them, read at points in its blinks: on, off, on, then
-    // settled off, the request's dotted line showing
+    // settled off, the request's dotted line showing; hidden while the
+    // words are lit, the pointer on the row, its blinks the lit line's
+    isShownHidden: [...document.querySelectorAll(".underlay_htmlView[data-underline][data-shown]")].every((line) => getComputedStyle(line).visibility === "hidden"),
     blinks: [...document.querySelectorAll(".underlay_htmlView[data-underline][data-shown]")].map((line) => {
       const [animation] = line.getAnimations()
       animation?.pause()
@@ -1850,6 +1951,13 @@ const shown_Document = await opened_Tiers.page.evaluate(() => {
   }
 })
 await opened_Tiers.page.waitForFunction(() => document.querySelector(".text_htmlView > [data-shown]") === null)
+// the jump's blinks over, the pointer still on the request's row, though
+// the keyboard's gone back to the text: its words still lit, blinking
+const isLit_After_Shown = await opened_Tiers.page.evaluate(async () => {
+  await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)))
+  const line = document.querySelector(".underlay_htmlView[data-underline][data-lit]")
+  return line !== null && getComputedStyle(line).animationName === "blink_htmlView"
+})
 await opened_Tiers.page.mouse.move(5, 5)
 await opened_Tiers.page.waitForFunction(() => getComputedStyle(document.querySelector(".card_Document_htmlView") ?? document.body).visibility === "hidden")
 await rightClickedOn_Tiers("signal?.aborted) break", "aborted")
@@ -1915,7 +2023,7 @@ const wheeled_OverDocument = await scrolledWith_Menu(rect_Document_Tiers.x, rect
 const isFocused_Input_Scrolled = await opened_Tiers.page.evaluate(() => document.activeElement?.matches(".input_htmlView") === true)
 
 describe("the menu's tiers", () => {
-  test("a right-click on a proposal's selected words offers the proposal's, the document's and the task's tiers, the narrowest first, a hairline between each, each its proposal actions first, then its revisions', the keyboard on the first request; each request has the words with it, which the form quotes, and × leaves out; sent, the host's told what it's on and the words, and the document's card lists it with them, and where they are, which, pressed, scrolls the document to them, their line solid a moment, blinking twice as the caret does, then settling back to dotted, the keyboard back on the text", () => {
+  test("a right-click on a proposal's selected words offers the proposal's, the document's and the task's tiers, the narrowest first, a hairline between each, each its proposal actions first, then its revisions', the keyboard on the first request; each request has the words with it, which the form quotes, and × leaves out; sent, the host's told what it's on and the words, and the document's card lists it with them, and where they are, which, pressed, scrolls the document to them, their line solid a moment, blinking twice as the caret does, then settling back to dotted, the keyboard back on the text, and blinking on while the pointer's still on the request's row", () => {
     expect(menu_Tiers.map((choice) => choice === "—" ? choice : choice.slice(0, choice.indexOf(" "))).filter((tier, index, tiers) => tier !== tiers[index - 1])).toEqual(["PROPOSAL", "—", "DOCUMENT", "—", "TASK"])
     expect(menu_Tiers.filter((choice) => choice !== "—").every((choice) => /^(PROPOSAL Proposal|DOCUMENT Document|TASK Task): /.test(choice))).toBe(true)
     expect(sections_Tiers.filter((section, index, sections) => section !== sections[index - 1])).toEqual(["PROPOSAL PROPOSALS", "PROPOSAL REVISIONS", "DOCUMENT PROPOSALS", "DOCUMENT REVISIONS", "TASK PROPOSALS", "TASK REVISIONS"])
@@ -1931,7 +2039,8 @@ describe("the menu's tiers", () => {
     expect(menu_Tiers.some((choice) => /^DOCUMENT Document: Accept all \(\d+\)$/.test(choice))).toBe(true)
     expect(form_Referring).toEqual({ label: "Document retry.js", subject: "retry.js", quote: ["aborted", true], isFocused: true })
     expect(referred_Document.filter((said) => said[0] === "Check for an abort everywhere it waits.")).toEqual([["Check for an abort everywhere it waits.", "aborted", "line 21"]])
-    expect(shown_Document).toEqual({ words: ["aborted"], isInView: true, isOnText: true, blinks: ["1 0 1 0"] })
+    expect(shown_Document).toEqual({ words: ["aborted"], isInView: true, isOnText: true, isShownHidden: true, blinks: ["1 0 1 0"] })
+    expect(isLit_After_Shown).toBe(true)
     expect(form_Dropped).toEqual({ label: "Proposal Stop retrying once the caller aborts", subject: "Stop retrying once the caller aborts", quote: null, isFocused: true })
     expect(asked_Tiers).toEqual([
       { requested: "Check for an abort everywhere it waits.", words: "aborted" },

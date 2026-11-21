@@ -874,15 +874,15 @@ interface _Api___pointedOf__Words_ {
 function pointedOf__Words({
   event
 }: _Api___pointedOf__Words_): _POINT_WORDS__Command_ | null {
-  const element_Words = event.target instanceof Element ? event.target.closest(".said_htmlView .reference_Said_htmlView") : null
-  const id = element_Words?.closest(".said_htmlView")?.getAttribute("data-request")
-  return element_Words === null || element_Words === undefined || typeof id !== "string"
+  const element_Said = event.target instanceof Element ? event.target.closest(".said_htmlView[data-request]") : null
+  const id = element_Said?.getAttribute("data-request")
+  return element_Said === null || element_Said === undefined || typeof id !== "string"
     ? null
     : {
       kind: "POINT_WORDS",
       id_Request: {
         id_Item: idOf__Item({
-          element: element_Words
+          element: element_Said
         }),
         id
       }
@@ -896,9 +896,9 @@ interface _Api___leftOf__Words_ {
 function leftOf__Words({
   event
 }: _Api___leftOf__Words_): _POINT_WORDS__Command_ | null {
-  const element_Words = event.target instanceof Element ? event.target.closest(".said_htmlView .reference_Said_htmlView") : null
+  const element_Said = event.target instanceof Element ? event.target.closest(".said_htmlView[data-request]") : null
   const element_Next = event instanceof MouseEvent || event instanceof FocusEvent ? event.relatedTarget : null
-  return element_Words === null || (element_Next instanceof Node && element_Words.contains(element_Next))
+  return element_Said === null || (element_Next instanceof Node && element_Said.contains(element_Next)) || (event instanceof FocusEvent && element_Said.matches(":hover"))
     ? null
     : {
       kind: "POINT_WORDS",

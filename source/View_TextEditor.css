@@ -760,9 +760,9 @@
 /* the ellipsis, an icon: three dots, drawn, centred, where the text's own
    would sit on its baseline, on a faint disc, no ring, in the ink of what
    it folds: the revision's plum for a group's and the revisions', the
-   proposals' indigo for the proposals', a request's own neutral, as its
-   own actions are quiet; the character kept, unseen, for what's written
-   out */
+   proposals' indigo for the proposals', a request's own the revision's
+   plum too, as its actions are; the character kept, unseen, for what's
+   written out */
 .htmlView_editor .more_htmlView {
   --ink_More_htmlView: var(--accent_revision_htmlView);
   display: inline-block;
@@ -787,10 +787,6 @@
   --ink_More_htmlView: var(--accent_proposals_htmlView);
 }
 
-.htmlView_editor .said_htmlView .more_htmlView {
-  --ink_More_htmlView: var(--view-placeholder-ink, color-mix(in srgb, CanvasText 58%, transparent));
-}
-
 .htmlView_editor .actions_Said_htmlView {
   display: inline-flex;
   align-items: baseline;
@@ -805,10 +801,9 @@
   margin-left: auto;
 }
 
-/* what a request came to, after its status, in brackets, in the text's
-   muted ink, not the status's plum: "addressed (nothing to change)" */
+/* what a request came to, after where it stands, a dot between: "done ·
+   nothing to change" */
 .htmlView_editor .detail_Said_htmlView {
-  color: var(--view-placeholder-ink, color-mix(in srgb, CanvasText 58%, transparent));
   font-style: normal;
 }
 
@@ -824,25 +819,80 @@
 .htmlView_editor .list_Request_htmlView {
   margin: 0.2rem 0 0;
   padding-left: 1.1em;
-  list-style: disc;
+  list-style: none;
 }
 
+/* each request's bullet the view's, a disc where a list's would be, in
+   the group's ink, drawn the same whatever the font; painted, not a box
+   rounded, as a box that small, in a card that scrolls, is put on whole
+   pixels edge by edge and comes out wider than it's tall */
 .htmlView_editor .said_htmlView {
+  position: relative;
   margin: 0;
 }
 
-.htmlView_editor .said_htmlView + .said_htmlView {
-  margin-top: 0.55rem;
+.htmlView_editor .said_htmlView::after {
+  content: "";
+  position: absolute;
+  top: 0.353em;
+  left: -1.34em;
+  width: 0.64em;
+  height: 0.64em;
+  background: radial-gradient(circle 0.16em, var(--ink_state_htmlView) 82%, transparent 100%);
 }
 
-/* a request's line: what it says, and how it's getting on, and, at the
-   right of its first line, its ellipsis, every request's in one column,
-   its actions opening in its place, as every ellipsis's do, ending where
-   it ended, the two in one spot; the room they take kept on that line
-   whether they're shown or not, so what's written never rewraps as they
-   open, the lines after it the list's whole width; they're hidden by
-   being clear, not clipped, so the keyboard still reaches them, and
-   unfolds them as it does */
+.htmlView_editor .said_htmlView + .said_htmlView {
+  margin-top: 0.8rem;
+}
+
+/* a request pointed at, or the keyboard in it, marked on its list's rule,
+   beside it, the rule thicker there, in its ink, as long as it is, as far
+   past the rule on each side as the list's indent and the group's padding
+   put it, and its bullet stroked, a ring of its ink, its middle empty,
+   joined to the bar by a stroke as thick as the ring's, from the bar's
+   middle into the ring's edge, on the ring's middle line, painted as the
+   bullet is, so the two meet true: never a
+   band behind it, which in a proposal's item, lit itself
+   as its proposal's pointed at, would be a band inside a band; tried
+   before as the ground inside its plum, a ring for its bullet and a
+   thinner line of the ground down the rule, which was too subtle. Its
+   words, if it was sent with some, lit where they are, as pointing at
+   their chip lights them, and its proposal not pointed at, its rings not
+   blinking, the request what you're on, `data-words`, its item still
+   lit, as being in it; one sent with none pointing at its proposal, as
+   the rest of its item does, being about the whole of it */
+.htmlView_editor .said_htmlView[data-request]:is(:hover, :has(:focus-visible))::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: calc(-1.1em - 0.6rem - 3px);
+  width: 4px;
+  border-radius: 2px;
+  background: var(--ink_state_htmlView);
+}
+
+.htmlView_editor .said_htmlView[data-request]:is(:hover, :has(:focus-visible))::after {
+  left: calc(-1.1em - 0.6rem - 1px);
+  width: calc(0.4em + 0.6rem + 1px);
+  background:
+    radial-gradient(circle 0.32em at calc(100% - 0.32em) 50%, transparent 24%, var(--ink_state_htmlView) 29% 45%, transparent 51%),
+    linear-gradient(var(--ink_state_htmlView), var(--ink_state_htmlView)) left center / calc(100% - 0.32em - 0.14em) 0.052em no-repeat;
+}
+
+/* a request's line: what it says, and how it's getting on, and, on its
+   first line, its ellipsis, its actions opening in its place, as every
+   ellipsis's do, the two in one spot; the room they take kept at the end
+   of that line whether they're shown or not, so what's written never
+   rewraps as they open, the lines after it the list's whole width. In a
+   card, at the right of that line, every request's in one column, as the
+   card's other ellipses are, its actions ending where it ended, its
+   group's always just after the group's heading, wherever it is; in a proposal's item, just past its last word, close to what
+   it's for, its actions starting where it started, drawn back from the
+   room to the first line's end by the view, which measures where it
+   ends, `hugged__Fold$_Said`, as a float can't follow a wrapped line's
+   end. They're hidden by being clear, not clipped, so the keyboard still
+   reaches them, and unfolds them as it does */
 .htmlView_editor .row_Said_htmlView {
   display: flow-root;
 }
@@ -860,6 +910,11 @@
   justify-items: end;
   align-items: baseline;
   margin-left: 0.75em;
+}
+
+.htmlView_editor .item_htmlView .row_Said_htmlView > .fold_Action_htmlView {
+  justify-items: start;
+  translate: var(--offset_Fold_htmlView, 0) 0;
 }
 
 .htmlView_editor .row_Said_htmlView > .fold_Action_htmlView > * {
@@ -885,22 +940,65 @@
   }
 }
 
-.htmlView_editor .said_htmlView::marker {
-  color: var(--ink_state_htmlView);
+/* under what a request says, which leads, alone, one quiet line for the
+   rest, smaller, all of it in the muted ink, nothing in the item plum but
+   what can be done with it: where it stands first, in every row, queued
+   too, so a list reads down without reading the rows, running leaning,
+   done with what it came to after it; then, a dot between, the words it was
+   sent with, the chip the form quotes them in, a little smaller, and
+   where they are, all on the one line, the chip giving up its room to
+   the rest, cut shorter, so the line never wraps; in a card, ending short
+   of the column the ellipses are in, as wide as an ellipsis and its gap,
+   so nothing's under them. The words, as in
+   the form, pointed at or the keyboard on them, lit where they are while
+   the request waits or is under way, and peeked at where some of them
+   can't be seen; once it's done with, only peeked at, what's there since
+   perhaps not what was sent */
+.htmlView_editor .meta_Said_htmlView {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5em;
+  min-width: 0;
+  margin: 0.25rem 0 0;
+  color: var(--view-placeholder-ink, color-mix(in srgb, CanvasText 58%, transparent));
+  font-size: 0.85em;
 }
 
-/* the words a request was sent with, under what it says, as an
-   attachment is, the chip the form quotes them in, cut where they're
-   longer than the line, and, as there, pointed at or the keyboard on
-   them, lit where they are while the request waits or is under way, and
-   peeked at where some of them can't be seen; once it's done with, only
-   peeked at, what's there since perhaps not what was sent */
-.htmlView_editor .said_htmlView .reference_Said_htmlView {
+.htmlView_editor .card_htmlView .said_htmlView:has(> .row_Said_htmlView > .fold_Action_htmlView) > .meta_Said_htmlView {
+  margin-right: calc((1.2em * 0.82 + 0.75em) / 0.85);
+}
+
+.htmlView_editor .meta_Said_htmlView > .reference_Said_htmlView {
+  display: contents;
+}
+
+.htmlView_editor .meta_Said_htmlView > .reference_Said_htmlView::before {
+  content: "·";
+}
+
+.htmlView_editor .meta_Said_htmlView > * {
+  flex: none;
+}
+
+.htmlView_editor .meta_Said_htmlView .chip_Quote_htmlView {
+  flex: 0 1 auto;
+  min-width: 3em;
+  font-size: 0.95em;
+}
+
+.htmlView_editor .meta_Said_htmlView .show_Said_htmlView {
+  flex: none;
+}
+
+.htmlView_editor .meta_Said_htmlView .show_Said_htmlView {
+  font-size: inherit;
+}
+
+.htmlView_editor .notes_Edit_htmlView + .reference_Said_htmlView {
   display: flex;
   align-items: baseline;
   gap: 0.6em;
   min-width: 0;
-  margin-top: 0.2rem;
 }
 
 /* after them, where they are, "lines 31–33", as a move's note says where
@@ -980,33 +1078,26 @@
   margin-top: 0.15rem;
 }
 
-/* a request's own actions, all quiet, in the muted ink, the page's when
-   hovered, its status the one thing in it plum: Stop, Edit, Start, and
-   Remove, for a queued request, done without, and Dismiss, for one
-   addressed, done with */
+/* a request's own actions, quiet, links in the revision's plum, as its
+   ellipsis and its group's actions are, underlined when hovered: Stop,
+   Edit, Start, and Remove, for a queued request, done without, and
+   Dismiss, for one addressed, done with */
 .htmlView_editor :is(.stop_Said_htmlView, .edit_Said_htmlView, .start_Said_htmlView, .dismiss_Said_htmlView, .remove_htmlView) {
   margin-left: 0.5em;
   padding: 0;
   border: none;
   background: none;
-  color: var(--view-placeholder-ink, color-mix(in srgb, CanvasText 58%, transparent));
+  color: var(--accent_revision_htmlView);
   font: inherit;
   font-size: 0.82em;
   cursor: pointer;
 }
 
-.htmlView_editor .progress_Said_htmlView {
-  margin-left: 0.5em;
-  color: var(--accent_revision_htmlView);
-  font-size: 0.82em;
-}
-
-.htmlView_editor .progress_Said_htmlView {
+.htmlView_editor .progress_Said_htmlView[data-status="RUNNING"] {
   font-style: italic;
 }
 
 .htmlView_editor :is(.stop_Said_htmlView, .edit_Said_htmlView, .start_Said_htmlView, .dismiss_Said_htmlView, .remove_htmlView):hover {
-  color: inherit;
   text-decoration: underline;
 }
 
@@ -1070,6 +1161,14 @@
 
 .htmlView_editor .underlay_htmlView[data-underline][data-shown] {
   animation: shown_Line_htmlView 1.65s step-end both;
+}
+
+/* while the words shown are lit, the pointer still on their request's
+   row, the lit line's blink alone, the shown one hidden, as the two,
+   begun apart, would blink out of step over the same words; shown again
+   if the row's left before its blinks are over */
+.htmlView_editor .underlays_htmlView:has(.underlay_htmlView[data-underline][data-lit]) .underlay_htmlView[data-underline][data-shown] {
+  visibility: hidden;
 }
 
 @keyframes shown_Line_htmlView {
@@ -1249,7 +1348,7 @@
     animation: revising_htmlView var(--time_revising_htmlView) linear infinite;
   }
 
-  .htmlView_editor :is(.item_htmlView[data-state="REVISING"] .status_htmlView, .state_Card_htmlView[data-state="WORKING"], .progress_Said_htmlView[data-running]) {
+  .htmlView_editor :is(.item_htmlView[data-state="REVISING"] .status_htmlView, .state_Card_htmlView[data-state="WORKING"], .progress_Said_htmlView[data-status="RUNNING"]) {
     mask-image: var(--band_Shimmer_htmlView);
     mask-size: 250% 100%;
     animation: shimmer_htmlView calc(var(--time_revising_htmlView) * 2) linear infinite;
@@ -2070,7 +2169,13 @@
 }
 
 /* what the agent says, of the task or of this document, cut at three
-   lines, the whole of it when it's hovered */
+   lines, the whole of it when it's hovered; nothing in a card shrinking
+   to fit it in its height, the card scrolling instead, as the summary,
+   cut, would shrink to nothing first */
+.htmlView_editor .card_htmlView > * {
+  flex-shrink: 0;
+}
+
 .htmlView_editor .summary_Card_htmlView {
   display: -webkit-box;
   overflow: hidden;
@@ -2395,6 +2500,9 @@
   transition: opacity 120ms ease, visibility 0s linear 120ms;
 }
 
+/* shown only as its chip's pointed at, or the keyboard's on its words,
+   not as the rest of a request's row is, which lights its words without
+   it */
 .htmlView_editor .chip_Quote_htmlView:is(:hover, :has(> .words_Quote_htmlView:focus-visible)) > .peek_Quote_htmlView {
   visibility: visible;
   opacity: 1;
