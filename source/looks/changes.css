@@ -220,7 +220,12 @@
    top edges, part after part, down its last side, back along its bottom
    edges and up its first side, never its cut sides, drawn on the view's
    pieces of it, each its share of the lap and where on the lap it starts,
-   --phase_htmlView. Still, where motion's asked to be reduced. */
+   --phase_htmlView. The light the ring's own colour, faint, at 60%, wider
+   than the ring, a fringe either side of it, as over the ring it's the
+   ring's colour; a fifth of the lap, and never shorter than 24px, the
+   ring's length the view's, --length_htmlView, so on a short ring, a
+   letter's, it's seen going round, where a fifth was a sliver of a
+   corner. Still, where motion's asked to be reduced. */
 [data-look~="changes"] .group_htmlView[data-pointed] > :is(.underlay_htmlView, .seam_htmlView)[data-change] {
   stroke-width: 2px;
 }
@@ -243,10 +248,11 @@
     --time_lap_htmlView: clamp(2s, calc(var(--lap_htmlView, 125) * 16ms), 6s);
     stroke: var(--edge);
     stroke-width: 6px;
-    stroke-opacity: 0.38;
+    --dash_lap_htmlView: max(20, 2400 / var(--length_htmlView, 125));
+    stroke-opacity: 0.6;
     stroke-linecap: round;
     stroke-linejoin: round;
-    stroke-dasharray: 20 80;
+    stroke-dasharray: calc(var(--dash_lap_htmlView)) calc(100 - var(--dash_lap_htmlView));
     animation: lap_htmlView var(--time_lap_htmlView) linear calc((var(--phase_htmlView, 0) - 1) * var(--time_lap_htmlView)) infinite;
   }
 

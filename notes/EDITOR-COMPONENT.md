@@ -3418,3 +3418,14 @@ words shimmer at full ink, and its rings rest at full and dim to half
 as the band passes, `shimmer_Ring_htmlView`, where they'd rested faded
 and swelled, brightening as every other shimmer dims. Faded only where
 motion's asked to be reduced, as nothing moves there to say it.
+
+Decided 2026-11-21: the light round a pointed place's rings stays the
+ring's own colour, faint, a fringe either side of the ring, as over the
+ring it's the ring's colour, but at 60%, where it was 38%, so it's found
+on the ring under the pointer, steady at full, and on its other side;
+and it's a fifth of the lap and never shorter than 24px, the ring's
+length the view's, `--length_htmlView`, so on a ring of one letter it's
+seen going round, where a fifth was a sliver of a corner. Mocked on
+solid rings beside it: wider, wider and stronger, and, before, a deeper
+shade, a pale glint, the text's ink and a solid swell, each let go, the
+faint fringe reading best.

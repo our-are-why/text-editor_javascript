@@ -577,6 +577,44 @@ test("a running request's own line shimmers under the words it's on, the agent a
   expect(words_Running.running).toEqual(["lines-28 dotted shimmer_htmlView stroke-box", "lines-28 dotted shimmer_htmlView stroke-box"])
   expect(words_Running.words).toBe(0)
 })
+
+// the light round a pointed place's rings, the ring's own colour, faint,
+// a fifth of its lap, and never shorter than 24px, so it's seen going
+// round a ring of one letter
+const lightOf = async (source: string) => {
+  const point = await opened_JavaScript.page.evaluate((source) => {
+    const ring = document.querySelector(`.group_htmlView > .underlay_htmlView[data-change][data-source="${source}"][data-place="2"][data-side="before"]`)
+    ring?.scrollIntoView({ block: "center" })
+    const rect = ring?.getBoundingClientRect()
+    if (rect === undefined) throw new Error(`no ring of ${source}`)
+    return { x: rect.left + 1.5, y: rect.top + rect.height / 2 }
+  }, source)
+  await opened_JavaScript.page.mouse.move(point.x, point.y)
+  return opened_JavaScript.page.evaluate(async (source) => {
+    await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)))
+    const light = document.querySelector(`.lap_htmlView[data-pointed][data-source="${source}"][data-place="2"][data-side="before"]`)
+    if (!(light instanceof SVGPathElement)) return null
+    const style = getComputedStyle(light)
+    const [dash = 0] = (style.strokeDasharray.match(/\d*\.?\d+/g) ?? []).map(Number)
+    return {
+      opacity: Math.round(parseFloat(style.strokeOpacity) * 100) / 100,
+      dash: Math.round(dash * 10) / 10,
+      length: Math.round(dash * light.getTotalLength() / Number(light.getAttribute("pathLength")) * 10) / 10
+    }
+  }, source)
+}
+const light_Letter = await lightOf("round")
+const light_Word = await lightOf("errors")
+await opened_JavaScript.page.mouse.move(5, 5)
+
+test("a light runs round a pointed place's rings in the ring's own colour, faint, a fifth of the lap, never shorter than 24px, so it's seen going round a ring of one letter", () => {
+  expect(light_Letter?.opacity).toBe(0.6)
+  expect(light_Letter?.dash).toBeGreaterThan(20)
+  expect(light_Letter?.length).toBeCloseTo(24, 0)
+  expect(light_Word?.opacity).toBe(0.6)
+  expect(light_Word?.dash).toBe(20)
+  expect(light_Word?.length).toBeGreaterThan(24)
+})
 const ringsAt = (needle: string) => opened_JavaScript.page.evaluate(async (needle) => {
   await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)))
   const element_Line = [...document.querySelectorAll(".run_htmlView[data-run$=\"-proposed\"] > .line_htmlView > .text_htmlView")].find((element) => (element.textContent ?? "").includes(needle))
