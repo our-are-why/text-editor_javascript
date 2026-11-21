@@ -1051,9 +1051,14 @@
    its "line N" is pressed, or quoted by the form while the form's chip is
    pointed at: a line under them, solid and heavier, over the request's
    own dotted one, in the revision's plum; never a fill, which inside a
-   ring would read as the ring filled, an accepted proposal's. Shown, it
-   fades back to the dotted line; still, solid, while it's shown, where
-   motion's asked to be reduced. Cutting no ring, as a request's own line
+   ring would read as the ring filled, an accepted proposal's. Lit or
+   quoted, it blinks as the caret does, on and off on its beat, no fading
+   between, the dotted line showing while it's off, and begins on, as the
+   caret does once it's moved; shown, it blinks twice on the caret's beat,
+   on, off, on, off, half a beat each, then settles, the dotted line
+   showing, before the words are no longer shown; still, solid, where
+   motion's asked to be reduced. Cutting no ring, as a
+   request's own line
    does, as it's only for a moment, and the form's words have no line of
    their own yet to cut it */
 .htmlView_editor .underlay_htmlView[data-underline]:is([data-lit], [data-shown], [data-quoted]) {
@@ -1064,16 +1069,18 @@
 }
 
 .htmlView_editor .underlay_htmlView[data-underline][data-shown] {
-  animation: shown_Line_htmlView 1.8s ease-in both;
+  animation: shown_Line_htmlView 1.65s step-end both;
 }
 
 @keyframes shown_Line_htmlView {
-  from {
-    stroke-opacity: 1;
+  0%,
+  66.67% {
+    opacity: 1;
   }
 
-  to {
-    stroke-opacity: 0;
+  33.33%,
+  100% {
+    opacity: 0;
   }
 }
 
@@ -1089,6 +1096,13 @@
 
 .htmlView_editor:has(.asking_htmlView :is(.chip_Quote_htmlView:hover, .words_Quote_htmlView:focus-visible)) .underlay_htmlView[data-underline][data-quoted] {
   visibility: visible;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .htmlView_editor .underlay_htmlView[data-underline][data-lit],
+  .htmlView_editor:has(.asking_htmlView :is(.chip_Quote_htmlView:hover, .words_Quote_htmlView:focus-visible)) .underlay_htmlView[data-underline][data-quoted] {
+    animation: blink_htmlView 1.1s step-end infinite;
+  }
 }
 
 .htmlView_editor :is(.places_htmlView, .rationale_htmlView, .request_htmlView, .status_htmlView):empty {

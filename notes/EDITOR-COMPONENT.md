@@ -3270,3 +3270,29 @@ the form's words having no line of their own yet. A filled ring means
 only accepted. Mocked beside the fill and a highlighter's band across the
 lower half of the words, which, inside a ring, was still a plum wash, and
 sat on the dotted line.
+
+Decided 2026-11-21: what you're on blinks as the caret does, on its
+beat, 1.1 seconds, stepping, no fading between: a request's line lit
+while its chip's pointed at, or the form's quoted words' while the form's
+chip is, on and off, the request's dotted line showing while it's off;
+and the proposal pointed at, its rings between full and faint,
+`blink_Ring_htmlView`, where they'd breathed, easing, every 2.4 seconds;
+but the ring under the pointer steady, as it's where you're looking, and
+blinking it there jarred, only that one, its place's other side, in the
+frame's other lines, blinking with the rest, as it's somewhere else to
+find: the pointer's place carries its side now, `_Place_Pointed_`, and
+the ring it's on is `data-hovered`. That ring blinks between full and
+full, `--faint_Blink_htmlView`, so its blink stays in step with the
+others' and takes up again as the pointer leaves it, where taking its
+blink away would start it over, out of step. What you're on is steady;
+what it points you to blinks.
+Each begins on, as the caret does once it's moved, a blink kept from ring
+to ring of one proposal and begun anew at another, so it's not kept in
+step with what's at work. A request's line shown once its "line N" is
+pressed blinks twice on the same beat, on, off, on, off, half a beat
+each, and settles, the dotted line showing, before its words are no
+longer shown, where it had faded. The light running round the pointed
+place's ring stays smooth: a light going round, not a shade changing.
+What's at work, a revising proposal's arc, status and words, the
+header's marks and a request's running, stays smooth too, a shimmer and
+a swell: under way, not where you are.

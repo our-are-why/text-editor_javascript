@@ -10,6 +10,7 @@ import {
 import {
   type _ViewModel_TextEditor_,
   type _Target_Note_,
+  type _Place_Pointed_,
   type _Range_Lines_,
   type _Id_Item_,
   type _Selection_TextEditor_,
@@ -793,7 +794,7 @@ type _Direction_Move_ = "BACKWARD" | "FORWARD"
 interface _State__Viewer_TextEditor_ {
   viewModel_TextEditor: _ViewModel_TextEditor_
   source_Pointed: string | null
-  place_Pointed: string | null
+  place_Pointed: _Place_Pointed_ | null
   target_Pointed: _Target_Note_ | null
   target_Revealed: _Target_Note_ | null
   ranges_Folded: Array<_Range_Lines_>
@@ -923,7 +924,7 @@ function POINT_stateAfter__Command({
   const place_Pointed = command.point_Screen === null ? null : layout_View.placeAt(command.point_Screen)
   const target_Pointed = command.point_Screen === null ? null : layout_View.targetAt(command.point_Screen)
   const range_Peeked = command.point_Screen === null ? null : layout_View.foldAt(command.point_Screen)
-  return source_Pointed === state.source_Pointed && place_Pointed === state.place_Pointed && target_Pointed?.source === state.target_Pointed?.source && target_Pointed?.side === state.target_Pointed?.side && range_Peeked?.first === state.range_Peeked?.first && range_Peeked?.last === state.range_Peeked?.last
+  return source_Pointed === state.source_Pointed && place_Pointed?.place === state.place_Pointed?.place && place_Pointed?.side === state.place_Pointed?.side && target_Pointed?.source === state.target_Pointed?.source && target_Pointed?.side === state.target_Pointed?.side && range_Peeked?.first === state.range_Peeked?.first && range_Peeked?.last === state.range_Peeked?.last
     ? state
     : {
       ...state,

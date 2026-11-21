@@ -74,6 +74,7 @@ export {
   peekOf__Quote,
   type _Peek_Quote_,
   pointedAt__ViewModel,
+  type _Place_Pointed_,
   foldedAt__ViewModel,
   draftingAt__ViewModel,
   confirmingAt__ViewModel,
@@ -1070,7 +1071,7 @@ function attributesOf__Stretches(
 interface _Api___pointedAt__ViewModel_ {
   viewModel_TextEditor: _ViewModel_TextEditor_
   source: string | null
-  place: string | null
+  place: _Place_Pointed_ | null
   target_Note: _Target_Note_ | null
 }
 
@@ -1089,10 +1090,15 @@ function pointedAt__ViewModel({
   })))
 }
 
+interface _Place_Pointed_ {
+  place: string
+  side: string
+}
+
 interface _Api___pointedIn__Block_ {
   block_ViewModel: _Block_ViewModel_
   source: string | null
-  place: string | null
+  place: _Place_Pointed_ | null
   target_Note: _Target_Note_ | null
 }
 
@@ -1129,7 +1135,7 @@ function pointedIn__Block({
 interface _Api___pointedIn__Run_ {
   run_Lines: _Run_Lines_
   source: string | null
-  place: string | null
+  place: _Place_Pointed_ | null
   target_Note: _Target_Note_ | null
 }
 
@@ -1155,7 +1161,7 @@ function pointedIn__Run({
       ...line_Run,
       gutter: {
         ...line_Run.gutter,
-        pointed: isCovered(underlay$_Pointed.filter((underlay_Text) => place !== null && underlay_Text.attributes["data-place"] === place), index_Line)
+        pointed: isCovered(underlay$_Pointed.filter((underlay_Text) => place !== null && underlay_Text.attributes["data-place"] === place.place), index_Line)
           ? "place"
           : isCovered(underlay$_Pointed, index_Line)
             ? "proposal"
@@ -1174,10 +1180,15 @@ function pointedIn__Run({
         ...underlay_Text,
         attributes: {
           ...underlay_Text.attributes,
-          ...place !== null && underlay_Text.attributes["data-source"] === source && underlay_Text.attributes["data-place"] === place
-            ? {
-              "data-pointed": ""
-            }
+          ...place !== null && underlay_Text.attributes["data-source"] === source && underlay_Text.attributes["data-place"] === place.place
+            ? underlay_Text.attributes["data-side"] === place.side
+              ? {
+                "data-pointed": "",
+                "data-hovered": ""
+              }
+              : {
+                "data-pointed": ""
+              }
             : {},
           ...target_Note !== null && underlay_Text.attributes["data-source"] === target_Note.source && underlay_Text.attributes["data-side"] === target_Note.side
             ? {
@@ -1491,7 +1502,7 @@ function confirmingAt__ViewModel({
 interface _Api___pointedIn__Part_ {
   part_Frame: _Part_Frame_
   source: string | null
-  place: string | null
+  place: _Place_Pointed_ | null
   target_Note: _Target_Note_ | null
 }
 

@@ -865,7 +865,8 @@ const requested_Aborted = await opened_JavaScript.page.evaluate(async () => {
   })
 })
 // each word lit, where it is, and whether it's lit as it should be: a
-// solid line under it, showing, and no fill behind it, which inside a ring
+// solid line under it, showing, blinking as the caret does, and no fill
+// behind it, which inside a ring
 // would read as the ring filled, an accepted proposal's
 const litOf_Words = () => opened_JavaScript.page.evaluate(async () => {
   await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)))
@@ -874,7 +875,7 @@ const litOf_Words = () => opened_JavaScript.page.evaluate(async () => {
     const isLined = [...element.closest(".run_htmlView")?.querySelectorAll(".underlay_htmlView[data-underline][data-lit]") ?? []].some((line) => {
       const rect_Line = line.getBoundingClientRect()
       const style = getComputedStyle(line)
-      return style.visibility === "visible" && style.strokeDasharray === "none" && rect_Line.left <= rect.left + 4 && rect_Line.right >= rect.right - 4 && rect_Line.top > rect.bottom - 3 && rect_Line.top < rect.bottom + 8
+      return style.visibility === "visible" && style.strokeDasharray === "none" && style.animationName === "blink_htmlView" && rect_Line.left <= rect.left + 4 && rect_Line.right >= rect.right - 4 && rect_Line.top > rect.bottom - 3 && rect_Line.top < rect.bottom + 8
     })
     return `${element.closest(".run_htmlView")?.getAttribute("data-run")?.endsWith("-proposed") === true ? "proposed" : "current"} ${element.textContent} ${isLined && getComputedStyle(element).backgroundColor === "rgba(0, 0, 0, 0)"}`
   })
@@ -1835,7 +1836,17 @@ const shown_Document = await opened_Tiers.page.evaluate(() => {
       const rect = element.getBoundingClientRect()
       return rect.top >= rect_Scroller.top && rect.bottom <= rect_Scroller.bottom
     }),
-    isOnText: document.activeElement?.matches(".input_htmlView") === true
+    isOnText: document.activeElement?.matches(".input_htmlView") === true,
+    // the line under them, read at points in its blinks: on, off, on, then
+    // settled off, the request's dotted line showing
+    blinks: [...document.querySelectorAll(".underlay_htmlView[data-underline][data-shown]")].map((line) => {
+      const [animation] = line.getAnimations()
+      animation?.pause()
+      return [0, 600, 1200, 1700].map((time) => {
+        if (animation !== undefined) animation.currentTime = time
+        return getComputedStyle(line).opacity
+      }).join(" ")
+    })
   }
 })
 await opened_Tiers.page.waitForFunction(() => document.querySelector(".text_htmlView > [data-shown]") === null)
@@ -1904,7 +1915,7 @@ const wheeled_OverDocument = await scrolledWith_Menu(rect_Document_Tiers.x, rect
 const isFocused_Input_Scrolled = await opened_Tiers.page.evaluate(() => document.activeElement?.matches(".input_htmlView") === true)
 
 describe("the menu's tiers", () => {
-  test("a right-click on a proposal's selected words offers the proposal's, the document's and the task's tiers, the narrowest first, a hairline between each, each its proposal actions first, then its revisions', the keyboard on the first request; each request has the words with it, which the form quotes, and × leaves out; sent, the host's told what it's on and the words, and the document's card lists it with them, and where they are, which, pressed, scrolls the document to them, lit a moment, the keyboard back on the text", () => {
+  test("a right-click on a proposal's selected words offers the proposal's, the document's and the task's tiers, the narrowest first, a hairline between each, each its proposal actions first, then its revisions', the keyboard on the first request; each request has the words with it, which the form quotes, and × leaves out; sent, the host's told what it's on and the words, and the document's card lists it with them, and where they are, which, pressed, scrolls the document to them, their line solid a moment, blinking twice as the caret does, then settling back to dotted, the keyboard back on the text", () => {
     expect(menu_Tiers.map((choice) => choice === "—" ? choice : choice.slice(0, choice.indexOf(" "))).filter((tier, index, tiers) => tier !== tiers[index - 1])).toEqual(["PROPOSAL", "—", "DOCUMENT", "—", "TASK"])
     expect(menu_Tiers.filter((choice) => choice !== "—").every((choice) => /^(PROPOSAL Proposal|DOCUMENT Document|TASK Task): /.test(choice))).toBe(true)
     expect(sections_Tiers.filter((section, index, sections) => section !== sections[index - 1])).toEqual(["PROPOSAL PROPOSALS", "PROPOSAL REVISIONS", "DOCUMENT PROPOSALS", "DOCUMENT REVISIONS", "TASK PROPOSALS", "TASK REVISIONS"])
@@ -1920,7 +1931,7 @@ describe("the menu's tiers", () => {
     expect(menu_Tiers.some((choice) => /^DOCUMENT Document: Accept all \(\d+\)$/.test(choice))).toBe(true)
     expect(form_Referring).toEqual({ label: "Document retry.js", subject: "retry.js", quote: ["aborted", true], isFocused: true })
     expect(referred_Document.filter((said) => said[0] === "Check for an abort everywhere it waits.")).toEqual([["Check for an abort everywhere it waits.", "aborted", "line 21"]])
-    expect(shown_Document).toEqual({ words: ["aborted"], isInView: true, isOnText: true })
+    expect(shown_Document).toEqual({ words: ["aborted"], isInView: true, isOnText: true, blinks: ["1 0 1 0"] })
     expect(form_Dropped).toEqual({ label: "Proposal Stop retrying once the caller aborts", subject: "Stop retrying once the caller aborts", quote: null, isFocused: true })
     expect(asked_Tiers).toEqual([
       { requested: "Check for an abort everywhere it waits.", words: "aborted" },
@@ -2039,7 +2050,7 @@ const litOf_Quoted_Popover = () => page_Popover.evaluate(async () => {
   await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)))
   const element$_Quoted = [...document.querySelectorAll(".text_htmlView > [data-quoted]")]
   const line$_Quoted = [...document.querySelectorAll(".underlay_htmlView[data-underline][data-quoted]")]
-  return element$_Quoted.length > 0 && line$_Quoted.length > 0 && line$_Quoted.every((line) => getComputedStyle(line).visibility === "visible") && element$_Quoted.every((element) => getComputedStyle(element).backgroundColor === "rgba(0, 0, 0, 0)")
+  return element$_Quoted.length > 0 && line$_Quoted.length > 0 && line$_Quoted.every((line) => getComputedStyle(line).visibility === "visible" && getComputedStyle(line).animationName === "blink_htmlView") && element$_Quoted.every((element) => getComputedStyle(element).backgroundColor === "rgba(0, 0, 0, 0)")
 })
 const chip_Popover = await page_Popover.evaluate(() => ({
   head: document.querySelector(".asking_htmlView .words_Quote_htmlView")?.textContent ?? null,

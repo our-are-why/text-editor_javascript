@@ -7,6 +7,7 @@ import {
 import type {
   _ViewModel_TextEditor_,
   _Target_Note_,
+  _Place_Pointed_,
   _Id_Item_,
   _Block_ViewModel_,
   __BASE_Block__ViewModel_,
@@ -262,7 +263,7 @@ class _View_TextEditor_ {
 
   placeAt(
     point_Screen: _Point_Screen_
-  ): string | null {
+  ): _Place_Pointed_ | null {
     return placeAt__View_TextEditor({
       containerElement_View: this.containerElement,
       point_Screen
@@ -4194,7 +4195,7 @@ const REGEXP_LENGTH = /\d*\.?\d+/g
 
 interface _Layout_View_ {
   sourceAt: (point_Screen: _Point_Screen_) => string | null
-  placeAt: (point_Screen: _Point_Screen_) => string | null
+  placeAt: (point_Screen: _Point_Screen_) => _Place_Pointed_ | null
   targetAt: (point_Screen: _Point_Screen_) => _Target_Note_ | null
   foldAt: (point_Screen: _Point_Screen_) => _Range_Lines_ | null
   positionAt: (point_Screen: _Point_Screen_) => _Position_Drawn_ | null
@@ -4664,11 +4665,19 @@ interface _Api___placeAt__View_TextEditor_ {
 function placeAt__View_TextEditor({
   containerElement_View,
   point_Screen
-}: _Api___placeAt__View_TextEditor_): string | null {
-  return changeAt__View_TextEditor({
+}: _Api___placeAt__View_TextEditor_): _Place_Pointed_ | null {
+  const element_Change = changeAt__View_TextEditor({
     containerElement_View,
     point_Screen
-  })?.getAttribute("data-place") ?? null
+  })
+  const place = element_Change?.getAttribute("data-place")
+  const side = element_Change?.getAttribute("data-side")
+  return typeof place === "string" && typeof side === "string"
+    ? {
+      place,
+      side
+    }
+    : null
 }
 
 interface _Api___targetAt__View_TextEditor_ {

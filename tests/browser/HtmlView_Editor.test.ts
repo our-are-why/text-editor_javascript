@@ -2608,7 +2608,7 @@ describe("beside it: what can't live in one document", () => {
     await opened.page.evaluate(() => document.getElementById("states")?.remove())
   })
 
-  test("pointing at a ring points at its proposal and at its place: the place's rings, on both sides, heavier again, a faint light running round each, clockwise round the lines as proposed and counterclockwise round the lines as they are, both sides in step, one lap each in the time the longer takes at one pace, the proposal's breathing together, at a pace kept from ring to ring of one proposal and started anew at another; the place's lines' labels in the gutter heavier again, by a stroke, not a weight, so none moves, and still; still where motion's asked to be reduced", async () => {
+  test("pointing at a ring points at its proposal and at its place: the place's rings, on both sides, heavier again, a faint light running round each, clockwise round the lines as proposed and counterclockwise round the lines as they are, both sides in step, one lap each in the time the longer takes at one pace, the proposal's rings blinking together, as the caret does, between full and faint, no fading between, the place's other side too, the one under the pointer steady, where you're looking, the blink kept from ring to ring of one proposal, together, and started anew at another; the place's lines' labels in the gutter heavier again, by a stroke, not a weight, so none moves, and still; still where motion's asked to be reduced", async () => {
     await opened.page.evaluate(() => {
       const containerElement = document.createElement("div")
       containerElement.id = "placing"
@@ -2671,8 +2671,8 @@ describe("beside it: what can't live in one document", () => {
           }, 0)
           return twice > 0
         }),
-        // how long the pointed proposal's rings have breathed, the least
-        breath: Math.min(...[...containerElement?.querySelectorAll(".group_htmlView[data-pointed] > .underlay_htmlView") ?? []].flatMap((ring) => ring.getAnimations().filter((animation) => animation instanceof CSSAnimation && animation.animationName === "breathe_htmlView").map((animation) => Number(animation.currentTime)))),
+        // how long the pointed proposal's rings have blinked, the least
+        breath: Math.min(...[...containerElement?.querySelectorAll(".group_htmlView[data-pointed] > .underlay_htmlView") ?? []].flatMap((ring) => ring.getAnimations().filter((animation) => animation instanceof CSSAnimation && animation.animationName === "blink_Ring_htmlView").map((animation) => Number(animation.currentTime)))),
         // each light's ring's length, and the time its lap takes
         labels: [...containerElement?.querySelectorAll(".gutter_htmlView[data-pointed]") ?? []].map((gutter) => {
           const style = getComputedStyle(gutter.querySelector(".label_htmlView") ?? gutter)
@@ -2696,19 +2696,35 @@ describe("beside it: what can't live in one document", () => {
     const first = await drawn()
     expect(first.rings).toEqual([
       "other before 1: 1px none, none",
-      "rename before 1: place 3px breathe_htmlView, lap_htmlView reverse",
-      "rename before 2: 2px breathe_htmlView, none",
+      "rename before 1: place 3px blink_Ring_htmlView, lap_htmlView reverse",
+      "rename before 2: 2px blink_Ring_htmlView, none",
       "other after 1: 1px none, none",
-      "rename after 1: place 3px breathe_htmlView, lap_htmlView normal",
-      "rename after 2: 2px breathe_htmlView, none"
+      "rename after 1: place 3px blink_Ring_htmlView, lap_htmlView normal",
+      "rename after 2: 2px blink_Ring_htmlView, none"
     ])
     expect(first.clockwise).toBe(true)
     expect(first.labels).toEqual(["place 400 1.3px none", "place 400 1.3px none"])
     await opened.page.waitForTimeout(300)
     await at("rename", "2")
     const second = await drawn()
-    expect(second.rings.filter((ring) => ring.includes("place"))).toEqual(["rename before 2: place 3px breathe_htmlView, lap_htmlView reverse", "rename after 2: place 3px breathe_htmlView, lap_htmlView normal"])
+    expect(second.rings.filter((ring) => ring.includes("place"))).toEqual(["rename before 2: place 3px blink_Ring_htmlView, lap_htmlView reverse", "rename after 2: place 3px blink_Ring_htmlView, lap_htmlView normal"])
     expect(second.breath).toBeGreaterThan(250)
+    // each ring read on and off in its blink: the one under the pointer,
+    // the place's as it is, full both times, steady; the place's other
+    // side, as proposed, and the other place's, full, then faint
+    const blinks = await opened.page.evaluate(() => [...document.querySelectorAll("#placing .group_htmlView[data-pointed] > .underlay_htmlView")].map((ring) => {
+      const [animation] = ring.getAnimations()
+      const opacities = [0, 700].map((time) => {
+        if (animation !== undefined) {
+          animation.pause()
+          animation.currentTime = time
+        }
+        return getComputedStyle(ring).opacity
+      })
+      animation?.play()
+      return `${ring.getAttribute("data-side")} ${ring.getAttribute("data-place")}: ${opacities.join(" ")}`
+    }))
+    expect(blinks).toEqual(["before 1: 1 0.6", "before 2: 1 1", "after 1: 1 0.6", "after 2: 1 0.6"])
     // both sides of a place go round in one time, though their rings'
     // lengths differ: the time the longer takes, at 16ms a pixel, kept
     // between two seconds and six

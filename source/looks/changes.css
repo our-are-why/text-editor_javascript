@@ -199,13 +199,18 @@
    every frame it's in, the others still showing: its rings heavier, its
    items lit; and of its rings, the place under the pointer, `data-pointed`
    on them, both its sides, as it is and as proposed, heavier again. While
-   it's pointed at, the proposal's rings breathe, faintly, together, and a
-   faint light runs round the place's, both sides at once, so the moment
+   it's pointed at, the proposal's rings blink together, as the caret
+   does, on its beat, between full and faint, no fading between, so where
+   else it is is found, the place's other side too; but the ring under
+   the pointer, `data-hovered`, where you're looking, steady, blinking
+   between full and full, `--faint_Blink_htmlView`, so its blink goes on
+   in step with the others' and takes up again as the pointer leaves it; and a faint light runs round them, both sides at once, so
+   the moment
    they're all lit together lasts, both sides of a place in step, one lap
    each in the time its longer ring takes at one pace, --lap_htmlView, the
    view's measure, kept between two seconds and six, so a short ring's light
    doesn't crawl or a long one's race; the rings kept as they're drawn
-   again, so the breath goes on from place to place of one proposal, the
+   again, so the blink goes on from place to place of one proposal, the
    place's light starting anew at each place. One light round a ring, as if a wrap didn't cut it: along its
    top edges, part after part, down its last side, back along its bottom
    edges and up its first side, never its cut sides, drawn on the view's
@@ -221,7 +226,12 @@
 
 @media (prefers-reduced-motion: no-preference) {
   [data-look~="changes"] .group_htmlView[data-pointed] > :is(.underlay_htmlView, .seam_htmlView)[data-change] {
-    animation: breathe_htmlView 2.4s ease-in-out infinite;
+    --faint_Blink_htmlView: 0.6;
+    animation: blink_Ring_htmlView 1.1s step-end infinite;
+  }
+
+  [data-look~="changes"] .group_htmlView[data-pointed] > :is(.underlay_htmlView, .seam_htmlView)[data-hovered][data-change] {
+    --faint_Blink_htmlView: 1;
   }
 
   [data-look~="changes"] .lap_htmlView[data-pointed][data-change] {
@@ -244,9 +254,9 @@
   }
 }
 
-@keyframes breathe_htmlView {
+@keyframes blink_Ring_htmlView {
   50% {
-    stroke-opacity: 0.6;
+    opacity: var(--faint_Blink_htmlView);
   }
 }
 

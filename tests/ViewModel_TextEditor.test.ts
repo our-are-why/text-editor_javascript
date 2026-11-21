@@ -155,7 +155,7 @@ test("pointing at a note marks its target, the underlays of its proposal on its 
   expect(pointed.blocks.flatMap((block) => block.kind === "FRAME" ? block.parts.flatMap((part) => part.kind === "PROPOSAL_LIST" ? part.items.map((item) => Object.keys(item.attributes)) : []) : [])).toEqual([[]])
 })
 
-test("pointing at a place of a proposal marks its rings, on both its sides, wherever they are, as well as the proposal's groups: not the proposal's other places, nor another's with the same place", () => {
+test("pointing at a place of a proposal marks its rings, on both its sides, wherever they are, the one the pointer's on as well, as well as the proposal's groups: not the proposal's other places, nor another's with the same place", () => {
   const lines = parseLines_ViewModel({ multilineText: "one", module_Language: MODULE_PLAINTEXT })
   const underlayOf = (source: string, side: string, place: string) => ({ kind: "STRETCH" as const, from: { line: 0, offset: 0 }, to: { line: 0, offset: 3 }, attributes: { "data-change": "replaced", "data-side": side, "data-source": source, "data-place": place } })
   const viewModel = viewModelOf__Blocks([{
@@ -166,18 +166,18 @@ test("pointing at a place of a proposal marks its rings, on both its sides, wher
       { kind: "PROPOSAL_LINES", run: { id: "proposed", lines, groups: [{ attributes: { "data-source": "rename" }, underlays: [underlayOf("rename", "after", "1"), underlayOf("rename", "after", "2")] }] } },
     ],
   }])
-  const pointed = pointedAt__ViewModel({ viewModel_TextEditor: viewModel, source: "rename", place: "1", target_Note: null })
+  const pointed = pointedAt__ViewModel({ viewModel_TextEditor: viewModel, source: "rename", place: { place: "1", side: "before" }, target_Note: null })
   expect(pointed.runs.flatMap((run) => run.groups.flatMap((group) => [
     `${run.id} ${group.attributes["data-source"]}${"data-pointed" in group.attributes ? " pointed" : ""}`,
-    ...group.underlays.map((underlay) => `${underlay.attributes["data-source"]} ${underlay.attributes["data-side"]} ${underlay.attributes["data-place"]}${"data-pointed" in underlay.attributes ? " pointed" : ""}`),
-  ]))).toEqual(["current rename pointed", "rename before 1 pointed", "rename before 2", "current other", "other before 1", "proposed rename pointed", "rename after 1 pointed", "rename after 2"])
+    ...group.underlays.map((underlay) => `${underlay.attributes["data-source"]} ${underlay.attributes["data-side"]} ${underlay.attributes["data-place"]}${"data-pointed" in underlay.attributes ? " pointed" : ""}${"data-hovered" in underlay.attributes ? " hovered" : ""}`),
+  ]))).toEqual(["current rename pointed", "rename before 1 pointed hovered", "rename before 2", "current other", "other before 1", "proposed rename pointed", "rename after 1 pointed", "rename after 2"])
 })
 
 test("pointing at a proposal marks the gutters of the lines its changes are on, and of those its place is on more, as the place; the lines it doesn't change, none", () => {
   const lines = parseLines_ViewModel({ multilineText: "one\ntwo\nthree", module_Language: MODULE_PLAINTEXT })
   const underlayOf = (line: number, place: string) => ({ kind: "STRETCH" as const, from: { line, offset: 0 }, to: { line, offset: 3 }, attributes: { "data-change": "replaced", "data-side": "before", "data-source": "rename", "data-place": place } })
   const viewModel = viewModelOf__Blocks([{ kind: "LINES", run: { id: "document", lines, groups: [{ attributes: { "data-source": "rename" }, underlays: [underlayOf(0, "1"), underlayOf(1, "2")] }] } }])
-  const gutters = (place: string | null) => pointedAt__ViewModel({ viewModel_TextEditor: viewModel, source: "rename", place, target_Note: null }).runs.flatMap((run) => run.lines.map((line) => line.gutter.pointed))
+  const gutters = (place: string | null) => pointedAt__ViewModel({ viewModel_TextEditor: viewModel, source: "rename", place: place === null ? null : { place, side: "before" }, target_Note: null }).runs.flatMap((run) => run.lines.map((line) => line.gutter.pointed))
   expect(gutters("1")).toEqual(["place", "proposal", "none"])
   expect(gutters(null)).toEqual(["proposal", "proposal", "none"])
   expect(viewModel.runs.flatMap((run) => run.lines.map((line) => line.gutter.pointed))).toEqual(["none", "none", "none"])
