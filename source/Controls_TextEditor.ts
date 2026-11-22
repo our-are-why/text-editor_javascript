@@ -4,6 +4,7 @@ import type {
   _SEND_REQUEST__Command_,
   _SAVE_EDIT__Command_,
   _Scope_Work_,
+  _Target_Switch_,
   _POINT_WORDS__Command_
 } from "./Viewer_TextEditor.ts"
 import type {
@@ -518,7 +519,7 @@ const CONTROLS__TEXTEDITOR: Array<_Adapter_Event_> = [
   },
   {
     event: "keydown",
-    commandOf__Event: (event) => event instanceof KeyboardEvent && event.key === "Escape" && event.target instanceof Element && event.target.closest(".task_Header_htmlView, .document_Header_htmlView") !== null
+    commandOf__Event: (event) => event instanceof KeyboardEvent && event.key === "Escape" && event.target instanceof Element && event.target.closest(".task_Header_htmlView, .switcher_Header_htmlView, .document_Header_htmlView, .picker_Header_htmlView") !== null
       ? {
         kind: "CLOSE_CARD"
       }
@@ -534,6 +535,34 @@ const CONTROLS__TEXTEDITOR: Array<_Adapter_Event_> = [
           command
         }
         : null
+    }
+  },
+  {
+    event: "click",
+    commandOf__Event: (event) => {
+      const path = event.target instanceof Element ? event.target.closest(".choice_Picker_htmlView[data-path]:not([aria-current]), .document_Card_htmlView:not([aria-current]) .open_Document_Card_htmlView[data-path]")?.getAttribute("data-path") : null
+      return typeof path === "string"
+        ? {
+          kind: "OPEN_FILE",
+          path
+        }
+        : null
+    }
+  },
+  {
+    event: "click",
+    commandOf__Event: (event) => {
+      const element_Choice = event.target instanceof Element ? event.target.closest(".choice_Switcher_htmlView[data-switch]:not([aria-current])") : null
+      const kind = element_Choice?.getAttribute("data-switch")
+      const target = element_Choice === null || element_Choice === undefined || typeof kind !== "string" || !isKind__Target_Switch(kind)
+        ? null
+        : TARGETMAP__KIND_SWITCH[kind](element_Choice)
+      return target === null
+        ? null
+        : {
+          kind: "SWITCH",
+          target
+        }
     }
   },
   {
@@ -774,6 +803,31 @@ function askedOf__Request({
     : {
       source: id_Item.source
     }
+}
+
+function isKind__Target_Switch(
+  kind: string
+): kind is keyof _TargetMap__Kind_Switch_ {
+  return Object.hasOwn(TARGETMAP__KIND_SWITCH, kind)
+}
+
+type _TargetMap__Kind_Switch_ = {
+  [Kind in _Target_Switch_["kind"]]: (element: Element) => _Target_Switch_ | null
+}
+
+const TARGETMAP__KIND_SWITCH: _TargetMap__Kind_Switch_ = {
+  MANUAL: () => ({
+    kind: "MANUAL"
+  }),
+  TASK: (element) => {
+    const id = element.getAttribute("data-id")
+    return id === null
+      ? null
+      : {
+        kind: "TASK",
+        id
+      }
+  }
 }
 
 function isKind__Scope_Work(

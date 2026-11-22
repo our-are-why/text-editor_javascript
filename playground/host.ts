@@ -7,6 +7,8 @@ import {
 } from "../source/Model_TextEditor.ts"
 import type {
   _Proposal_Host_,
+  _Mode_Host_,
+  _Standing_Task_,
   _Task_Host_,
   _Request_Task_,
   _Counts_Proposals_,
@@ -14,7 +16,10 @@ import type {
   _Landed_Round_,
   _Request_Host_
 } from "../source/Projection_TextEditor.ts"
-import type { _Scope_Work_ } from "../source/Viewer_TextEditor.ts"
+import type {
+  _Scope_Work_,
+  _Target_Switch_
+} from "../source/Viewer_TextEditor.ts"
 import type {
   _Range_Lines_,
   _Decision_Proposal_,
@@ -36,6 +41,8 @@ interface _Api___hostedOf__Editor_<State> {
   proposals: Array<_Proposal_Host_>
   rounds_Landed: Array<_Landed_Round_>
   about_Task: _About_Task_
+  tasks_Other: Array<_Standing_Task_>
+  files: Array<string>
   ranges_Frame: Array<_Range_Lines_>
   log: (entry: _Entry_Log_) => void
 }
@@ -94,7 +101,15 @@ interface _Logged_Transaction_ {
 // A request for a change on no proposal, the document's own or the task's,
 // with the words it was sent with, or none, queued with the rest, started with them, or
 // at once when asked to, and done with a moment later, with no agent to
-// answer it with proposals. Each reported as it's told
+// answer it with proposals. Each reported as it's told.
+// The editor's mode, its task at first: switched, to manual or to another
+// of the project's tasks, the example's others, the document's shown as it
+// is, nothing proposed on it, as the others have nothing here, and edited,
+// the task's proposals carried across each edit, so they're as they should
+// be once the editor's switched back to it. The project's files, the
+// example's, listed for the editor to open, an opening reported, as the
+// playground has one document an example, and an editor's language its
+// setup's
 function hostedOf__Editor<State>({
   containerElement,
   setup,
@@ -103,9 +118,16 @@ function hostedOf__Editor<State>({
   proposals,
   rounds_Landed,
   about_Task,
+  tasks_Other,
+  files,
   ranges_Frame,
   log
 }: _Api___hostedOf__Editor_<State>): _TextEditor_<State> {
+  let target_Mode: _Target_Switch_ = {
+    kind: "TASK",
+    id: about_Task.id
+  }
+  const isOwn = () => target_Mode.kind === "TASK" && target_Mode.id === about_Task.id
   let model_Host = model_TextEditor
   let proposals_Host = proposals
   let rounds_Host = rounds_Landed
@@ -125,12 +147,59 @@ function hostedOf__Editor<State>({
     about_Task,
     documents_Elsewhere
   })
+  const standingOwn = (): _Standing_Task_ => {
+    const requests_All = [
+      ...proposals_Host.flatMap((proposal_Host) => proposal_Host.requests),
+      ...requests_Task
+    ]
+    return {
+      id: about_Task.id,
+      name: about_Task.name,
+      state: taskOf().state,
+      isOnDocument: true,
+      count_Undecided: proposals_Host.filter((proposal_Host) => proposal_Host.state === "OPEN").length + documents_Elsewhere.reduce((sum, elsewhere_Task) => sum + elsewhere_Task.counts_Proposals.OPEN, 0),
+      count_Conflicts: 0,
+      count_Queued: requests_All.filter((request_Host) => request_Host.status === "QUEUED").length,
+      count_Running: requests_All.filter((request_Host) => request_Host.status === "RUNNING").length
+    }
+  }
+  const tasksOf = () => [
+    standingOwn(),
+    ...tasks_Other
+  ]
+  const modeOf = (): _Mode_Host_ => {
+    if (target_Mode.kind === "MANUAL") return {
+      kind: "MANUAL"
+    }
+    const id = target_Mode.id
+    const standing_Other = tasks_Other.find((standing_Task) => standing_Task.id === id)
+    return isOwn()
+      ? {
+        kind: "TASK",
+        task: taskOf()
+      }
+      : standing_Other === undefined
+        ? {
+          kind: "MANUAL"
+        }
+        : {
+          kind: "TASK",
+          task: taskOf__Standing(standing_Other)
+        }
+  }
   const updated = () => editor.update({
-    model_TextEditor: model_Host,
+    model_TextEditor: isOwn()
+      ? model_Host
+      : {
+        document: model_Host.document,
+        proposed: []
+      },
     name_Document,
-    proposals: proposals_Host,
-    task: taskOf(),
-    rounds_Landed: rounds_Host
+    proposals: isOwn() ? proposals_Host : [],
+    mode: modeOf(),
+    tasks: tasksOf(),
+    files,
+    rounds_Landed: isOwn() ? rounds_Host : []
   })
   const landed = (source: string) => {
     const base = bases_Source.get(source)
@@ -339,14 +408,37 @@ function hostedOf__Editor<State>({
     model_TextEditor,
     name_Document,
     proposals,
-    task: taskOf(),
+    mode: modeOf(),
+    tasks: tasksOf(),
+    files,
     rounds_Landed,
     source_Yours: proposal_Yours.source,
     ranges_Frame,
     observers: [
       {
         applied: (applied_Edit) => {
-          model_Host = applied_Edit.model_After
+          model_Host = isOwn()
+            ? applied_Edit.model_After
+            : {
+              document: applied_Edit.model_After.document,
+              proposed: model_Host.proposed.flatMap((changes_Source) => {
+                const [change_First, ...changes_Rest] = rebasedOf__Changes({
+                  changes: changes_Source.changes,
+                  transactions: [applied_Edit.transaction]
+                }).changes
+                return change_First === undefined
+                  ? []
+                  : [
+                    {
+                      source: changes_Source.source,
+                      changes: [
+                        change_First,
+                        ...changes_Rest
+                      ]
+                    }
+                  ]
+              })
+            }
           version += 1
           transactions_Logged.push({
             version,
@@ -423,6 +515,15 @@ function hostedOf__Editor<State>({
           } else if (asked_Host.kind === "TASK") {
             log({
               task: asked_Host.command
+            })
+          } else if (asked_Host.kind === "SWITCH") {
+            log({
+              switched: asked_Host.target.kind === "TASK" ? asked_Host.target.id : asked_Host.target.kind
+            })
+            target_Mode = asked_Host.target
+          } else if (asked_Host.kind === "OPEN_FILE") {
+            log({
+              opened: asked_Host.path
             })
           } else if (asked_Host.kind === "START") {
             started(asked_Host.scope)
@@ -565,6 +666,25 @@ function hostedOf__Editor<State>({
     ]
   })
   return editor
+}
+
+// one of the project's other tasks as the editor's told it, switched to:
+// what the example says of where it stands, and nothing of it here
+function taskOf__Standing(
+  standing_Task: _Standing_Task_
+): _Task_Host_ {
+  return {
+    id: standing_Task.id,
+    name: standing_Task.name,
+    state: standing_Task.state,
+    summary: "",
+    reason: "",
+    documents: [],
+    summary_Document: "",
+    requests: [],
+    actions: [],
+    actions_Document: []
+  }
 }
 
 interface _Api___statedOf__Proposal_ {

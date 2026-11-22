@@ -76,6 +76,8 @@ describe("beside it: what can't live in one document", () => {
           block: window.COMPONENTMAP__VIEW_TEXTEDITOR.block,
           places: window.COMPONENTMAP__VIEW_TEXTEDITOR.places,
           condition: window.COMPONENTMAP__VIEW_TEXTEDITOR.condition,
+          mode: window.COMPONENTMAP__VIEW_TEXTEDITOR.mode,
+          option: window.COMPONENTMAP__VIEW_TEXTEDITOR.option,
           header: window.COMPONENTMAP__VIEW_TEXTEDITOR.header,
           footer: window.COMPONENTMAP__VIEW_TEXTEDITOR.footer,
           menu: window.COMPONENTMAP__VIEW_TEXTEDITOR.menu,
@@ -2964,7 +2966,7 @@ describe("beside it: what can't live in one document", () => {
     expect(rows.narrow.rows).toBe(rows.lines)
   })
 
-  test("a document of no lines draws a view with nothing in its document: its input, the element text input goes to, its header, saying nothing but the document's name, its card offering Add a request, its document, empty, and its footer", async () => {
+  test("a document of no lines draws a view with nothing in its document: its input, the element text input goes to, its header, saying nothing but that it's in manual, there being no tasks to switch to, and the document's name, its card offering Add a request, its document, empty, and its footer, empty, there being no tasks to count", async () => {
     const children = await opened.page.evaluate(() => {
       const containerElement = document.createElement("div")
       document.body.append(containerElement)
@@ -2974,7 +2976,7 @@ describe("beside it: what can't live in one document", () => {
       }).draw(window.viewModelOf__Blocks([]))
       return [...containerElement.querySelector(".htmlView_editor")?.childNodes ?? []].map((node) => node instanceof Element ? `${node.className} ${node.childNodes.length}` : "#text")
     })
-    expect(children).toEqual(["input_htmlView 0", "header_htmlView 2", "document_htmlView 0", "footer_htmlView 0"])
+    expect(children).toEqual(["input_htmlView 0", "header_htmlView 3", "document_htmlView 0", "footer_htmlView 0"])
   })
 
   test("a task's card, in its Proposals, lists the documents it touches, their total the last row, every document's, tens of them scrolling in the list, not past the window: the one shown first, as it's given, each path's folder muted and cut from its start, its file's name whole, and the files with nothing left to decide muted", async () => {
@@ -2982,12 +2984,14 @@ describe("beside it: what can't live in one document", () => {
       const containerElement = document.createElement("div")
       document.body.append(containerElement)
       const documents = Array.from({ length: 24 }, (_, index) => ({
+        path: `source/a/folder/nested/deep/enough/to/run/past/the/card/file-${index}.ts`,
         folder: "source/a/folder/nested/deep/enough/to/run/past/the/card/",
         name: `file-${index}.ts`,
         value: `${index % 3 === 0 ? 2 : 0} of 2 decided`,
         more: "",
         isShown: index === 0,
         isDecided: index % 3 === 0,
+        label_Open: "Open here",
         actions: []
       }))
       new window._View_TextEditor_({
@@ -2996,7 +3000,9 @@ describe("beside it: what can't live in one document", () => {
       }).draw({
         ...window.viewModelOf__Blocks([]),
         header: {
-          task: { id: "T-40", name: "Rename the retries", state: "WORKING", label_State: "Working", summary: "Renames them.", reason: "", proposals: { figure: { value: "16 of 48 decided", more: "" }, documents, actions: [] }, revisions_Scope: { figure: null, start_All: null, stop_All: null, actions: [] }, revisions_Level: { requests: [], isStartable_Requests: false, isStoppable_Requests: false, ask: { label: "Revise", label_Form: "Revise the task" } } },
+          mode: { kind: "TASK", task: { id: "T-40", name: "Rename the retries", state: "WORKING", label_State: "Working", summary: "Renames them.", reason: "", proposals: { figure: { value: "16 of 48 decided", more: "" }, documents, actions: [] }, revisions_Scope: { figure: null, start_All: null, stop_All: null, actions: [] }, revisions_Level: { requests: [], isStartable_Requests: false, isStoppable_Requests: false, ask: { label: "Revise", label_Form: "Revise the task" } } } },
+          switcher: { label: "Switch this editor", label_Here: "this editor", options: [] },
+          picker: { label: "Open a file", label_Here: "this editor", sections: [] },
           parts: [],
           document: { folder: "source/", name: "retry.ts", state: "NONE", label_State: "", summary: "", proposals: { figure: null, documents: [], actions: [] }, revisions_Scope: { figure: null, start_All: null, stop_All: null, actions: [] }, revisions_Level: { requests: [], isStartable_Requests: false, isStoppable_Requests: false, ask: { label: "Revise", label_Form: "Revise this document" } } }
         }

@@ -6,7 +6,8 @@ import {
 import {
   viewModelOf__Model,
   type _Proposal_Host_,
-  type _Task_Host_,
+  type _Mode_Host_,
+  type _Standing_Task_,
   type _Landed_Round_,
   type _Module_Reading_
 } from "./Projection_TextEditor.ts"
@@ -48,7 +49,9 @@ class _TextEditor_<State> {
   model_TextEditor: _Model_TextEditor_
   name_Document: string
   proposals: Array<_Proposal_Host_>
-  task: _Task_Host_ | null
+  mode: _Mode_Host_
+  tasks: Array<_Standing_Task_>
+  files: Array<string>
   rounds_Landed: Array<_Landed_Round_>
   source_Yours: string
   ranges_Frame: Array<_Range_Lines_>
@@ -63,7 +66,9 @@ class _TextEditor_<State> {
     model_TextEditor,
     name_Document,
     proposals,
-    task,
+    mode,
+    tasks,
+    files,
     rounds_Landed,
     source_Yours,
     ranges_Frame,
@@ -74,7 +79,9 @@ class _TextEditor_<State> {
     this.model_TextEditor = model_TextEditor
     this.name_Document = name_Document
     this.proposals = proposals
-    this.task = task
+    this.mode = mode
+    this.tasks = tasks
+    this.files = files
     this.rounds_Landed = rounds_Landed
     this.source_Yours = source_Yours
     this.ranges_Frame = ranges_Frame
@@ -134,7 +141,9 @@ class _TextEditor_<State> {
     this.model_TextEditor = update_Host.model_TextEditor
     this.name_Document = update_Host.name_Document
     this.proposals = update_Host.proposals
-    this.task = update_Host.task
+    this.mode = update_Host.mode
+    this.tasks = update_Host.tasks
+    this.files = update_Host.files
     this.rounds_Landed = update_Host.rounds_Landed
     this.history = HISTORY_EMPTY
     this.viewer.show(this.projected())
@@ -154,7 +163,9 @@ class _TextEditor_<State> {
       model_TextEditor: this.model_TextEditor,
       name_Document: this.name_Document,
       proposals: this.proposals,
-      task: this.task,
+      mode: this.mode,
+      tasks: this.tasks,
+      files: this.files,
       rounds_Landed: this.rounds_Landed,
       ranges_Frame: this.ranges_Frame,
       module_Language: this.setup.module_Language,
@@ -169,7 +180,9 @@ interface _Api__TextEditor_<State> {
   model_TextEditor: _Model_TextEditor_
   name_Document: string
   proposals: Array<_Proposal_Host_>
-  task: _Task_Host_ | null
+  mode: _Mode_Host_
+  tasks: Array<_Standing_Task_>
+  files: Array<string>
   rounds_Landed: Array<_Landed_Round_>
   source_Yours: string
   ranges_Frame: Array<_Range_Lines_>
@@ -195,7 +208,9 @@ interface _Update_Host_ {
   model_TextEditor: _Model_TextEditor_
   name_Document: string
   proposals: Array<_Proposal_Host_>
-  task: _Task_Host_ | null
+  mode: _Mode_Host_
+  tasks: Array<_Standing_Task_>
+  files: Array<string>
   rounds_Landed: Array<_Landed_Round_>
 }
 

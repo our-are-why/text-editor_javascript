@@ -803,10 +803,10 @@ const headerShown = () => opened_JavaScript.page.evaluate(async () => {
   await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)))
   const header = document.querySelector(".htmlView_editor > .header_htmlView")
   return {
-    task: [header?.querySelector(".name_Task_htmlView")?.textContent ?? null, header?.querySelector(".mark_Task_htmlView")?.getAttribute("data-state") ?? null, header?.querySelector(".state_Task_htmlView")?.textContent ?? null],
+    task: [header?.querySelector(".name_Task_htmlView")?.textContent ?? null, header?.querySelector(".trigger_Task_htmlView")?.getAttribute("data-state") ?? null, header?.querySelector(".state_Task_htmlView")?.textContent ?? null],
     parts: [...header?.querySelectorAll(".part_Header_htmlView") ?? []].map((element) => element.textContent),
     spinners: header?.querySelectorAll(".spinner_htmlView").length ?? 0,
-    document: [header?.querySelector(".name_Document_htmlView")?.textContent ?? null, header?.querySelector(".mark_Document_htmlView")?.getAttribute("data-state") ?? null, header?.querySelector(".state_Document_htmlView")?.textContent ?? null],
+    document: [header?.querySelector(".name_Document_htmlView")?.textContent ?? null, header?.querySelector(".trigger_Document_htmlView")?.getAttribute("data-state") ?? null, header?.querySelector(".state_Document_htmlView")?.textContent ?? null],
     card: [...header?.querySelectorAll(".card_Task_htmlView :is(.actions_Card_htmlView, .total_Document_Card_htmlView .actions_Document_Card_htmlView) > button") ?? []].map((element) => element.textContent),
     card_Document: [...header?.querySelectorAll(".card_Document_htmlView .actions_Card_htmlView > button") ?? []].map((element) => element.textContent),
     isSticky: header === null ? false : getComputedStyle(header).position === "sticky"
@@ -876,6 +876,10 @@ const staleOf_Header = () => opened_JavaScript.page.evaluate(async () => {
   }
 })
 const stale_Landed = await staleOf_Header()
+// the document's card, held open by the keyboard in it since its Start
+// was pressed, put away first, as it would cover what's pressed next
+await opened_JavaScript.page.keyboard.press("Escape")
+await opened_JavaScript.page.mouse.move(5, 5)
 await opened_JavaScript.page.locator(".item_htmlView[data-source=\"header\"] .rerun_htmlView").first().click()
 const stale_Rerunning = await staleOf_Header()
 await opened_JavaScript.page.waitForFunction(() => document.querySelector(".item_htmlView[data-source=\"header\"]")?.getAttribute("data-state") === "OPEN")
@@ -1540,9 +1544,10 @@ test("a group's actions after a click: the focus a click left on its Add not hol
   expect(opened_JavaScript.errors).toEqual([])
 })
 
-// then where the document's card opens: hugging the editor's right edge,
-// the header's, with no edge of its own there, and its top on the
-// header's bottom edge, level with the task's card's
+// then where the cards open: the document's, at the header's end, hugging
+// the editor's right edge, the header's, with no edge of its own there,
+// its top on the header's bottom edge, level with the task's card's,
+// which opens at the header's start, from where the text starts
 await opened_JavaScript.page.keyboard.press("Escape")
 await opened_JavaScript.page.mouse.move(700, 700)
 await opened_JavaScript.page.hover(".trigger_Document_htmlView")
@@ -1552,16 +1557,18 @@ const hugged_Card = await opened_JavaScript.page.evaluate(async () => {
   const card = document.querySelector(".card_Document_htmlView")
   const card_Task = document.querySelector(".card_Task_htmlView")
   if (header === null || card === null || card_Task === null) return null
+  const rem = parseFloat(getComputedStyle(document.documentElement).fontSize)
   return {
     gap_Right: header.getBoundingClientRect().right - card.getBoundingClientRect().right,
     gap_Top: header.getBoundingClientRect().bottom - parseFloat(getComputedStyle(header).borderBottomWidth) - card.getBoundingClientRect().top,
     edge_Right: getComputedStyle(card).borderRightWidth,
-    isLevel: card.getBoundingClientRect().top === card_Task.getBoundingClientRect().top
+    isLevel: card.getBoundingClientRect().top === card_Task.getBoundingClientRect().top,
+    isFromText: Math.abs(card_Task.getBoundingClientRect().left - (header.getBoundingClientRect().left + parseFloat(getComputedStyle(header).paddingLeft) - rem * 0.75)) < 0.6
   }
 })
 
-test("the document's card hugs the editor's right edge, no edge of its own there, its top on the header's edge, level with the task's", () => {
-  expect(hugged_Card).toEqual({ gap_Right: 0, gap_Top: 0, edge_Right: "0px", isLevel: true })
+test("the document's card hugs the editor's right edge, no edge of its own there, its top on the header's edge, level with the task's, which opens from where the text starts", () => {
+  expect(hugged_Card).toEqual({ gap_Right: 0, gap_Top: 0, edge_Right: "0px", isLevel: true, isFromText: true })
   expect(opened_JavaScript.errors).toEqual([])
 })
 
@@ -2339,4 +2346,279 @@ describe("the menu's form, a popover", () => {
     expect(asked_Popover).toEqual([])
     expect(opened_Popover.errors).toEqual([])
   })
+})
+
+// the JavaScript example, on a page of its own, switched: its header's
+// chevron, after the task's name, opening the switcher's card, never with
+// the task's, each the one pointed at; the project's tasks listed in it,
+// the one the editor's in first, saying so, then those on retry.js, then
+// the rest, then Manual; the footer counting them by what they're waiting
+// on; Manual pressed, the host asked, the editor in manual, the file
+// itself, nothing proposed, the keyboard back in the text; a line typed
+// there, then the task pressed, the editor in it again, its proposals
+// carried across the line, which is still there
+const opened_Switch = await openExample(
+  "javascript",
+  1
+)
+afterAll(() => opened_Switch.close())
+await opened_Switch.page.waitForSelector(".note_htmlView")
+const cardsOf_Switch = () => opened_Switch.page.evaluate(() => [".card_Task_htmlView", ".card_Switcher_htmlView"].map((selector) => {
+  const element = document.querySelector(selector)
+  return element === null ? "none" : getComputedStyle(element).visibility
+}))
+const footer_Switch = await opened_Switch.page.evaluate(() => ({
+  counts: [...document.querySelectorAll(".count_Footer_htmlView")].map((count) => `${count.getAttribute("data-kind")} ${count.textContent}`),
+  title: document.querySelector(".tasks_Footer_htmlView")?.getAttribute("title") ?? null
+}))
+await opened_Switch.page.hover(".trigger_Switcher_htmlView")
+await opened_Switch.page.waitForTimeout(400)
+const cards_Chevron = await cardsOf_Switch()
+const options_Switch = await opened_Switch.page.evaluate(() => [...document.querySelectorAll(".choice_Switcher_htmlView")].map((choice) => [
+  choice.getAttribute("data-switch"),
+  choice.querySelector(".label_Option_htmlView")?.textContent,
+  choice.querySelector(".note_Option_htmlView")?.textContent,
+  choice.hasAttribute("aria-current") ? "here" : ""
+].join(" | ")))
+await opened_Switch.page.hover(".trigger_Task_htmlView")
+await opened_Switch.page.waitForTimeout(400)
+const cards_Name = await cardsOf_Switch()
+await opened_Switch.page.hover(".trigger_Switcher_htmlView")
+await opened_Switch.page.waitForTimeout(300)
+await opened_Switch.page.click(".choice_Switcher_htmlView[data-switch=\"MANUAL\"]")
+await opened_Switch.page.mouse.move(5, 5)
+await opened_Switch.page.waitForTimeout(500)
+const manual_Switch = await opened_Switch.page.evaluate(() => ({
+  name: document.querySelector(".manual_Header_htmlView .name_Manual_htmlView")?.textContent ?? null,
+  frames: document.querySelectorAll(".frame_htmlView").length,
+  focus: document.activeElement?.className ?? null,
+  card: getComputedStyle(document.querySelector(".card_Switcher_htmlView") ?? document.body).visibility,
+  logged: window.logged.at(-1) ?? null
+}))
+await opened_Switch.page.click(".line_htmlView .text_htmlView", { position: { x: 2, y: 5 } })
+await opened_Switch.page.keyboard.type("// typed in manual\n")
+await opened_Switch.page.hover(".trigger_Switcher_htmlView")
+await opened_Switch.page.waitForTimeout(300)
+await opened_Switch.page.click(".choice_Switcher_htmlView[data-switch=\"TASK\"][data-id=\"T-12\"]")
+await opened_Switch.page.mouse.move(5, 5)
+await opened_Switch.page.waitForTimeout(500)
+const back_Switch = await opened_Switch.page.evaluate(() => ({
+  name: document.querySelector(".task_Header_htmlView .name_Task_htmlView")?.textContent ?? null,
+  frames: document.querySelectorAll(".frame_htmlView").length,
+  first: document.querySelector(".line_htmlView .text_htmlView")?.textContent ?? null,
+  logged: window.logged.at(-1) ?? null
+}))
+
+test("a chevron after the task's name opens the switcher's card, never with the task's: the project's tasks, the editor's first, then those on its document, then the rest, then Manual; the footer counting them; Manual pressed, the editor's in manual, the file itself, the keyboard in the text; a line typed, the task pressed, it's back, its proposals carried across the line", () => {
+  expect(footer_Switch).toEqual({ counts: ["YOURS 2", "CONFLICTS 1", "WORKING 1", "DRAFTS 1"], title: "4 tasks: 2 need you, 1 conflict, 1 working, 1 draft" })
+  expect(cards_Chevron).toEqual(["hidden", "visible"])
+  expect(cards_Name).toEqual(["visible", "hidden"])
+  expect(options_Switch).toEqual([
+    "TASK | Tidy the retry loop | working | here",
+    "TASK | Rename attempts to tries | needs you | ",
+    "TASK | Add a timeout option | draft | ",
+    "TASK | Say what the README promises | needs you | ",
+    "MANUAL | Manual | the file itself | "
+  ])
+  expect(manual_Switch).toEqual({ name: "Manual", frames: 0, focus: "input_htmlView", card: "hidden", logged: { switched: "MANUAL" } })
+  expect(back_Switch).toEqual({ name: "Tidy the retry loop", frames: 7, first: "// typed in manual", logged: { switched: "T-12" } })
+  expect(opened_Switch.errors).toEqual([])
+})
+
+// then the header's two halves, measured as drawn: the task's at the
+// start, where the text starts, its name, a hairline, the switcher's
+// arrows; the file's at the end, its name, a hairline, its files icon;
+// the task's two cards set from where the text starts,
+// the file's two hugging the editor's right edge
+await opened_Switch.page.mouse.move(5, 5)
+await opened_Switch.page.waitForTimeout(300)
+const rhythm_Header = await opened_Switch.page.evaluate(() => {
+  const header = document.querySelector(".header_htmlView")!.getBoundingClientRect()
+  const inkOf = (selector: string) => {
+    const range = document.createRange()
+    range.selectNodeContents(document.querySelector(selector)!)
+    return range.getBoundingClientRect()
+  }
+  const iconOf = (selector: string, inset: number) => {
+    const element = document.querySelector(selector)!
+    const box = element.getBoundingClientRect()
+    const size = parseFloat(getComputedStyle(element, "::before").width)
+    return { left: box.left + (box.width - size) / 2 + size * inset / 16, centre: box.left + box.width / 2 }
+  }
+  const boxOf = (selector: string) => document.querySelector(selector)!.getBoundingClientRect()
+  const r = (value: number) => Math.round(value * 10) / 10
+  const nameTask = inkOf(".name_Task_htmlView")
+  const arrows = iconOf(".trigger_Switcher_htmlView", 2.5)
+  const nameDocument = inkOf(".name_Document_htmlView")
+  const files = iconOf(".trigger_Picker_htmlView", 3)
+  const start_Text = header.left + parseFloat(getComputedStyle(document.querySelector(".header_htmlView")!).paddingLeft)
+  const edge_Cards = start_Text - parseFloat(getComputedStyle(document.documentElement).fontSize) * 0.75
+  return {
+    order: [nameTask.right < arrows.left, arrows.centre < nameDocument.left, nameDocument.right < files.left],
+    textStart: r(boxOf(".trigger_Task_htmlView").left - start_Text),
+    cards: [
+      r(boxOf(".card_Task_htmlView").left - edge_Cards),
+      r(boxOf(".card_Switcher_htmlView").left - edge_Cards),
+      r(header.right - boxOf(".card_Document_htmlView").right),
+      r(header.right - boxOf(".card_Picker_htmlView").right)
+    ]
+  }
+})
+// the picker, beside the document's card, never open with it: the task's
+// files, the one shown here, then the others; one pressed, the host's
+// asked to open it, the keyboard back in the text; and a task's file
+// pressed in its card
+await opened_Switch.page.hover(".trigger_Picker_htmlView")
+await opened_Switch.page.waitForTimeout(400)
+const cards_Picker = await opened_Switch.page.evaluate(() => [".card_Document_htmlView", ".card_Picker_htmlView"].map((selector) => getComputedStyle(document.querySelector(selector)!).visibility))
+const files_Picker = await opened_Switch.page.evaluate(() => [...document.querySelectorAll(".card_Picker_htmlView section")].map((section) => [
+  section.querySelector(".label_Card_htmlView")?.textContent,
+  ...[...section.querySelectorAll(".choice_Picker_htmlView")].map((choice) => `${choice.getAttribute("data-path")}${choice.hasAttribute("aria-current") ? " here" : ""}`)
+]))
+await opened_Switch.page.click(".choice_Picker_htmlView[data-path=\"README.md\"]")
+await opened_Switch.page.mouse.move(5, 5)
+await opened_Switch.page.waitForTimeout(300)
+const opened_Picker = await opened_Switch.page.evaluate(() => ({ logged: window.logged.at(-1) ?? null, focus: document.activeElement?.className ?? null }))
+await opened_Switch.page.hover(".trigger_Task_htmlView")
+await opened_Switch.page.waitForTimeout(400)
+await opened_Switch.page.click(".document_Card_htmlView:not([aria-current]) .open_Document_Card_htmlView[data-path=\"README.md\"]")
+await opened_Switch.page.mouse.move(5, 5)
+await opened_Switch.page.waitForTimeout(300)
+const opened_Card = await opened_Switch.page.evaluate(() => window.logged.at(-1) ?? null)
+
+test("the header's halves on one rhythm, measured as drawn: the task's at the start, where the text starts, its switcher after it; the file's at the end; the task's cards from where the text starts, the file's hugging the right edge", () => {
+  expect(rhythm_Header.order).toEqual([true, true, true])
+  expect(Math.abs(rhythm_Header.textStart)).toBeLessThan(0.6)
+  for (const offset of rhythm_Header.cards) expect(Math.abs(offset)).toBeLessThan(0.6)
+})
+
+test("the files icon opens the picker, never with the document's card: the task's files, the one shown here, then the project's others; one pressed asks the host to open it, the keyboard back in the text; a task's file pressed in its card asks the same", () => {
+  expect(cards_Picker).toEqual(["hidden", "visible"])
+  expect(files_Picker).toEqual([
+    ["Files in this task", "retry.js here", "README.md"],
+    ["Other files", "CHANGELOG.md", "package.json", "source/backoff.js", "tests/retry.test.js"]
+  ])
+  expect(opened_Picker).toEqual({ logged: { opened: "README.md" }, focus: "input_htmlView" })
+  expect(opened_Card).toEqual({ opened: "README.md" })
+  expect(opened_Switch.errors).toEqual([])
+})
+
+// then each hairline where it's meant to be, between the ink either side
+// of it, as drawn, read from the page's pixels at four times their size,
+// each edge to the fraction of a pixel its ink covers: the task's 13.2px
+// before it, to within half a pixel by where the text starts, and 13px
+// after, roomier by eye than even, as its bold name reads closer than the
+// arrows' light line ends, one step of 1.25 tighter than the file's;
+// the file's name's ink, its hairline, its icon's ink and the header's
+// right edge evenly spaced, 17px apart; a name's last letter keeps room past its
+// ink, so no box says where the ink is; every shimmer held at rest
+const opened_Ink = await openExample(
+  "javascript",
+  4
+)
+afterAll(() => opened_Ink.close())
+await opened_Ink.page.waitForSelector(".note_htmlView")
+await opened_Ink.page.mouse.move(5, 5)
+const inkAround = async (selector_Name: string, selector_Part: string, selector_End: string) => {
+  const scale = 4
+  const box = await opened_Ink.page.evaluate(({ selector_Name, selector_Part, selector_End }) => {
+    for (const animation of document.getAnimations()) {
+      if (animation instanceof CSSAnimation && animation.animationName === "shimmer_htmlView") {
+        animation.pause()
+        animation.currentTime = 2400
+      }
+    }
+    const range = document.createRange()
+    range.selectNodeContents(document.querySelector(selector_Name)!)
+    const name = range.getBoundingClientRect()
+    const part = document.querySelector(selector_Part)!
+    const header = document.querySelector(".header_htmlView")!.getBoundingClientRect()
+    const x = Math.floor(name.right) - 8
+    return {
+      x,
+      y: Math.floor(header.top) + 4,
+      width: Math.ceil(document.querySelector(selector_End)!.getBoundingClientRect().right) - x,
+      height: Math.floor(header.height) - 8,
+      hairline: part.getBoundingClientRect().left + parseFloat(getComputedStyle(part, "::before").marginLeft) - x
+    }
+  }, { selector_Name, selector_Part, selector_End })
+  const png = await opened_Ink.page.screenshot({ clip: { x: box.x, y: box.y, width: box.width, height: box.height } })
+  const dark = await opened_Ink.page.evaluate(async (base64) => {
+    const image = new Image()
+    image.src = `data:image/png;base64,${base64}`
+    await image.decode()
+    const canvas = document.createElement("canvas")
+    canvas.width = image.width
+    canvas.height = image.height
+    const context = canvas.getContext("2d")!
+    context.drawImage(image, 0, 0)
+    const pixels = context.getImageData(0, 0, image.width, image.height).data
+    const ground = (pixels[0] ?? 0) + (pixels[1] ?? 0) + (pixels[2] ?? 0)
+    return Array.from({ length: image.width }, (_, x) => Math.max(...Array.from({ length: image.height }, (_, y) => (y * image.width + x) * 4).map((at) => ground - (pixels[at] ?? 0) - (pixels[at + 1] ?? 0) - (pixels[at + 2] ?? 0))))
+  }, png.toString("base64"))
+  const hairline = Math.round(box.hairline * scale)
+  const columnsWhere = (isPart: (x: number) => boolean) => dark.flatMap((value, x) => isPart(x) && value > 6 ? [x] : [])
+  const columns_Name = columnsWhere((x) => x < hairline - 2)
+  const columns_Hairline = columnsWhere((x) => x >= hairline - 2 && x <= hairline + scale + 1)
+  const columns_Icon = columnsWhere((x) => x > hairline + scale + 1)
+  const coverOf = (x: number, columns: Array<number>) => (dark[x] ?? 0) / Math.max(...columns.map((each) => dark[each] ?? 0))
+  const rightOf = (columns: Array<number>) => (columns.at(-1) ?? 0) + coverOf(columns.at(-1) ?? 0, columns)
+  const leftOf = (columns: Array<number>) => (columns[0] ?? 0) + 1 - coverOf(columns[0] ?? 0, columns)
+  return [
+    (leftOf(columns_Hairline) - rightOf(columns_Name)) / scale,
+    (leftOf(columns_Icon) - rightOf(columns_Hairline)) / scale,
+    (dark.length - rightOf(columns_Icon)) / scale
+  ].map((gap) => Math.round(gap * 100) / 100)
+}
+const ink_File = await inkAround(".name_Document_htmlView", ".picker_Header_htmlView", ".header_htmlView")
+const ink_Task = await inkAround(".name_Task_htmlView", ".switcher_Header_htmlView", ".switcher_Header_htmlView")
+
+test("each hairline where it's meant to be between the ink either side of it, as drawn: the task's 13.2px before it and 13px after, one step of 1.25 tighter than the file's; the file's name, hairline, icon and the right edge evenly spaced, 17px apart", () => {
+  const [before_File = 0, after_File = 0, edge_File = 0] = ink_File
+  const [before_Task = 0, after_Task = 0] = ink_Task
+  expect(Math.abs(before_Task - 13.2)).toBeLessThan(0.5)
+  expect(Math.abs(after_Task - 13)).toBeLessThan(0.25)
+  for (const gap of [before_File, after_File, edge_File]) expect(Math.abs(gap - 17)).toBeLessThan(0.25)
+  expect(opened_Ink.errors).toEqual([])
+})
+
+// then the task's state said by its name, the header having no mark for
+// it, nor for manual: working, the name shimmering, or, where motion's
+// asked to be reduced, Working shown after it; a draft, faded, Draft
+// shown after it; your turn, the name as it rests
+const nameShown = () => opened_Switch.page.evaluate(async () => {
+  await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)))
+  const trigger = document.querySelector(".trigger_Task_htmlView")!
+  const name = trigger.querySelector(".name_Task_htmlView")!
+  const word = trigger.querySelector(".state_Task_htmlView")!
+  return {
+    name: name.textContent,
+    marks: document.querySelectorAll(".header_htmlView > :is(.task_Header_htmlView, .manual_Header_htmlView) :is(.mark_Task_htmlView, .mark_Manual_htmlView)").length,
+    shimmers: name.getAnimations().flatMap((animation) => animation instanceof CSSAnimation ? [animation.animationName] : []),
+    isFaded: getComputedStyle(name).color !== getComputedStyle(document.querySelector(".htmlView_editor")!).color,
+    word: word.getBoundingClientRect().width > 2 ? word.textContent : null
+  }
+})
+const switchedTo = async (id: string) => {
+  await opened_Switch.page.hover(".trigger_Switcher_htmlView")
+  await opened_Switch.page.waitForTimeout(300)
+  await opened_Switch.page.click(`.choice_Switcher_htmlView[data-switch="TASK"][data-id="${id}"]`)
+  await opened_Switch.page.mouse.move(5, 5)
+  await opened_Switch.page.waitForTimeout(500)
+}
+const name_Working = await nameShown()
+await opened_Switch.page.emulateMedia({ reducedMotion: "reduce" })
+const name_Still = await nameShown()
+await opened_Switch.page.emulateMedia({ reducedMotion: "no-preference" })
+await switchedTo("T-16")
+const name_Draft = await nameShown()
+await switchedTo("T-14")
+const name_Yours = await nameShown()
+
+test("the task's state said by its name, with no mark: working, shimmering, or Working shown where motion's asked to be reduced; a draft, faded, Draft shown after it; your turn, as it rests", () => {
+  expect(name_Working).toEqual({ name: "Tidy the retry loop", marks: 0, shimmers: ["shimmer_htmlView"], isFaded: false, word: null })
+  expect(name_Still).toEqual({ name: "Tidy the retry loop", marks: 0, shimmers: [], isFaded: false, word: "Working" })
+  expect(name_Draft).toEqual({ name: "Add a timeout option", marks: 0, shimmers: [], isFaded: true, word: "Draft" })
+  expect(name_Yours).toEqual({ name: "Say what the README promises", marks: 0, shimmers: [], isFaded: false, word: null })
+  expect(opened_Switch.errors).toEqual([])
 })

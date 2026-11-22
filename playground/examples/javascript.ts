@@ -555,6 +555,46 @@ const javascript: _Example_ = {
           }
         ]
       },
+      tasks_Other: [
+        {
+          id: "T-14",
+          name: "Say what the README promises",
+          state: "YOUR_TURN",
+          isOnDocument: false,
+          count_Undecided: 3,
+          count_Conflicts: 0,
+          count_Queued: 0,
+          count_Running: 0
+        },
+        {
+          id: "T-15",
+          name: "Rename attempts to tries",
+          state: "YOUR_TURN",
+          isOnDocument: true,
+          count_Undecided: 2,
+          count_Conflicts: 1,
+          count_Queued: 0,
+          count_Running: 0
+        },
+        {
+          id: "T-16",
+          name: "Add a timeout option",
+          state: "DRAFT",
+          isOnDocument: true,
+          count_Undecided: 0,
+          count_Conflicts: 0,
+          count_Queued: 2,
+          count_Running: 0
+        }
+      ],
+      files: [
+        "retry.js",
+        "README.md",
+        "CHANGELOG.md",
+        "package.json",
+        "source/backoff.js",
+        "tests/retry.test.js"
+      ],
       ranges_Frame: ranges_retry,
       log
     })

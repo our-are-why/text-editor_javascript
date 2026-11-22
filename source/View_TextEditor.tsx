@@ -48,9 +48,20 @@ import type {
   _Position_Drawn_,
   _Point_Screen_,
   _Header_ViewModel_,
+  _Mode_Header_,
+  __BASE_Mode_Header_,
+  _MANUAL_Mode_Header_,
+  _TASK_Mode_Header_,
   _Form_Request_,
   _Id_Request_,
   _Task_Header_,
+  _Switcher_Header_,
+  _Option_Switcher_,
+  __BASE_Option_Switcher_,
+  _TASK_Option_Switcher_,
+  _MANUAL_Option_Switcher_,
+  _Picker_Header_,
+  _Footer_ViewModel_,
   _Proposals_Card_,
   _Revisions_Scope_,
   _Revisions_Level_,
@@ -82,6 +93,9 @@ export {
   type _Visit_Item_,
   type _Focus_Asking_,
   type _Api___Header_TextEditor__Html_,
+  type _Api___Mode_Header__Html_,
+  type _Api___Option_Switcher__Html_,
+  type _Api___Footer_TextEditor__Html_,
   type _Api___Menu_TextEditor__Html_,
   type _Api___Request_TextEditor__Html_
 }
@@ -496,7 +510,7 @@ function TextEditor_Html({
           />
         ))}
       </div>
-      <Component_Footer />
+      <Component_Footer footer_ViewModel={viewModel_TextEditor.footer} />
       {viewModel_TextEditor.menu !== null && <Component_Menu menu_ViewModel={viewModel_TextEditor.menu} />}
       {viewModel_TextEditor.request?.place.kind === "POINT" && <Component_Request form_Request={viewModel_TextEditor.request} />}
     </div>
@@ -516,11 +530,15 @@ function Header_TextEditor__Html({
 }: _Api___Header_TextEditor__Html_): JSX.Element {
   return (
     <div class="header_htmlView">
-      {header_ViewModel.task !== null && (
-        <Task_Header__Html
+      <Mode_Header__Html
+        componentMap_View={componentMap_View}
+        mode_Header={header_ViewModel.mode}
+        form_Request={form_Request?.place.kind === "TASK" ? form_Request : null}
+      />
+      {header_ViewModel.switcher.options.length > 0 && (
+        <Switcher_Header__Html
           componentMap_View={componentMap_View}
-          task_Header={header_ViewModel.task}
-          form_Request={form_Request?.place.kind === "TASK" ? form_Request : null}
+          switcher_Header={header_ViewModel.switcher}
         />
       )}
       <p class="status_Header_htmlView">
@@ -544,7 +562,66 @@ function Header_TextEditor__Html({
         document_Header={header_ViewModel.document}
         form_Request={form_Request?.place.kind === "DOCUMENT" ? form_Request : null}
       />
+      {header_ViewModel.picker.sections.length > 0 && <Picker_Header__Html picker_Header={header_ViewModel.picker} />}
     </div>
+  )
+}
+
+interface _Api___Mode_Header__Html_<Kind extends _Mode_Header_["kind"]> {
+  componentMap_View: _ComponentMap__View_TextEditor_
+  mode_Header: Extract<
+    _Mode_Header_,
+    __BASE_Mode_Header_<Kind>
+  >
+  form_Request: _Form_Request_ | null
+}
+
+function Mode_Header__Html<Kind extends _Mode_Header_["kind"]>({
+  componentMap_View,
+  mode_Header,
+  form_Request
+}: _Api___Mode_Header__Html_<Kind>): _Node_Jsx_ {
+  const Component_Mode = componentMap_View.mode[mode_Header.kind]
+  return (
+    <Component_Mode
+      componentMap_View={componentMap_View}
+      mode_Header={mode_Header}
+      form_Request={form_Request}
+    />
+  )
+}
+
+interface _Api___MANUAL_Mode_Header__Html_ {
+  mode_Header: _MANUAL_Mode_Header_
+}
+
+function MANUAL_Mode_Header__Html({
+  mode_Header
+}: _Api___MANUAL_Mode_Header__Html_): JSX.Element {
+  return (
+    <div class="manual_Header_htmlView">
+      <span class="name_Manual_htmlView">{mode_Header.label}</span>
+    </div>
+  )
+}
+
+interface _Api___TASK_Mode_Header__Html_ {
+  componentMap_View: _ComponentMap__View_TextEditor_
+  mode_Header: _TASK_Mode_Header_
+  form_Request: _Form_Request_ | null
+}
+
+function TASK_Mode_Header__Html({
+  componentMap_View,
+  mode_Header,
+  form_Request
+}: _Api___TASK_Mode_Header__Html_): JSX.Element {
+  return (
+    <Task_Header__Html
+      componentMap_View={componentMap_View}
+      task_Header={mode_Header.task}
+      form_Request={form_Request}
+    />
   )
 }
 
@@ -564,13 +641,9 @@ function Task_Header__Html({
       <button
         type="button"
         class="trigger_Task_htmlView"
+        data-state={task_Header.state}
         aria-haspopup="dialog"
       >
-        <span
-          class="mark_Task_htmlView"
-          data-state={task_Header.state}
-          aria-hidden="true"
-        />
         <span class="name_Task_htmlView">{task_Header.name}</span>
         <span class="state_Task_htmlView">{task_Header.label_State}</span>
       </button>
@@ -740,14 +813,19 @@ function Document$_Card__Html({
             data-decided={document_Card.isDecided ? "" : undefined}
             title={document_Card.more === "" ? undefined : document_Card.more}
           >
-            <span class="path_Document_Card_htmlView">
+            <button
+              type="button"
+              class="path_Document_Card_htmlView open_Document_Card_htmlView"
+              data-path={document_Card.path}
+              title={document_Card.isShown ? undefined : document_Card.label_Open}
+            >
               {document_Card.folder !== "" && (
                 <span class="folder_Document_Card_htmlView">
                   <bdi>{document_Card.folder}</bdi>
                 </span>
               )}
               <span class="name_Document_Card_htmlView">{document_Card.name}</span>
-            </span>
+            </button>
             <span class="value_Document_Card_htmlView">{document_Card.value}</span>
             {document_Card.actions.length > 0 && (
               <Fold_Action$__Html>
@@ -931,6 +1009,136 @@ function Revisions_Level__Html({
   )
 }
 
+interface _Api___Switcher_Header__Html_ {
+  componentMap_View: _ComponentMap__View_TextEditor_
+  switcher_Header: _Switcher_Header_
+}
+
+function Switcher_Header__Html({
+  componentMap_View,
+  switcher_Header
+}: _Api___Switcher_Header__Html_): JSX.Element {
+  return (
+    <div class="switcher_Header_htmlView">
+      <button
+        type="button"
+        class="trigger_Switcher_htmlView"
+        aria-haspopup="dialog"
+        aria-label={switcher_Header.label}
+      />
+      <div
+        class="card_htmlView card_Switcher_htmlView"
+        role="dialog"
+        tabindex="-1"
+        aria-label={switcher_Header.label}
+      >
+        <p class="label_Card_htmlView">{switcher_Header.label}</p>
+        <ul class="list_Switcher_htmlView">
+          {switcher_Header.options.map((option_Switcher) => (
+            <Option_Switcher__Html
+              componentMap_View={componentMap_View}
+              option_Switcher={option_Switcher}
+              label_Here={switcher_Header.label_Here}
+            />
+          ))}
+        </ul>
+      </div>
+    </div>
+  )
+}
+
+interface _Api___Option_Switcher__Html_<Kind extends _Option_Switcher_["kind"]> {
+  componentMap_View: _ComponentMap__View_TextEditor_
+  option_Switcher: Extract<
+    _Option_Switcher_,
+    __BASE_Option_Switcher_<Kind>
+  >
+  label_Here: string
+}
+
+function Option_Switcher__Html<Kind extends _Option_Switcher_["kind"]>({
+  componentMap_View,
+  option_Switcher,
+  label_Here
+}: _Api___Option_Switcher__Html_<Kind>): _Node_Jsx_ {
+  const Component_Option = componentMap_View.option[option_Switcher.kind]
+  return (
+    <Component_Option
+      componentMap_View={componentMap_View}
+      option_Switcher={option_Switcher}
+      label_Here={label_Here}
+    />
+  )
+}
+
+interface _Api___TASK_Option_Switcher__Html_ {
+  option_Switcher: _TASK_Option_Switcher_
+  label_Here: string
+}
+
+function TASK_Option_Switcher__Html({
+  option_Switcher,
+  label_Here
+}: _Api___TASK_Option_Switcher__Html_): JSX.Element {
+  return (
+    <li class="option_Switcher_htmlView">
+      <button
+        type="button"
+        class="choice_Switcher_htmlView"
+        data-switch={option_Switcher.kind}
+        data-id={option_Switcher.id}
+        aria-current={option_Switcher.isHere ? "true" : undefined}
+      >
+        <span
+          class="mark_Task_htmlView"
+          data-state={option_Switcher.state}
+          aria-hidden="true"
+        />
+        <span class="label_Option_htmlView">{option_Switcher.label}</span>
+        <span class="note_Option_htmlView">{option_Switcher.note}</span>
+        {option_Switcher.figure !== "" && (
+          <span
+            class="figure_Option_htmlView"
+            data-conflicted={option_Switcher.isConflicted ? "" : undefined}
+          >
+            {option_Switcher.figure}
+          </span>
+        )}
+        {option_Switcher.isHere && <span class="here_Option_htmlView">{label_Here}</span>}
+      </button>
+    </li>
+  )
+}
+
+interface _Api___MANUAL_Option_Switcher__Html_ {
+  option_Switcher: _MANUAL_Option_Switcher_
+  label_Here: string
+}
+
+function MANUAL_Option_Switcher__Html({
+  option_Switcher,
+  label_Here
+}: _Api___MANUAL_Option_Switcher__Html_): JSX.Element {
+  return (
+    <li class="option_Switcher_htmlView">
+      <button
+        type="button"
+        class="choice_Switcher_htmlView"
+        data-switch={option_Switcher.kind}
+        aria-current={option_Switcher.isHere ? "true" : undefined}
+      >
+        <span
+          class="mark_Manual_htmlView"
+          aria-hidden="true"
+        />
+        <span class="label_Option_htmlView">{option_Switcher.label}</span>
+        <span class="note_Option_htmlView">{option_Switcher.note}</span>
+        {option_Switcher.isHere && <span class="here_Option_htmlView">{label_Here}</span>}
+      </button>
+    </li>
+  )
+}
+
 interface _Api___Document_Header__Html_ {
   componentMap_View: _ComponentMap__View_TextEditor_
   document_Header: _Document_Header_
@@ -947,15 +1155,11 @@ function Document_Header__Html({
       <button
         type="button"
         class="trigger_Document_htmlView"
+        data-state={document_Header.state}
         aria-haspopup="dialog"
         title={`${document_Header.folder}${document_Header.name}`}
       >
         <span class="name_Document_htmlView">{document_Header.name}</span>
-        <span
-          class="mark_Document_htmlView"
-          data-state={document_Header.state}
-          aria-hidden="true"
-        />
         {document_Header.label_State !== "" && <span class="state_Document_htmlView">{document_Header.label_State}</span>}
       </button>
       <div
@@ -1002,8 +1206,92 @@ function Document_Header__Html({
   )
 }
 
-function Footer_TextEditor__Html(): JSX.Element {
-  return <div class="footer_htmlView" />
+interface _Api___Footer_TextEditor__Html_ {
+  footer_ViewModel: _Footer_ViewModel_
+}
+
+interface _Api___Picker_Header__Html_ {
+  picker_Header: _Picker_Header_
+}
+
+function Picker_Header__Html({
+  picker_Header
+}: _Api___Picker_Header__Html_): JSX.Element {
+  return (
+    <div class="picker_Header_htmlView">
+      <button
+        type="button"
+        class="trigger_Picker_htmlView"
+        aria-haspopup="dialog"
+        aria-label={picker_Header.label}
+      />
+      <div
+        class="card_htmlView card_Picker_htmlView"
+        role="dialog"
+        tabindex="-1"
+        aria-label={picker_Header.label}
+      >
+        {picker_Header.sections.map((section_Picker) => (
+          <section
+            class="section_Card_htmlView"
+            aria-label={section_Picker.label}
+          >
+            <p class="label_Card_htmlView">{section_Picker.label}</p>
+            <ul class="list_Picker_htmlView">
+              {section_Picker.files.map((file_Picker) => (
+                <li class="option_Picker_htmlView">
+                  <button
+                    type="button"
+                    class="choice_Picker_htmlView"
+                    data-path={file_Picker.path}
+                    aria-current={file_Picker.isHere ? "true" : undefined}
+                  >
+                    <span
+                      class="icon_File_htmlView"
+                      aria-hidden="true"
+                    />
+                    <span class="path_Picker_htmlView">
+                      {file_Picker.folder !== "" && <span class="folder_Picker_htmlView">{file_Picker.folder}</span>}
+                      <span class="name_Picker_htmlView">{file_Picker.name}</span>
+                    </span>
+                    {file_Picker.figure !== "" && <span class="figure_Option_htmlView">{file_Picker.figure}</span>}
+                    {file_Picker.isHere && <span class="here_Option_htmlView">{picker_Header.label_Here}</span>}
+                  </button>
+                </li>
+              ))}
+            </ul>
+          </section>
+        ))}
+      </div>
+    </div>
+  )
+}
+
+function Footer_TextEditor__Html({
+  footer_ViewModel
+}: _Api___Footer_TextEditor__Html_): JSX.Element {
+  return (
+    <div class="footer_htmlView">
+      {footer_ViewModel.counts.length > 0 && (
+        <p
+          class="tasks_Footer_htmlView"
+          title={footer_ViewModel.title}
+        >
+          {footer_ViewModel.counts.map((count_Tasks) => (
+            <span
+              class="count_Footer_htmlView"
+              data-kind={count_Tasks.kind}
+              aria-hidden="true"
+            >
+              <span class="mark_Count_htmlView" />
+              {String(count_Tasks.count)}
+            </span>
+          ))}
+          <span class="words_Footer_htmlView">{footer_ViewModel.title}</span>
+        </p>
+      )}
+    </div>
+  )
 }
 
 interface _Api___Menu_TextEditor__Html_ {
@@ -5065,9 +5353,11 @@ interface _ComponentMap__View_TextEditor_ {
   part: _ComponentMap_Part_
   places: _ComponentMap_Places_
   condition: _ComponentMap_Condition_
+  mode: _ComponentMap_Mode_
+  option: _ComponentMap_Option_
   line: (api_Line: _Api___Line_Run__Html_) => _Node_Jsx_
   header: (api_Header: _Api___Header_TextEditor__Html_) => _Node_Jsx_
-  footer: () => _Node_Jsx_
+  footer: (api_Footer: _Api___Footer_TextEditor__Html_) => _Node_Jsx_
   menu: (api_Menu: _Api___Menu_TextEditor__Html_) => _Node_Jsx_
   request: (api_Request: _Api___Request_TextEditor__Html_) => _Node_Jsx_
 }
@@ -5086,6 +5376,14 @@ type _ComponentMap_Places_ = {
 
 type _ComponentMap_Condition_ = {
   [Kind in _Condition_Places_["kind"]]: (api_Condition: _Api___Condition_Places__Html_<Kind>) => _Node_Jsx_
+}
+
+type _ComponentMap_Mode_ = {
+  [Kind in _Mode_Header_["kind"]]: (api_Mode: _Api___Mode_Header__Html_<Kind>) => _Node_Jsx_
+}
+
+type _ComponentMap_Option_ = {
+  [Kind in _Option_Switcher_["kind"]]: (api_Option: _Api___Option_Switcher__Html_<Kind>) => _Node_Jsx_
 }
 
 const COMPONENTMAP__VIEW_TEXTEDITOR: _ComponentMap__View_TextEditor_ = {
@@ -5108,6 +5406,14 @@ const COMPONENTMAP__VIEW_TEXTEDITOR: _ComponentMap__View_TextEditor_ = {
   condition: {
     WITHIN: WITHIN_Condition_Places__Html,
     CARRIED: CARRIED_Condition_Places__Html
+  },
+  mode: {
+    MANUAL: MANUAL_Mode_Header__Html,
+    TASK: TASK_Mode_Header__Html
+  },
+  option: {
+    MANUAL: MANUAL_Option_Switcher__Html,
+    TASK: TASK_Option_Switcher__Html
   },
   line: Line_Run__Html,
   header: Header_TextEditor__Html,

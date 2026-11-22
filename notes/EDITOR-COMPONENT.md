@@ -3440,3 +3440,100 @@ two pixels at each press and stopped, as did anything else the view
 scrolled smoothly without its being a jump. What's taken back is only
 room scrolled out of view, so taking it back a moment later looks the
 same.
+
+Decided 2026-11-22: the editor's told its mode, `mode`, `_Mode_Host_`,
+manual or a task, `MANUAL` or `TASK` with its task, never a task or
+`null`, manual being a mode of its own, as the task model,
+`notes/TASKS.md`, has it; and the project's open tasks, `tasks`,
+`_Standing_Task_`, each its id, its name, where it stands, whether it's on
+this document, and how many proposals wait on you, conflicts, requests
+queued and running. The header draws the mode by its kind,
+`componentMap.mode`: a task's mark, name and card, as before; manual, a
+pencil in the gutter and "Manual", no card. After it, a chevron opens the
+switcher, a card of its own, never open with the task's, the one pointed
+at shown, or, pointing at neither, the one the keyboard's in: the tasks,
+the editor's first, then those on its document, then the rest, then
+Manual, each drawn by its kind, `componentMap.option`, its mark, its
+name, where it stands, a figure of what's waiting, a conflict's in the
+removed red, the one the editor's in saying so and not to be pressed; one
+pressed asks the host to switch, `SWITCH`, with its target, and the
+keyboard goes back to the text, the card closing as it does on Escape.
+Given no tasks, there's no switcher. The footer, at its right, counts
+them by what they're waiting on, each count after its mark in its ink,
+needing you, conflicts, at work, drafts, its words its title, the rest of
+the footer left for what else a footer holds. A task's states follow the
+task model: `DONE` is `COMPLETED`, and `DISCARDED` is new, a cross as
+canceled is. The playground's host keeps the editor's mode, the example's
+task to begin with, its other tasks the example's, and, in manual or
+another task, shows the document as it is, nothing proposed, its edits
+carrying the task's proposals across them, so they're in place when it's
+switched back.
+
+Decided 2026-11-22: the header's two halves, each a name, a hairline,
+then the way to choose. The task's at the start, where the text starts:
+its name, a hairline, then two arrows, the switcher, every task's, not
+this one's. The file's at the end: its name, a hairline, then an icon of
+files, the picker, the name's ink, the hairline, the icon's ink and the
+header's right edge evenly spaced, 17px apart. Nothing over the gutter: the
+file's mark sat there, the file first, as markers about the file's lines
+are, but with the task at the end its card hung from the right edge,
+away from its name, and the document's opened under its own name, saying
+it twice; swapped back, each card opens where it reads best, the task's
+under its name, its content set under it, saying its id and where it
+stands, the document's from the right edge, its head saying the file's
+path. No marks in the header: a state's said by a name. The task's, as
+the header only ever shows three, an editor whose task ends going to
+manual: working, the name shimmering, with whatever else is at work, or,
+where motion's asked to be reduced, Working shown after it; your turn,
+the name as it rests, what's waiting said beside it; a draft, faded,
+Draft shown after it. The file's the same: its name shimmering while
+work's under way on it, otherwise as it rests, the header's counts
+saying how far it's got. Manual's its word alone, as a task's name is.
+The switcher's list keeps every mark, as it's scanned. Spacing, measured
+by the ink as drawn, read from the pixels: the task's hairline 13.2px
+from its name and 13px from the arrows, which read about 13.9px and
+14.7px, the arrows' side roomier by eye, as at 11.5px, reading even, and
+at 12.5px they looked crowded against it, and at 13.5px too far, the
+arrows drawn half a pixel right of their square's middle, as the square,
+on whole pixels, can't move by half; measured as the eye takes them in, the pixels blurred as by
+sight and the room read, row by row across the letters' height, to where
+the blur reaches 15% of black, as a type designer spaces letters by the
+white between them, not their nearest points: the bold name pulls closer
+and the arrows' thin grey line ends recede; the two hairlines one step of
+1.25 apart, the task's tighter, its switcher one with it, the file's at
+17px, one with the edge's margin; the arrows' square, pointed at, clear
+of the hairline; the task's to within half a pixel by where the text
+starts, the name set at the end of a box a whole number of
+pixels and a half wide, so it ends as far from the hairline whatever it says; the
+file's even, 17px from its name's ink to the hairline, from the hairline
+to its icon's ink, and from that to the header's edge, the icon's square
+a whole number of pixels wide, as every icon's in the header is, so its
+ink sits as far into it on either side; tried near halfway at 13.5px and
+13px, 14.5px and 14px, 15.5px and 15px, and 16.5px and 16px, and at 13px
+and 15px, the room widening toward the edge, as the task's was at that
+end, which read lopsided beside the task's; a name's last letter keeping room past its ink, about 0.08em in
+the editor's font and 0.02em in the header's bold, taken off before its
+hairline; each icon's square a whole number of pixels after its
+hairline, as both are drawn on whole pixels and a name isn't, so that
+gap never jumps by one with a name's length. Tried, for the task's, on the left: 16.5px and 15.5px, as it was at
+the end, reading as a gap after the name, 10.5px either side and 11.5px
+before it, the arrows' square crowding the hairline; and at the end: 10px either side of
+each, 14px either side, 13px before and 15px after, 11px before, the
+header's own gap, the arrows as far after the hairline as from the edge,
+halfway at 15.5px, and 16px, 16.25px and 17.5px before it; the arrows
+tucked to 10px and 7px from the edge, at the header's padding, and in a
+full-height cell of their own. The task's cards open from where the text
+starts, the file's two hugging the editor's right edge; the header a
+container of its width, so no card reaches past it, hidden or shown, in
+a narrow editor. The editor's given the project's files, `files`, paths;
+the picker, never open with the document's card, lists the files in this
+editor's task, how far each has got, the one shown saying so, then the
+others, or, in manual, the project's files; one pressed, or a task's
+file pressed in its card, its path a button, asks the host to open it,
+`OPEN_FILE`, and the keyboard's put back in the text. Tried before it:
+the task first, its mark in the gutter, as doctor's was; the file first,
+its mark in the gutter, the task at the end; the task's mark before its
+name, and Manual's pencil; the arrows as a word, Switch; the arrows
+before the task's name, its mark at the edge; a breadcrumb, Tasks › the
+task › the file; one search across tasks and files; and both pickers in
+the footer.

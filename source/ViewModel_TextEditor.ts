@@ -83,6 +83,18 @@ export {
   isLines__Part_Frame,
   type _Id_Request_,
   type _Header_ViewModel_,
+  type _Mode_Header_,
+  type __BASE_Mode_Header_,
+  type _MANUAL_Mode_Header_,
+  type _TASK_Mode_Header_,
+  type _Switcher_Header_,
+  type _Option_Switcher_,
+  type __BASE_Option_Switcher_,
+  type _MANUAL_Option_Switcher_,
+  type _TASK_Option_Switcher_,
+  type _Picker_Header_,
+  type _Section_Picker_,
+  type _File_Picker_,
   type _Document_Header_,
   type _State_Document_,
   type _Proposals_Card_,
@@ -97,6 +109,9 @@ export {
   type _Action_Task_,
   type _Section_Action_,
   type _Part_Header_,
+  type _Footer_ViewModel_,
+  type _Count_Tasks_,
+  type _Kind_Count_,
   type _Pending_Confirm_,
   type _Request_Item_,
   type _Reference_Request_,
@@ -167,12 +182,72 @@ interface _ViewModel_TextEditor_ {
   menu: _Menu_ViewModel_ | null
   request: _Form_Request_ | null
   header: _Header_ViewModel_
+  footer: _Footer_ViewModel_
 }
 
 interface _Header_ViewModel_ {
-  task: _Task_Header_ | null
+  mode: _Mode_Header_
+  switcher: _Switcher_Header_
   parts: Array<_Part_Header_>
   document: _Document_Header_
+  picker: _Picker_Header_
+}
+
+type _Mode_Header_ = _MANUAL_Mode_Header_ | _TASK_Mode_Header_
+
+interface __BASE_Mode_Header_<Kind extends string> {
+  kind: Kind
+}
+
+interface _MANUAL_Mode_Header_ extends __BASE_Mode_Header_<"MANUAL"> {
+  label: string
+}
+
+interface _TASK_Mode_Header_ extends __BASE_Mode_Header_<"TASK"> {
+  task: _Task_Header_
+}
+
+interface _Switcher_Header_ {
+  label: string
+  label_Here: string
+  options: Array<_Option_Switcher_>
+}
+
+type _Option_Switcher_ = _MANUAL_Option_Switcher_ | _TASK_Option_Switcher_
+
+interface __BASE_Option_Switcher_<Kind extends string> {
+  kind: Kind
+  label: string
+  note: string
+  isHere: boolean
+}
+
+interface _MANUAL_Option_Switcher_ extends __BASE_Option_Switcher_<"MANUAL"> {}
+
+interface _TASK_Option_Switcher_ extends __BASE_Option_Switcher_<"TASK"> {
+  id: string
+  state: _State_Task_
+  figure: string
+  isConflicted: boolean
+}
+
+interface _Picker_Header_ {
+  label: string
+  label_Here: string
+  sections: Array<_Section_Picker_>
+}
+
+interface _Section_Picker_ {
+  label: string
+  files: Array<_File_Picker_>
+}
+
+interface _File_Picker_ {
+  path: string
+  folder: string
+  name: string
+  figure: string
+  isHere: boolean
 }
 
 interface _Document_Header_ {
@@ -224,12 +299,14 @@ interface _Ask_Card_ {
 }
 
 interface _Document_Card_ {
+  path: string
   folder: string
   name: string
   value: string
   more: string
   isShown: boolean
   isDecided: boolean
+  label_Open: string
   actions: Array<_Action_Task_>
 }
 
@@ -245,7 +322,7 @@ interface _Task_Header_ {
   revisions_Level: _Revisions_Level_
 }
 
-type _State_Task_ = "DRAFT" | "WORKING" | "YOUR_TURN" | "DONE" | "CANCELED"
+type _State_Task_ = "DRAFT" | "WORKING" | "YOUR_TURN" | "COMPLETED" | "CANCELED" | "DISCARDED"
 
 interface _Action_Task_ {
   command: string
@@ -259,6 +336,18 @@ interface _Part_Header_ {
   text: string
   isBusy: boolean
 }
+
+interface _Footer_ViewModel_ {
+  title: string
+  counts: Array<_Count_Tasks_>
+}
+
+interface _Count_Tasks_ {
+  kind: _Kind_Count_
+  count: number
+}
+
+type _Kind_Count_ = "YOURS" | "CONFLICTS" | "WORKING" | "DRAFTS"
 
 type _Block_ViewModel_ = _LINES_Block__ViewModel_ | _FRAME_Block__ViewModel_ | _FOLDED_Block__ViewModel_
 
@@ -524,12 +613,21 @@ function viewModelOf__Blocks(
     selection: null,
     menu: null,
     request: null,
-    header: HEADER_EMPTY
+    header: HEADER_EMPTY,
+    footer: FOOTER_EMPTY
   }
 }
 
 const HEADER_EMPTY: _Header_ViewModel_ = {
-  task: null,
+  mode: {
+    kind: "MANUAL",
+    label: "Manual"
+  },
+  switcher: {
+    label: "Switch this editor",
+    label_Here: "this editor",
+    options: []
+  },
   parts: [],
   document: {
     folder: "",
@@ -557,7 +655,17 @@ const HEADER_EMPTY: _Header_ViewModel_ = {
         label_Form: "Request a change to this document"
       }
     }
+  },
+  picker: {
+    label: "Open a file",
+    label_Here: "this editor",
+    sections: []
   }
+}
+
+const FOOTER_EMPTY: _Footer_ViewModel_ = {
+  title: "",
+  counts: []
 }
 
 function neighboredOf__Blocks(
@@ -1386,15 +1494,18 @@ function editingAt__ViewModel({
       ...viewModel_TextEditor,
       header: {
         ...header,
-        task: header.task === null
-          ? null
-          : {
-            ...header.task,
-            revisions_Level: {
-              ...header.task.revisions_Level,
-              requests: editedOf(header.task.revisions_Level.requests)
+        mode: header.mode.kind === "TASK"
+          ? {
+            ...header.mode,
+            task: {
+              ...header.mode.task,
+              revisions_Level: {
+                ...header.mode.task.revisions_Level,
+                requests: editedOf(header.mode.task.revisions_Level.requests)
+              }
             }
-          },
+          }
+          : header.mode,
         document: {
           ...header.document,
           revisions_Level: {
@@ -1450,7 +1561,7 @@ function wordsAt__ViewModel({
     : viewModel_TextEditor.blocks.flatMap((block_ViewModel) => block_ViewModel.kind === "FRAME" && block_ViewModel.range.first === id_Item.range_Frame.first && block_ViewModel.range.last === id_Item.range_Frame.last ? block_ViewModel.parts : [])
   const request$_Holder = id_Item === null
     ? [
-      ...(header.task?.revisions_Level.requests ?? []),
+      ...(header.mode.kind === "TASK" ? header.mode.task.revisions_Level.requests : []),
       ...header.document.revisions_Level.requests
     ]
     : part$_Frame.flatMap((part_Frame) => part_Frame.kind === "PROPOSAL_LIST" ? part_Frame.items.flatMap((item_Proposals) => item_Proposals.source === id_Item.source ? item_Proposals.requests : []) : [])

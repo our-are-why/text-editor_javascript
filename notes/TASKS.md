@@ -377,7 +377,9 @@ of it: the trunk, in manual, or a task's head. Walked through, two editors:
 6. **A task ending.** Completed, canceled or discarded in either editor,
    every editor in that task goes to manual, showing the trunk, the merge
    in it, and saying why it's now in manual.
-7. **Switching** in one editor changes that editor only.
+7. **Switching** in one editor changes that editor only; from the board,
+   below, every open editor in the project. Each editor shows what it
+   was last switched to, from either, with no following to keep track of.
 8. **The agent's rounds** land in every editor showing that task, whatever
    file each shows.
 9. **Undo.** Each editor undoes its own edits, carried across the others',
@@ -428,8 +430,40 @@ now, faked.
 What the task UI needs, each from what it's told, the playground's host
 faking the moves, so it can all be drawn before the parts above are built:
 
-- which task you're in, or manual, and switching: the tasks there are, each
-  with where it stands, the active one marked, manual, and New task;
+- **built 2026-11-22: what the editor's in, and switching.** The editor's
+  told its mode, `MANUAL` or `TASK` with its task, and the project's open
+  tasks, each with where it stands. Manual's "Manual", at the header's
+  start, where a task's name is, neither with a mark. After the mode's name, a hairline,
+  then two arrows open the switcher, a card of its own beside the task's, never open with it, the
+  one pointed at shown:
+  the tasks, the editor's first, then those on its document, then the
+  rest, then Manual, each its mark, its name, where it stands, and what's
+  waiting, a conflict's in the removed red; one pressed asks the host to
+  switch, `SWITCH`. New task, and All tasks…, which opens the board, come
+  with drafts and the board;
+- **built 2026-11-22: the file, and opening another.** An editor shows a
+  file in a mode, so switching one keeps the other. The file's at the
+  header's end: its name, with no mark, a hairline, then an icon of files
+  opening the picker, a card of its own beside the
+  document's: the files in this editor's task, how far each has got, then
+  the project's others, or, in manual, the project's files. A task's card
+  opens its files too, each its path pressed. Either asks the host to open
+  the file, `OPEN_FILE`, as VS Code's own picker would, the host deciding
+  where; the editor never opens one itself. The editor's language is its
+  setup's, so a host showing another file with another language makes
+  another editor. Finding a file by typing is still to come;
+- **built 2026-11-22: the project's tasks in the footer,** one small item at
+  its right, the rest of it left for what else a footer holds: the tasks
+  counted by what they're waiting on, each count after its mark in its
+  ink, needing you, conflicts, at work, drafts, `● 2 ⚠ 1 ◠ 1 ◌ 1`, the
+  words its title; pressed, once there's a board, it opens it;
+- **the board, held:** every task, a component of its own beside the
+  editor, not in it, as it may well be a VS Code view of its own, where
+  switching moves every editor in the project; the editor's footer item
+  opens it, revealing the view in VS Code, over the editor in the
+  playground. Its columns are who each task is waiting on, needing you,
+  the agent's, drafts, resolved, not its state; no dragging between them,
+  as most states come from what's running, so each card's actions say it;
 - a draft's header: its name, how many requests, Start, Discard;
 - a task's header in each state, as now, with Complete and Cancel;
 - lines changed in the task, marked in the gutter;

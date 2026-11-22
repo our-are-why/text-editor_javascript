@@ -26,7 +26,9 @@ const viewModel = viewModelOf__Model({
   name_Document: "notes/digits.txt",
   proposals: [{ source: "digit", title: "Write two as a digit", state: "OPEN", status: "", rationale: "", requests: [], actions: actions_Review, attributes: {} }],
   rounds_Landed: [],
-  task: null,
+  mode: { kind: "MANUAL" },
+  tasks: [],
+  files: [],
   ranges_Frame: [],
   module_Language: MODULE_PLAINTEXT,
   module_Reading: MODULE_READING_TEXT
@@ -228,7 +230,9 @@ test("a selection all in one text, but not running on in it, as across a move's 
     name_Document: "notes/digits.txt",
     proposals: [{ source: "swap", title: "Beta first", state: "OPEN", status: "", rationale: "", requests: [], actions: actions_Review, attributes: {} }],
     rounds_Landed: [],
-    task: null,
+    mode: { kind: "MANUAL" },
+    tasks: [],
+    files: [],
     ranges_Frame: [],
     module_Language: MODULE_PLAINTEXT,
     module_Reading: MODULE_READING_TEXT
@@ -266,7 +270,9 @@ function viewModelWith(
     name_Document: "notes/digits.txt",
     proposals: [{ source: "yours", title: "Your edits", state: "OPEN", status: "", rationale: "", requests: [], actions: [], attributes: {} }],
     rounds_Landed: [],
-    task: null,
+    mode: { kind: "MANUAL" },
+    tasks: [],
+    files: [],
     ranges_Frame: [],
     module_Language: MODULE_PLAINTEXT,
     module_Reading: MODULE_READING_TEXT
@@ -504,7 +510,9 @@ test("a listed request's words pointed at, by the pointer or the keyboard, lit w
     name_Document: "notes/digits.txt",
     proposals: [{ source: "digit", title: "Write two as a digit", state: "OPEN", status: "", rationale: "", requests: [{ id: "spell", notes: "Spell it.", reference: reference_Digit, status: "QUEUED" }], actions: actions_Review, attributes: {} }],
     rounds_Landed: [],
-    task: { id: "T-3", name: "Tidy", state: "WORKING", summary: "", requests: [{ id: "count", notes: "Count them.", aim: { kind: "DOCUMENT", reference: reference_One }, status: "QUEUED", sources_Answering: [] }, { id: "done", notes: "Say it.", aim: { kind: "DOCUMENT", reference: reference_Four }, status: "ADDRESSED", sources_Answering: [] }], reason: "", documents: [], summary_Document: "", actions: [], actions_Document: [] },
+    mode: { kind: "TASK", task: { id: "T-3", name: "Tidy", state: "WORKING", summary: "", requests: [{ id: "count", notes: "Count them.", aim: { kind: "DOCUMENT", reference: reference_One }, status: "QUEUED", sources_Answering: [] }, { id: "done", notes: "Say it.", aim: { kind: "DOCUMENT", reference: reference_Four }, status: "ADDRESSED", sources_Answering: [] }], reason: "", documents: [], summary_Document: "", actions: [], actions_Document: [] } },
+    tasks: [],
+    files: [],
     ranges_Frame: [],
     module_Language: MODULE_PLAINTEXT,
     module_Reading: MODULE_READING_TEXT
@@ -580,7 +588,9 @@ test("an action that would drop revisions queued is asked first: pressed, nothin
     name_Document: "notes/digits.txt",
     proposals: [{ source: "digit", title: "Write two as a digit", state: "OPEN", status: "", rationale: "", requests: [{ id: "say", notes: "Say it.", reference: null, status: "QUEUED" }, { id: "spell", notes: "Spell it.", reference: null, status: "QUEUED" }], actions: actions_Review, attributes: {} }],
     rounds_Landed: [],
-    task: null,
+    mode: { kind: "MANUAL" },
+    tasks: [],
+    files: [],
     ranges_Frame: [],
     module_Language: MODULE_PLAINTEXT,
     module_Reading: MODULE_READING_TEXT
@@ -623,7 +633,7 @@ test("an action that would drop revisions queued is asked first: pressed, nothin
       ...state_Queued.viewModel_TextEditor,
       header: {
         ...state_Queued.viewModel_TextEditor.header,
-        task: { id: "T-3", name: "Tidy", state: "WORKING", label_State: "Working", summary: "", reason: "", proposals: { figure: null, documents: [], actions: [] }, revisions_Scope: { figure: null, start_All: null, stop_All: null, actions: [] }, revisions_Level: { requests: [], isStartable_Requests: false, isStoppable_Requests: false, ask: { label: "Revise", label_Form: "Revise the task" } } }
+        mode: { kind: "TASK", task: { id: "T-3", name: "Tidy", state: "WORKING", label_State: "Working", summary: "", reason: "", proposals: { figure: null, documents: [], actions: [] }, revisions_Scope: { figure: null, start_All: null, stop_All: null, actions: [] }, revisions_Level: { requests: [], isStartable_Requests: false, isStoppable_Requests: false, ask: { label: "Revise", label_Form: "Revise the task" } } } }
       }
     }
   }
@@ -687,7 +697,9 @@ test("an action that would drop revisions queued is asked first: pressed, nothin
     name_Document: "notes/digits.txt",
     proposals: [{ source: "digit", title: "Write two as a digit", state: "OPEN", status: "", rationale: "", requests: [{ id: "say", notes: "Say it.", reference: null, status: "RUNNING" }, { id: "spell", notes: "Spell it.", reference: null, status: "QUEUED" }], actions: actions_Review, attributes: {} }],
     rounds_Landed: [],
-    task: null,
+    mode: { kind: "MANUAL" },
+    tasks: [],
+    files: [],
     ranges_Frame: [],
     module_Language: MODULE_PLAINTEXT,
     module_Reading: MODULE_READING_TEXT

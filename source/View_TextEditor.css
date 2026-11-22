@@ -1366,8 +1366,8 @@
 }
 
 /* the agent at work, its word shimmering, the view's: a revising
-   proposal's status, the task's or the document's Working in its card, a
-   request's "running"; a soft band passing through the word's letters,
+   proposal's status, the task's or the document's Working in its card, the
+   task's name, or the file's, in the header, a request's "running"; a soft band passing through the word's letters,
    left to right, easing in and out, dimming it to half at its middle, then
    resting, a pass every two turns of the arc, begun as a turn is, one
    rhythm, the beat said once for whatever keeps it, the band too, a mask
@@ -1389,7 +1389,7 @@
     animation: revising_htmlView var(--time_revising_htmlView) linear infinite;
   }
 
-  .htmlView_editor :is(.item_htmlView[data-state="REVISING"] .status_htmlView, .state_Card_htmlView[data-state="WORKING"], .progress_Said_htmlView[data-status="RUNNING"]) {
+  .htmlView_editor :is(.item_htmlView[data-state="REVISING"] .status_htmlView, .state_Card_htmlView[data-state="WORKING"], .trigger_Task_htmlView[data-state="WORKING"] > .name_Task_htmlView, .trigger_Document_htmlView[data-state="WORKING"] > .name_Document_htmlView, .progress_Said_htmlView[data-status="RUNNING"]) {
     mask-image: var(--band_Shimmer_htmlView);
     mask-size: 250% 100%;
     animation: shimmer_htmlView calc(var(--time_revising_htmlView) * 2) linear infinite;
@@ -1660,10 +1660,10 @@
 /* the header over the document, for the whole of it, as doctor's is:
    always there, at the top as the document scrolls under it, across the
    editor's width, on the proposals' band, a faint edge under it, flat, no
-   shadow, in the interface's font. On its left, where the text starts, the
-   host's task, its mark in the gutter and its name in the page's ink, and
-   nothing more, what's decided, what's queued and what's under way said
-   by the cards and the task's mark; with no task, how the document
+   shadow, in the interface's font. On its left, where the text starts, what
+   the editor's in, the host's task's name in the page's ink, or Manual,
+   then its switcher, and nothing more, what's decided, what's queued and
+   what's under way said by the cards and the task's name; with no task, how the document
    stands, its parts plain words apart by dots, how many of its proposals
    are decided, how many requests are queued, how many are in progress, a
    spinner turning in the revision's plum, still where motion's asked to be
@@ -1726,6 +1726,9 @@
   font-family: var(--view-ui-font, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif);
   font-size: var(--view-ui-font-size, 13px);
   line-height: 1.45;
+  container-type: inline-size;
+  --size_Button_htmlView: 1.55rem;
+  --size_Icon_htmlView: round(0.95rem, 1px);
 }
 
 .htmlView_editor .status_Header_htmlView {
@@ -1768,8 +1771,7 @@
 }
 
 /* the task's state in words, and the document's, for what reads the page
-   aloud; shown by its mark, which says it at a glance, as doctor's did, no
-   word beside it */
+   aloud; each shown by its name, the header having no marks */
 .htmlView_editor :is(.state_Task_htmlView, .state_Document_htmlView) {
   position: absolute;
   width: 1px;
@@ -1779,47 +1781,58 @@
   white-space: nowrap;
 }
 
-/* the task's mark, in the gutter beside its name, where a proposal's icon
-   is beside its item, so the name starts where the text does; by where it
-   stands: a draft, a dotted
-   ring; the agent at work on it, a spinner turning, as a proposal being
-   revised turns its arc, still where motion's asked to be reduced; your
-   turn, a dot, what's yours to decide; done, a check; canceled, a cross,
-   fainter than its word, as a withdrawn proposal's is; each in the task's
-   ink */
-.htmlView_editor .mark_Task_htmlView {
-  position: absolute;
-  top: 50%;
-  left: calc(-1 * (var(--gutterGap_htmlView) + var(--laneWidth_htmlView) + var(--gutterEnd_htmlView)) - 1.15em);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 1em;
-  height: 1em;
-  translate: 0 -50%;
+/* the task's state said by its name, the header having no mark for it,
+   as it only ever shows three, an editor whose task ends going to manual:
+   your turn, the name as it rests, what's waiting said beside it; a
+   draft, faded, its word shown after it, faded too, not bold; the agent
+   at work, the name shimmering, with whatever else is at work, or, where
+   motion's asked to be reduced, its word shown after it, as a draft's is;
+   the document's the same, its file's name shimmering while work's under
+   way on it, or its word shown, and otherwise as it rests, the header's
+   counts saying how far it's got */
+.htmlView_editor :is(.trigger_Task_htmlView > .state_Task_htmlView, .trigger_Document_htmlView > .state_Document_htmlView),
+.htmlView_editor .trigger_Task_htmlView[data-state="DRAFT"] > .name_Task_htmlView {
+  color: var(--view-placeholder-ink, color-mix(in srgb, CanvasText 58%, transparent));
 }
 
-/* the document's mark, after its file's name, on the header's right as
-   the document is, nearer it than the task's mark is to the task's name,
-   about half as far, the header's own gap between its parts, so the two
-   read as a pair, not a reflection; as big as the task's, in the header's
-   own font, not the file name's; centred on it; the task's marks, by where the document
-   stands: its requests, or
-   its proposals', under way, a spinner; something here yours, a proposal
-   to decide or a request to start, a dot; every proposal decided, nothing
-   queued, a check; nothing proposed, none. Working first, then yours */
-.htmlView_editor .mark_Document_htmlView {
+.htmlView_editor .trigger_Task_htmlView[data-state="DRAFT"] > .state_Task_htmlView {
+  position: static;
+  width: auto;
+  height: auto;
+  margin-left: 0.45rem;
+  overflow: visible;
+  clip-path: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .htmlView_editor :is(.trigger_Task_htmlView[data-state="WORKING"] > .state_Task_htmlView, .trigger_Document_htmlView[data-state="WORKING"] > .state_Document_htmlView) {
+    position: static;
+    width: auto;
+    height: auto;
+    margin-left: 0.45rem;
+    overflow: visible;
+    clip-path: none;
+  }
+}
+
+/* the task's mark, before each task's name in the switcher's list,
+   where tasks are scanned, not in the header, where the name says it; by
+   where it stands: a
+   draft, a dotted ring; the agent at work on it, a spinner turning, as a
+   proposal being revised turns its arc, still where motion's asked to be
+   reduced; your turn, a dot, what's yours to decide; completed, a check;
+   canceled, or a draft discarded, a cross, fainter than its word, as a
+   withdrawn proposal's is; each in the task's ink */
+.htmlView_editor .mark_Task_htmlView {
   display: flex;
   flex: none;
   align-items: center;
   justify-content: center;
   width: 1em;
   height: 1em;
-  margin-left: 0.75rem;
-  font-size: var(--view-ui-font-size, 13px);
 }
 
-.htmlView_editor :is(.mark_Task_htmlView, .mark_Document_htmlView)::before {
+.htmlView_editor .mark_Task_htmlView::before {
   content: "";
   box-sizing: border-box;
   width: 0.8em;
@@ -1827,34 +1840,30 @@
   border-radius: 50%;
 }
 
-/* the ink of where the task, or the document, stands, as a proposal's is,
-   on what says it, its mark and its word in the card, each carrying the
+/* the ink of where a task, or the document, stands, as a proposal's is,
+   on what says it, a task's mark in the switcher and its word in a card, each carrying the
    state, `data-state`, not the part of the header holding its card,
    which, drawn again for a new state, would close the card open under the
    pointer or the keyboard: the agent at work, the revision's plum; your
    turn, or done, decided, the proposals' indigo; a draft, or canceled,
    nothing under way, the grey a withdrawn proposal's in */
-.htmlView_editor :is(.mark_Task_htmlView, .mark_Document_htmlView, .state_Card_htmlView) {
+.htmlView_editor :is(.mark_Task_htmlView, .state_Card_htmlView) {
   --ink_Mark_htmlView: var(--view-state-withdrawn, var(--view-status-ink, color-mix(in srgb, CanvasText 60%, transparent)));
 }
 
-.htmlView_editor :is(.mark_Task_htmlView, .mark_Document_htmlView, .state_Card_htmlView)[data-state="WORKING"] {
+.htmlView_editor :is(.mark_Task_htmlView, .state_Card_htmlView)[data-state="WORKING"] {
   --ink_Mark_htmlView: var(--view-state-revising, var(--view-status-ink, var(--accent_revision_htmlView)));
 }
 
-.htmlView_editor :is(.mark_Task_htmlView, .mark_Document_htmlView, .state_Card_htmlView):is([data-state="YOUR_TURN"], [data-state="DONE"]) {
+.htmlView_editor :is(.mark_Task_htmlView, .state_Card_htmlView):is([data-state="YOUR_TURN"], [data-state="DONE"], [data-state="COMPLETED"]) {
   --ink_Mark_htmlView: var(--view-status-ink, var(--accent_proposals_htmlView));
-}
-
-.htmlView_editor .mark_Document_htmlView[data-state="NONE"] {
-  display: none;
 }
 
 .htmlView_editor .mark_Task_htmlView[data-state="DRAFT"]::before {
   border: 1.5px dotted var(--ink_Mark_htmlView);
 }
 
-.htmlView_editor :is(.mark_Task_htmlView, .mark_Document_htmlView)[data-state="WORKING"]::before {
+.htmlView_editor .mark_Task_htmlView[data-state="WORKING"]::before {
   border: 1.5px solid var(--ink_Mark_htmlView);
   border-right-color: transparent;
 }
@@ -1863,33 +1872,33 @@
    on, its word in the card shimmering, as a revising proposal's does,
    above */
 @media (prefers-reduced-motion: no-preference) {
-  .htmlView_editor :is(.mark_Task_htmlView, .mark_Document_htmlView)[data-state="WORKING"]::before {
+  .htmlView_editor .mark_Task_htmlView[data-state="WORKING"]::before {
     animation: revising_htmlView var(--time_revising_htmlView) linear infinite;
   }
 }
 
-.htmlView_editor :is(.mark_Task_htmlView, .mark_Document_htmlView)[data-state="YOUR_TURN"]::before {
+.htmlView_editor .mark_Task_htmlView[data-state="YOUR_TURN"]::before {
   width: 0.55em;
   height: 0.55em;
   margin: 0 0.125em;
   background: var(--ink_Mark_htmlView);
 }
 
-.htmlView_editor :is(.mark_Task_htmlView, .mark_Document_htmlView):is([data-state="DONE"], [data-state="CANCELED"])::before {
+.htmlView_editor .mark_Task_htmlView:is([data-state="COMPLETED"], [data-state="CANCELED"], [data-state="DISCARDED"])::before {
   border-radius: 0;
   background: var(--ink_Mark_htmlView);
   mask: var(--icon_Mark_htmlView) center / contain no-repeat;
 }
 
-.htmlView_editor :is(.mark_Task_htmlView, .mark_Document_htmlView)[data-state="DONE"] {
+.htmlView_editor .mark_Task_htmlView[data-state="COMPLETED"] {
   --icon_Mark_htmlView: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none' stroke='black' stroke-width='1.9' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M3 8.6l3.2 3.1L13 4.6'/%3E%3C/svg%3E");
 }
 
-.htmlView_editor .mark_Task_htmlView[data-state="CANCELED"] {
+.htmlView_editor .mark_Task_htmlView:is([data-state="CANCELED"], [data-state="DISCARDED"]) {
   --icon_Mark_htmlView: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none' stroke='black' stroke-width='1.9' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M4.2 4.2l7.6 7.6M11.8 4.2l-7.6 7.6'/%3E%3C/svg%3E");
 }
 
-.htmlView_editor .mark_Task_htmlView[data-state="CANCELED"]::before {
+.htmlView_editor .mark_Task_htmlView:is([data-state="CANCELED"], [data-state="DISCARDED"])::before {
   background: color-mix(in srgb, var(--ink_Mark_htmlView) 75%, transparent);
 }
 
@@ -1913,9 +1922,10 @@
   }
 }
 
-/* the document, at the header's end: its file's name, in the editor's
-   font, which opens its card under it as the task's does, the card's right
-   edge under its own; the document's actions there, not on the header */
+/* the document, at the header's end, after the task's counts: its file's
+   name, in the editor's font, with no mark, opening its card from the
+   header's right edge, away from the name, so its head says the file's
+   path; the document's actions there, not on the header */
 .htmlView_editor .document_Header_htmlView {
   display: flex;
   flex: none;
@@ -1951,14 +1961,26 @@
 }
 
 /* the footer under the document, always there, as the header is: on the
-   same band, a faint edge over it, empty while nothing's said there yet */
+   same band, a faint edge over it; at its right, small, leaving the rest
+   for what else a footer holds, the project's open tasks counted by what
+   they're waiting on, each count after its mark, in its ink: needing you,
+   the dot of your turn; conflicts, a warning, in the removed red; at
+   work, the spinner, turning as the task's does; drafts, the dotted ring;
+   none of them, nothing; the counts in words for what reads the page
+   aloud, and as its title */
 .htmlView_editor .footer_htmlView {
   position: sticky;
   bottom: 0;
   z-index: 5;
+  display: flex;
   flex: none;
+  align-items: center;
+  justify-content: flex-end;
   box-sizing: border-box;
   min-height: 1.9rem;
+  padding: 0 var(--view-padding-inline, 1rem);
+  font-family: var(--view-ui-font, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif);
+  font-size: var(--view-ui-font-size, 13px);
   border-top: 1px solid var(--view-menu-edge, color-mix(in srgb, CanvasText 16%, transparent));
   background:
     linear-gradient(var(--view-proposals-shade, color-mix(in srgb, CanvasText 5%, transparent)), var(--view-proposals-shade, color-mix(in srgb, CanvasText 5%, transparent))),
@@ -1966,9 +1988,365 @@
     var(--view-ground, Canvas);
 }
 
-/* the task, at the header's start: its mark and its name, which open its
-   card under it while the pointer's on them, or the keyboard's on them or
-   in the card, as doctor's did, a dot after it before what's counted; the
+/* manual, this editor's mode where it's in no task, the file itself: in
+   the task's place, at the header's start, "Manual" where a task's
+   name is, with no mark, as a task has none there, opening no card of its
+   own, what it is said by the switcher after it */
+.htmlView_editor .manual_Header_htmlView {
+  display: flex;
+  flex: none;
+  align-self: stretch;
+  align-items: center;
+  justify-content: flex-end;
+  width: calc-size(fit-content, round(up, size, 1px) + 0.5px);
+  min-width: 0;
+}
+
+.htmlView_editor .name_Manual_htmlView {
+  font-weight: 600;
+  color: var(--view-ink, CanvasText);
+}
+
+/* manual's mark, in the switcher's list, where a task's is: a pencil, in
+   the grey a draft's in, nothing under way */
+.htmlView_editor .mark_Manual_htmlView {
+  display: flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: 1em;
+  height: 1em;
+}
+
+.htmlView_editor .mark_Manual_htmlView::before {
+  content: "";
+  width: 0.85em;
+  height: 0.85em;
+  background: var(--view-state-withdrawn, var(--view-status-ink, color-mix(in srgb, CanvasText 60%, transparent)));
+  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none' stroke='black' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M10.8 2.6l2.6 2.6-7.9 7.9-3.2.6.6-3.2z'/%3E%3Cpath d='M9.3 4.1l2.6 2.6'/%3E%3C/svg%3E") center / contain no-repeat;
+}
+
+/* the switcher, at the header's start, just after what this editor's
+   in, a task's name or Manual, set apart from it by a hairline, as it's
+   every task's, not this one's, the hairline 13.2px from the name's ink
+   and 13px from the arrows', which read about 13.9px and 14.7px, the
+   arrows' side roomier by eye, as at 11.5px, reading even, they looked
+   crowded against it, and at 13.5px too far; the arrows drawn half a pixel
+   right of their square's middle, as the square, on whole pixels, can't
+   move by half; measured
+   as the eye takes them in: the pixels blurred as by sight, and the room
+   read, row by row across the letters' height, to where the blur reaches
+   15% of black, the bold name pulling closer and the arrows' thin grey
+   line ends receding; one step of 1.25 tighter than the file's 17px, the
+   switcher belonging to the task, as the file's hairline is one with the
+   edge's margin; the arrows' square, pointed at, clear of the hairline; as
+   drawn, the name's last letter
+   keeping a little room past its ink, about 0.02em in the header's bold,
+   taken off before the hairline, and the arrows' square a whole number
+   of pixels after it, rounded up, as each is drawn on whole pixels and
+   the name isn't, so the gap between them never changes by one as the
+   name's length does, the arrows' rounded ends 1.75/16 into their square;
+   the name, or Manual, set at the end of a box a whole number of pixels
+   and a half wide, so it ends as far from the hairline whatever it says,
+   the half setting where that falls, within half a pixel of 13.2 by
+   where the text starts;
+   two arrows, muted, a
+   faint ground under them pointed at, opening a card of its own, placed
+   as the task's is, from where the text starts; never open with the
+   task's, the one pointed at shown, or, pointing at neither, the one the
+   keyboard's in. In it, under its label, every open task, each on a
+   line: its mark, its name, where it stands, and a figure of what's
+   waiting, a conflict's in the removed red; then Manual; the one this
+   editor's in on a faint band, saying so, not to be pressed, the rest
+   pressed to switch this editor to them, the host asked, `SWITCH` */
+.htmlView_editor :is(.switcher_Header_htmlView, .picker_Header_htmlView) {
+  display: flex;
+  flex: none;
+  align-self: stretch;
+  align-items: center;
+}
+
+.htmlView_editor .switcher_Header_htmlView {
+  gap: calc(round(up, 0.8rem - var(--size_Icon_htmlView) * 1.75 / 16, 1px) - (var(--size_Button_htmlView) - var(--size_Icon_htmlView)) / 2);
+  margin-left: calc(0.875rem - 0.75rem - 0.02em);
+}
+
+.htmlView_editor :is(.switcher_Header_htmlView, .picker_Header_htmlView)::before {
+  content: "";
+  flex: none;
+  width: 1px;
+  height: 1.1rem;
+  background: color-mix(in srgb, CanvasText 18%, transparent);
+}
+
+.htmlView_editor :is(.trigger_Switcher_htmlView, .trigger_Picker_htmlView) {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--size_Button_htmlView);
+  height: var(--size_Button_htmlView);
+  padding: 0;
+  border: none;
+  border-radius: 2px;
+  background: none;
+  color: var(--view-placeholder-ink, color-mix(in srgb, CanvasText 58%, transparent));
+  cursor: pointer;
+}
+
+.htmlView_editor :is(.trigger_Switcher_htmlView, .trigger_Picker_htmlView)::before {
+  content: "";
+  width: var(--size_Icon_htmlView);
+  height: var(--size_Icon_htmlView);
+  background: currentColor;
+}
+
+.htmlView_editor .trigger_Switcher_htmlView::before {
+  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none' stroke='black' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M3.07 5.5h10M10.57 3l2.5 2.5L10.57 8'/%3E%3Cpath d='M14.07 10.5h-10M6.57 8l-2.5 2.5L6.57 13'/%3E%3C/svg%3E") center / contain no-repeat;
+}
+
+.htmlView_editor :is(.switcher_Header_htmlView:is(:hover, :focus-within) > .trigger_Switcher_htmlView, .picker_Header_htmlView:is(:hover, :focus-within) > .trigger_Picker_htmlView) {
+  background: color-mix(in srgb, CanvasText 8%, transparent);
+  color: var(--view-ink, CanvasText);
+}
+
+.htmlView_editor :is(.trigger_Switcher_htmlView, .choice_Switcher_htmlView, .trigger_Picker_htmlView, .choice_Picker_htmlView, .open_Document_Card_htmlView):focus-visible {
+  outline: 2px solid var(--view-focus-ring, CanvasText);
+  outline-offset: 2px;
+}
+
+.htmlView_editor .header_htmlView:has(> .switcher_Header_htmlView:hover) > .task_Header_htmlView:not(:has(.asking_htmlView)) > .card_htmlView,
+.htmlView_editor .header_htmlView:has(> .switcher_Header_htmlView:focus-within):not(:has(> .task_Header_htmlView:hover)) > .task_Header_htmlView:not(:has(.asking_htmlView)) > .card_htmlView,
+.htmlView_editor .header_htmlView:has(> .task_Header_htmlView:hover) > .switcher_Header_htmlView > .card_htmlView,
+.htmlView_editor .header_htmlView:has(> .task_Header_htmlView:focus-within):not(:has(> .switcher_Header_htmlView:hover)) > .switcher_Header_htmlView > .card_htmlView,
+.htmlView_editor .header_htmlView:has(> .picker_Header_htmlView:hover) > .document_Header_htmlView:not(:has(.asking_htmlView)) > .card_htmlView,
+.htmlView_editor .header_htmlView:has(> .picker_Header_htmlView:focus-within):not(:has(> .document_Header_htmlView:hover)) > .document_Header_htmlView:not(:has(.asking_htmlView)) > .card_htmlView,
+.htmlView_editor .header_htmlView:has(> .document_Header_htmlView:hover) > .picker_Header_htmlView > .card_htmlView,
+.htmlView_editor .header_htmlView:has(> .document_Header_htmlView:focus-within):not(:has(> .picker_Header_htmlView:hover)) > .picker_Header_htmlView > .card_htmlView {
+  visibility: hidden;
+  opacity: 0;
+  transition: none;
+}
+
+.htmlView_editor :is(.list_Switcher_htmlView, .list_Picker_htmlView) {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+  margin: 0 -0.4rem;
+  padding: 0;
+  list-style: none;
+}
+
+.htmlView_editor :is(.choice_Switcher_htmlView, .choice_Picker_htmlView) {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  box-sizing: border-box;
+  width: 100%;
+  padding: 0.2rem 0.4rem;
+  border: none;
+  border-radius: 2px;
+  background: none;
+  color: var(--view-ink, CanvasText);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.htmlView_editor :is(.choice_Switcher_htmlView, .choice_Picker_htmlView):is(:hover, [aria-current]) {
+  background: color-mix(in srgb, CanvasText 6%, transparent);
+}
+
+.htmlView_editor :is(.choice_Switcher_htmlView, .choice_Picker_htmlView)[aria-current] {
+  cursor: default;
+}
+
+/* the picker, at the header's right end, after the document's name: the
+   name's ink, the hairline, the icon's ink and the header's right edge
+   evenly spaced, each 1rem and the icon's own margin apart, 17px here,
+   measured from the ink as drawn; the icon's square a whole number of
+   pixels wide, as every icon's in the header is, so its ink, 2.35/16 in
+   from either side, sits as far into it on each, and the square a whole
+   number of pixels from the hairline and from the edge, as each is drawn
+   on whole pixels; the file's name, in the editor's font, keeping about
+   0.08em past its last letter's ink, taken off before the hairline: an
+   icon of files, opening a card of its own, never open with the
+   document's, the one pointed at shown, as the task's two, as the
+   switcher's after the task's. In its card, the files in this editor's task, how far each has got, then
+   the project's others, or, in manual, the project's files, each its
+   path, its folder muted, the one this editor's showing saying so, not to
+   be pressed, the rest pressed to open them here, the host asked,
+   `OPEN_FILE` */
+.htmlView_editor .picker_Header_htmlView {
+  gap: calc(round(1rem, 1px) - (var(--size_Button_htmlView) - var(--size_Icon_htmlView)) / 2);
+  margin-left: calc(round(1rem, 1px) + var(--size_Icon_htmlView) * 2.35 / 16 - 0.75rem - 0.08em);
+  margin-right: calc(round(1rem, 1px) - var(--view-padding-inline, 1rem) - (var(--size_Button_htmlView) - var(--size_Icon_htmlView)) / 2);
+}
+
+.htmlView_editor .trigger_Picker_htmlView::before {
+  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none' stroke='black' stroke-width='1.3' stroke-linejoin='round'%3E%3Cpath d='M5.5 1.8h4.6l2.9 2.9v7.5H5.5z'/%3E%3Cpath d='M10 1.8v3h3'/%3E%3Cpath d='M3 4.3v10h7.2'/%3E%3C/svg%3E") center / contain no-repeat;
+}
+
+.htmlView_editor .icon_File_htmlView {
+  flex: none;
+  width: 0.95em;
+  height: 0.95em;
+  background: var(--view-placeholder-ink, color-mix(in srgb, CanvasText 58%, transparent));
+  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none' stroke='black' stroke-width='1.3' stroke-linejoin='round'%3E%3Cpath d='M4 1.8h5.2L12.5 5v9.2h-8.5z'/%3E%3Cpath d='M9 1.8V5.2h3.4'/%3E%3C/svg%3E") center / contain no-repeat;
+}
+
+.htmlView_editor .path_Picker_htmlView {
+  display: flex;
+  min-width: 0;
+  overflow: hidden;
+  font-family: var(--view-font, ui-monospace, "SF Mono", Menlo, Consolas, monospace);
+  font-size: 0.92em;
+  white-space: nowrap;
+}
+
+.htmlView_editor .folder_Picker_htmlView {
+  color: var(--view-placeholder-ink, color-mix(in srgb, CanvasText 58%, transparent));
+}
+
+/* a task's file, in its card, pressed to open it here, in this task: its
+   path a button, underlined pointed at; the one this editor's showing not
+   to be pressed */
+.htmlView_editor .open_Document_Card_htmlView {
+  padding: 0;
+  border: none;
+  background: none;
+  color: inherit;
+  font-weight: inherit;
+  line-height: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.htmlView_editor .document_Card_htmlView[aria-current] .open_Document_Card_htmlView {
+  cursor: default;
+}
+
+.htmlView_editor .document_Card_htmlView:not([aria-current]) .open_Document_Card_htmlView:hover .name_Document_Card_htmlView {
+  text-decoration: underline;
+}
+
+.htmlView_editor .label_Option_htmlView {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.htmlView_editor :is(.note_Option_htmlView, .here_Option_htmlView) {
+  flex: none;
+  color: var(--view-placeholder-ink, color-mix(in srgb, CanvasText 58%, transparent));
+  font-size: 0.88em;
+}
+
+.htmlView_editor .figure_Option_htmlView {
+  flex: none;
+  padding: 0.05em 0.5em;
+  border-radius: 999px;
+  background: color-mix(in srgb, CanvasText 7%, transparent);
+  font-size: 0.88em;
+  font-variant-numeric: tabular-nums;
+}
+
+.htmlView_editor .figure_Option_htmlView[data-conflicted] {
+  background: color-mix(in srgb, var(--view-removed-edge, light-dark(#e51400, #f14c4c)) 14%, transparent);
+  color: color-mix(in srgb, var(--view-removed-edge, light-dark(#e51400, #f14c4c)) 80%, CanvasText);
+}
+
+.htmlView_editor .here_Option_htmlView {
+  margin-left: auto;
+}
+
+.htmlView_editor .tasks_Footer_htmlView {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin: 0;
+  font-variant-numeric: tabular-nums;
+}
+
+.htmlView_editor .count_Footer_htmlView {
+  --ink_Count_htmlView: var(--view-state-withdrawn, var(--view-status-ink, color-mix(in srgb, CanvasText 60%, transparent)));
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  color: var(--ink_Count_htmlView);
+}
+
+.htmlView_editor .count_Footer_htmlView[data-kind="YOURS"] {
+  --ink_Count_htmlView: var(--view-status-ink, var(--accent_proposals_htmlView));
+}
+
+.htmlView_editor .count_Footer_htmlView[data-kind="CONFLICTS"] {
+  --ink_Count_htmlView: color-mix(in srgb, var(--view-removed-edge, light-dark(#e51400, #f14c4c)) 85%, CanvasText);
+}
+
+.htmlView_editor .count_Footer_htmlView[data-kind="WORKING"] {
+  --ink_Count_htmlView: var(--view-state-revising, var(--view-status-ink, var(--accent_revision_htmlView)));
+}
+
+.htmlView_editor .mark_Count_htmlView {
+  display: flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: 1em;
+  height: 1em;
+}
+
+.htmlView_editor .mark_Count_htmlView::before {
+  content: "";
+  box-sizing: border-box;
+  width: 0.8em;
+  height: 0.8em;
+  border-radius: 50%;
+}
+
+.htmlView_editor [data-kind="YOURS"] > .mark_Count_htmlView::before {
+  width: 0.55em;
+  height: 0.55em;
+  background: var(--ink_Count_htmlView);
+}
+
+.htmlView_editor [data-kind="CONFLICTS"] > .mark_Count_htmlView::before {
+  width: 0.9em;
+  height: 0.9em;
+  border-radius: 0;
+  background: var(--ink_Count_htmlView);
+  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none' stroke='black' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M8 2.2l6.4 11.3H1.6z'/%3E%3Cpath d='M8 6.6v3.1M8 11.6v.1'/%3E%3C/svg%3E") center / contain no-repeat;
+}
+
+.htmlView_editor [data-kind="WORKING"] > .mark_Count_htmlView::before {
+  border: 1.5px solid var(--ink_Count_htmlView);
+  border-right-color: transparent;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .htmlView_editor [data-kind="WORKING"] > .mark_Count_htmlView::before {
+    animation: revising_htmlView var(--time_revising_htmlView) linear infinite;
+  }
+}
+
+.htmlView_editor [data-kind="DRAFTS"] > .mark_Count_htmlView::before {
+  border: 1.5px dotted var(--ink_Count_htmlView);
+}
+
+.htmlView_editor .words_Footer_htmlView {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/* the task, at the header's start, where the text starts: its name,
+   which opens its card under it while the pointer's on it, or the
+   keyboard's on it or in the card, as doctor's did, its switcher after
+   it, then a dot before what's counted; the
    card hidden, not gone, so the keyboard can go on into it, lingering a
    moment once the pointer's left, so it can cross to the card and keep it.
    Each card, the task's and the document's, on the menu's band, solid over
@@ -1980,17 +2358,15 @@
    task does here, then its Proposals and its Revisions. Escape in either
    sends the keyboard back to the text, and it closes */
 .htmlView_editor .task_Header_htmlView {
-  position: relative;
   display: flex;
   flex: none;
   align-self: stretch;
   align-items: center;
   gap: 0.4rem;
   min-width: 0;
-  margin-right: -0.35rem;
 }
 
-.htmlView_editor .task_Header_htmlView + .status_Header_htmlView:not(:empty)::before {
+.htmlView_editor :is(.task_Header_htmlView, .manual_Header_htmlView, .switcher_Header_htmlView) + .status_Header_htmlView:not(:empty)::before {
   content: "·";
   color: var(--view-placeholder-ink, color-mix(in srgb, CanvasText 58%, transparent));
 }
@@ -1998,7 +2374,8 @@
 .htmlView_editor .trigger_Task_htmlView {
   display: inline-flex;
   align-items: center;
-  gap: 0.4rem;
+  justify-content: flex-end;
+  width: calc-size(fit-content, round(up, size, 1px) + 0.5px);
   min-width: 0;
   padding: 0;
   border: none;
@@ -2047,30 +2424,38 @@
   outline: none;
 }
 
-.htmlView_editor .card_Task_htmlView {
-  left: -0.75rem;
+/* the task's card, and the switcher's, from where the text starts, the
+   task's under its name, its content set under it, so saying only its id
+   and where it stands, their tops on the header's edge; each no wider than
+   the header leaves it, the header a container of its width, so a narrow
+   editor's card ends at its right edge, not past it, hidden or shown */
+.htmlView_editor :is(.card_Task_htmlView, .card_Switcher_htmlView) {
+  top: 100%;
+  left: calc(var(--textInset_htmlView) - 0.75rem);
+  max-width: calc(100cqw - var(--textInset_htmlView) + 0.75rem);
 }
 
-/* the document's card hugging the editor's right edge, placed from the
-   header, not from its file name, its top on the header's edge as the
-   task's is; no edge of its own on the right, where the editor's is, so
-   not doubled */
-.htmlView_editor .card_Document_htmlView {
+/* the document's card, and the picker's, at the header's right end,
+   hugging the editor's right edge, placed from the header, not from the
+   file's name, their tops on the header's edge; no edge of their own on
+   the right, where the editor's is, so not doubled */
+.htmlView_editor :is(.card_Document_htmlView, .card_Picker_htmlView) {
   top: 100%;
   right: 0;
+  max-width: 100cqw;
   border-right: none;
 }
 
 /* shown while its trigger's hovered, or the focus is in it, and held open
    while Add a request's form is in it, as doctor's was, whatever the
    pointer does, till it's put away; the one pointed at over the other */
-.htmlView_editor :is(.task_Header_htmlView, .document_Header_htmlView):is(:hover, :focus-within, :has(.asking_htmlView)) > .card_htmlView {
+.htmlView_editor :is(.task_Header_htmlView, .switcher_Header_htmlView, .document_Header_htmlView, .picker_Header_htmlView):is(:hover, :focus-within, :has(.asking_htmlView)) > .card_htmlView {
   visibility: visible;
   opacity: 1;
   transition-delay: 0s;
 }
 
-.htmlView_editor :is(.task_Header_htmlView, .document_Header_htmlView):hover > .card_htmlView {
+.htmlView_editor :is(.task_Header_htmlView, .switcher_Header_htmlView, .document_Header_htmlView, .picker_Header_htmlView):hover > .card_htmlView {
   z-index: 7;
 }
 

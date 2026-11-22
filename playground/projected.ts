@@ -56,5 +56,5 @@ function projectedOf<State>({
   rounds_Landed,
   ranges_Frame
 }: _Api___projectedOf_<State>): _ViewModel_TextEditor_ {
-  return viewModelOf__Model({ model_TextEditor: modelOf({ multilineText, marks, proposed }), name_Document: "", proposals, rounds_Landed, task: null, ranges_Frame, module_Language, module_Reading })
+  return viewModelOf__Model({ model_TextEditor: modelOf({ multilineText, marks, proposed }), name_Document: "", proposals, rounds_Landed, mode: { kind: "MANUAL" }, tasks: [], files: [], ranges_Frame, module_Language, module_Reading })
 }

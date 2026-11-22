@@ -36,7 +36,15 @@ import {
   type _State_Document_,
   type _Action_Task_,
   type _Header_ViewModel_,
+  type _Switcher_Header_,
+  type _Option_Switcher_,
+  type _Picker_Header_,
+  type _Section_Picker_,
+  type _File_Picker_,
   type _Part_Header_,
+  type _Footer_ViewModel_,
+  type _Count_Tasks_,
+  type _Kind_Count_,
   type _Action_Item_,
   type _Attributes_Element_,
   type _Line_Run_,
@@ -73,6 +81,11 @@ import {
 
 export {
   viewModelOf__Model,
+  type _Mode_Host_,
+  type __BASE_Mode_Host_,
+  type _MANUAL_Mode_Host_,
+  type _TASK_Mode_Host_,
+  type _Standing_Task_,
   type _Proposal_Host_,
   type _Request_Host_,
   type _Task_Host_,
@@ -91,18 +104,45 @@ interface _Api___viewModelOf__Model_<State> {
   model_TextEditor: _Model_TextEditor_
   name_Document: string
   proposals: Array<_Proposal_Host_>
-  task: _Task_Host_ | null
+  mode: _Mode_Host_
+  tasks: Array<_Standing_Task_>
+  files: Array<string>
   rounds_Landed: Array<_Landed_Round_>
   ranges_Frame: Array<_Range_Lines_>
   module_Language: _Module_Language_<State>
   module_Reading: _Module_Reading_
 }
 
+type _Mode_Host_ = _MANUAL_Mode_Host_ | _TASK_Mode_Host_
+
+interface __BASE_Mode_Host_<Kind extends string> {
+  kind: Kind
+}
+
+interface _MANUAL_Mode_Host_ extends __BASE_Mode_Host_<"MANUAL"> {}
+
+interface _TASK_Mode_Host_ extends __BASE_Mode_Host_<"TASK"> {
+  task: _Task_Host_
+}
+
+interface _Standing_Task_ {
+  id: string
+  name: string
+  state: _State_Task_
+  isOnDocument: boolean
+  count_Undecided: number
+  count_Conflicts: number
+  count_Queued: number
+  count_Running: number
+}
+
 function viewModelOf__Model<State>({
   model_TextEditor,
   name_Document,
   proposals,
-  task,
+  mode,
+  tasks,
+  files,
   rounds_Landed,
   ranges_Frame,
   module_Language,
@@ -167,8 +207,8 @@ function viewModelOf__Model<State>({
           line_First: line_Next
         })
       ],
-      references: (task?.requests ?? []).flatMap((request_Task) => request_Task.status !== "ADDRESSED" && request_Task.aim.reference !== null ? [request_Task.aim.reference] : []),
-      references_Running: (task?.requests ?? []).flatMap((request_Task) => request_Task.status === "RUNNING" && request_Task.aim.reference !== null ? [request_Task.aim.reference] : []),
+      references: (mode.kind === "TASK" ? mode.task.requests : []).flatMap((request_Task) => request_Task.status !== "ADDRESSED" && request_Task.aim.reference !== null ? [request_Task.aim.reference] : []),
+      references_Running: (mode.kind === "TASK" ? mode.task.requests : []).flatMap((request_Task) => request_Task.status === "RUNNING" && request_Task.aim.reference !== null ? [request_Task.aim.reference] : []),
       attributes: {
         "data-requested": ""
       }
@@ -177,7 +217,12 @@ function viewModelOf__Model<State>({
       model_TextEditor,
       name_Document,
       proposals,
-      task
+      mode,
+      tasks,
+      files
+    }),
+    footer: footerOf__Tasks({
+      tasks
     })
   }
 }
@@ -186,16 +231,20 @@ interface _Api___headerOf__Proposals_ {
   model_TextEditor: _Model_TextEditor_
   name_Document: string
   proposals: Array<_Proposal_Host_>
-  task: _Task_Host_ | null
+  mode: _Mode_Host_
+  tasks: Array<_Standing_Task_>
+  files: Array<string>
 }
 
 function headerOf__Proposals({
   model_TextEditor,
   name_Document,
   proposals,
-  task
+  mode,
+  tasks,
+  files
 }: _Api___headerOf__Proposals_): _Header_ViewModel_ {
-  const requests_Task = task?.requests ?? []
+  const requests_Task = mode.kind === "TASK" ? mode.task.requests : []
   const requests_Here = requests_Task.filter((request_Task) => request_Task.aim.kind !== "TASK")
   const proposals_Here = proposals.filter((proposal_Host) => model_TextEditor.proposed.some((changes_Source) => changes_Source.source === proposal_Host.source && changes_Source.changes.length > 0))
   const count_Decided = proposals_Here.filter((proposal_Host) => proposal_Host.state !== "OPEN").length
@@ -205,7 +254,7 @@ function headerOf__Proposals({
   ]
   const count_Queued = requests_Counted.filter((request_Host) => request_Host.status === "QUEUED").length
   const count_Running = requests_Counted.filter((request_Host) => request_Host.status === "RUNNING").length
-  const parts: Array<_Part_Header_> = task !== null ? [] : [
+  const parts: Array<_Part_Header_> = mode.kind === "TASK" ? [] : [
     ...proposals_Here.length === 0
       ? []
       : [
@@ -247,7 +296,7 @@ function headerOf__Proposals({
     QUEUED: requests_Counted_Here.filter((request_Host) => request_Host.status === "QUEUED").length,
     RUNNING: requests_Counted_Here.filter((request_Host) => request_Host.status === "RUNNING").length
   }
-  const documents_Task = (task?.documents ?? [])
+  const documents_Task = (mode.kind === "TASK" ? mode.task.documents : [])
     .map((document_Task) => ({
       name: document_Task.name,
       counts_Proposals: document_Task.isShown ? counts_Here : document_Task.counts_Proposals,
@@ -260,7 +309,7 @@ function headerOf__Proposals({
       document_Task_Other
     ) => Number(document_Task_Other.isShown) - Number(document_Task.isShown))
   const counts_Task = sumOf__Counts(documents_Task.map((document_Task) => document_Task.counts_Proposals))
-  const isPresented = totalOf__Counts(task === null ? counts_Here : counts_Task) > 0
+  const isPresented = totalOf__Counts(mode.kind === "TASK" ? counts_Task : counts_Here) > 0
   const count_Startable_Here = requests_Here.filter((request_Task) => request_Task.status === "QUEUED").length + proposals_Here
     .filter((proposal_Host) => proposal_Host.state === "OPEN" && !proposal_Host.requests.some((request_Host) => request_Host.status === "RUNNING"))
     .flatMap((proposal_Host) => proposal_Host.requests)
@@ -278,76 +327,88 @@ function headerOf__Proposals({
     + requests_Whole.filter((request_Task) => request_Task.status === "QUEUED").length
     + documents_Task.filter((document_Task) => !document_Task.isShown).reduce((sum, document_Task) => sum + document_Task.counts_Requests.QUEUED, 0)
   return {
-    task: task === null
-      ? null
+    mode: mode.kind === "MANUAL"
+      ? {
+        kind: "MANUAL",
+        label: "Manual"
+      }
       : {
-        id: task.id,
-        name: task.name,
-        state: task.state,
-        label_State: LABELMAP__STATE_TASK[task.state],
-        summary: task.summary,
-        reason: task.reason,
-        proposals: {
-          figure: totalOf__Counts(counts_Task) === 0
-            ? null
-            : {
-              value: decidedOf__Label(counts_Task),
-              more: breakdownOf__Counts(counts_Task)
-            },
-          documents: documents_Task.length < 2 || totalOf__Counts(counts_Task) === 0
-            ? []
-            : documents_Task.map((document_Task) => ({
-              folder: folderOf__Path(document_Task.name),
-              name: nameOf__Path(document_Task.name),
-              value: decidedOf__Label(document_Task.counts_Proposals),
-              more: breakdownOf__Counts(document_Task.counts_Proposals),
-              isShown: document_Task.isShown,
-              isDecided: decidedOf__Counts(document_Task.counts_Proposals) === totalOf__Counts(document_Task.counts_Proposals),
-              actions: document_Task.actions
+        kind: "TASK",
+        task: {
+          id: mode.task.id,
+          name: mode.task.name,
+          state: mode.task.state,
+          label_State: LABELMAP__STATE_TASK[mode.task.state],
+          summary: mode.task.summary,
+          reason: mode.task.reason,
+          proposals: {
+            figure: totalOf__Counts(counts_Task) === 0
+              ? null
+              : {
+                value: decidedOf__Label(counts_Task),
+                more: breakdownOf__Counts(counts_Task)
+              },
+            documents: documents_Task.length < 2 || totalOf__Counts(counts_Task) === 0
+              ? []
+              : documents_Task.map((document_Task) => ({
+                path: document_Task.name,
+                folder: folderOf__Path(document_Task.name),
+                name: nameOf__Path(document_Task.name),
+                value: decidedOf__Label(document_Task.counts_Proposals),
+                more: breakdownOf__Counts(document_Task.counts_Proposals),
+                isShown: document_Task.isShown,
+                isDecided: decidedOf__Counts(document_Task.counts_Proposals) === totalOf__Counts(document_Task.counts_Proposals),
+                label_Open: "Open here",
+                actions: document_Task.actions
+              })),
+            actions: mode.task.actions.filter((action_Task) => action_Task.section === "PROPOSALS")
+          },
+          revisions_Scope: {
+            figure: figureOf__Counts_Requests(counts_Requests_Task),
+            start_All: count_Startable_Task === 0
+              ? null
+              : {
+                label: `Start all (${count_Startable_Task})`,
+                title: "Starts everything queued in the task, in every document it touches"
+              },
+            stop_All: counts_Requests_Task.RUNNING === 0
+              ? null
+              : {
+                label: `Stop all (${counts_Requests_Task.RUNNING})`,
+                title: "Stops everything running in the task, in every document it touches, putting it back in the queue"
+              },
+            actions: mode.task.actions.filter((action_Task) => action_Task.section === "REVISIONS")
+          },
+          revisions_Level: {
+            requests: requests_Whole.map((request_Task) => itemOf__Request_Task({
+              request_Task,
+              model_TextEditor
             })),
-          actions: task.actions.filter((action_Task) => action_Task.section === "PROPOSALS")
-        },
-        revisions_Scope: {
-          figure: figureOf__Counts_Requests(counts_Requests_Task),
-          start_All: count_Startable_Task === 0
-            ? null
-            : {
-              label: `Start all (${count_Startable_Task})`,
-              title: "Starts everything queued in the task, in every document it touches"
-            },
-          stop_All: counts_Requests_Task.RUNNING === 0
-            ? null
-            : {
-              label: `Stop all (${counts_Requests_Task.RUNNING})`,
-              title: "Stops everything running in the task, in every document it touches, putting it back in the queue"
-            },
-          actions: task.actions.filter((action_Task) => action_Task.section === "REVISIONS")
-        },
-        revisions_Level: {
-          requests: requests_Whole.map((request_Task) => itemOf__Request_Task({
-            request_Task,
-            model_TextEditor
-          })),
-          isStartable_Requests: requests_Whole.some((request_Task) => request_Task.status === "QUEUED"),
-          isStoppable_Requests: requests_Whole.some((request_Task) => request_Task.status === "RUNNING"),
-          ask: isPresented
-            ? {
-              label: "Revise",
-              label_Form: "Revise the task"
-            }
-            : {
-              label: "Add a request",
-              label_Form: "Add a request to the task"
-            }
+            isStartable_Requests: requests_Whole.some((request_Task) => request_Task.status === "QUEUED"),
+            isStoppable_Requests: requests_Whole.some((request_Task) => request_Task.status === "RUNNING"),
+            ask: isPresented
+              ? {
+                label: "Revise",
+                label_Form: "Revise the task"
+              }
+              : {
+                label: "Add a request",
+                label_Form: "Add a request to the task"
+              }
+          }
         }
       },
+    switcher: switcherOf__Tasks({
+      mode,
+      tasks
+    }),
     parts,
     document: {
       folder: folderOf__Path(name_Document),
       name: nameOf__Path(name_Document),
       state: state_Document,
       label_State: LABELMAP__STATE_DOCUMENT[state_Document],
-      summary: task?.summary_Document ?? "",
+      summary: mode.kind === "TASK" ? mode.task.summary_Document : "",
       proposals: {
         figure: totalOf__Counts(counts_Here) === 0
           ? null
@@ -356,7 +417,7 @@ function headerOf__Proposals({
             more: breakdownOf__Counts(counts_Here)
           },
         documents: [],
-        actions: (task?.actions_Document ?? []).filter((action_Task) => action_Task.section === "PROPOSALS")
+        actions: (mode.kind === "TASK" ? mode.task.actions_Document : []).filter((action_Task) => action_Task.section === "PROPOSALS")
       },
       revisions_Scope: {
         figure: figureOf__Counts_Requests(counts_Requests_Here),
@@ -372,7 +433,7 @@ function headerOf__Proposals({
             label: `Stop all (${counts_Requests_Here.RUNNING})`,
             title: `Stops all ${counts_Requests_Here.RUNNING} running in this document, its own and its proposals', putting them back in the queue`
           },
-        actions: (task?.actions_Document ?? []).filter((action_Task) => action_Task.section === "REVISIONS")
+        actions: (mode.kind === "TASK" ? mode.task.actions_Document : []).filter((action_Task) => action_Task.section === "REVISIONS")
       },
       revisions_Level: {
         requests: requests_Here.map((request_Task) => itemOf__Request_Task({
@@ -391,8 +452,181 @@ function headerOf__Proposals({
             label_Form: "Request a change to this document"
           }
       }
-    }
+    },
+    picker: pickerOf__Files({
+      mode,
+      documents_Task,
+      name_Document,
+      files
+    })
   }
+}
+
+interface _Api___switcherOf__Tasks_ {
+  mode: _Mode_Host_
+  tasks: Array<_Standing_Task_>
+}
+
+function switcherOf__Tasks({
+  mode,
+  tasks
+}: _Api___switcherOf__Tasks_): _Switcher_Header_ {
+  const isHereOf = (standing_Task: _Standing_Task_) => mode.kind === "TASK" && mode.task.id === standing_Task.id
+  const tasks_Ordered = [
+    ...tasks.filter((standing_Task) => isHereOf(standing_Task)),
+    ...tasks.filter((standing_Task) => !isHereOf(standing_Task) && standing_Task.isOnDocument),
+    ...tasks.filter((standing_Task) => !isHereOf(standing_Task) && !standing_Task.isOnDocument)
+  ]
+  return {
+    label: "Switch this editor",
+    label_Here: "this editor",
+    options: tasks.length === 0
+      ? []
+      : [
+        ...tasks_Ordered.map((standing_Task): _Option_Switcher_ => ({
+          kind: "TASK",
+          label: standing_Task.name,
+          note: NOTEMAP__STATE_TASK[standing_Task.state],
+          isHere: isHereOf(standing_Task),
+          id: standing_Task.id,
+          state: standing_Task.state,
+          figure: figureOf__Standing_Task(standing_Task),
+          isConflicted: standing_Task.count_Conflicts > 0
+        })),
+        {
+          kind: "MANUAL",
+          label: "Manual",
+          note: "the file itself",
+          isHere: mode.kind === "MANUAL"
+        }
+      ]
+  }
+}
+
+type _NoteMap__State_Task_ = {
+  [State in _State_Task_]: string
+}
+
+const NOTEMAP__STATE_TASK: _NoteMap__State_Task_ = {
+  DRAFT: "draft",
+  WORKING: "working",
+  YOUR_TURN: "needs you",
+  COMPLETED: "completed",
+  CANCELED: "canceled",
+  DISCARDED: "discarded"
+}
+
+function figureOf__Standing_Task(
+  standing_Task: _Standing_Task_
+): string {
+  const figures = [
+    ...standing_Task.count_Conflicts === 0 ? [] : [`${standing_Task.count_Conflicts} ${standing_Task.count_Conflicts === 1 ? "conflict" : "conflicts"}`],
+    ...standing_Task.count_Running === 0 ? [] : [`${standing_Task.count_Running} running`],
+    ...standing_Task.count_Undecided === 0 ? [] : [`${standing_Task.count_Undecided} to decide`],
+    ...standing_Task.count_Queued === 0 ? [] : [`${standing_Task.count_Queued} ${standing_Task.count_Queued === 1 ? "request" : "requests"}`]
+  ]
+  return figures[0] ?? ""
+}
+
+interface _Api___pickerOf__Files_ {
+  mode: _Mode_Host_
+  documents_Task: Array<_Document_Task_>
+  name_Document: string
+  files: Array<string>
+}
+
+function pickerOf__Files({
+  mode,
+  documents_Task,
+  name_Document,
+  files
+}: _Api___pickerOf__Files_): _Picker_Header_ {
+  const fileOf = (path: string, figure: string, isHere: boolean): _File_Picker_ => ({
+    path,
+    folder: folderOf__Path(path),
+    name: nameOf__Path(path),
+    figure,
+    isHere
+  })
+  const paths_Task = documents_Task.map((document_Task) => document_Task.name)
+  const sections: Array<_Section_Picker_> = mode.kind === "TASK"
+    ? [
+      {
+        label: "Files in this task",
+        files: documents_Task.map((document_Task) => fileOf(
+          document_Task.name,
+          totalOf__Counts(document_Task.counts_Proposals) === 0 ? "" : decidedOf__Label(document_Task.counts_Proposals),
+          document_Task.isShown
+        ))
+      },
+      {
+        label: "Other files",
+        files: files.filter((path) => !paths_Task.includes(path)).map((path) => fileOf(
+          path,
+          "",
+          path === name_Document
+        ))
+      }
+    ]
+    : [
+      {
+        label: "Files",
+        files: files.map((path) => fileOf(
+          path,
+          "",
+          path === name_Document
+        ))
+      }
+    ]
+  return {
+    label: "Open a file",
+    label_Here: "this editor",
+    sections: sections.filter((section_Picker) => section_Picker.files.length > 0)
+  }
+}
+
+interface _Api___footerOf__Tasks_ {
+  tasks: Array<_Standing_Task_>
+}
+
+function footerOf__Tasks({
+  tasks
+}: _Api___footerOf__Tasks_): _Footer_ViewModel_ {
+  const counts: Array<_Count_Tasks_> = [
+    {
+      kind: "YOURS" as const,
+      count: tasks.filter((standing_Task) => standing_Task.state === "YOUR_TURN").length
+    },
+    {
+      kind: "CONFLICTS" as const,
+      count: tasks.reduce((sum, standing_Task) => sum + standing_Task.count_Conflicts, 0)
+    },
+    {
+      kind: "WORKING" as const,
+      count: tasks.filter((standing_Task) => standing_Task.state === "WORKING").length
+    },
+    {
+      kind: "DRAFTS" as const,
+      count: tasks.filter((standing_Task) => standing_Task.state === "DRAFT").length
+    }
+  ].filter((count_Tasks) => count_Tasks.count > 0)
+  return {
+    title: tasks.length === 0
+      ? ""
+      : `${tasks.length} ${tasks.length === 1 ? "task" : "tasks"}${counts.length === 0 ? "" : `: ${counts.map((count_Tasks) => WORDSMAP__KIND_COUNT[count_Tasks.kind](count_Tasks.count)).join(", ")}`}`,
+    counts
+  }
+}
+
+type _WordsMap__Kind_Count_ = {
+  [Kind in _Kind_Count_]: (count: number) => string
+}
+
+const WORDSMAP__KIND_COUNT: _WordsMap__Kind_Count_ = {
+  YOURS: (count) => `${count} ${count === 1 ? "needs" : "need"} you`,
+  CONFLICTS: (count) => `${count} ${count === 1 ? "conflict" : "conflicts"}`,
+  WORKING: (count) => `${count} working`,
+  DRAFTS: (count) => `${count} ${count === 1 ? "draft" : "drafts"}`
 }
 
 function figureOf__Counts_Requests(
@@ -621,8 +855,9 @@ const LABELMAP__STATE_TASK: _LabelMap__State_Task_ = {
   DRAFT: "Draft",
   WORKING: "Working",
   YOUR_TURN: "Your turn",
-  DONE: "Done",
-  CANCELED: "Canceled"
+  COMPLETED: "Completed",
+  CANCELED: "Canceled",
+  DISCARDED: "Discarded"
 }
 
 type _ProgressMap__Status_Request_ = {

@@ -374,6 +374,26 @@ const markdown: _Example_ = {
         requests: requests_readme,
         documents_Elsewhere: []
       },
+      tasks_Other: [
+        {
+          id: "T-12",
+          name: "Tidy the retry loop",
+          state: "WORKING",
+          isOnDocument: false,
+          count_Undecided: 14,
+          count_Conflicts: 0,
+          count_Queued: 8,
+          count_Running: 3
+        }
+      ],
+      files: [
+        "retry.js",
+        "README.md",
+        "CHANGELOG.md",
+        "package.json",
+        "source/backoff.js",
+        "tests/retry.test.js"
+      ],
       ranges_Frame: ranges_readme,
       log
     })

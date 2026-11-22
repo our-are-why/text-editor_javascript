@@ -103,6 +103,8 @@ export {
   type _START_Command_,
   type _STOP_Command_,
   type _TASK_Command_,
+  type _SWITCH_Command_,
+  type _OPEN_FILE__Command_,
   type _RERUN_Command_,
   type _SEND_Command_,
   type _OPEN_MENU__Command_,
@@ -154,6 +156,12 @@ export {
   type _TASK_Scope_Work_,
   type _FRAME_Scope_Work_,
   type _TASK_Asked_Host_,
+  type _SWITCH_Asked_Host_,
+  type _Target_Switch_,
+  type __BASE_Target_Switch_,
+  type _MANUAL_Target_Switch_,
+  type _TASK_Target_Switch_,
+  type _OPEN_FILE__Asked_Host_,
   type _RERUN_Asked_Host_,
   type _EDIT_Asked_Host_,
   type _Answer_Dispatch_,
@@ -503,7 +511,7 @@ interface _Answer_Edit_ {
   selection: _Selection_TextEditor_
 }
 
-type _Asked_Host_ = _ACTION_Asked_Host_ | _REQUEST_Asked_Host_ | _EDIT_Asked_Host_ | _REMOVE_Asked_Host_ | _DISMISS_Asked_Host_ | _START_Asked_Host_ | _STOP_Asked_Host_ | _TASK_Asked_Host_ | _RERUN_Asked_Host_
+type _Asked_Host_ = _ACTION_Asked_Host_ | _REQUEST_Asked_Host_ | _EDIT_Asked_Host_ | _REMOVE_Asked_Host_ | _DISMISS_Asked_Host_ | _START_Asked_Host_ | _STOP_Asked_Host_ | _TASK_Asked_Host_ | _SWITCH_Asked_Host_ | _OPEN_FILE__Asked_Host_ | _RERUN_Asked_Host_
 
 interface __BASE_Asked_Host_<Kind extends string> {
   kind: Kind
@@ -572,6 +580,26 @@ interface _TASK_Asked_Host_ extends __BASE_Asked_Host_<"TASK"> {
   command: string
 }
 
+interface _SWITCH_Asked_Host_ extends __BASE_Asked_Host_<"SWITCH"> {
+  target: _Target_Switch_
+}
+
+type _Target_Switch_ = _MANUAL_Target_Switch_ | _TASK_Target_Switch_
+
+interface __BASE_Target_Switch_<Kind extends string> {
+  kind: Kind
+}
+
+interface _MANUAL_Target_Switch_ extends __BASE_Target_Switch_<"MANUAL"> {}
+
+interface _TASK_Target_Switch_ extends __BASE_Target_Switch_<"TASK"> {
+  id: string
+}
+
+interface _OPEN_FILE__Asked_Host_ extends __BASE_Asked_Host_<"OPEN_FILE"> {
+  path: string
+}
+
 interface _RERUN_Asked_Host_ extends __BASE_Asked_Host_<"RERUN"> {
   source: string
 }
@@ -605,7 +633,7 @@ interface _Adapter_Event_ {
   commandOf__Event: (event: Event) => _Command_TextEditor_ | null
 }
 
-type _Command_TextEditor_ = _POINT_Command_ | _POINT_WORDS__Command_ | _SHOW_WORDS__Command_ | _JUMP_Command_ | _FOLD_Command_ | _DRAFT_Command_ | _ACT_Command_ | _ACCEPT_ALL__Command_ | _CONFIRM_Command_ | _REMOVE_Command_ | _DISMISS_Command_ | _START_Command_ | _STOP_Command_ | _TASK_Command_ | _RERUN_Command_ | _SEND_Command_ | _OPEN_MENU__Command_ | _STEP_MENU__Command_ | _CHOOSE_MENU__Command_ | _CLOSE_MENU__Command_ | _FOCUS_REQUEST__Command_ | _SCROLL_Command_ | _OPEN_REQUEST__Command_ | _CLOSE_CARD__Command_ | _SEND_REQUEST__Command_ | _CLOSE_REQUEST__Command_ | _DROP_QUOTE__Command_ | _LEAVE_REQUEST__Command_ | _EDIT_Command_ | _SAVE_EDIT__Command_ | _CLOSE_EDIT__Command_ | _DISCARD_Command_ | _VISIT_Command_ | _PLACE_Command_ | _DRAG_Command_ | _RELEASE_Command_ | _MOVE_Command_ | _EXTEND_Command_ | _INSERT_Command_ | _REPLACE_Command_ | _DELETE_Command_ | _UNDO_Command_ | _REDO_Command_ | _COPY_Command_ | _CUT_Command_ | _PASTE_Command_
+type _Command_TextEditor_ = _POINT_Command_ | _POINT_WORDS__Command_ | _SHOW_WORDS__Command_ | _JUMP_Command_ | _FOLD_Command_ | _DRAFT_Command_ | _ACT_Command_ | _ACCEPT_ALL__Command_ | _CONFIRM_Command_ | _REMOVE_Command_ | _DISMISS_Command_ | _START_Command_ | _STOP_Command_ | _TASK_Command_ | _SWITCH_Command_ | _OPEN_FILE__Command_ | _RERUN_Command_ | _SEND_Command_ | _OPEN_MENU__Command_ | _STEP_MENU__Command_ | _CHOOSE_MENU__Command_ | _CLOSE_MENU__Command_ | _FOCUS_REQUEST__Command_ | _SCROLL_Command_ | _OPEN_REQUEST__Command_ | _CLOSE_CARD__Command_ | _SEND_REQUEST__Command_ | _CLOSE_REQUEST__Command_ | _DROP_QUOTE__Command_ | _LEAVE_REQUEST__Command_ | _EDIT_Command_ | _SAVE_EDIT__Command_ | _CLOSE_EDIT__Command_ | _DISCARD_Command_ | _VISIT_Command_ | _PLACE_Command_ | _DRAG_Command_ | _RELEASE_Command_ | _MOVE_Command_ | _EXTEND_Command_ | _INSERT_Command_ | _REPLACE_Command_ | _DELETE_Command_ | _UNDO_Command_ | _REDO_Command_ | _COPY_Command_ | _CUT_Command_ | _PASTE_Command_
 
 interface __BASE_Command_<Kind extends string> {
   kind: Kind
@@ -669,6 +697,14 @@ interface _STOP_Command_ extends __BASE_Command_<"STOP"> {
 
 interface _TASK_Command_ extends __BASE_Command_<"TASK"> {
   command: string
+}
+
+interface _SWITCH_Command_ extends __BASE_Command_<"SWITCH"> {
+  target: _Target_Switch_
+}
+
+interface _OPEN_FILE__Command_ extends __BASE_Command_<"OPEN_FILE"> {
+  path: string
 }
 
 interface _RERUN_Command_ extends __BASE_Command_<"RERUN"> {
@@ -1195,6 +1231,36 @@ function TASK_stateAfter__Command({
   return state
 }
 
+function SWITCH_stateAfter__Command({
+  state,
+  command,
+  ask_View
+}: _Api___stateAfter__Command_<"SWITCH">): _State__Viewer_TextEditor_ {
+  ask_View({
+    kind: "SWITCH",
+    target: command.target
+  })
+  return {
+    ...state,
+    isFocusing_Input: true
+  }
+}
+
+function OPEN_FILE_stateAfter__Command({
+  state,
+  command,
+  ask_View
+}: _Api___stateAfter__Command_<"OPEN_FILE">): _State__Viewer_TextEditor_ {
+  ask_View({
+    kind: "OPEN_FILE",
+    path: command.path
+  })
+  return {
+    ...state,
+    isFocusing_Input: true
+  }
+}
+
 function RERUN_stateAfter__Command({
   state,
   command,
@@ -1356,11 +1422,13 @@ function itemsOf__Menu({
       selected,
       ids_Run_Selected
     }),
-    ...itemsOf__Tier_Task({
-      task_Header: viewModel_TextEditor.header.task,
-      selected,
-      ids_Run_Selected
-    })
+    ...viewModel_TextEditor.header.mode.kind === "TASK"
+      ? itemsOf__Tier_Task({
+        task_Header: viewModel_TextEditor.header.mode.task,
+        selected,
+        ids_Run_Selected
+      })
+      : []
   ]
 }
 
@@ -1623,7 +1691,7 @@ function itemsOf__Tier_Document({
 }
 
 interface _Api___itemsOf__Tier_Task_ {
-  task_Header: _Task_Header_ | null
+  task_Header: _Task_Header_
   selected: _Selected_Text_ | null
   ids_Run_Selected: Array<string>
 }
@@ -1633,48 +1701,46 @@ function itemsOf__Tier_Task({
   selected,
   ids_Run_Selected
 }: _Api___itemsOf__Tier_Task_): Array<_Item_Menu_> {
-  return task_Header === null
-    ? []
-    : [
-      ...itemsOf__Actions_Task({
-        tier: "TASK",
-        section: "PROPOSALS",
+  return [
+  ...itemsOf__Actions_Task({
+    tier: "TASK",
+    section: "PROPOSALS",
+    label_Tier: "Task",
+    action$_Task: task_Header.proposals.actions
+  }),
+  ...itemsOf__Revisions_Menu({
+    tier: "TASK",
+    label_Tier: "Task",
+    request_Item: {
+      kind: "REQUEST",
+      tier: "TASK",
+      section: "REVISIONS",
+      label_Tier: "Task",
+      label: `Request change${withOf__Selected({
+        selected
+      })}`,
+      label_Form: "Request a change to the task",
+      head: {
         label_Tier: "Task",
-        action$_Task: task_Header.proposals.actions
+        subject: task_Header.name
+      },
+      quote: referenceOf__Selected({
+        selected,
+        ids_Run: ids_Run_Selected
       }),
-      ...itemsOf__Revisions_Menu({
-        tier: "TASK",
-        label_Tier: "Task",
-        request_Item: {
-          kind: "REQUEST",
-          tier: "TASK",
-          section: "REVISIONS",
-          label_Tier: "Task",
-          label: `Request change${withOf__Selected({
-            selected
-          })}`,
-          label_Form: "Request a change to the task",
-          head: {
-            label_Tier: "Task",
-            subject: task_Header.name
-          },
-          quote: referenceOf__Selected({
-            selected,
-            ids_Run: ids_Run_Selected
-          }),
-          target: {
-            kind: "TASK",
-            reference: selected
-          }
-        },
-        label_Start: task_Header.revisions_Scope.start_All?.label ?? null,
-        label_Stop: task_Header.revisions_Scope.stop_All?.label ?? null,
-        action$_Task: task_Header.revisions_Scope.actions,
-        scope: {
-          kind: "TASK"
-        }
-      })
-    ]
+      target: {
+        kind: "TASK",
+        reference: selected
+      }
+    },
+    label_Start: task_Header.revisions_Scope.start_All?.label ?? null,
+    label_Stop: task_Header.revisions_Scope.stop_All?.label ?? null,
+    action$_Task: task_Header.revisions_Scope.actions,
+    scope: {
+      kind: "TASK"
+    }
+  })
+  ]
 }
 
 function STEP_MENU_stateAfter__Command({
@@ -1842,7 +1908,7 @@ type _RevisionsMap__Kind_Target_ = {
 
 const REVISIONSMAP__KIND_TARGET: _RevisionsMap__Kind_Target_ = {
   DOCUMENT: (header_ViewModel) => header_ViewModel.document.revisions_Level,
-  TASK: (header_ViewModel) => header_ViewModel.task?.revisions_Level ?? null
+  TASK: (header_ViewModel) => header_ViewModel.mode.kind === "TASK" ? header_ViewModel.mode.task.revisions_Level : null
 }
 
 function CLOSE_CARD_stateAfter__Command({
@@ -3326,6 +3392,8 @@ const HANDLERMAP__TEXTEDITOR: _HandlerMap__TextEditor_ = {
   START: START_stateAfter__Command,
   STOP: STOP_stateAfter__Command,
   TASK: TASK_stateAfter__Command,
+  SWITCH: SWITCH_stateAfter__Command,
+  OPEN_FILE: OPEN_FILE_stateAfter__Command,
   RERUN: RERUN_stateAfter__Command,
   SEND: SEND_stateAfter__Command,
   OPEN_MENU: OPEN_MENU_stateAfter__Command,
