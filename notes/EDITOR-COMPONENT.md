@@ -3502,9 +3502,11 @@ white between them, not their nearest points: the bold name pulls closer
 and the arrows' thin grey line ends recede; the two hairlines one step of
 1.25 apart, the task's tighter, its switcher one with it, the file's at
 17px, one with the edge's margin; the arrows' square, pointed at, clear
-of the hairline; the task's to within half a pixel by where the text
-starts, the name set at the end of a box a whole number of
-pixels and a half wide, so it ends as far from the hairline whatever it says; the
+of the hairline; the task's to within half a pixel by its name, as
+the name's flush with the text under it and its card's, the hairline on
+a whole pixel after a name ending on a fraction, tried set at the end of
+a box a whole number of pixels wide, which kept its gap the same for any
+name but put it up to a pixel and a half off the text's start; the
 file's even, 17px from its name's ink to the hairline, from the hairline
 to its icon's ink, and from that to the header's edge, the icon's square
 a whole number of pixels wide, as every icon's in the header is, so its

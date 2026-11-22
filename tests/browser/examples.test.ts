@@ -1547,7 +1547,7 @@ test("a group's actions after a click: the focus a click left on its Add not hol
 // then where the cards open: the document's, at the header's end, hugging
 // the editor's right edge, the header's, with no edge of its own there,
 // its top on the header's bottom edge, level with the task's card's,
-// which opens at the header's start, from where the text starts
+// which opens at the header's start, its content flush with the text
 await opened_JavaScript.page.keyboard.press("Escape")
 await opened_JavaScript.page.mouse.move(700, 700)
 await opened_JavaScript.page.hover(".trigger_Document_htmlView")
@@ -1557,17 +1557,16 @@ const hugged_Card = await opened_JavaScript.page.evaluate(async () => {
   const card = document.querySelector(".card_Document_htmlView")
   const card_Task = document.querySelector(".card_Task_htmlView")
   if (header === null || card === null || card_Task === null) return null
-  const rem = parseFloat(getComputedStyle(document.documentElement).fontSize)
   return {
     gap_Right: header.getBoundingClientRect().right - card.getBoundingClientRect().right,
     gap_Top: header.getBoundingClientRect().bottom - parseFloat(getComputedStyle(header).borderBottomWidth) - card.getBoundingClientRect().top,
     edge_Right: getComputedStyle(card).borderRightWidth,
     isLevel: card.getBoundingClientRect().top === card_Task.getBoundingClientRect().top,
-    isFromText: Math.abs(card_Task.getBoundingClientRect().left - (header.getBoundingClientRect().left + parseFloat(getComputedStyle(header).paddingLeft) - rem * 0.75)) < 0.6
+    isFromText: Math.abs(card_Task.getBoundingClientRect().left + parseFloat(getComputedStyle(card_Task).borderLeftWidth) + parseFloat(getComputedStyle(card_Task).paddingLeft) - (header.getBoundingClientRect().left + parseFloat(getComputedStyle(header).paddingLeft))) < 0.6
   }
 })
 
-test("the document's card hugs the editor's right edge, no edge of its own there, its top on the header's edge, level with the task's, which opens from where the text starts", () => {
+test("the document's card hugs the editor's right edge, no edge of its own there, its top on the header's edge, level with the task's, whose content's flush with the text", () => {
   expect(hugged_Card).toEqual({ gap_Right: 0, gap_Top: 0, edge_Right: "0px", isLevel: true, isFromText: true })
   expect(opened_JavaScript.errors).toEqual([])
 })
@@ -2428,7 +2427,7 @@ test("a chevron after the task's name opens the switcher's card, never with the 
 // then the header's two halves, measured as drawn: the task's at the
 // start, where the text starts, its name, a hairline, the switcher's
 // arrows; the file's at the end, its name, a hairline, its files icon;
-// the task's two cards set from where the text starts,
+// the task's two cards' content flush with the text,
 // the file's two hugging the editor's right edge
 await opened_Switch.page.mouse.move(5, 5)
 await opened_Switch.page.waitForTimeout(300)
@@ -2446,19 +2445,22 @@ const rhythm_Header = await opened_Switch.page.evaluate(() => {
     return { left: box.left + (box.width - size) / 2 + size * inset / 16, centre: box.left + box.width / 2 }
   }
   const boxOf = (selector: string) => document.querySelector(selector)!.getBoundingClientRect()
+  const contentOf = (selector: string) => {
+    const element = document.querySelector(selector)!
+    return element.getBoundingClientRect().left + parseFloat(getComputedStyle(element).borderLeftWidth) + parseFloat(getComputedStyle(element).paddingLeft)
+  }
   const r = (value: number) => Math.round(value * 10) / 10
   const nameTask = inkOf(".name_Task_htmlView")
   const arrows = iconOf(".trigger_Switcher_htmlView", 2.5)
   const nameDocument = inkOf(".name_Document_htmlView")
   const files = iconOf(".trigger_Picker_htmlView", 3)
   const start_Text = header.left + parseFloat(getComputedStyle(document.querySelector(".header_htmlView")!).paddingLeft)
-  const edge_Cards = start_Text - parseFloat(getComputedStyle(document.documentElement).fontSize) * 0.75
   return {
     order: [nameTask.right < arrows.left, arrows.centre < nameDocument.left, nameDocument.right < files.left],
-    textStart: r(boxOf(".trigger_Task_htmlView").left - start_Text),
+    textStart: r(nameTask.left - start_Text),
     cards: [
-      r(boxOf(".card_Task_htmlView").left - edge_Cards),
-      r(boxOf(".card_Switcher_htmlView").left - edge_Cards),
+      r(contentOf(".card_Task_htmlView") - start_Text),
+      r(contentOf(".card_Switcher_htmlView") - start_Text),
       r(header.right - boxOf(".card_Document_htmlView").right),
       r(header.right - boxOf(".card_Picker_htmlView").right)
     ]
@@ -2486,7 +2488,7 @@ await opened_Switch.page.mouse.move(5, 5)
 await opened_Switch.page.waitForTimeout(300)
 const opened_Card = await opened_Switch.page.evaluate(() => window.logged.at(-1) ?? null)
 
-test("the header's halves on one rhythm, measured as drawn: the task's at the start, where the text starts, its switcher after it; the file's at the end; the task's cards from where the text starts, the file's hugging the right edge", () => {
+test("the header's halves on one rhythm, measured as drawn: the task's at the start, where the text starts, its switcher after it; the file's at the end; the task's name and its cards' content flush with the text, the file's cards hugging the right edge", () => {
   expect(rhythm_Header.order).toEqual([true, true, true])
   expect(Math.abs(rhythm_Header.textStart)).toBeLessThan(0.6)
   for (const offset of rhythm_Header.cards) expect(Math.abs(offset)).toBeLessThan(0.6)
@@ -2506,7 +2508,7 @@ test("the files icon opens the picker, never with the document's card: the task'
 // then each hairline where it's meant to be, between the ink either side
 // of it, as drawn, read from the page's pixels at four times their size,
 // each edge to the fraction of a pixel its ink covers: the task's 13.2px
-// before it, to within half a pixel by where the text starts, and 13px
+// before it, to within half a pixel by the name, and 13px
 // after, roomier by eye than even, as its bold name reads closer than the
 // arrows' light line ends, one step of 1.25 tighter than the file's;
 // the file's name's ink, its hairline, its icon's ink and the header's

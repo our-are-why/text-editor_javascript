@@ -1997,8 +1997,6 @@
   flex: none;
   align-self: stretch;
   align-items: center;
-  justify-content: flex-end;
-  width: calc-size(fit-content, round(up, size, 1px) + 0.5px);
   min-width: 0;
 }
 
@@ -2046,10 +2044,9 @@
    of pixels after it, rounded up, as each is drawn on whole pixels and
    the name isn't, so the gap between them never changes by one as the
    name's length does, the arrows' rounded ends 1.75/16 into their square;
-   the name, or Manual, set at the end of a box a whole number of pixels
-   and a half wide, so it ends as far from the hairline whatever it says,
-   the half setting where that falls, within half a pixel of 13.2 by
-   where the text starts;
+   the name, or Manual, flush with the text under it and its card's, so
+   the hairline, on a whole pixel after a name ending on a fraction, is
+   within half a pixel of 13.2 by the name, the same for it always;
    two arrows, muted, a
    faint ground under them pointed at, opening a card of its own, placed
    as the task's is, from where the text starts; never open with the
@@ -2374,8 +2371,6 @@
 .htmlView_editor .trigger_Task_htmlView {
   display: inline-flex;
   align-items: center;
-  justify-content: flex-end;
-  width: calc-size(fit-content, round(up, size, 1px) + 0.5px);
   min-width: 0;
   padding: 0;
   border: none;
@@ -2424,15 +2419,16 @@
   outline: none;
 }
 
-/* the task's card, and the switcher's, from where the text starts, the
-   task's under its name, its content set under it, so saying only its id
+/* the task's card, and the switcher's, their content flush with the
+   text, placed by the card's own padding and edge, the task's under its
+   name, its content set under it, so saying only its id
    and where it stands, their tops on the header's edge; each no wider than
    the header leaves it, the header a container of its width, so a narrow
    editor's card ends at its right edge, not past it, hidden or shown */
 .htmlView_editor :is(.card_Task_htmlView, .card_Switcher_htmlView) {
   top: 100%;
-  left: calc(var(--textInset_htmlView) - 0.75rem);
-  max-width: calc(100cqw - var(--textInset_htmlView) + 0.75rem);
+  left: calc(var(--textInset_htmlView) - 0.8rem - 1px);
+  max-width: calc(100cqw - var(--textInset_htmlView) + 0.8rem + 1px);
 }
 
 /* the document's card, and the picker's, at the header's right end,
