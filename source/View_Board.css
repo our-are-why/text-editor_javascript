@@ -252,8 +252,13 @@
   }
 }
 
+/* an empty column's None, a note on it, not another heading: smaller,
+   at a task's details' size, and leaning, so it never reads as the
+   muted label over it */
 .htmlView_board .empty_Column_htmlView {
   color: var(--ink_Muted_htmlView);
+  font-size: 0.92em;
+  font-style: italic;
 }
 
 .htmlView_board .tiles_Column_htmlView {
@@ -542,17 +547,18 @@
   color: var(--accent_proposals_htmlView);
 }
 
-/* resolved tasks, quiet: a row each, its name, faint, and, after it, in
-   the same run of text, how it ended, in a word, as its column holds them
-   all, completed, canceled and discarded, the name wrapping as a task's
-   does, no id, as a task has none; and, in its heading, at its end,
-   Delete, every one of them, for good, collected, a quiet word, a link in
-   the ink of the ellipsis it's behind, as the editor's actions are,
-   underlined pointed at, no box round it, folded behind the
-   editor's ellipsis, three dots on a faint disc, muted, as Delete is
-   neither side's, till the ellipsis is pointed at or the keyboard's on
-   it, the ellipsis becoming it, in its place; shown, where nothing can
-   point, as on a touch screen */
+/* resolved tasks, quiet: a row each, its name in the text's ink, as a
+   task's is, never the muted ink an empty column's None is in, and, after
+   it, in the same run of text, muted and smaller, how it ended, in a
+   word, as its column holds them all, completed, canceled and discarded,
+   the name wrapping as a task's does, no id, as a task has none; and, in
+   its heading, at its end, Delete, every one of them, for good,
+   collected, a quiet word, a link in the ink of the ellipsis it's behind,
+   as the editor's actions are, underlined pointed at, no box round it,
+   folded behind the editor's ellipsis, three dots on a faint disc, muted,
+   as Delete is neither side's, till the ellipsis is pointed at or the
+   keyboard's on it, the ellipsis becoming it, in its place; shown, where
+   nothing can point, as on a touch screen */
 .htmlView_board .rows_Resolved_htmlView {
   display: flex;
   flex-direction: column;
@@ -565,7 +571,6 @@
   gap: 0.45rem;
   margin: 0 -0.5rem;
   padding: 0 0.5rem;
-  color: var(--ink_Muted_htmlView);
 }
 
 .htmlView_board .name_Row_htmlView {
@@ -575,6 +580,7 @@
 
 .htmlView_board .note_Row_htmlView {
   margin-left: 0.5em;
+  color: var(--ink_Muted_htmlView);
   font-size: 0.92em;
   white-space: nowrap;
 }

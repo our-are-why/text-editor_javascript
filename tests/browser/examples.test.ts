@@ -447,8 +447,7 @@ test("the JavaScript example opens with a case of each kind of thing asked and d
 // words, its words lit, a line under them, its proposal not pointed at,
 // its rings still, its item lit as being in it; one sent with none, its proposal pointed at, as the
 // rest of its item does; each marked on its list's rule beside it, the
-// rule thicker there, in its bullet's plum, its bullet stroked, hollow,
-// joined to the bar by a stroke
+// rule thicker there, in its bullet's plum, its bullet a dot as it is
 const lookOf_Row = (request: string) => opened_JavaScript.page.evaluate(async (request) => {
   await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)))
   const item = document.querySelector(".item_htmlView[data-source=\"timeout\"]")
@@ -459,7 +458,7 @@ const lookOf_Row = (request: string) => opened_JavaScript.page.evaluate(async (r
     isProposalPointed: item?.hasAttribute("data-pointed") === true || document.querySelector(".group_htmlView[data-source=\"timeout\"][data-pointed]") !== null,
     isItemLit: item !== null && getComputedStyle(item).backgroundImage !== "none",
     isWordsLit: document.querySelector(".underlay_htmlView[data-underline][data-lit]") !== null,
-    isMarked: line !== null && line.content !== "none" && line.width === "4px" && line.backgroundImage === "none" && line.backgroundColor === getComputedStyle(row?.closest(".request_htmlView") ?? document.body).borderLeftColor && bullet !== null && bullet.backgroundImage.includes("rgba(0, 0, 0, 0) 24%") && bullet.backgroundImage.includes("linear-gradient")
+    isMarked: line !== null && line.content !== "none" && line.width === "4px" && line.backgroundImage === "none" && line.backgroundColor === getComputedStyle(row?.closest(".request_htmlView") ?? document.body).borderLeftColor && bullet !== null && bullet.backgroundImage.includes("82%") && !bullet.backgroundImage.includes("linear-gradient")
   }
 }, request)
 await opened_JavaScript.page.locator(".frame_htmlView[aria-label=\"lines 36 to 40\"]").evaluate((element) => element.scrollIntoView({ block: "center" }))
@@ -477,7 +476,7 @@ await opened_JavaScript.page.evaluate(() => {
   if (document.activeElement instanceof HTMLElement) document.activeElement.blur()
 })
 
-test("a request's row pointed at, or the keyboard in it, is marked on its list's rule beside it, the rule thicker there, in its bullet's plum, its bullet stroked, hollow, joined to the bar by a stroke; one sent with words lights its words, its proposal not pointed at, its rings not blinking, the request what you're on, its item still lit, as being in it; one sent with none points at its proposal, as the rest of its item does", () => {
+test("a request's row pointed at, or the keyboard in it, is marked on its list's rule beside it, the rule thicker there, in its bullet's plum, its bullet a dot as it is; one sent with words lights its words, its proposal not pointed at, its rings not blinking, the request what you're on, its item still lit, as being in it; one sent with none points at its proposal, as the rest of its item does", () => {
   expect(row_Words).toEqual({ isProposalPointed: false, isItemLit: true, isWordsLit: true, isMarked: true })
   expect(row_Plain).toEqual({ isProposalPointed: true, isItemLit: true, isWordsLit: false, isMarked: true })
   expect(row_Item).toEqual({ isProposalPointed: true, isItemLit: true, isWordsLit: false, isMarked: false })

@@ -866,14 +866,14 @@
 /* a request pointed at, or the keyboard in it, marked on its list's rule,
    beside it, the rule thicker there, in its ink, as long as it is, as far
    past the rule on each side as the list's indent and the group's padding
-   put it, and its bullet stroked, a ring of its ink, its middle empty,
-   joined to the bar by a stroke as thick as the ring's, from the bar's
-   middle into the ring's edge, on the ring's middle line, painted as the
-   bullet is, so the two meet true: never a
-   band behind it, which in a proposal's item, lit itself
-   as its proposal's pointed at, would be a band inside a band; tried
-   before as the ground inside its plum, a ring for its bullet and a
-   thinner line of the ground down the rule, which was too subtle. Its
+   put it, its bullet as it is, a dot, its ellipsis, shown only on the
+   request pointed at, saying which it is: never a band behind it, which
+   in a proposal's item, lit itself as its proposal's pointed at, would
+   be a band inside a band; tried before as the ground inside its plum, a
+   ring for its bullet and a thinner line of the ground down the rule,
+   which was too subtle, and its bullet stroked, a ring joined to the bar
+   by a stroke, let go once the ellipsis was shown only on the request
+   pointed at. Its
    words, if it was sent with some, lit where they are, as pointing at
    their chip lights them, and its proposal not pointed at, its rings not
    blinking, the request what you're on, `data-words`, its item still
@@ -886,16 +886,7 @@
   bottom: 0;
   left: calc(-1.1em - 0.6rem - 3px);
   width: 4px;
-  border-radius: 2px;
   background: var(--ink_state_htmlView);
-}
-
-.htmlView_editor .said_htmlView[data-request]:is(:hover, :has(:focus-visible))::after {
-  left: calc(-1.1em - 0.6rem - 1px);
-  width: calc(0.4em + 0.6rem + 1px);
-  background:
-    radial-gradient(circle 0.32em at calc(100% - 0.32em) 50%, transparent 24%, var(--ink_state_htmlView) 29% 45%, transparent 51%),
-    linear-gradient(var(--ink_state_htmlView), var(--ink_state_htmlView)) left center / calc(100% - 0.32em - 0.14em) 0.052em no-repeat;
 }
 
 /* a request's line: what it says, and how it's getting on, and, on its
