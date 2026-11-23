@@ -349,8 +349,8 @@ test("the header over the document: how many of its proposals are decided, how m
   })
   if (parsed.kind === "REFUSED") throw new Error("refused")
   const task = (state: _State_Task_): _Task_Host_ => ({ id: "tidy", name: "Tidy", state, summary: "Tidies it.", reason: state === "CANCELED" ? "Not needed." : "", documents: [{ name: "digits.txt", counts_Proposals: { OPEN: 0, REQUESTED: 0, REVISING: 0, ACCEPTED: 0, REJECTED: 0, WITHDRAWN: 0 }, counts_Requests: { QUEUED: 0, RUNNING: 0 }, isShown: true, actions: [] }, { name: "README.md", counts_Proposals: { OPEN: 2, REQUESTED: 1, REVISING: 0, ACCEPTED: 1, REJECTED: 1, WITHDRAWN: 0 }, counts_Requests: { QUEUED: 1, RUNNING: 0 }, isShown: false, actions: [] }], summary_Document: "Here, the digits.", requests: [], actions: [], actions_Document: [{ command: "accept-here", label: "Accept the ones waiting here", section: "PROPOSALS" }] })
-  const header_Task = (state: _State_Task_, label_State: string, figure_Task: { value: string, more: string }, here: { value: string, more: string }) => ({ id: "tidy", name: "Tidy", state, label_State, summary: "Tidies it.", reason: state === "CANCELED" ? "Not needed." : "", proposals: { figure: figure_Task, documents: [{ path: "digits.txt", folder: "", name: "digits.txt", ...here, isShown: true, isDecided: false, label_Open: "Open here", actions: [] }, { path: "README.md", folder: "", name: "README.md", value: "2 of 5 decided", more: "2 to review · 1 revision requested · 1 accepted · 1 rejected", isShown: false, isDecided: false, label_Open: "Open here", actions: [] }], actions: [] }, revisions_Scope: { figure: { value: "1 queued", more: "" }, start_All: { label: "Start all (1)", title: "Starts everything queued in the task, in every document it touches" }, stop_All: null, actions: [] }, revisions_Level: { requests: [], isStartable_Requests: false, isStoppable_Requests: false, ask: { label: "Revise", label_Form: "Revise the task" } } })
-  const header_Document = (figure_Here: { value: string, more: string }, value_Revisions: string | null, count_Startable: number, count_Running: number, isTasked: boolean, state: "YOUR_TURN" | "WORKING", label_State: string) => ({ folder: "notes/", name: "digits.txt", state, label_State, summary: isTasked ? "Here, the digits." : "", proposals: { figure: figure_Here, documents: [], actions: isTasked ? [{ command: "accept-here", label: "Accept the ones waiting here", section: "PROPOSALS" as const }] : [] }, revisions_Scope: { figure: value_Revisions === null ? null : { value: value_Revisions, more: "" }, start_All: count_Startable === 0 ? null : { label: `Start all (${count_Startable})`, title: `Starts all ${count_Startable} requests queued in this document, its own and its proposals'` }, stop_All: count_Running === 0 ? null : { label: `Stop all (${count_Running})`, title: `Stops all ${count_Running} running in this document, its own and its proposals', putting them back in the queue` }, actions: [] }, revisions_Level: { requests: [], isStartable_Requests: false, isStoppable_Requests: false, ask: { label: "Revise", label_Form: "Revise this document" } } })
+  const header_Task = (state: _State_Task_, label_State: string, figure_Task: { value: string, more: string }, here: { value: string, more: string }) => ({ id: "tidy", name: "Tidy", state, label_State, summary: "Tidies it.", reason: state === "CANCELED" ? "Not needed." : "", proposals: { figure: figure_Task, documents: [{ path: "digits.txt", folder: "", name: "digits.txt", ...here, isShown: true, isDecided: false, label_Open: "Open here", actions: [] }, { path: "README.md", folder: "", name: "README.md", value: "2 of 5 decided", more: "2 to review · 1 revision requested · 1 accepted · 1 rejected", isShown: false, isDecided: false, label_Open: "Open here", actions: [] }], actions: [] }, revisions_Scope: { figure: { value: "1 queued", more: "" }, start_All: { label: "Start all (1)", title: "Starts everything queued in the task, in every file it touches" }, stop_All: null, actions: [] }, revisions_Level: { requests: [], isStartable_Requests: false, isStoppable_Requests: false, ask: { label: "Revise", label_Form: "Revise the task" } } })
+  const header_Document = (figure_Here: { value: string, more: string }, value_Revisions: string | null, count_Startable: number, count_Running: number, isTasked: boolean, state: "YOUR_TURN" | "WORKING", label_State: string) => ({ folder: "notes/", name: "digits.txt", state, label_State, summary: isTasked ? "Here, the digits." : "", proposals: { figure: figure_Here, documents: [], actions: isTasked ? [{ command: "accept-here", label: "Accept the ones waiting here", section: "PROPOSALS" as const }] : [] }, revisions_Scope: { figure: value_Revisions === null ? null : { value: value_Revisions, more: "" }, start_All: count_Startable === 0 ? null : { label: `Start all (${count_Startable})`, title: `Starts all ${count_Startable} requests queued in this file, its own and its proposals'` }, stop_All: count_Running === 0 ? null : { label: `Stop all (${count_Running})`, title: `Stops all ${count_Running} running in this file, its own and its proposals', putting them back in the queue` }, actions: [] }, revisions_Level: { requests: [], isStartable_Requests: false, isStoppable_Requests: false, ask: { label: "Revise", label_Form: "Revise this file" } } })
   const MANUAL: _Mode_Host_ = { kind: "MANUAL" }
   const inTask = (task_Host: _Task_Host_): _Mode_Host_ => ({ kind: "TASK", task: task_Host })
   const taskIn = (header: _Header_ViewModel_) => {
@@ -358,9 +358,9 @@ test("the header over the document: how many of its proposals are decided, how m
     return header.mode.task
   }
   const mode_Manual = { kind: "MANUAL" as const, label: "Manual" }
-  const switcher_None = { label: "Switch this editor", label_Here: "this editor", options: [] }
+  const switcher_None = { label: "Switch task", label_Here: "this editor", options: [] }
   const picker_None = { label: "Open a file", label_Here: "this editor", sections: [] }
-  const picker_Task = (figure_Here: string) => ({ label: "Open a file", label_Here: "this editor", sections: [{ label: "Files in this task", files: [{ path: "digits.txt", folder: "", name: "digits.txt", figure: figure_Here, isHere: true }, { path: "README.md", folder: "", name: "README.md", figure: "2 of 5 decided", isHere: false }] }] })
+  const picker_Task = (figure_Here: string) => ({ label: "Open a file", label_Here: "this editor", sections: [{ label: "Files in task", files: [{ path: "digits.txt", folder: "", name: "digits.txt", figure: figure_Here, isHere: true }, { path: "README.md", folder: "", name: "README.md", figure: "2 of 5 decided", isHere: false }] }] })
   const headerOf = (statuses_Digit: Array<_Status_Request_>, decision_First: _Decision_Proposal_, mode_Host: _Mode_Host_) => viewModelOf__Model({
     model_TextEditor: parsed.model_TextEditor,
     name_Document: "notes/digits.txt",
@@ -391,8 +391,8 @@ test("the header over the document: how many of its proposals are decided, how m
   const header_Draft = headerOf_Unproposed(inTask({ ...task("DRAFT"), documents: [{ name: "notes/digits.txt", counts_Proposals: { OPEN: 0, REQUESTED: 0, REVISING: 0, ACCEPTED: 0, REJECTED: 0, WITHDRAWN: 0 }, counts_Requests: { QUEUED: 0, RUNNING: 0 }, isShown: true, actions: [] }] }))
   expect([taskIn(header_Draft).revisions_Level.ask, header_Draft.document.revisions_Level.ask, headerOf_Unproposed(MANUAL).document.revisions_Level.ask]).toEqual([
     { label: "Add a request", label_Form: "Add a request to the task" },
-    { label: "Add a request", label_Form: "Request a change to this document" },
-    { label: "Add a request", label_Form: "Request a change to this document" }
+    { label: "Add a request", label_Form: "Request a change to this file" },
+    { label: "Add a request", label_Form: "Request a change to this file" }
   ])
   const header_Elsewhere = headerOf_Unproposed(inTask({ ...task("YOUR_TURN"), documents: [{ name: "notes/digits.txt", counts_Proposals: { OPEN: 0, REQUESTED: 0, REVISING: 0, ACCEPTED: 0, REJECTED: 0, WITHDRAWN: 0 }, counts_Requests: { QUEUED: 0, RUNNING: 0 }, isShown: true, actions: [] }, { name: "README.md", counts_Proposals: { OPEN: 1, REQUESTED: 0, REVISING: 0, ACCEPTED: 0, REJECTED: 0, WITHDRAWN: 0 }, counts_Requests: { QUEUED: 0, RUNNING: 0 }, isShown: false, actions: [] }] }))
   expect([taskIn(header_Elsewhere).revisions_Level.ask.label, header_Elsewhere.document.revisions_Level.ask.label]).toEqual(["Revise", "Revise"])
@@ -522,8 +522,8 @@ test("a task's own requests, on no proposal, aimed at the whole document or the 
         proposals: { figure: { value: "0 of 1 decided", more: "1 to review" }, documents: [], actions: [] },
         revisions_Scope: {
           figure: { value: "2 queued · 1 running", more: "" },
-          start_All: { label: "Start all (2)", title: "Starts everything queued in the task, in every document it touches" },
-          stop_All: { label: "Stop all (1)", title: "Stops everything running in the task, in every document it touches, putting it back in the queue" },
+          start_All: { label: "Start all (2)", title: "Starts everything queued in the task, in every file it touches" },
+          stop_All: { label: "Stop all (1)", title: "Stops everything running in the task, in every file it touches, putting it back in the queue" },
           actions: []
         },
         revisions_Level: {
@@ -534,7 +534,7 @@ test("a task's own requests, on no proposal, aimed at the whole document or the 
         }
       }
     },
-    switcher: { label: "Switch this editor", label_Here: "this editor", options: [] },
+    switcher: { label: "Switch task", label_Here: "this editor", options: [] },
     parts: [],
     document: {
       folder: "notes/",
@@ -549,8 +549,8 @@ test("a task's own requests, on no proposal, aimed at the whole document or the 
       },
       revisions_Scope: {
         figure: { value: "1 queued · 1 running", more: "" },
-        start_All: { label: "Start all (1)", title: "Starts all 1 request queued in this document, its own and its proposals'" },
-        stop_All: { label: "Stop all (1)", title: "Stops all 1 running in this document, its own and its proposals', putting them back in the queue" },
+        start_All: { label: "Start all (1)", title: "Starts all 1 request queued in this file, its own and its proposals'" },
+        stop_All: { label: "Stop all (1)", title: "Stops all 1 running in this file, its own and its proposals', putting them back in the queue" },
         actions: []
       },
       revisions_Level: {
@@ -562,10 +562,10 @@ test("a task's own requests, on no proposal, aimed at the whole document or the 
         ],
         isStartable_Requests: true,
         isStoppable_Requests: true,
-        ask: { label: "Revise", label_Form: "Revise this document" }
+        ask: { label: "Revise", label_Form: "Revise this file" }
       }
     },
-    picker: { label: "Open a file", label_Here: "this editor", sections: [{ label: "Files in this task", files: [{ path: "count.txt", folder: "", name: "count.txt", figure: "0 of 1 decided", isHere: true }] }] }
+    picker: { label: "Open a file", label_Here: "this editor", sections: [{ label: "Files in task", files: [{ path: "count.txt", folder: "", name: "count.txt", figure: "0 of 1 decided", isHere: true }] }] }
   })
   expect(viewModel.blocks.map((block) => block.kind === "FRAME" ? block.parts.map((part) => isLines__Part_Frame(part) ? underlinedIn(part.run) : []) : underlinedIn(block.run))).toEqual([[["one"], [], [], []], ["four"]])
 })
@@ -616,7 +616,7 @@ test("the files a host gives: in a task, the picker lists the task's files, how 
   const files_Project = ["retry.js", "README.md", "CHANGELOG.md", "source/backoff.js"]
   const pickerIn = (mode_Host: _Mode_Host_, files_Given: Array<string>) => viewModelOf__Model({ model_TextEditor: parsed.model_TextEditor, name_Document: "retry.js", proposals: [], mode: mode_Host, tasks: [], files: files_Given, rounds_Landed: [], ranges_Frame: [], module_Language: MODULE_PLAINTEXT, module_Reading: MODULE_READING_TEXT }).header.picker.sections.map((section) => [section.label, ...section.files.map((file) => `${file.folder}|${file.name}${file.figure === "" ? "" : ` ${file.figure}`}${file.isHere ? " here" : ""}`)])
   expect(pickerIn({ kind: "TASK", task: task_Here }, files_Project)).toEqual([
-    ["Files in this task", "|retry.js here", "|README.md 2 of 6 decided"],
+    ["Files in task", "|retry.js here", "|README.md 2 of 6 decided"],
     ["Other files", "|CHANGELOG.md", "source/|backoff.js"]
   ])
   expect(pickerIn({ kind: "MANUAL" }, files_Project)).toEqual([

@@ -56,7 +56,7 @@ function viewModelOf__Tasks_Board({
   return {
     label: "Tasks",
     label_Count: `${tiles_Yours.length + tiles_Agent.length + tiles_Drafts.length} open`,
-    label_New: "New task",
+    label_New: "Draft task",
     columns: [
       {
         kind: "YOURS",
@@ -135,7 +135,8 @@ function tileOf__Task_Board({
         }
       ]
       : partsOf__Counts_Task(task_Board),
-    files_Shown: task_Board.paths.filter((path) => paths_Shown.includes(path)).join(" · "),
+    isInView: task_Board.paths.some((path) => paths_Shown.includes(path)),
+    label_InView: "in file",
     isShown: task_Board.count_Editors > 0,
     actions_More: MOREMAP__STATE_TASK[task_Board.state](task_Board),
     label_More: "More"

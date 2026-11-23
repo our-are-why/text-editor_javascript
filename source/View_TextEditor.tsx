@@ -751,7 +751,7 @@ function Proposals_Card__Html({
             <span class="path_Document_Card_htmlView">
               <span
                 class="name_Document_Card_htmlView"
-                title="Every document"
+                title="Every file"
               >
                 all (*)
               </span>
@@ -762,7 +762,7 @@ function Proposals_Card__Html({
                 <span
                   class="actions_Document_Card_htmlView folded_htmlView"
                   role="group"
-                  aria-label="Every document's actions"
+                  aria-label="Every file's actions"
                 >
                   {proposals_Card.actions.map((action_Task) => (
                     <button
@@ -2457,7 +2457,7 @@ function Reference_Said__Html({
           <button
             type="button"
             class="show_Said_htmlView"
-            aria-label={`Show “${reference.head}” in the document, ${reference.lines}`}
+            aria-label={`Show “${reference.head}” in the file, ${reference.lines}`}
           >
             {reference.lines}
           </button>
@@ -2472,7 +2472,7 @@ type _LabelMap__Scope_Work_ = {
 
 const LABELMAP__SCOPE_WORK: _LabelMap__Scope_Work_ = {
   PROPOSAL: "this proposal's requests",
-  DOCUMENT_REQUESTS: "this document's own requests",
+  DOCUMENT_REQUESTS: "this file's own requests",
   TASK_REQUESTS: "the task's own requests"
 }
 

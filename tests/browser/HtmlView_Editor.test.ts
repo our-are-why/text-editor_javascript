@@ -3001,10 +3001,10 @@ describe("beside it: what can't live in one document", () => {
         ...window.viewModelOf__Blocks([]),
         header: {
           mode: { kind: "TASK", task: { id: "T-40", name: "Rename the retries", state: "WORKING", label_State: "Working", summary: "Renames them.", reason: "", proposals: { figure: { value: "16 of 48 decided", more: "" }, documents, actions: [] }, revisions_Scope: { figure: null, start_All: null, stop_All: null, actions: [] }, revisions_Level: { requests: [], isStartable_Requests: false, isStoppable_Requests: false, ask: { label: "Revise", label_Form: "Revise the task" } } } },
-          switcher: { label: "Switch this editor", label_Here: "this editor", options: [] },
+          switcher: { label: "Switch task", label_Here: "this editor", options: [] },
           picker: { label: "Open a file", label_Here: "this editor", sections: [] },
           parts: [],
-          document: { folder: "source/", name: "retry.ts", state: "NONE", label_State: "", summary: "", proposals: { figure: null, documents: [], actions: [] }, revisions_Scope: { figure: null, start_All: null, stop_All: null, actions: [] }, revisions_Level: { requests: [], isStartable_Requests: false, isStoppable_Requests: false, ask: { label: "Revise", label_Form: "Revise this document" } } }
+          document: { folder: "source/", name: "retry.ts", state: "NONE", label_State: "", summary: "", proposals: { figure: null, documents: [], actions: [] }, revisions_Scope: { figure: null, start_All: null, stop_All: null, actions: [] }, revisions_Level: { requests: [], isStartable_Requests: false, isStoppable_Requests: false, ask: { label: "Revise", label_Form: "Revise this file" } } }
         }
       })
       const card = containerElement.querySelector(".card_Task_htmlView")

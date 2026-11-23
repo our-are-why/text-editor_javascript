@@ -147,7 +147,7 @@ as it was in doctor: a draft is a task in `DRAFT`, and you draft it by making
 it active.
 
 - A draft's made with its first request, as doctor's was, so a task is
-  never without one: a request sent from manual, not started, or New task,
+  never without one: a request sent from manual, not started, or Draft task,
   which opens the request form, the task made as it's sent.
 - Requests made in an editor go to its active task, queued, so in an editor
   drafting they go to the draft, in whatever document it shows, marked as
@@ -458,7 +458,7 @@ faking the moves, so it can all be drawn before the parts above are built:
   the tasks, the editor's first, then those on its document, then the
   rest, then Manual, each its mark, its name, and its parts, yours then
   the agent's, coloured as the board's columns are, or a draft's requests; one pressed asks the host to
-  switch, `SWITCH`. New task, and All tasks…, which opens the board, come
+  switch, `SWITCH`. Draft task, and All tasks…, which opens the board, come
   with drafts and the board;
 - **built 2026-11-22: the file, and opening another.** An editor shows a
   file in a mode, so switching one keeps the other. The file's at the
@@ -496,44 +496,47 @@ faking the moves, so it can all be drawn before the parts above are built:
   header's cards, has no mark, as its column says where it stands: its name,
   on a line of its own, and under it the one figure that puts it in its
   column, a conflict over the rest, in red, the agent's shimmering while it
-  runs, in step with the editor's, and the file an editor's showing, if it
-  touches it, the only one of its files that matters there, the board told
-  which files editors show, `paths_Shown`; no id; no box round it; and,
-  while an editor shows it, a bar down its edge, not words; its text flush
-  with its column's heading; pressed, it asks the host to switch every
-  editor to it, `SWITCH`; its ⋮, three dots standing, as a menu's are, shown
-  while the task's pointed at or the keyboard's in it, as a request's
-  ellipsis is, its room kept so nothing moves, holds a draft's Start and
-  Discard, or Start all for what's queued, Stop while anything's running,
-  Complete once nothing's left on either side, and Cancel: the editor's
-  menu, on the proposals' band, its choices rows across it, each in the ink
-  of whose move it is, Start and Stop the agent's plum, Start bold, Complete
-  your indigo, Cancel and Discard, ending the task, plain, last, the words
-  set to the right; under the ⋮, the ⋮ gone, while it's open, once the
-  pointer's left it; an open menu over every other task's ⋮; opened by
-  pointing at the ⋮, kept open while the pointer's on the menu or on an
-  unseen strip, the ⋮'s own line across the menu's width, between the two
-  whichever way the menu opens, none past its far edge, and only on the way
-  from the ⋮, never on the way out of the menu, which shuts at whichever
-  edge it's left by, so the way from the ⋮ to a choice never shuts it,
-  however the pointer goes; a press on the ⋮ with the pointer not keeping it
-  open; shown and put away as the header's cards are, at once and faded in,
-  and, once the pointer's left it, held a moment, then faded out, so it goes
-  as the pointer leaves it, as theirs do; a menu button's keys, Tab onto the
-  ⋮ without opening it, ↓, Enter or Space opening it on its first choice, ↑
-  on its last, ↑, ↓, Home and End through it, Esc back to the ⋮, Tab out of
-  it. Square, as all the board draws is. Tried: each task a box, everything
-  on it, which took too much room; its line alone, opened as a card over the
-  tasks under it when pointed at, which shifted its line and read as a box
-  apart; opened in place, which was compact enough to always be; and every
-  file it touches, its id, its other figures and how many editors show it,
-  always, which said more than the board needs. Resolved tasks as quiet
-  rows, each saying how it ended, in a word, as the column holds every way a
-  task ends, no id, and Delete, in its heading, at its end, folded behind
-  the editor's ellipsis till it's pointed at, for them all, for good,
-  `COLLECT`, with their ids. New task, `NEW_TASK`, at its head, which the
-  playground only reports, as a new task's made with its first request, to
-  come with drafts;
+  runs, in step with the editor's, and in file, in words, muted, if it
+  touches the file an editor's showing, the only one of its files that
+  matters there, never named, tried as its name, as in view, as a page icon,
+  too vague, and as touches file and touches here, the board told which
+  documents editors show, `paths_Shown`; no id; no box round it; and, while
+  an editor shows it, a bar down its edge, not words; its text flush with
+  its column's heading; pressed, it asks the host to switch every editor to
+  it, `SWITCH`; its ⋮, three dots standing, as a menu's are, shown while the
+  task's pointed at or the keyboard's in it, as a request's ellipsis is, its
+  room kept so nothing moves, holds a draft's Start and Discard, or Start
+  all for what's queued, Stop while anything's running, Complete once
+  nothing's left on either side, and Cancel: the editor's menu, on the
+  proposals' band, its choices rows across it, each in the ink of whose move
+  it is, Start and Stop the agent's plum, Start bold, Complete your indigo,
+  Cancel and Discard, ending the task, plain, last, the words set to the
+  right; under the ⋮, the ⋮ gone, while it's open, once the pointer's left
+  it; an open menu over every other task's ⋮; opened by pointing at the ⋮,
+  kept open while the pointer's on the menu or on an unseen strip, the ⋮'s
+  own line across the menu's width, between the two whichever way the menu
+  opens, none past its far edge, and only on the way from the ⋮, never on
+  the way out of the menu, which shuts at whichever edge it's left by, so
+  the way from the ⋮ to a choice never shuts it, however the pointer goes; a
+  press on the ⋮ with the pointer not keeping it open; shown and put away as
+  the header's cards are, at once and faded in, and, once the pointer's left
+  it, held a moment, then faded out, so it goes as the pointer leaves it, as
+  theirs do; a menu button's keys, Tab onto the ⋮ without opening it, ↓,
+  Enter or Space opening it on its first choice, ↑ on its last, ↑, ↓, Home
+  and End through it, Esc back to the ⋮, Tab out of it. Square, as all the
+  board draws is. Tried: each task a box, everything on it, which took too
+  much room; its line alone, opened as a card over the tasks under it when
+  pointed at, which shifted its line and read as a box apart; opened in
+  place, which was compact enough to always be; and every file it touches,
+  its id, its other figures and how many editors show it, always, which said
+  more than the board needs. Resolved tasks as quiet rows, each saying how
+  it ended, in a word, as the column holds every way a task ends, no id, and
+  Delete, in its heading, right after its count, folded behind the editor's
+  ellipsis till it's pointed at, for them all, for good, `COLLECT`, with
+  their ids. Draft task, `NEW_TASK`, at its head, named for what it starts,
+  drafting one, which stays in Drafts till it's started, where New task said
+  less, which the playground only reports, as a new task's made with its
+  first request, to come with drafts;
 - a draft's header: its name, how many requests, Start, Discard;
 - a task's header in each state, as now, with Complete and Cancel;
 - lines changed in the task, marked in the gutter;

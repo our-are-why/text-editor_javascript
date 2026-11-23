@@ -400,12 +400,12 @@ test("a right-click's menu offers what can be asked there, in tiers, the narrowe
     "PROPOSAL PROPOSALS Proposal: Accept",
     "PROPOSAL PROPOSALS Proposal: Reject",
     "PROPOSAL REVISIONS Proposal: Request revision, with selection | 2",
-    "DOCUMENT REVISIONS Document: Request change, with selection | 2"
+    "DOCUMENT REVISIONS File: Request change, with selection | 2"
   ])
   expect(choicesOf(menuOf(over_One))).toEqual([
-    "DOCUMENT REVISIONS Document: Request change, with selection | one"
+    "DOCUMENT REVISIONS File: Request change, with selection | one"
   ])
-  expect(choicesOf(menuOf(caretOf("lines-2", 1, 2)))).toEqual(["DOCUMENT REVISIONS Document: Request change"])
+  expect(choicesOf(menuOf(caretOf("lines-2", 1, 2)))).toEqual(["DOCUMENT REVISIONS File: Request change"])
   const asked: Array<unknown> = []
   const ask_View = (asked_Host: unknown) => {
     asked.push(asked_Host)
@@ -454,7 +454,7 @@ test("a right-click on a proposal, nothing selected, offers its tier and the doc
     "PROPOSAL PROPOSALS Proposal: Accept",
     "PROPOSAL PROPOSALS Proposal: Reject",
     "PROPOSAL REVISIONS Proposal: Request revision",
-    "DOCUMENT REVISIONS Document: Request change"
+    "DOCUMENT REVISIONS File: Request change"
   ])
   expect(menuAt(caretOf("lines-2", 1, 2), layout_Pointed).menu?.index_Focused).toBe(2)
   const opened_Keyboard = HANDLERMAP__TEXTEDITOR.OPEN_MENU({ state: stateOf(caretOf("lines-2", 1, 2)), command: { kind: "OPEN_MENU", point_Screen: null }, ...handlerOf(layout_View) })
@@ -623,7 +623,7 @@ test("an action that would drop revisions queued is asked first: pressed, nothin
   expect(handled(state_Queued, { kind: "DISMISS", source: null, id: "done" })).toBe(state_Queued)
   expect(handled(state_Queued, { kind: "START", scope: { kind: "REQUEST", source: null, id: "all" } })).toBe(state_Queued)
   const opened = handled(state_Queued, { kind: "OPEN_REQUEST", target: { kind: "DOCUMENT", reference: null } })
-  expect([opened.menu, opened.request, opened.focus_Asking]).toEqual([null, { place: { kind: "DOCUMENT" }, label: "Revise this document", head: null, quote: null, isStartable: true, target: { kind: "DOCUMENT", reference: null } }, "REQUEST"])
+  expect([opened.menu, opened.request, opened.focus_Asking]).toEqual([null, { place: { kind: "DOCUMENT" }, label: "Revise this file", head: null, quote: null, isStartable: true, target: { kind: "DOCUMENT", reference: null } }, "REQUEST"])
   expect(handled(state_Queued, { kind: "OPEN_REQUEST", target: { kind: "TASK", reference: null } })).toBe(state_Queued)
   const closed = handled(opened, { kind: "CLOSE_REQUEST" })
   expect([closed.request, closed.focus_Asking, closed.isFocusing_Input]).toEqual([null, "ASK_DOCUMENT", false])

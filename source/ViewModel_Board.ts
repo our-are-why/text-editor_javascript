@@ -55,7 +55,8 @@ interface _Tile_Board_ {
   label_State: string
   label_Switch: string
   parts: Array<_Part_Task_>
-  files_Shown: string
+  isInView: boolean
+  label_InView: string
   isShown: boolean
   actions_More: Array<_Action_Tile_>
   label_More: string

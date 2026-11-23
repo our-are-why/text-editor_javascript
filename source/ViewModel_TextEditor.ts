@@ -633,7 +633,7 @@ const HEADER_EMPTY: _Header_ViewModel_ = {
     label: "Manual"
   },
   switcher: {
-    label: "Switch this editor",
+    label: "Switch task",
     label_Here: "this editor",
     options: []
   },
@@ -661,7 +661,7 @@ const HEADER_EMPTY: _Header_ViewModel_ = {
       isStoppable_Requests: false,
       ask: {
         label: "Add a request",
-        label_Form: "Request a change to this document"
+        label_Form: "Request a change to this file"
       }
     }
   },

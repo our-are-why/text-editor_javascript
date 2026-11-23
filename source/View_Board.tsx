@@ -183,7 +183,7 @@ function Tile_Board__Html({
           </span>
         )}
       </p>
-      {(tile_Board.parts.length > 0 || tile_Board.files_Shown !== "") && (
+      {(tile_Board.parts.length > 0 || tile_Board.isInView) && (
         <p class="details_Tile_htmlView">
           {tile_Board.parts.map((part_Task) => (
             <span
@@ -193,7 +193,7 @@ function Tile_Board__Html({
               {part_Task.text}
             </span>
           ))}
-          {tile_Board.files_Shown !== "" && <span class="paths_Tile_htmlView">{tile_Board.files_Shown}</span>}
+          {tile_Board.isInView && <span class="inView_Tile_htmlView">{tile_Board.label_InView}</span>}
         </p>
       )}
     </li>

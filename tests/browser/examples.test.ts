@@ -952,7 +952,7 @@ test("the header over the document stays put as it scrolls, saying the host's ta
   expect(header_Working).toEqual({ task: ["Tidy the retry loop", "WORKING", "Working"], parts: [], spinners: 0, document: ["retry.js", "WORKING", "Working"], card: ["Accept all (10)", "Start all (6)", "Stop all (3)"], card_Document: ["Accept all (7)", "Start all (5)", "Stop all (2)"], isSticky: true })
   expect(card_Resting.isShown).toBe(false)
   expect(card_Hovered).toEqual({ isShown: true, head: "T-12Working", summary: "Keeps every error, names the attempt counter round, caps the delay, and stops once the caller aborts; drops the onRetry hook and the opening comment.", id: "T-12", figures: ["Proposals: 6 of 20 decided (11 to review · 1 revision requested · 2 revising · 5 accepted · 1 rejected)", "Scope Revisions: 7 queued · 3 running", "Level Revisions: "], documents: ["retry.js (this document): 4 of 14 decided (8 to review · 1 revision requested · 1 revising · 3 accepted · 1 rejected)", "README.md: 2 of 6 decided (3 to review · 1 revising · 2 accepted)"], parts: ["head_Card_htmlView", "summary_Card_htmlView", "section_Card_htmlView", "section_Card_htmlView", "section_Card_htmlView"] })
-  expect(card_Document).toEqual({ isShown: true, label: "retry.js", summary: "In retry.js: the loop's errors, its counter's name, its delays and its abort, and two things it no longer needs.", figures: ["Proposals: 4 of 14 decided (8 to review · 1 revision requested · 1 revising · 3 accepted · 1 rejected)", "Scope Revisions: 6 queued · 2 running", "Level Revisions: "], actions: ["Accept all (7)", "Starts all 5 requests queued in this document, its own and its proposals'", "Stops all 2 running in this document, its own and its proposals', putting them back in the queue"] })
+  expect(card_Document).toEqual({ isShown: true, label: "retry.js", summary: "In retry.js: the loop's errors, its counter's name, its delays and its abort, and two things it no longer needs.", figures: ["Proposals: 4 of 14 decided (8 to review · 1 revision requested · 1 revising · 3 accepted · 1 rejected)", "Scope Revisions: 6 queued · 2 running", "Level Revisions: "], actions: ["Accept all (7)", "Starts all 5 requests queued in this file, its own and its proposals'", "Stops all 2 running in this file, its own and its proposals', putting them back in the queue"] })
   expect(header_Stopped).toEqual({ task: ["Tidy the retry loop", "YOUR_TURN", "Your turn"], parts: [], spinners: 0, document: ["retry.js", "YOUR_TURN", "Your turn"], card: ["Accept all (10)", "Start all (10)"], card_Document: ["Accept all (7)", "Start all (8)"], isSticky: true })
   expect(header_Started).toEqual({ task: ["Tidy the retry loop", "WORKING", "Working"], parts: [], spinners: 0, document: ["retry.js", "WORKING", "Working"], card: ["Accept all (10)", "Start all (2)", "Stop all (8)"], card_Document: ["Accept all (7)", "Stop all (8)"], isSticky: true })
   expect(header_Done).toEqual({ task: ["Tidy the retry loop", "YOUR_TURN", "Your turn"], parts: [], spinners: 0, document: ["retry.js", "YOUR_TURN", "Your turn"], card: ["Accept all (12)", "Start all (2)"], card_Document: ["Accept all (9)"], isSticky: true })
@@ -1144,7 +1144,7 @@ const requests_Removed = await requestsOf_Document()
 await opened_JavaScript.page.keyboard.press("Escape")
 
 test("a right-click on a proposal's selected words offers a revision of the proposal with them, the first request focused; chosen, a form, the words quoted, the keyboard in it; added, the host's told, which queues a revision of the proposal, the words listed with what you asked, and underlined, dotted, behind the text, where they're proposed, no longer selected, and lit there while its chip's pointed at; its line over the proposal's rings, cutting them, till the proposal's pointed at, its rings then over the line, cutting it; on the document's words, nothing selected, a request for a change to the document, Escape closing it, the menu key opening it again at the caret", () => {
-  expect(menu_Words.choices.filter((choice) => choice?.includes(": Request")).slice(0, 2)).toEqual(["Proposal: Request revision, with selection", "Document: Request change, with selection"])
+  expect(menu_Words.choices.filter((choice) => choice?.includes(": Request")).slice(0, 2)).toEqual(["Proposal: Request revision, with selection", "File: Request change, with selection"])
   expect(menu_Words.focused).toBe("Proposal: Request revision, with selection")
   expect(form_Words).toEqual({ label: "Proposal Stop retrying once the caller aborts", quote: "aborted", isFocused: true })
   expect(items_Aborted.length).toBeGreaterThan(0)
@@ -1157,10 +1157,10 @@ test("a right-click on a proposal's selected words offers a revision of the prop
   expect(lit_Left).toEqual([])
   expect(layers_Resting).toEqual({ layer: "RINGS", isRingsCut: true, isMarksCut: false })
   expect(layers_Pointed).toEqual({ layer: "POINTED", isRingsCut: true, isMarksCut: true })
-  expect(menu_Document.choices.filter((choice) => choice?.includes(": Request"))).toEqual(["Document: Request change", "Task: Request change"])
-  expect(menu_Document.focused).toBe("Document: Request change")
+  expect(menu_Document.choices.filter((choice) => choice?.includes(": Request"))).toEqual(["File: Request change", "Task: Request change"])
+  expect(menu_Document.focused).toBe("File: Request change")
   expect(isClosed_Menu).toBe(true)
-  expect(menu_Keyboard.choices.filter((choice) => choice?.includes(": Request"))).toEqual(["Document: Request change", "Task: Request change"])
+  expect(menu_Keyboard.choices.filter((choice) => choice?.includes(": Request"))).toEqual(["File: Request change", "Task: Request change"])
   expect(menu_Keyboard.focused).toBe(menu_Document.focused)
   expect(asked_Menu).toEqual([
     { asked: "revise", proposal: "aborted", notes: "Check it before the delay too.", words: "aborted" },
@@ -1172,7 +1172,7 @@ test("a right-click on a proposal's selected words offers a revision of the prop
 test("a request on no proposal, the document's own, queued and listed in the document's card, as a proposal's are under its item, its heading and its rule in the same plum; Add, at the foot of the document's requests, Revise gone, there being some, a form for the whole document there, under it, the card held open, the keyboard in it, Add and Cancel, no Start, the group having its own, the keyboard back on Add after; added, then started by its own Start, in progress, the rest still queued; addressed, still listed, saying by how many proposals, here none, nothing to remove; a queued one removed, gone", () => {
   expect(requests_Added).toEqual(["Say why the delay doubles. (queued)"])
   expect(isAskFocused_Document).toBe(true)
-  expect(form_Header).toEqual({ isInCard: true, isReviseGone: true, isCardShown: true, label: "Revise this document", actions: ["Add", "Cancel"], isFocused: true, isUnder: true })
+  expect(form_Header).toEqual({ isInCard: true, isReviseGone: true, isCardShown: true, label: "Revise this file", actions: ["Add", "Cancel"], isFocused: true, isUnder: true })
   expect(requests_Added_Inline).toEqual(["Say why the delay doubles. (queued)", "Name the module's exports. (queued)"])
   expect(label_Requests).toEqual(["Requests", true, "solid"])
   expect(requests_Started).toEqual(["Say why the delay doubles. (queued)", "Name the module's exports. (running)"])
@@ -2138,19 +2138,19 @@ const isFocused_Input_Scrolled = await opened_Tiers.page.evaluate(() => document
 describe("the menu's tiers", () => {
   test("a right-click on a proposal's selected words offers the proposal's, the document's and the task's tiers, the narrowest first, a hairline between each, each its proposal actions first, then its revisions', the keyboard on the first request; each request has the words with it, which the form quotes, and × leaves out; sent, the host's told what it's on and the words, and the document's card lists it with them, and where they are, which, pressed, scrolls the document to them, their line solid a moment, blinking twice as the caret does, then settling back to dotted, the keyboard back on the text, and blinking on while the pointer's still on the request's row", () => {
     expect(menu_Tiers.map((choice) => choice === "—" ? choice : choice.slice(0, choice.indexOf(" "))).filter((tier, index, tiers) => tier !== tiers[index - 1])).toEqual(["PROPOSAL", "—", "DOCUMENT", "—", "TASK"])
-    expect(menu_Tiers.filter((choice) => choice !== "—").every((choice) => /^(PROPOSAL Proposal|DOCUMENT Document|TASK Task): /.test(choice))).toBe(true)
+    expect(menu_Tiers.filter((choice) => choice !== "—").every((choice) => /^(PROPOSAL Proposal|DOCUMENT File|TASK Task): /.test(choice))).toBe(true)
     expect(sections_Tiers.filter((section, index, sections) => section !== sections[index - 1])).toEqual(["PROPOSAL PROPOSALS", "PROPOSAL REVISIONS", "DOCUMENT PROPOSALS", "DOCUMENT REVISIONS", "TASK PROPOSALS", "TASK REVISIONS"])
     expect(focused_Tiers).toBe("Proposal: Request revision, with selection")
     expect(menu_Tiers.filter((choice) => choice.includes(": Request"))).toEqual([
       "PROPOSAL Proposal: Request revision, with selection",
-      "DOCUMENT Document: Request change, with selection",
+      "DOCUMENT File: Request change, with selection",
       "TASK Task: Request change, with selection"
     ])
     expect(menu_Tiers.filter((choice) => choice.startsWith("PROPOSAL ") && !choice.includes(": Request"))).toEqual(["PROPOSAL Proposal: Accept", "PROPOSAL Proposal: Reject"])
-    expect(menu_Tiers.filter((choice) => choice.startsWith("DOCUMENT ") && !choice.includes(": Request")).every((choice) => /^DOCUMENT Document: (Accept|Start|Stop) all \(\d+\)$/.test(choice))).toBe(true)
+    expect(menu_Tiers.filter((choice) => choice.startsWith("DOCUMENT ") && !choice.includes(": Request")).every((choice) => /^DOCUMENT File: (Accept|Start|Stop) all \(\d+\)$/.test(choice))).toBe(true)
     expect(menu_Tiers.filter((choice) => choice.startsWith("TASK ") && !choice.includes(": Request")).every((choice) => /^TASK Task: (Accept|Start|Stop) all \(\d+\)$/.test(choice))).toBe(true)
-    expect(menu_Tiers.some((choice) => /^DOCUMENT Document: Accept all \(\d+\)$/.test(choice))).toBe(true)
-    expect(form_Referring).toEqual({ label: "Document retry.js", subject: "retry.js", quote: ["aborted", true], isFocused: true })
+    expect(menu_Tiers.some((choice) => /^DOCUMENT File: Accept all \(\d+\)$/.test(choice))).toBe(true)
+    expect(form_Referring).toEqual({ label: "File retry.js", subject: "retry.js", quote: ["aborted", true], isFocused: true })
     expect(referred_Document.filter((said) => said[0] === "Check for an abort everywhere it waits.")).toEqual([["Check for an abort everywhere it waits.", "aborted", "line 21"]])
     expect(shown_Document).toEqual({ words: ["aborted"], isInView: true, isOnText: true, isShownHidden: true, blinks: ["1 0 1 0"] })
     expect(isLit_After_Shown).toBe(true)
@@ -2319,7 +2319,7 @@ const isPeekGone_Popover = await page_Popover.evaluate(() => {
 await page_Popover.keyboard.press("Escape")
 
 describe("the menu's form's words", () => {
-  test("the form opened for words selected over three lines opens just below them, clear of them; they're shown in it by their start, cut, and how many lines; pointed at, they're lit where they are in the document, not peeked at while they can all be seen there; the first of them scrolled away, a moment after pointing, peeked at, gone when the pointer leaves", () => {
+  test("the form opened for words selected over three lines opens just below them, clear of them; they're shown in it by their start, cut, and how many lines; pointed at, they're lit where they are in the file, not peeked at while they can all be seen there; the first of them scrolled away, a moment after pointing, peeked at, gone when the pointer leaves", () => {
     expect(placed_Quoted_Popover).toEqual({ isClear: true, isBelow: true })
     expect(chip_Popover.size).toBe("3 lines")
     expect(chip_Popover.head?.endsWith("…")).toBe(true)
@@ -2498,7 +2498,7 @@ test("the header's halves on one rhythm, measured as drawn: the task's at the st
 test("the files icon opens the picker, never with the document's card: the task's files, the one shown here, then the project's others; one pressed asks the host to open it, the keyboard back in the text; a task's file pressed in its card asks the same", () => {
   expect(cards_Picker).toEqual(["hidden", "visible"])
   expect(files_Picker).toEqual([
-    ["Files in this task", "retry.js here", "README.md"],
+    ["Files in task", "retry.js here", "README.md"],
     ["Other files", "CHANGELOG.md", "package.json", "source/backoff.js", "tests/retry.test.js"]
   ])
   expect(opened_Picker).toEqual({ logged: { opened: "README.md" }, focus: "input_htmlView" })
@@ -2702,7 +2702,7 @@ await opened_Board.page.mouse.move(5, 5)
 const tile_Resting = await tileShown()
 await opened_Board.page.hover(".tile_htmlView[data-id=\"T-14\"] .switch_Tile_htmlView")
 const tile_Pointed = await tileShown()
-const details_Others = await opened_Board.page.evaluate(() => ["T-15", "T-12", "T-16"].map((id) => document.querySelector(`.tile_htmlView[data-id="${id}"] .details_Tile_htmlView`)?.textContent ?? null))
+const details_Others = await opened_Board.page.evaluate(() => ["T-15", "T-12", "T-16", "T-14"].map((id) => document.querySelector(`.tile_htmlView[data-id="${id}"] .details_Tile_htmlView`)?.textContent ?? null))
 await opened_Board.page.mouse.move(5, 5)
 const heightOf_Board = (height: string) => opened_Board.page.evaluate((height) => {
   (document.querySelector(".stage > .board") as HTMLElement).style.height = height
@@ -2776,7 +2776,7 @@ test("the board, from the footer: a column for each of who a task's waiting on, 
   expect([flush_Wide, flush_Narrow]).toEqual([[0, 0, 0, 0], [0, 0, 0, 0]])
   expect(tile_Resting).toEqual({ ...tile_Pointed, more: "hidden" })
   expect(tile_Pointed).toEqual({ line: "Say what the README promises", height: tile_Resting.height, more: "visible", details: "3 to decide", next: tile_Resting.next })
-  expect(details_Others).toEqual(["1 conflictretry.js", "14 to decide2 runningretry.js", "2 requestsretry.js"])
+  expect(details_Others).toEqual(["1 conflictin file", "14 to decide2 runningin file", "2 requestsin file", "3 to decide"])
   expect(board_Switched).toEqual({ hidden: false, columns: ["YOURS: T-12 T-14 T-15 shown T-17", "AGENT: T-13", "DRAFTS: T-16", "RESOLVED: T-9 T-11"], mode: "Rename attempts to tries" })
   expect(board_Canceled).toEqual({ hidden: false, columns: ["YOURS: T-12 T-14 T-17", "AGENT: T-13", "DRAFTS: T-16", "RESOLVED: T-9 T-11 T-15"], mode: "Manual" })
   expect(board_Started.columns).toEqual(["YOURS: T-12 T-14 T-17", "AGENT: T-13 T-16", "DRAFTS: ", "RESOLVED: T-9 T-11 T-15"])
@@ -3050,4 +3050,19 @@ test("a task's menu pointed open: the ⋮ there while the pointer's on it, gone 
     "on the next task's unseen ⋮: open: T-12, ⋮ gone",
     "past its edge: open: none"
   ])
+})
+
+// the footer's counts of the project's tasks kept whatever's pointed at or
+// focused in the document: a proposal pressed redraws the editor from its
+// blocks, which had left the footer empty, its header put back and its
+// footer not
+await opened_Discs.page.mouse.move(5, 300)
+const footer_Before = await opened_Discs.page.evaluate(() => document.querySelector(".tasks_Footer_htmlView")?.textContent ?? null)
+await opened_Discs.page.locator(".item_htmlView .title_htmlView").first().scrollIntoViewIfNeeded()
+await opened_Discs.page.locator(".item_htmlView .title_htmlView").first().click()
+await pausedFor(300)
+const footer_Pressed = await opened_Discs.page.evaluate(() => document.querySelector(".tasks_Footer_htmlView")?.textContent ?? null)
+test("the footer's counts of the project's tasks stay while a proposal's pointed at or focused, the editor redrawn from its blocks keeping its footer as it keeps its header", () => {
+  expect(footer_Before).not.toBe(null)
+  expect(footer_Pressed).toBe(footer_Before)
 })

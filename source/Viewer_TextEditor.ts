@@ -883,7 +883,8 @@ function viewModelOf__State(
         viewModel_TextEditor: askingAt__ViewModel({
           viewModel_TextEditor: {
             ...selectedOf__State(state),
-            header: state.viewModel_TextEditor.header
+            header: state.viewModel_TextEditor.header,
+            footer: state.viewModel_TextEditor.footer
           },
           menu: state.menu,
           request: state.request
@@ -1668,23 +1669,23 @@ function itemsOf__Tier_Document({
     ...itemsOf__Actions_Task({
       tier: "DOCUMENT",
       section: "PROPOSALS",
-      label_Tier: "Document",
+      label_Tier: "File",
       action$_Task: document_Header.proposals.actions
     }),
     ...itemsOf__Revisions_Menu({
       tier: "DOCUMENT",
-      label_Tier: "Document",
+      label_Tier: "File",
       request_Item: {
         kind: "REQUEST",
         tier: "DOCUMENT",
         section: "REVISIONS",
-        label_Tier: "Document",
+        label_Tier: "File",
         label: `Request change${withOf__Selected({
           selected
         })}`,
-        label_Form: "Request a change to this document",
+        label_Form: "Request a change to this file",
         head: {
-          label_Tier: "Document",
+          label_Tier: "File",
           subject: document_Header.name
         },
         quote: referenceOf__Selected({

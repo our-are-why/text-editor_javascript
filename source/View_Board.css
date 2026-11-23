@@ -51,7 +51,7 @@
   outline-offset: 2px;
 }
 
-/* its head: Tasks, how many are open, and New task at its end */
+/* its head: Tasks, how many are open, and Draft task at its end */
 .htmlView_board .head_Board_htmlView {
   display: flex;
   align-items: baseline;
@@ -147,16 +147,20 @@
   color: var(--accent_revision_htmlView);
 }
 
-/* how many a column holds, set apart from its mark on a faint square of
-   its column's colour, in that colour, needing you indigo, with the
-   agent plum, the rest muted; its figures all as wide; its corners
-   rounded a touch, as a count is a token, not a box */
+/* how many a column holds, after its mark, set apart from it on a faint
+   square of its column's colour, a hint of it, not a highlight, in that
+   colour, needing you indigo, with the agent plum, the rest muted; its
+   figures all as wide, and leaning, as an empty column's None is; its
+   corners rounded a touch, as a count is a token, not a box; tried plain,
+   with a floating dot before it, and at its heading's end, over its
+   tasks' ⋮s, too far from what it counts */
 .htmlView_board .count_Column_htmlView {
   padding: 0 0.35rem;
   border-radius: 2.5px;
-  background: color-mix(in srgb, currentColor 12%, transparent);
+  background: color-mix(in srgb, currentColor 7%, transparent);
   color: var(--ink_Muted_htmlView);
   font-size: 0.92em;
+  font-style: italic;
   font-variant-numeric: tabular-nums;
 }
 
@@ -274,24 +278,27 @@
    to start them, said as the editor says them, in the revision's plum,
    still, as a request's, never shimmering, then the agent's, what's
    running, in the revision's plum, a draft's requests muted, and, if it
-   touches a file an editor's showing, that file's name, in the editor's
-   font, the only file that matters here; no id, and no words for being
-   shown, a bar down its edge, in its column's ink, saying an editor's
-   showing it; its ⋮ at the end of its name's line, its room kept, shown
-   while the task's pointed at or the keyboard's in it, unseen, not
-   hidden, otherwise, so Tab still reaches it from the task's name, where
-   hidden it couldn't be focused in the moment the name's let go, as a
-   request's ellipsis is, one of a list, where a lone ellipsis, as
-   Resolved's, is always there; and shown where nothing can point, as on a
-   touch screen. Pressed anywhere but on its ⋮, it switches every editor
-   to it, its name the button, reaching over the whole task. Pointed at,
-   its ground a shade deeper; the keyboard on it, a ring round it instead;
-   pressed with the pointer, nothing kept, the bar saying an editor's
-   showing it, so a task pressed and the next pointed at never read as
-   one, the columns far enough apart that two grounds never meet. Its text
-   set flush with its column's heading, its ground reaching past it either
-   side, the columns and their lists leaving it room, so a column
-   scrolling never cuts it. Square, as everything the board draws is */
+   touches a document an editor's showing, in file, in words, muted, as
+   the rest of its details are, the file being the one you're looking at,
+   the only one of its files that matters here, never named; tried as the
+   file's name, as in view, as a page, an icon too vague to say it, and as
+   touches file and touches here; no id, and no words for being shown, a
+   bar down its edge, in its column's ink, saying an editor's showing it;
+   its ⋮ at the end of its name's line, its room kept, shown while the
+   task's pointed at or the keyboard's in it, unseen, not hidden,
+   otherwise, so Tab still reaches it from the task's name, where hidden
+   it couldn't be focused in the moment the name's let go, as a request's
+   ellipsis is, one of a list, where a lone ellipsis, as Resolved's, is
+   always there; and shown where nothing can point, as on a touch screen.
+   Pressed anywhere but on its ⋮, it switches every editor to it, its name
+   the button, reaching over the whole task. Pointed at, its ground a
+   shade deeper; the keyboard on it, a ring round it instead; pressed with
+   the pointer, nothing kept, the bar saying an editor's showing it, so a
+   task pressed and the next pointed at never read as one, the columns far
+   enough apart that two grounds never meet. Its text set flush with its
+   column's heading, its ground reaching past it either side, the columns
+   and their lists leaving it room, so a column scrolling never cuts it.
+   Square, as everything the board draws is */
 .htmlView_board .tile_htmlView {
   position: relative;
   margin: 0 -0.5rem;
@@ -382,10 +389,8 @@
   color: color-mix(in srgb, var(--removed_Board_htmlView) 80%, CanvasText);
 }
 
-.htmlView_board .paths_Tile_htmlView {
-  min-width: 0;
-  font-family: var(--view-font, ui-monospace, "SF Mono", Menlo, Consolas, monospace);
-  overflow-wrap: anywhere;
+.htmlView_board .inView_Tile_htmlView {
+  white-space: nowrap;
 }
 
 /* the state in words, for what reads the page aloud, as its mark says it
@@ -552,13 +557,14 @@
    it, in the same run of text, muted and smaller, how it ended, in a
    word, as its column holds them all, completed, canceled and discarded,
    the name wrapping as a task's does, no id, as a task has none; and, in
-   its heading, at its end, Delete, every one of them, for good,
-   collected, a quiet word, a link in the ink of the ellipsis it's behind,
-   as the editor's actions are, underlined pointed at, no box round it,
-   folded behind the editor's ellipsis, three dots on a faint disc, muted,
-   as Delete is neither side's, till the ellipsis is pointed at or the
-   keyboard's on it, the ellipsis becoming it, in its place; shown, where
-   nothing can point, as on a touch screen */
+   its heading, right after its count, the heading's own gap after it,
+   Delete, every one of them, for good, collected, a quiet word, a link in
+   the ink of the ellipsis it's behind, as the editor's actions are,
+   underlined pointed at, no box round it, folded behind the editor's
+   ellipsis, three dots on a faint disc, muted, as Delete is neither
+   side's, till the ellipsis is pointed at or the keyboard's on it, the
+   ellipsis becoming it, in its place; shown, where nothing can point, as
+   on a touch screen */
 .htmlView_board .rows_Resolved_htmlView {
   display: flex;
   flex-direction: column;
@@ -588,14 +594,13 @@
 .htmlView_board .head_Column_htmlView {
   display: flex;
   align-items: baseline;
-  gap: 0.5rem;
+  gap: 0.4rem;
 }
 
 .htmlView_board .fold_Board_htmlView {
   position: relative;
   display: inline-flex;
   align-self: center;
-  margin-left: auto;
 }
 
 /* an ellipsis, or a task's ⋮, opening only with the pointer on its disc,

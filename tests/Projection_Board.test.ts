@@ -39,16 +39,16 @@ test("the board: how many are open, and a column for each of who they're waiting
   ])
 })
 
-test("a tile: its parts, the most pressing of yours, a conflict over the rest, ready to complete when nothing's left, requests queued, said so, as the editor says them, yours till started, then the agent's, or a draft's requests; the file an editor's showing, if it touches it, and no other; whether an editor shows it; and what it offers behind its ···: Complete only once nothing's running or left to decide", () => {
+test("a tile: its parts, the most pressing of yours, a conflict over the rest, ready to complete when nothing's left, requests queued, said so, as the editor says them, yours till started, then the agent's, or a draft's requests; in file, if it touches the file an editor's showing, not named; whether an editor shows it; and what it offers behind its ···: Complete only once nothing's running or left to decide", () => {
   const tiles = viewModel_Board.columns.flatMap((column) => column.kind === "RESOLVED" ? [] : column.tiles)
-  expect(tiles.map((tile) => [tile.id, tile.files_Shown, tile.parts.map((part) => `${part.kind} ${part.text}`).join(", "), tile.isShown, tile.actions_More.map((action) => action.label).join(" ")])).toEqual([
-    ["T-1", "", "YOURS 3 to decide", false, "Cancel"],
-    ["T-2", "retry.js", "CONFLICT 1 conflict", true, "Cancel"],
-    ["T-3", "retry.js", "YOURS ready to complete", false, "Complete Cancel"],
-    ["T-4", "retry.js", "YOURS 14 to decide, AGENT 2 running", true, "Start all (8) Stop Cancel"],
-    ["T-11", "retry.js", "QUEUED 2 queued", false, "Start all (2) Cancel"],
-    ["T-10", "retry.js", "AGENT 1 running", false, "Stop Cancel"],
-    ["T-5", "retry.js", "PLAIN 1 request", false, "Start Discard"]
+  expect(tiles.map((tile) => [tile.id, tile.isInView, tile.label_InView, tile.parts.map((part) => `${part.kind} ${part.text}`).join(", "), tile.isShown, tile.actions_More.map((action) => action.label).join(" ")])).toEqual([
+    ["T-1", false, "in file", "YOURS 3 to decide", false, "Cancel"],
+    ["T-2", true, "in file", "CONFLICT 1 conflict", true, "Cancel"],
+    ["T-3", true, "in file", "YOURS ready to complete", false, "Complete Cancel"],
+    ["T-4", true, "in file", "YOURS 14 to decide, AGENT 2 running", true, "Start all (8) Stop Cancel"],
+    ["T-11", true, "in file", "QUEUED 2 queued", false, "Start all (2) Cancel"],
+    ["T-10", true, "in file", "AGENT 1 running", false, "Stop Cancel"],
+    ["T-5", true, "in file", "PLAIN 1 request", false, "Start Discard"]
   ])
 })
 

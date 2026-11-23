@@ -374,13 +374,13 @@ function headerOf__Proposals({
               ? null
               : {
                 label: `Start all (${count_Startable_Task})`,
-                title: "Starts everything queued in the task, in every document it touches"
+                title: "Starts everything queued in the task, in every file it touches"
               },
             stop_All: counts_Requests_Task.RUNNING === 0
               ? null
               : {
                 label: `Stop all (${counts_Requests_Task.RUNNING})`,
-                title: "Stops everything running in the task, in every document it touches, putting it back in the queue"
+                title: "Stops everything running in the task, in every file it touches, putting it back in the queue"
               },
             actions: mode.task.actions.filter((action_Task) => action_Task.section === "REVISIONS")
           },
@@ -430,13 +430,13 @@ function headerOf__Proposals({
           ? null
           : {
             label: `Start all (${count_Startable_Here})`,
-            title: `Starts all ${count_Startable_Here} ${count_Startable_Here === 1 ? "request" : "requests"} queued in this document, its own and its proposals'`
+            title: `Starts all ${count_Startable_Here} ${count_Startable_Here === 1 ? "request" : "requests"} queued in this file, its own and its proposals'`
           },
         stop_All: counts_Requests_Here.RUNNING === 0
           ? null
           : {
             label: `Stop all (${counts_Requests_Here.RUNNING})`,
-            title: `Stops all ${counts_Requests_Here.RUNNING} running in this document, its own and its proposals', putting them back in the queue`
+            title: `Stops all ${counts_Requests_Here.RUNNING} running in this file, its own and its proposals', putting them back in the queue`
           },
         actions: (mode.kind === "TASK" ? mode.task.actions_Document : []).filter((action_Task) => action_Task.section === "REVISIONS")
       },
@@ -450,11 +450,11 @@ function headerOf__Proposals({
         ask: isPresented
           ? {
             label: "Revise",
-            label_Form: "Revise this document"
+            label_Form: "Revise this file"
           }
           : {
             label: "Add a request",
-            label_Form: "Request a change to this document"
+            label_Form: "Request a change to this file"
           }
       }
     },
@@ -483,7 +483,7 @@ function switcherOf__Tasks({
     ...tasks.filter((standing_Task) => !isHereOf(standing_Task) && !standing_Task.isOnDocument)
   ]
   return {
-    label: "Switch this editor",
+    label: "Switch task",
     label_Here: "this editor",
     options: tasks.length === 0
       ? []
@@ -618,7 +618,7 @@ function pickerOf__Files({
   const sections: Array<_Section_Picker_> = mode.kind === "TASK"
     ? [
       {
-        label: "Files in this task",
+        label: "Files in task",
         files: documents_Task.map((document_Task) => fileOf(
           document_Task.name,
           totalOf__Counts(document_Task.counts_Proposals) === 0 ? "" : decidedOf__Label(document_Task.counts_Proposals),

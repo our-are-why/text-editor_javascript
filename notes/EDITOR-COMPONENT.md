@@ -3570,3 +3570,11 @@ name, and Manual's pencil; the arrows as a word, Switch; the arrows
 before the task's name, its mark at the edge; a breadcrumb, Tasks › the
 task › the file; one search across tasks and files; and both pickers in
 the footer.
+
+Decided 2026-11-23: what's shown says file, never document: the right-click
+menu's middle tier, File:, the forms, Request a change to this file and
+Revise this file, the tooltips on starting and stopping, every file it
+touches, a quote's jump, Show … in the file; a board task touching the file
+in view says in file; the switcher's Switch task. The code and these notes
+keep document for the concept, the text an editor holds, as they always
+have.
