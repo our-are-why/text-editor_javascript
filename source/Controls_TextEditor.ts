@@ -551,6 +551,14 @@ const CONTROLS__TEXTEDITOR: Array<_Adapter_Event_> = [
   },
   {
     event: "click",
+    commandOf__Event: (event) => event.target instanceof Element && event.target.closest(".tasks_Footer_htmlView") !== null
+      ? {
+        kind: "SHOW_BOARD"
+      }
+      : null
+  },
+  {
+    event: "click",
     commandOf__Event: (event) => {
       const element_Choice = event.target instanceof Element ? event.target.closest(".choice_Switcher_htmlView[data-switch]:not([aria-current])") : null
       const kind = element_Choice?.getAttribute("data-switch")

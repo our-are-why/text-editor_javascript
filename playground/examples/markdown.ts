@@ -358,7 +358,10 @@ const markdown: _Example_ = {
     switcher.className = "perspectives"
     const containerElement = document.createElement("div")
     containerElement.className = "host"
-    root.append(switcher, containerElement)
+    const containerElement_Board = document.createElement("div")
+    containerElement_Board.className = "board"
+    containerElement_Board.hidden = true
+    root.append(switcher, containerElement, containerElement_Board)
     const editor = hostedOf__Editor({
       containerElement,
       setup: setup_readme,
@@ -383,9 +386,21 @@ const markdown: _Example_ = {
           count_Undecided: 14,
           count_Conflicts: 0,
           count_Queued: 8,
-          count_Running: 3
+          count_Running: 3,
+          paths: [
+            "retry.js",
+            "README.md"
+          ]
         }
       ],
+      tasks_Resolved: [
+        {
+          id: "T-6",
+          name: "Say which errors are retried",
+          state: "COMPLETED"
+        }
+      ],
+      containerElement_Board,
       files: [
         "retry.js",
         "README.md",

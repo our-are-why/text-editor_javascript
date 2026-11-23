@@ -570,7 +570,7 @@ test("a task's own requests, on no proposal, aimed at the whole document or the 
   expect(viewModel.blocks.map((block) => block.kind === "FRAME" ? block.parts.map((part) => isLines__Part_Frame(part) ? underlinedIn(part.run) : []) : underlinedIn(block.run))).toEqual([[["one"], [], [], []], ["four"]])
 })
 
-test("the tasks a host gives: in the header, a switcher listing them, the one the editor's in first, then those on its document, then the rest, then Manual, each saying where it stands and what's waiting, a conflict first; in the footer, counted by what they're waiting on; none given, neither", () => {
+test("the tasks a host gives: in the header, a switcher listing them, the one the editor's in first, then those on its document, then the rest, then Manual, each its parts, the most pressing of yours, a conflict over the rest, then the agent's, or a draft's requests; in the footer, counted by part, a task under each it has; none given, neither", () => {
   const parsed = parseModel_TextEditor({ multilineText: "one two three", marks: [], proposed: [] })
   if (parsed.kind === "REFUSED") throw new Error("refused")
   const standing = (id: string, name: string, state: _State_Task_, isOnDocument: boolean, counts: [number, number, number, number]): _Standing_Task_ => ({ id, name, state, isOnDocument, count_Undecided: counts[0], count_Conflicts: counts[1], count_Queued: counts[2], count_Running: counts[3] })
@@ -582,27 +582,27 @@ test("the tasks a host gives: in the header, a switcher listing them, the one th
   ]
   const task_Here: _Task_Host_ = { id: "T-12", name: "Tidy the retry loop", state: "WORKING", summary: "", reason: "", documents: [], summary_Document: "", requests: [], actions: [], actions_Document: [] }
   const viewModelIn = (mode_Host: _Mode_Host_, tasks_Given: Array<_Standing_Task_>) => viewModelOf__Model({ model_TextEditor: parsed.model_TextEditor, name_Document: "retry.js", proposals: [], mode: mode_Host, tasks: tasks_Given, files: [], rounds_Landed: [], ranges_Frame: [], module_Language: MODULE_PLAINTEXT, module_Reading: MODULE_READING_TEXT })
-  const optionsOf = (viewModel: _ViewModel_TextEditor_) => viewModel.header.switcher.options.map((option) => option.kind === "TASK" ? `${option.label} | ${option.note} | ${option.figure}${option.isConflicted ? " !" : ""}${option.isHere ? " | here" : ""}` : `${option.label} | ${option.note}${option.isHere ? " | here" : ""}`)
+  const optionsOf = (viewModel: _ViewModel_TextEditor_) => viewModel.header.switcher.options.map((option) => option.kind === "TASK" ? `${option.label} | ${option.parts.map((part) => `${part.kind} ${part.text}`).join(", ")}${option.isHere ? " | here" : ""}` : `${option.label} | ${option.note}${option.isHere ? " | here" : ""}`)
   const inTask = viewModelIn({ kind: "TASK", task: task_Here }, tasks)
   expect(optionsOf(inTask)).toEqual([
-    "Tidy the retry loop | working | 3 running | here",
-    "Rename attempts to tries | needs you | 1 conflict !",
-    "Add a timeout option | draft | 2 requests",
-    "Say what the README promises | needs you | 3 to decide",
+    "Tidy the retry loop | YOURS 14 to decide, AGENT 3 running | here",
+    "Rename attempts to tries | CONFLICT 1 conflict",
+    "Add a timeout option | PLAIN draft, PLAIN 2 requests",
+    "Say what the README promises | YOURS 3 to decide",
     "Manual | the file itself"
   ])
   const inManual = viewModelIn({ kind: "MANUAL" }, tasks)
   expect(optionsOf(inManual)).toEqual([
-    "Tidy the retry loop | working | 3 running",
-    "Rename attempts to tries | needs you | 1 conflict !",
-    "Add a timeout option | draft | 2 requests",
-    "Say what the README promises | needs you | 3 to decide",
+    "Tidy the retry loop | YOURS 14 to decide, AGENT 3 running",
+    "Rename attempts to tries | CONFLICT 1 conflict",
+    "Add a timeout option | PLAIN draft, PLAIN 2 requests",
+    "Say what the README promises | YOURS 3 to decide",
     "Manual | the file itself | here"
   ])
   expect(inManual.header.mode).toEqual({ kind: "MANUAL", label: "Manual" })
   expect(inManual.footer).toEqual({
-    title: "4 tasks: 2 need you, 1 conflict, 1 working, 1 draft",
-    counts: [{ kind: "YOURS", count: 2 }, { kind: "CONFLICTS", count: 1 }, { kind: "WORKING", count: 1 }, { kind: "DRAFTS", count: 1 }]
+    title: "4 tasks: 3 need you, 1 conflict, 1 working, 1 draft",
+    counts: [{ kind: "YOURS", count: 3 }, { kind: "CONFLICTS", count: 1 }, { kind: "WORKING", count: 1 }, { kind: "DRAFTS", count: 1 }]
   })
   const none = viewModelIn({ kind: "MANUAL" }, [])
   expect([none.header.switcher.options, none.footer]).toEqual([[], { title: "", counts: [] }])

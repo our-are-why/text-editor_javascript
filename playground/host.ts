@@ -1,4 +1,7 @@
 import { _TextEditor_, type _Setup_TextEditor_ } from "../source/TextEditor.ts"
+import { _Board_ } from "../source/Board.ts"
+import { COMPONENTMAP__VIEW_BOARD } from "../source/View_Board.tsx"
+import type { _Task_Board_ } from "../source/Projection_Board.ts"
 import {
   type _Model_TextEditor_,
   type _Transaction_Model_,
@@ -30,7 +33,9 @@ import type { _Entry_Log_ } from "./example.ts"
 import { proposal_Yours, shownMap_State } from "./items.ts"
 
 export {
-  hostedOf__Editor
+  hostedOf__Editor,
+  type _Other_Task_,
+  type _Resolved_Task_
 }
 
 interface _Api___hostedOf__Editor_<State> {
@@ -41,7 +46,9 @@ interface _Api___hostedOf__Editor_<State> {
   proposals: Array<_Proposal_Host_>
   rounds_Landed: Array<_Landed_Round_>
   about_Task: _About_Task_
-  tasks_Other: Array<_Standing_Task_>
+  tasks_Other: Array<_Other_Task_>
+  tasks_Resolved: Array<_Resolved_Task_>
+  containerElement_Board: HTMLElement
   files: Array<string>
   ranges_Frame: Array<_Range_Lines_>
   log: (entry: _Entry_Log_) => void
@@ -65,6 +72,20 @@ interface _Elsewhere_Task_ {
   name: string
   counts_Proposals: _Counts_Proposals_
   counts_Requests: _Counts_Requests_
+}
+
+// one of the project's other tasks, as the editor's told it, and the files
+// it touches, as the board shows it
+interface _Other_Task_ extends _Standing_Task_ {
+  paths: Array<string>
+}
+
+// a task the project's resolved, completed, canceled or discarded, kept
+// till it's collected
+interface _Resolved_Task_ {
+  id: string
+  name: string
+  state: _State_Task_
 }
 
 interface _Base_Run_ {
@@ -109,7 +130,18 @@ interface _Logged_Transaction_ {
 // be once the editor's switched back to it. The project's files, the
 // example's, listed for the editor to open, an opening reported, as the
 // playground has one document an example, and an editor's language its
-// setup's
+// setup's.
+// The board, every task of the project, under the editor, hidden till the
+// editor's footer is pressed, and hidden again when it's pressed again, as
+// a host shows and hides a view, told the file the editor shows, as the
+// one that matters of the files a task touches: a task pressed switches
+// the editor to it,
+// as switching from the board moves every editor; a draft started works a
+// moment, with no agent, then waits on you, its requests become proposals
+// to decide, and the editor's own task starts and stops as its header's
+// Start and Stop do; completed, canceled or discarded, a task's resolved,
+// an editor in it going to manual; collected, it's gone. Each reported as
+// it's asked
 function hostedOf__Editor<State>({
   containerElement,
   setup,
@@ -119,6 +151,8 @@ function hostedOf__Editor<State>({
   rounds_Landed,
   about_Task,
   tasks_Other,
+  tasks_Resolved,
+  containerElement_Board,
   files,
   ranges_Frame,
   log
@@ -139,6 +173,10 @@ function hostedOf__Editor<State>({
   const transactions_Logged: Array<_Logged_Transaction_> = []
   const bases_Source = new Map<string, _Base_Run_>()
   let documents_Elsewhere = about_Task.documents_Elsewhere
+  let tasks_Open = tasks_Other
+  let tasks_Done = tasks_Resolved
+  const isDone = (id: string) => tasks_Done.some((task_Done) => task_Done.id === id)
+  const isShown = (id: string) => target_Mode.kind === "TASK" && target_Mode.id === id
   const taskOf = () => taskOf__Proposals({
     model_TextEditor: model_Host,
     name_Document,
@@ -164,15 +202,63 @@ function hostedOf__Editor<State>({
     }
   }
   const tasksOf = () => [
-    standingOwn(),
-    ...tasks_Other
+    ...isDone(about_Task.id) ? [] : [standingOwn()],
+    ...tasks_Open
   ]
+  const boardTasksOf = (): Array<_Task_Board_> => [
+    ...isDone(about_Task.id)
+      ? []
+      : [
+        boardedOf__Standing({
+          standing_Task: standingOwn(),
+          paths: [
+            name_Document,
+            ...documents_Elsewhere.map((elsewhere_Task) => elsewhere_Task.name)
+          ],
+          isShown: isShown(about_Task.id)
+        })
+      ],
+    ...tasks_Open.map((task_Open) => boardedOf__Standing({
+      standing_Task: task_Open,
+      paths: task_Open.paths,
+      isShown: isShown(task_Open.id)
+    })),
+    ...tasks_Done.map((task_Done) => ({
+      id: task_Done.id,
+      name: task_Done.name,
+      state: task_Done.state,
+      paths: [],
+      count_Undecided: 0,
+      count_Conflicts: 0,
+      count_Running: 0,
+      count_Queued: 0,
+      count_Editors: 0
+    }))
+  ]
+  const restated = (id: string, restate: (task_Open: _Other_Task_) => _Other_Task_) => {
+    tasks_Open = tasks_Open.map((task_Open) => task_Open.id === id ? restate(task_Open) : task_Open)
+  }
+  const resolved = (id: string, state: _State_Task_) => {
+    const name = tasks_Open.find((task_Open) => task_Open.id === id)?.name ?? about_Task.name
+    tasks_Open = tasks_Open.filter((task_Open) => task_Open.id !== id)
+    tasks_Done = [
+      ...tasks_Done,
+      {
+        id,
+        name,
+        state
+      }
+    ]
+    if (isShown(id)) target_Mode = {
+      kind: "MANUAL"
+    }
+  }
   const modeOf = (): _Mode_Host_ => {
     if (target_Mode.kind === "MANUAL") return {
       kind: "MANUAL"
     }
     const id = target_Mode.id
-    const standing_Other = tasks_Other.find((standing_Task) => standing_Task.id === id)
+    const standing_Other = tasks_Open.find((standing_Task) => standing_Task.id === id)
     return isOwn()
       ? {
         kind: "TASK",
@@ -187,20 +273,26 @@ function hostedOf__Editor<State>({
           task: taskOf__Standing(standing_Other)
         }
   }
-  const updated = () => editor.update({
-    model_TextEditor: isOwn()
-      ? model_Host
-      : {
-        document: model_Host.document,
-        proposed: []
-      },
-    name_Document,
-    proposals: isOwn() ? proposals_Host : [],
-    mode: modeOf(),
-    tasks: tasksOf(),
-    files,
-    rounds_Landed: isOwn() ? rounds_Host : []
-  })
+  const updated = () => {
+    editor.update({
+      model_TextEditor: isOwn()
+        ? model_Host
+        : {
+          document: model_Host.document,
+          proposed: []
+        },
+      name_Document,
+      proposals: isOwn() ? proposals_Host : [],
+      mode: modeOf(),
+      tasks: tasksOf(),
+      files,
+      rounds_Landed: isOwn() ? rounds_Host : []
+    })
+    board.update({
+      tasks: boardTasksOf(),
+      paths_Shown: [name_Document]
+    })
+  }
   const landed = (source: string) => {
     const base = bases_Source.get(source)
     if (base === undefined) return
@@ -525,6 +617,11 @@ function hostedOf__Editor<State>({
             log({
               opened: asked_Host.path
             })
+          } else if (asked_Host.kind === "SHOW_BOARD") {
+            containerElement_Board.hidden = !containerElement_Board.hidden
+            log({
+              board: containerElement_Board.hidden ? "hidden" : "shown"
+            })
           } else if (asked_Host.kind === "START") {
             started(asked_Host.scope)
           } else if (asked_Host.kind === "STOP") {
@@ -665,7 +762,99 @@ function hostedOf__Editor<State>({
       }
     ]
   })
+  const board: _Board_ = new _Board_({
+    containerElement: containerElement_Board,
+    componentMap: COMPONENTMAP__VIEW_BOARD,
+    tasks: boardTasksOf(),
+    paths_Shown: [name_Document],
+    observers: [
+      {
+        asked: (asked_Board) => {
+          log({
+            board: asked_Board.kind,
+            tasks: asked_Board.kind === "COLLECT" ? asked_Board.ids.join(", ") : asked_Board.kind === "NEW_TASK" ? null : asked_Board.id
+          })
+          if (asked_Board.kind === "SWITCH") {
+            target_Mode = {
+              kind: "TASK",
+              id: asked_Board.id
+            }
+          } else if (asked_Board.kind === "START") {
+            if (asked_Board.id === about_Task.id) started({
+              kind: "TASK"
+            })
+            else {
+              const id = asked_Board.id
+              restated(id, (task_Open) => ({
+                ...task_Open,
+                state: "WORKING",
+                count_Running: task_Open.count_Queued,
+                count_Queued: 0
+              }))
+              setTimeout(() => {
+                restated(id, (task_Open) => task_Open.state !== "WORKING"
+                  ? task_Open
+                  : {
+                    ...task_Open,
+                    state: "YOUR_TURN",
+                    count_Undecided: task_Open.count_Undecided + task_Open.count_Running,
+                    count_Running: 0
+                  })
+                updated()
+              }, 1500)
+            }
+          } else if (asked_Board.kind === "STOP") {
+            if (asked_Board.id === about_Task.id) stopped({
+              kind: "TASK"
+            })
+            else restated(asked_Board.id, (task_Open) => ({
+              ...task_Open,
+              state: "YOUR_TURN",
+              count_Queued: task_Open.count_Queued + task_Open.count_Running,
+              count_Running: 0
+            }))
+          } else if (asked_Board.kind === "COMPLETE") {
+            resolved(asked_Board.id, "COMPLETED")
+          } else if (asked_Board.kind === "CANCEL") {
+            resolved(asked_Board.id, "CANCELED")
+          } else if (asked_Board.kind === "DISCARD") {
+            resolved(asked_Board.id, "DISCARDED")
+          } else if (asked_Board.kind === "COLLECT") {
+            const ids = asked_Board.ids
+            tasks_Done = tasks_Done.filter((task_Done) => !ids.includes(task_Done.id))
+          }
+          updated()
+        }
+      }
+    ]
+  })
   return editor
+}
+
+interface _Api___boardedOf__Standing_ {
+  standing_Task: _Standing_Task_
+  paths: Array<string>
+  isShown: boolean
+}
+
+// a task as the board's told it: where it stands, what it touches, and,
+// the playground having one editor, whether it's showing it
+function boardedOf__Standing({
+  standing_Task,
+  paths,
+  isShown
+}: _Api___boardedOf__Standing_): _Task_Board_ {
+  return {
+    id: standing_Task.id,
+    name: standing_Task.name,
+    state: standing_Task.state,
+    paths,
+    count_Undecided: standing_Task.count_Undecided,
+    count_Conflicts: standing_Task.count_Conflicts,
+    count_Running: standing_Task.count_Running,
+    count_Queued: standing_Task.count_Queued,
+    count_Editors: isShown ? 1 : 0
+  }
 }
 
 // one of the project's other tasks as the editor's told it, switched to:

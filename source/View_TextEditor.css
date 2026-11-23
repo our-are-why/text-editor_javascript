@@ -690,12 +690,11 @@
    a request's own, Stop, Edit, Start, Dismiss, Remove, a group's, by its
    heading, a card's, on a line by its figure, or a document's, on its
    row: the ellipsis and its actions one fold, unfolded while the pointer's
-   on it, or near it, a little past it all round, not anywhere on the line,
-   or the keyboard's on one of them, the ellipsis stepping aside for them,
-   the pointer then on them, so they stay; not left unfolded by the focus
-   a click leaves on one, so they fold once the pointer's gone; folded,
-   hidden
-   and out of the way, not gone, so the keyboard still reaches them, and
+   on the ellipsis, its disc itself, not near it, nor where its actions
+   wait unseen, nor anywhere on the line, or the keyboard's on one of
+   them, the ellipsis stepping aside for them, the pointer then on them, so
+   they stay; not left unfolded by the focus a click leaves on one, so they
+   fold once the pointer's gone; folded, hidden and out of the way, not gone, so the keyboard still reaches them, and
    unfolds them as it does; always unfolded where nothing can be pointed
    at. A line of nothing but its actions, Revise alone, isn't folded */
 .htmlView_editor .folded_htmlView {
@@ -712,8 +711,21 @@
    as it opens */
 .htmlView_editor .fold_Action_htmlView {
   position: relative;
-  isolation: isolate;
   display: inline-flex;
+}
+
+/* folded, nothing of the fold pointed at but its ellipsis, so the room a
+   request's actions keep unseen, and the line the fold is as tall as,
+   never unfold it; unfolded, its actions pointed at in its place */
+@media (hover: hover) {
+  .htmlView_editor .fold_Action_htmlView {
+    pointer-events: none;
+  }
+
+  .htmlView_editor .fold_Action_htmlView > .more_htmlView,
+  .htmlView_editor .fold_Action_htmlView:is(:hover, :has(:focus-visible)) > .folded_htmlView {
+    pointer-events: auto;
+  }
 }
 
 /* on a card's line, set on its baseline as the figure beside it is, its
@@ -721,13 +733,6 @@
    as they open */
 .htmlView_editor .line_Card_htmlView > .fold_Action_htmlView {
   margin-block: -1px;
-}
-
-.htmlView_editor .fold_Action_htmlView::before {
-  content: "";
-  position: absolute;
-  z-index: -1;
-  inset: -0.35em;
 }
 
 .htmlView_editor .fold_Action_htmlView:is(:hover, :has(:focus-visible)) > .folded_htmlView {
@@ -741,6 +746,17 @@
 .htmlView_editor .fold_Action_htmlView:is(:hover, :has(:focus-visible)) > .more_htmlView,
 .htmlView_editor .fold_Action_htmlView:has(> .actions_Request_htmlView:empty) > .more_htmlView {
   display: none;
+}
+
+/* a request's ellipsis, one of a list of them, in a card or in the
+   document, shown only while its request's pointed at or the keyboard's
+   in it, its room kept, so a list of requests isn't a column of
+   ellipses, as a board task's ⋮ is; a group's, alone in its heading,
+   always there, and every one where nothing can point, below */
+@media (hover: hover) {
+  .htmlView_editor .said_htmlView:not(:hover, :has(:focus-visible)) > .row_Said_htmlView > .fold_Action_htmlView > .more_htmlView {
+    visibility: hidden;
+  }
 }
 
 @media (hover: none) {
@@ -762,7 +778,8 @@
    it folds: the revision's plum for a group's and the revisions', the
    proposals' indigo for the proposals', a request's own the revision's
    plum too, as its actions are; the character kept, unseen, for what's
-   written out */
+   written out; clipped to its disc, so the pointer's on it only on the
+   disc, not in the corners of its square */
 .htmlView_editor .more_htmlView {
   --ink_More_htmlView: var(--accent_revision_htmlView);
   display: inline-block;
@@ -772,6 +789,7 @@
   height: 1.2em;
   overflow: hidden;
   border-radius: 50%;
+  clip-path: circle(50%);
   background:
     radial-gradient(circle at 28% 50%, var(--ink_More_htmlView) 0.065em, transparent 0.08em),
     radial-gradient(circle at 50% 50%, var(--ink_More_htmlView) 0.065em, transparent 0.08em),
@@ -1367,7 +1385,8 @@
 
 /* the agent at work, its word shimmering, the view's: a revising
    proposal's status, the task's or the document's Working in its card, the
-   task's name, or the file's, in the header, a request's "running"; a soft band passing through the word's letters,
+   task's name, or the file's, in the header, a running part of a task in
+   the switcher, a request's "running"; a soft band passing through the word's letters,
    left to right, easing in and out, dimming it to half at its middle, then
    resting, a pass every two turns of the arc, begun as a turn is, one
    rhythm, the beat said once for whatever keeps it, the band too, a mask
@@ -1389,7 +1408,7 @@
     animation: revising_htmlView var(--time_revising_htmlView) linear infinite;
   }
 
-  .htmlView_editor :is(.item_htmlView[data-state="REVISING"] .status_htmlView, .state_Card_htmlView[data-state="WORKING"], .trigger_Task_htmlView[data-state="WORKING"] > .name_Task_htmlView, .trigger_Document_htmlView[data-state="WORKING"] > .name_Document_htmlView, .progress_Said_htmlView[data-status="RUNNING"]) {
+  .htmlView_editor :is(.item_htmlView[data-state="REVISING"] .status_htmlView, .state_Card_htmlView[data-state="WORKING"], .trigger_Task_htmlView[data-state="WORKING"] > .name_Task_htmlView, .trigger_Document_htmlView[data-state="WORKING"] > .name_Document_htmlView, .part_Option_htmlView[data-kind="AGENT"], .progress_Said_htmlView[data-status="RUNNING"]) {
     mask-image: var(--band_Shimmer_htmlView);
     mask-size: 250% 100%;
     animation: shimmer_htmlView calc(var(--time_revising_htmlView) * 2) linear infinite;
@@ -1707,10 +1726,12 @@
   height: var(--roomBelow_htmlView, 0px);
 }
 
+/* the header over the footer, as both stay in view, so a card it opens
+   is drawn over the footer, not under it */
 .htmlView_editor .header_htmlView {
   position: sticky;
   top: 0;
-  z-index: 5;
+  z-index: 6;
   display: flex;
   flex: none;
   align-items: center;
@@ -2248,8 +2269,38 @@
   font-variant-numeric: tabular-nums;
 }
 
-.htmlView_editor .figure_Option_htmlView[data-conflicted] {
-  background: color-mix(in srgb, var(--view-removed-edge, light-dark(#e51400, #f14c4c)) 14%, transparent);
+/* a task's parts, after its name, in place of one word for where it
+   stands, as part of a task can be the agent's while part waits on you:
+   your part, what's to decide, or a conflict, in the removed red, or
+   requests queued, waiting for you to start them, said as the cards say
+   them, in the revision's plum, still, or that it's ready to complete, in
+   the proposals' indigo, then the agent's, what's running, in the
+   revision's plum, the colours of the board's Needs you and With the
+   agent; a draft's in words, muted */
+.htmlView_editor .parts_Option_htmlView {
+  display: flex;
+  flex: none;
+  align-items: baseline;
+  color: var(--view-placeholder-ink, color-mix(in srgb, CanvasText 58%, transparent));
+  font-size: 0.88em;
+  white-space: nowrap;
+}
+
+.htmlView_editor .part_Option_htmlView:not(:last-child)::after {
+  content: "·";
+  margin: 0 0.4em;
+  color: var(--view-placeholder-ink, color-mix(in srgb, CanvasText 58%, transparent));
+}
+
+.htmlView_editor .part_Option_htmlView[data-kind="YOURS"] {
+  color: color-mix(in srgb, var(--accent_proposals_htmlView) 85%, CanvasText);
+}
+
+.htmlView_editor .part_Option_htmlView:is([data-kind="QUEUED"], [data-kind="AGENT"]) {
+  color: color-mix(in srgb, var(--accent_revision_htmlView) 85%, CanvasText);
+}
+
+.htmlView_editor .part_Option_htmlView[data-kind="CONFLICT"] {
   color: color-mix(in srgb, var(--view-removed-edge, light-dark(#e51400, #f14c4c)) 80%, CanvasText);
 }
 
@@ -2262,7 +2313,26 @@
   align-items: center;
   gap: 0.75rem;
   margin: 0;
+  padding: 0.1rem 0.4rem;
+  border: none;
+  border-radius: 2px;
+  background: none;
+  color: inherit;
+  font: inherit;
   font-variant-numeric: tabular-nums;
+  cursor: pointer;
+}
+
+/* pressed, the project's tasks ask the host to show the board, every
+   task, a view of its own, beside the editor, `SHOW_BOARD`; a faint
+   ground under them pointed at, as the header's icons have */
+.htmlView_editor .tasks_Footer_htmlView:hover {
+  background: color-mix(in srgb, CanvasText 8%, transparent);
+}
+
+.htmlView_editor .tasks_Footer_htmlView:focus-visible {
+  outline: 2px solid var(--view-focus-ring, CanvasText);
+  outline-offset: 2px;
 }
 
 .htmlView_editor .count_Footer_htmlView {
@@ -2386,7 +2456,11 @@
 }
 
 /* each card's top on the header's edge, the triggers filling the header's
-   line, so both open from the same place whatever their text's size */
+   line, so both open from the same place whatever their text's size; over
+   the footer, at most to the editor's own bottom edge, never past it nor
+   the window, as tall as the room down to it leaves, scrolling inside
+   past that, so an editor made shorter, as by the board shown under it,
+   never hides the card's end */
 .htmlView_editor .card_htmlView {
   --ink_state_htmlView: var(--accent_revision_htmlView);
   position: absolute;
@@ -2404,7 +2478,7 @@
     linear-gradient(var(--view-proposals-shade, color-mix(in srgb, CanvasText 5%, transparent)), var(--view-proposals-shade, color-mix(in srgb, CanvasText 5%, transparent))),
     linear-gradient(var(--view-proposed, color-mix(in srgb, CanvasText 4%, transparent)), var(--view-proposed, color-mix(in srgb, CanvasText 4%, transparent))),
     var(--view-ground, Canvas);
-  max-height: 70vh;
+  max-height: min(70vh, var(--heightKept_Card_htmlView, 70vh));
   overflow-y: auto;
   overscroll-behavior: contain;
   white-space: normal;

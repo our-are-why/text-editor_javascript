@@ -1,0 +1,686 @@
+/* The board: every task in the project, a view of its own beside the
+   editor, never in it, as it may well be a VS Code view, in its panel or
+   its sidebar. In the interface's font, on the proposals' band, as the
+   editor's header is, with the editor's own colours, a host's set as the
+   editor's are. Its columns, by who each task is waiting on, side by
+   side where it's wide, and one under another where it's narrow, by the
+   board's own width, not the window's. As tall as its host makes it,
+   never scrolling as a whole: its head stays, and, side by side, each
+   column's tasks scroll on their own under its heading, or, one under
+   another, the columns scroll together under the head */
+.htmlView_board {
+  container-type: inline-size;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+  height: 100%;
+  overflow: hidden;
+  padding: 0.85rem 1rem 1rem;
+  background:
+    linear-gradient(var(--view-proposals-shade, color-mix(in srgb, CanvasText 5%, transparent)), var(--view-proposals-shade, color-mix(in srgb, CanvasText 5%, transparent))),
+    var(--view-ground, Canvas);
+  color: var(--view-ink, CanvasText);
+  font-family: var(--view-ui-font, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif);
+  font-size: var(--view-ui-font-size, 13px);
+  line-height: 1.45;
+  --accent_proposals_htmlView: var(--view-proposals-accent, light-dark(#4b48c8, #aaa8ff));
+  --accent_revision_htmlView: var(--view-revision-accent, light-dark(#8e3591, #e39be6));
+  --ink_Muted_htmlView: var(--view-placeholder-ink, color-mix(in srgb, CanvasText 58%, transparent));
+  --edge_Board_htmlView: var(--view-menu-edge, color-mix(in srgb, CanvasText 16%, transparent));
+  --ground_Chip_htmlView: color-mix(in srgb, CanvasText 8%, transparent);
+  --removed_Board_htmlView: var(--view-removed-edge, light-dark(#e51400, #f14c4c));
+}
+
+.htmlView_board :is(h2, h3, p, ul) {
+  margin: 0;
+}
+
+.htmlView_board ul {
+  padding: 0;
+  list-style: none;
+}
+
+.htmlView_board button {
+  font: inherit;
+  color: inherit;
+}
+
+.htmlView_board button:focus-visible {
+  outline: 2px solid var(--view-focus-ring, CanvasText);
+  outline-offset: 2px;
+}
+
+/* its head: Tasks, how many are open, and New task at its end */
+.htmlView_board .head_Board_htmlView {
+  display: flex;
+  align-items: baseline;
+  gap: 0.6rem;
+}
+
+.htmlView_board .title_Board_htmlView {
+  font-size: 1.05em;
+  font-weight: 600;
+}
+
+.htmlView_board .count_Board_htmlView {
+  color: var(--ink_Muted_htmlView);
+}
+
+.htmlView_board .new_Board_htmlView {
+  padding: 0.2rem 0.65rem;
+  border: none;
+  background: var(--ground_Chip_htmlView);
+  cursor: pointer;
+}
+
+.htmlView_board .new_Board_htmlView:hover {
+  background: color-mix(in srgb, CanvasText 13%, transparent);
+}
+
+.htmlView_board .new_Board_htmlView {
+  margin-left: auto;
+}
+
+/* the columns, one under another, and side by side, four, once there's
+   room for them; each headed by who it's waiting on, in the ink of its
+   tasks' parts, needing you in the proposals' indigo, with the agent in
+   the revision's plum, the rest muted, with how many: a task with
+   anything waiting on you needing you, even while the agent works on
+   another part of it, and with the agent only what's the agent's alone */
+.htmlView_board .columns_Board_htmlView {
+  flex: 1;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  align-content: start;
+  gap: 1.1rem;
+  min-height: 0;
+  margin: 0 -0.5rem;
+  padding: 0 0.5rem;
+  overflow: auto;
+  scrollbar-width: thin;
+}
+
+.htmlView_board .column_Board_htmlView {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  min-width: 0;
+}
+
+@container (min-width: 640px) {
+  .htmlView_board .columns_Board_htmlView {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    grid-template-rows: minmax(0, 1fr);
+    gap: 1.5rem;
+    overflow: hidden;
+  }
+
+  .htmlView_board .column_Board_htmlView {
+    min-height: 0;
+  }
+
+  .htmlView_board :is(.tiles_Column_htmlView, .rows_Resolved_htmlView) {
+    flex: 0 1 auto;
+    min-height: 0;
+    margin: -2px -0.5rem;
+    padding: 2px 0.5rem;
+    overflow: auto;
+    scrollbar-width: thin;
+  }
+}
+
+.htmlView_board .label_Column_htmlView {
+  display: flex;
+  align-items: baseline;
+  gap: 0.4rem;
+  font-size: 1em;
+  font-weight: 400;
+  color: var(--ink_Muted_htmlView);
+}
+
+.htmlView_board [data-kind="YOURS"] > .label_Column_htmlView {
+  color: var(--accent_proposals_htmlView);
+}
+
+.htmlView_board [data-kind="AGENT"] > .label_Column_htmlView {
+  color: var(--accent_revision_htmlView);
+}
+
+/* how many a column holds, set apart from its mark on a faint square of
+   its column's colour, in that colour, needing you indigo, with the
+   agent plum, the rest muted; its figures all as wide; its corners
+   rounded a touch, as a count is a token, not a box */
+.htmlView_board .count_Column_htmlView {
+  padding: 0 0.35rem;
+  border-radius: 2.5px;
+  background: color-mix(in srgb, currentColor 12%, transparent);
+  color: var(--ink_Muted_htmlView);
+  font-size: 0.92em;
+  font-variant-numeric: tabular-nums;
+}
+
+.htmlView_board [data-kind="YOURS"] .count_Column_htmlView {
+  color: color-mix(in srgb, var(--accent_proposals_htmlView) 85%, CanvasText);
+}
+
+.htmlView_board [data-kind="AGENT"] .count_Column_htmlView {
+  color: color-mix(in srgb, var(--accent_revision_htmlView) 85%, CanvasText);
+}
+
+/* each column's mark, the footer's for it, so the footer, which opens
+   the board, reads by them: needing you, a dot; with the agent, a spinner,
+   turning while anything's in it, as all of it is running, still where
+   motion's asked to be reduced; drafts, a dotted ring; resolved, none, as
+   it holds every way a task ends. After the heading, before how many, as
+   the footer has each mark before its count, so the heading ends as the
+   footer's item for it reads, and its words stay flush with the tasks
+   under it */
+.htmlView_board .mark_Column_htmlView {
+  flex: none;
+  display: inline-flex;
+  align-self: center;
+  align-items: center;
+  justify-content: center;
+  width: 1em;
+  height: 1em;
+  margin: 0 0.15rem 0 0.1rem;
+}
+
+.htmlView_board .mark_Column_htmlView::before {
+  content: "";
+  box-sizing: border-box;
+  width: 0.8em;
+  height: 0.8em;
+  border-radius: 50%;
+}
+
+.htmlView_board [data-kind="YOURS"] .mark_Column_htmlView::before {
+  width: 0.55em;
+  height: 0.55em;
+  background: var(--accent_proposals_htmlView);
+}
+
+/* the dot narrower than a ring, its room either side taken in by the
+   difference, so its ink is as far from the words and the count as a
+   ring's is */
+.htmlView_board [data-kind="YOURS"] .mark_Column_htmlView {
+  margin: 0 calc(0.15rem - 0.08em) 0 calc(0.1rem - 0.08em);
+}
+
+.htmlView_board [data-kind="AGENT"] .mark_Column_htmlView::before {
+  border: 1.5px solid var(--accent_revision_htmlView);
+  border-right-color: transparent;
+}
+
+.htmlView_board [data-kind="DRAFTS"] .mark_Column_htmlView::before {
+  border: 1.5px dotted var(--ink_Muted_htmlView);
+}
+
+/* the agent at work, its turn and its shimmer the editor's, on the same
+   beat, begun when the editor's are, so the two read as one: the spinner
+   turning, and a running part's words shimmering, a soft band passing
+   through them, dimming them to half at its middle, a pass every two
+   turns; still where motion's asked to be reduced, the plum saying it */
+@media (prefers-reduced-motion: no-preference) {
+  .htmlView_board [data-kind="AGENT"]:has(.tile_htmlView) .mark_Column_htmlView::before {
+    animation: turning_Board_htmlView 1.5s linear infinite;
+  }
+
+  .htmlView_board .part_Tile_htmlView[data-kind="AGENT"] {
+    mask-image: linear-gradient(100deg, #000 40%, rgb(0 0 0 / 0.75) 45%, rgb(0 0 0 / 0.5) 50%, rgb(0 0 0 / 0.75) 55%, #000 60%);
+    mask-size: 250% 100%;
+    animation: shimmer_Board_htmlView 3s linear infinite;
+  }
+}
+
+@keyframes turning_Board_htmlView {
+  to {
+    rotate: 1turn;
+  }
+}
+
+@keyframes shimmer_Board_htmlView {
+  0% {
+    mask-position: 100% 0;
+    animation-timing-function: ease-in-out;
+  }
+
+  60%,
+  100% {
+    mask-position: 0 0;
+  }
+}
+
+.htmlView_board .empty_Column_htmlView {
+  color: var(--ink_Muted_htmlView);
+}
+
+.htmlView_board .tiles_Column_htmlView {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+/* a task: its name, with no mark, as its column says where it stands, on
+   a line of its own, the column's whole width, wrapping as it must; under
+   it its parts, yours, what's most pressing of it, in the proposals'
+   indigo, a conflict in the removed red, requests queued, waiting for you
+   to start them, said as the editor says them, in the revision's plum,
+   still, as a request's, never shimmering, then the agent's, what's
+   running, in the revision's plum, a draft's requests muted, and, if it
+   touches a file an editor's showing, that file's name, in the editor's
+   font, the only file that matters here; no id, and no words for being
+   shown, a bar down its edge, in its column's ink, saying an editor's
+   showing it; its ⋮ at the end of its name's line, its room kept, shown
+   while the task's pointed at or the keyboard's in it, unseen, not
+   hidden, otherwise, so Tab still reaches it from the task's name, where
+   hidden it couldn't be focused in the moment the name's let go, as a
+   request's ellipsis is, one of a list, where a lone ellipsis, as
+   Resolved's, is always there; and shown where nothing can point, as on a
+   touch screen. Pressed anywhere but on its ⋮, it switches every editor
+   to it, its name the button, reaching over the whole task. Pointed at,
+   its ground a shade deeper; the keyboard on it, a ring round it instead;
+   pressed with the pointer, nothing kept, the bar saying an editor's
+   showing it, so a task pressed and the next pointed at never read as
+   one, the columns far enough apart that two grounds never meet. Its text
+   set flush with its column's heading, its ground reaching past it either
+   side, the columns and their lists leaving it room, so a column
+   scrolling never cuts it. Square, as everything the board draws is */
+.htmlView_board .tile_htmlView {
+  position: relative;
+  margin: 0 -0.5rem;
+  padding: 0.3rem 0.5rem;
+}
+
+.htmlView_board .tile_htmlView:hover {
+  background: color-mix(in srgb, CanvasText 6%, transparent);
+}
+
+.htmlView_board .tile_htmlView:has(> .line_Tile_htmlView > .switch_Tile_htmlView:focus-visible) {
+  outline: 2px solid var(--view-focus-ring, CanvasText);
+  outline-offset: -2px;
+}
+
+.htmlView_board .switch_Tile_htmlView:focus-visible {
+  outline: none;
+}
+
+@media (hover: hover) {
+  .htmlView_board .tile_htmlView:not(:hover, :has(:focus-visible), :has(.action_Tile_htmlView:focus)) .trigger_More_htmlView {
+    opacity: 0;
+  }
+}
+
+.htmlView_board .tile_htmlView[data-shown] {
+  box-shadow: inset 2px 0 0 var(--ink_Mark_htmlView, var(--ink_Muted_htmlView));
+}
+
+.htmlView_board .line_Tile_htmlView {
+  display: flex;
+  align-items: baseline;
+  gap: 0.45rem;
+  min-width: 0;
+}
+
+.htmlView_board .switch_Tile_htmlView {
+  flex: 1;
+  min-width: 0;
+  padding: 0;
+  border: none;
+  background: none;
+  font-weight: 500;
+  text-align: left;
+  cursor: pointer;
+}
+
+.htmlView_board .switch_Tile_htmlView::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+}
+
+.htmlView_board .more_Tile_htmlView {
+  position: relative;
+  z-index: 1;
+}
+
+.htmlView_board .details_Tile_htmlView {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  margin: 0.1rem 0 0;
+  color: var(--ink_Muted_htmlView);
+  font-size: 0.92em;
+}
+
+.htmlView_board .details_Tile_htmlView > :not(:last-child)::after {
+  content: "·";
+  margin: 0 0.4em;
+  color: var(--ink_Muted_htmlView);
+  font-family: var(--view-ui-font, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif);
+}
+
+.htmlView_board .part_Tile_htmlView {
+  white-space: nowrap;
+}
+
+.htmlView_board .part_Tile_htmlView[data-kind="YOURS"] {
+  color: color-mix(in srgb, var(--accent_proposals_htmlView) 85%, CanvasText);
+}
+
+.htmlView_board .part_Tile_htmlView:is([data-kind="QUEUED"], [data-kind="AGENT"]) {
+  color: color-mix(in srgb, var(--accent_revision_htmlView) 85%, CanvasText);
+}
+
+.htmlView_board .part_Tile_htmlView[data-kind="CONFLICT"] {
+  color: color-mix(in srgb, var(--removed_Board_htmlView) 80%, CanvasText);
+}
+
+.htmlView_board .paths_Tile_htmlView {
+  min-width: 0;
+  font-family: var(--view-font, ui-monospace, "SF Mono", Menlo, Consolas, monospace);
+  overflow-wrap: anywhere;
+}
+
+/* the state in words, for what reads the page aloud, as its mark says it
+   at a glance */
+.htmlView_board .state_Tile_htmlView {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/* what a task offers, behind its ⋮, three dots standing, as a menu's are,
+   the editor's ellipsis stood up, its disc, its dots and their spacing
+   the same, apart from it, lying down, that opens actions in place, at
+   the end of its line: a draft's Start and Discard, or Start all for
+   what's queued, Stop while anything's running, Complete once nothing's
+   left, and Cancel. Its menu opened by pointing at the ⋮, and kept open
+   while the pointer's on the menu, or on an unseen strip between it and
+   the ⋮, the ⋮'s own line across the menu's width, so the way from the ⋮
+   to a choice never shuts it, however the pointer goes, the ⋮ drawn over
+   it, so a press on the ⋮ is still the ⋮'s; the strip only on the ⋮'s
+   side, whichever way the menu opens, none past its far edge, and there
+   only on the way from the ⋮, while the pointer's on the ⋮ or on the
+   strip, never on the way out of the menu, which shuts at whichever edge
+   the pointer leaves it by, as at its sides, held to the ⋮ as the menu
+   is, so it's where the ⋮ is in a list that's been scrolled; a press on
+   the ⋮ with the pointer not keeping it open, the pointer's leaving
+   shutting it all the same; opened from the keyboard, by Enter, Space or
+   an arrow, on the ⋮; held open as the keyboard moves from one choice to
+   the next, its choices reached by the arrows, not by Tab, which leaves
+   the menu, as a menu's are; under the ⋮, at its end, or over it where
+   there's no room under it, the ⋮ gone, while it's open, once the
+   pointer's left it; held to the ⋮ by anchoring, not by its column, so a
+   column scrolling never cuts it off; shown and put away as the header's
+   cards are, at once and faded in, and, once the pointer's left it, held
+   a moment, then faded out */
+.htmlView_board .more_Tile_htmlView {
+  flex: none;
+  anchor-scope: --more_Tile_htmlView, --menu_Tile_htmlView;
+}
+
+.htmlView_board .trigger_More_htmlView {
+  --ink_More_htmlView: var(--ink_Muted_htmlView);
+  position: relative;
+  z-index: 4;
+  anchor-name: --more_Tile_htmlView;
+  display: inline-block;
+  box-sizing: border-box;
+  width: 1.2em;
+  height: 1.2em;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 50% 28%, var(--ink_More_htmlView) 0.065em, transparent 0.08em),
+    radial-gradient(circle at 50% 50%, var(--ink_More_htmlView) 0.065em, transparent 0.08em),
+    radial-gradient(circle at 50% 72%, var(--ink_More_htmlView) 0.065em, transparent 0.08em),
+    color-mix(in srgb, var(--ink_More_htmlView) 13%, transparent);
+  font-size: 0.82em;
+  line-height: 1;
+  vertical-align: middle;
+  cursor: pointer;
+}
+
+/* the menu the editor's is, opened by a right-click over its text: on the
+   proposals' band, a faint edge round it, flat, its choices rows across
+   it, lit a step darker where pointed at or the keyboard's on them, no
+   ring; square, as all the board is. Each choice in the ink of whose move
+   it is, as the editor's are in their section's: Start and Stop the
+   agent's, the revision's plum, Start bold, as every Start is; Complete
+   yours, the proposals' indigo; Cancel and Discard, ending the task,
+   neutral, last; the words set to the right, at the menu's end, as it
+   hangs from the ⋮'s */
+.htmlView_board .menu_Tile_htmlView {
+  position: fixed;
+  anchor-name: --menu_Tile_htmlView;
+  position-anchor: --more_Tile_htmlView;
+  top: anchor(bottom);
+  right: anchor(right);
+  position-try-fallbacks: flip-block;
+  z-index: 3;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  min-width: 8rem;
+  padding: 0.25rem 0;
+  border: 1px solid var(--edge_Board_htmlView);
+  background:
+    linear-gradient(var(--view-proposals-shade, color-mix(in srgb, CanvasText 5%, transparent)), var(--view-proposals-shade, color-mix(in srgb, CanvasText 5%, transparent))),
+    linear-gradient(var(--view-proposed, color-mix(in srgb, CanvasText 4%, transparent)), var(--view-proposed, color-mix(in srgb, CanvasText 4%, transparent))),
+    var(--view-ground, Canvas);
+  visibility: hidden;
+  opacity: 0;
+  transition: visibility 0s linear 0.25s, opacity 0.1s linear 0.15s;
+}
+
+/* an open menu over every other task's ⋮, unseen as they are at rest,
+   so one under the menu, of a task the menu hangs over, never takes the
+   pointer from it */
+.htmlView_board .more_Tile_htmlView:is(:hover, [data-held], :has(.action_Tile_htmlView:focus)) {
+  z-index: 2;
+}
+
+.htmlView_board .more_Tile_htmlView:is(:hover, [data-held], :has(.action_Tile_htmlView:focus)) > .menu_Tile_htmlView {
+  visibility: visible;
+  opacity: 1;
+  transition-delay: 0s;
+}
+
+.htmlView_board .more_Tile_htmlView:is(:hover, [data-held], :has(.action_Tile_htmlView:focus)) > .trigger_More_htmlView:not(:hover) {
+  opacity: 0;
+}
+
+.htmlView_board .strip_More_htmlView {
+  position: fixed;
+  position-anchor: --more_Tile_htmlView;
+  top: anchor(top);
+  right: anchor(--menu_Tile_htmlView right);
+  bottom: anchor(bottom);
+  left: anchor(--menu_Tile_htmlView left);
+  z-index: 3;
+  visibility: hidden;
+}
+
+.htmlView_board .more_Tile_htmlView:has(> :is(.trigger_More_htmlView, .strip_More_htmlView):hover) > .strip_More_htmlView {
+  visibility: visible;
+}
+
+.htmlView_board .menu_Tile_htmlView > .action_Tile_htmlView {
+  padding: 0.3rem 0.75rem;
+  border: none;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-align: end;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.htmlView_board .menu_Tile_htmlView > .action_Tile_htmlView:focus {
+  outline: none;
+}
+
+.htmlView_board .menu_Tile_htmlView > .action_Tile_htmlView:is(:hover, :focus-visible) {
+  background: var(--view-choice-lit, color-mix(in srgb, CanvasText 9%, transparent));
+}
+
+.htmlView_board .menu_Tile_htmlView > .action_Tile_htmlView:is([data-ask="START"], [data-ask="STOP"]) {
+  color: var(--accent_revision_htmlView);
+}
+
+.htmlView_board .menu_Tile_htmlView > .action_Tile_htmlView[data-ask="START"] {
+  font-weight: 600;
+}
+
+.htmlView_board .menu_Tile_htmlView > .action_Tile_htmlView[data-ask="COMPLETE"] {
+  color: var(--accent_proposals_htmlView);
+}
+
+/* resolved tasks, quiet: a row each, its name, faint, and, after it, in
+   the same run of text, how it ended, in a word, as its column holds them
+   all, completed, canceled and discarded, the name wrapping as a task's
+   does, no id, as a task has none; and, in its heading, at its end,
+   Delete, every one of them, for good, collected, a quiet word, a link in
+   the ink of the ellipsis it's behind, as the editor's actions are,
+   underlined pointed at, no box round it, folded behind the
+   editor's ellipsis, three dots on a faint disc, muted, as Delete is
+   neither side's, till the ellipsis is pointed at or the keyboard's on
+   it, the ellipsis becoming it, in its place; shown, where nothing can
+   point, as on a touch screen */
+.htmlView_board .rows_Resolved_htmlView {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.htmlView_board .row_Resolved_htmlView {
+  display: flex;
+  align-items: baseline;
+  gap: 0.45rem;
+  margin: 0 -0.5rem;
+  padding: 0 0.5rem;
+  color: var(--ink_Muted_htmlView);
+}
+
+.htmlView_board .name_Row_htmlView {
+  flex: 1;
+  min-width: 0;
+}
+
+.htmlView_board .note_Row_htmlView {
+  margin-left: 0.5em;
+  font-size: 0.92em;
+  white-space: nowrap;
+}
+
+.htmlView_board .head_Column_htmlView {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+}
+
+.htmlView_board .fold_Board_htmlView {
+  position: relative;
+  display: inline-flex;
+  align-self: center;
+  margin-left: auto;
+}
+
+/* an ellipsis, or a task's ⋮, opening only with the pointer on its disc,
+   not near it, nor anywhere else on its line, as the editor's do; open,
+   what it opened pointed at, so it stays */
+@media (hover: hover) {
+  .htmlView_board :is(.fold_Board_htmlView, .more_Tile_htmlView) {
+    pointer-events: none;
+  }
+
+  .htmlView_board :is(.more_Board_htmlView, .trigger_More_htmlView, .menu_Tile_htmlView, .strip_More_htmlView),
+  .htmlView_board .fold_Board_htmlView:is(:hover, :has(:focus-visible)) > .folded_Board_htmlView {
+    pointer-events: auto;
+  }
+}
+
+.htmlView_board .folded_Board_htmlView {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.htmlView_board .fold_Board_htmlView:is(:hover, :has(:focus-visible)) > .folded_Board_htmlView {
+  position: static;
+  width: auto;
+  height: auto;
+  overflow: visible;
+  clip-path: none;
+}
+
+.htmlView_board .fold_Board_htmlView:is(:hover, :has(:focus-visible)) > .more_Board_htmlView {
+  display: none;
+}
+
+@media (hover: none) {
+  .htmlView_board .folded_Board_htmlView {
+    position: static;
+    width: auto;
+    height: auto;
+    overflow: visible;
+    clip-path: none;
+  }
+
+  .htmlView_board .more_Board_htmlView {
+    display: none;
+  }
+}
+
+.htmlView_board .more_Board_htmlView {
+  --ink_More_htmlView: var(--ink_Muted_htmlView);
+  display: inline-block;
+  flex: none;
+  box-sizing: border-box;
+  width: 1.2em;
+  height: 1.2em;
+  overflow: hidden;
+  border-radius: 50%;
+  clip-path: circle(50%);
+  background:
+    radial-gradient(circle at 28% 50%, var(--ink_More_htmlView) 0.065em, transparent 0.08em),
+    radial-gradient(circle at 50% 50%, var(--ink_More_htmlView) 0.065em, transparent 0.08em),
+    radial-gradient(circle at 72% 50%, var(--ink_More_htmlView) 0.065em, transparent 0.08em),
+    color-mix(in srgb, var(--ink_More_htmlView) 13%, transparent);
+  color: transparent;
+  font-size: 0.82em;
+  line-height: 1;
+}
+
+.htmlView_board .collect_Board_htmlView {
+  padding: 0;
+  border: none;
+  background: none;
+  color: var(--ink_Muted_htmlView);
+  font-size: 0.82em;
+  cursor: pointer;
+}
+
+.htmlView_board .collect_Board_htmlView:hover {
+  text-decoration: underline;
+}
+
+/* the ink of a task's column, for the bar down its edge while an editor
+   shows it, as its column's heading is: needing you, the proposals'
+   indigo; with the agent, the revision's plum; a draft, muted */
+.htmlView_board [data-kind="YOURS"] .tile_htmlView {
+  --ink_Mark_htmlView: var(--accent_proposals_htmlView);
+}
+
+.htmlView_board [data-kind="AGENT"] .tile_htmlView {
+  --ink_Mark_htmlView: var(--accent_revision_htmlView);
+}

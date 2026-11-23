@@ -113,6 +113,7 @@ class _View_TextEditor_ {
   isJumping: boolean
   top_Jumped: number
   placed$: _Placed$_View_
+  heightKept_Card: number
 
   constructor({
     containerElement,
@@ -149,6 +150,7 @@ class _View_TextEditor_ {
       MENU: null,
       FORM: null
     }
+    this.heightKept_Card = window.innerHeight
     this.containerElement.addEventListener(
       "scroll",
       () => this.scrolled(),
@@ -180,6 +182,10 @@ class _View_TextEditor_ {
       componentMap_View: this.componentMap,
       viewModel_TextEditor
     })
+    drawHeightKept__Card({
+      containerElement_View: this.containerElement,
+      heightKept_Card: this.heightKept_Card
+    })
     drawRoom__View_TextEditor({
       containerElement_View: this.containerElement,
       room_View: this.room
@@ -201,6 +207,13 @@ class _View_TextEditor_ {
     this.placed$ = keptInEditor__View_TextEditor({
       containerElement_View: this.containerElement,
       placed$_View: this.placed$
+    })
+    this.heightKept_Card = heightKeptOf__Card({
+      containerElement_View: this.containerElement
+    })
+    drawHeightKept__Card({
+      containerElement_View: this.containerElement,
+      heightKept_Card: this.heightKept_Card
     })
     peekedIf__Unseen_Quoted({
       containerElement_View: this.containerElement
@@ -1095,15 +1108,16 @@ function TASK_Option_Switcher__Html({
           aria-hidden="true"
         />
         <span class="label_Option_htmlView">{option_Switcher.label}</span>
-        <span class="note_Option_htmlView">{option_Switcher.note}</span>
-        {option_Switcher.figure !== "" && (
-          <span
-            class="figure_Option_htmlView"
-            data-conflicted={option_Switcher.isConflicted ? "" : undefined}
-          >
-            {option_Switcher.figure}
-          </span>
-        )}
+        <span class="parts_Option_htmlView">
+          {option_Switcher.parts.map((part_Task) => (
+            <span
+              class="part_Option_htmlView"
+              data-kind={part_Task.kind}
+            >
+              {part_Task.text}
+            </span>
+          ))}
+        </span>
         {option_Switcher.isHere && <span class="here_Option_htmlView">{label_Here}</span>}
       </button>
     </li>
@@ -1273,7 +1287,8 @@ function Footer_TextEditor__Html({
   return (
     <div class="footer_htmlView">
       {footer_ViewModel.counts.length > 0 && (
-        <p
+        <button
+          type="button"
           class="tasks_Footer_htmlView"
           title={footer_ViewModel.title}
         >
@@ -1288,7 +1303,7 @@ function Footer_TextEditor__Html({
             </span>
           ))}
           <span class="words_Footer_htmlView">{footer_ViewModel.title}</span>
-        </p>
+        </button>
       )}
     </div>
   )
@@ -5437,6 +5452,18 @@ const SELECTORMAP__FOCUS_ASKING: _SelectorMap__Focus_Asking_ = {
   EDIT: ".text_Said_htmlView > .notes_Edit_htmlView"
 }
 
+interface _Api___drawHeightKept__Card_ {
+  containerElement_View: HTMLElement
+  heightKept_Card: number
+}
+
+function drawHeightKept__Card({
+  containerElement_View,
+  heightKept_Card
+}: _Api___drawHeightKept__Card_): void {
+  containerElement_View.querySelector<HTMLElement>(".htmlView_editor")?.style.setProperty("--heightKept_Card_htmlView", `${heightKept_Card}px`)
+}
+
 interface _Api___drawRoom__View_TextEditor_ {
   containerElement_View: HTMLElement
   room_View: _Room_View_
@@ -5684,6 +5711,23 @@ function placedAt__Point({
 }
 
 const GAP_AVOIDED = 6
+
+interface _Api___heightKeptOf__Card_ {
+  containerElement_View: HTMLElement
+}
+
+function heightKeptOf__Card({
+  containerElement_View
+}: _Api___heightKeptOf__Card_): number {
+  const element_Editor = containerElement_View.querySelector(".htmlView_editor")
+  if (element_Editor === null) return window.innerHeight
+  const rect_Editor = element_Editor.getBoundingClientRect()
+  const element_Header = element_Editor.querySelector(".header_htmlView")
+  const top_Card = element_Header === null
+    ? rect_Editor.top
+    : element_Header.getBoundingClientRect().bottom - parseFloat(getComputedStyle(element_Header).borderBottomWidth)
+  return Math.max(Math.min(rect_Editor.bottom, window.innerHeight) - top_Card, 0)
+}
 
 interface _Api___peekedIf__Unseen_Quoted_ {
   containerElement_View: HTMLElement

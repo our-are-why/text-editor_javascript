@@ -92,6 +92,8 @@ export {
   type __BASE_Option_Switcher_,
   type _MANUAL_Option_Switcher_,
   type _TASK_Option_Switcher_,
+  type _Part_Task_,
+  type _Kind_Part_,
   type _Picker_Header_,
   type _Section_Picker_,
   type _File_Picker_,
@@ -218,18 +220,25 @@ type _Option_Switcher_ = _MANUAL_Option_Switcher_ | _TASK_Option_Switcher_
 interface __BASE_Option_Switcher_<Kind extends string> {
   kind: Kind
   label: string
-  note: string
   isHere: boolean
 }
 
-interface _MANUAL_Option_Switcher_ extends __BASE_Option_Switcher_<"MANUAL"> {}
+interface _MANUAL_Option_Switcher_ extends __BASE_Option_Switcher_<"MANUAL"> {
+  note: string
+}
 
 interface _TASK_Option_Switcher_ extends __BASE_Option_Switcher_<"TASK"> {
   id: string
   state: _State_Task_
-  figure: string
-  isConflicted: boolean
+  parts: Array<_Part_Task_>
 }
+
+interface _Part_Task_ {
+  kind: _Kind_Part_
+  text: string
+}
+
+type _Kind_Part_ = "CONFLICT" | "YOURS" | "QUEUED" | "AGENT" | "PLAIN"
 
 interface _Picker_Header_ {
   label: string

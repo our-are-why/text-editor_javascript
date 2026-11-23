@@ -523,7 +523,10 @@ const javascript: _Example_ = {
   mount: (root, log) => {
     const containerElement = document.createElement("div")
     containerElement.className = "host"
-    root.append(containerElement)
+    const containerElement_Board = document.createElement("div")
+    containerElement_Board.className = "board"
+    containerElement_Board.hidden = true
+    root.append(containerElement, containerElement_Board)
     hostedOf__Editor({
       containerElement,
       setup: setup_retry,
@@ -557,6 +560,17 @@ const javascript: _Example_ = {
       },
       tasks_Other: [
         {
+          id: "T-13",
+          name: "Log each retry",
+          state: "WORKING",
+          isOnDocument: true,
+          count_Undecided: 0,
+          count_Conflicts: 0,
+          count_Queued: 0,
+          count_Running: 1,
+          paths: ["retry.js"]
+        },
+        {
           id: "T-14",
           name: "Say what the README promises",
           state: "YOUR_TURN",
@@ -564,7 +578,8 @@ const javascript: _Example_ = {
           count_Undecided: 3,
           count_Conflicts: 0,
           count_Queued: 0,
-          count_Running: 0
+          count_Running: 0,
+          paths: ["README.md"]
         },
         {
           id: "T-15",
@@ -574,7 +589,19 @@ const javascript: _Example_ = {
           count_Undecided: 2,
           count_Conflicts: 1,
           count_Queued: 0,
-          count_Running: 0
+          count_Running: 0,
+          paths: ["retry.js"]
+        },
+        {
+          id: "T-17",
+          name: "Name the retry options",
+          state: "YOUR_TURN",
+          isOnDocument: true,
+          count_Undecided: 0,
+          count_Conflicts: 0,
+          count_Queued: 2,
+          count_Running: 0,
+          paths: ["retry.js"]
         },
         {
           id: "T-16",
@@ -584,9 +611,23 @@ const javascript: _Example_ = {
           count_Undecided: 0,
           count_Conflicts: 0,
           count_Queued: 2,
-          count_Running: 0
+          count_Running: 0,
+          paths: ["retry.js"]
         }
       ],
+      tasks_Resolved: [
+        {
+          id: "T-9",
+          name: "Fix the docs' typos",
+          state: "COMPLETED"
+        },
+        {
+          id: "T-11",
+          name: "Try a generator",
+          state: "CANCELED"
+        }
+      ],
+      containerElement_Board,
       files: [
         "retry.js",
         "README.md",

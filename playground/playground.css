@@ -113,6 +113,21 @@ main.example .stage > .host {
   min-height: 0;
 }
 
+/* the board, under the editor, as a host's panel is, its own height, the
+   board scrolling its columns within it, hidden till the editor's footer
+   shows it */
+main.example .stage > .board {
+  flex: none;
+  height: 21rem;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-top: none;
+}
+
+main.example .stage > .board[hidden] {
+  display: none;
+}
+
 main.example .side {
   min-height: 0;
   overflow: auto;

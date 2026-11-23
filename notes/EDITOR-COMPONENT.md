@@ -2818,6 +2818,37 @@ taller than its chip folded, so it shrank opening; in a request's words,
 inline; on a card's line, a pixel's negative margin above and below, so
 actions a hair taller than the figure's chip don't grow the line.
 
+Decided 2026-11-23: an ellipsis repeated down a list is shown only while
+its row's pointed at or the keyboard's in it, its room kept, so nothing
+moves: a request's, in a card or in the document, as a board task's ⋮
+is, so a list of requests isn't a column of ellipses; a lone one, a group's in its
+heading, Resolved's on the board, always there, as it's the only one
+and easy to miss otherwise; every one shown where nothing can point, as
+on a touch screen.
+
+Decided 2026-11-23: an ellipsis, or a board task's ⋮, opens only with the
+pointer on it, its disc itself: the unseen margin 0.35em round a fold
+gone, and, folded, nothing of a fold but its ellipsis pointed at, so the
+room a request's actions keep unseen beside it, and the line a fold is as
+tall as, never open it; the ⋮'s too, only its disc, not its line. Open,
+its actions, or the ⋮'s menu, pointed at in its place, so it stays open
+while the pointer's on them. Where nothing can point, as before.
+
+Decided 2026-11-23: a header's card is drawn over the footer, the header
+over it, and is, at most, as tall as the room from the header down to the
+editor's own bottom edge, never past it nor the window, scrolling inside
+past that; still 70% of the window at most where
+there's more room. The room measured as the menu's is, each time the
+view draws or the editor's resized, as when the board's shown under it,
+which made the editor shorter and left a card's end under the footer.
+The height's kept by the view, as the document's room is, and written
+back as soon as it draws, before anything's measured: a draw rewrites
+the editor's own style, and a card scrolled with the pointer on its
+requests redraws the editor with each request it brings under the
+pointer, lighting what that one quotes; measured in between, the card
+was at its fallback, 70% of the window, with a pixel to scroll, and its
+scroll was pulled back to the top.
+
 Decided 2026-11-19: room above the document's first line and past its
 last, only as a jump needs it, the "later, maybe" under `VISIT`: given a
 height, the editor scrolling its document itself, an item's arrow or a

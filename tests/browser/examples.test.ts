@@ -1321,9 +1321,9 @@ await pressedAt(opened_JavaScript.page.locator(".card_Task_htmlView [data-scope=
 const started_All = await startedSince(count_Logged)
 
 test("each scope's Start: a request's own actions behind an ellipsis till the ellipsis is pointed at, not its words, the ellipsis becoming them, in its place, its group's behind theirs till theirs is, not its heading; the document's own requests started by their group's Start, its proposals' queued revision left; the task's own by theirs; the task's Start all starting everything queued in it, the proposal's too", () => {
-  expect(starts_Resting).toEqual({ group: false, actions: false, more: "block" })
-  expect(starts_Label).toEqual({ group: false, actions: false, more: "block" })
-  expect(starts_Group).toEqual({ group: true, actions: false, more: "block" })
+  expect(starts_Resting).toEqual({ group: false, actions: false, more: "hidden" })
+  expect(starts_Label).toEqual({ group: false, actions: false, more: "hidden" })
+  expect(starts_Group).toEqual({ group: true, actions: false, more: "hidden" })
   expect(starts_Words).toEqual({ group: false, actions: false, more: "block" })
   expect(starts_Request).toEqual({ group: false, actions: true, more: "none" })
   expect(scopes_Group).toEqual(["TASK START", "TASK_REQUESTS START", "DOCUMENT START", "DOCUMENT_REQUESTS START"])
@@ -2376,7 +2376,7 @@ const cards_Chevron = await cardsOf_Switch()
 const options_Switch = await opened_Switch.page.evaluate(() => [...document.querySelectorAll(".choice_Switcher_htmlView")].map((choice) => [
   choice.getAttribute("data-switch"),
   choice.querySelector(".label_Option_htmlView")?.textContent,
-  choice.querySelector(".note_Option_htmlView")?.textContent,
+  [...choice.querySelectorAll(".part_Option_htmlView, .note_Option_htmlView")].map((part) => part.textContent).join(" · "),
   choice.hasAttribute("aria-current") ? "here" : ""
 ].join(" | ")))
 await opened_Switch.page.hover(".trigger_Task_htmlView")
@@ -2409,14 +2409,16 @@ const back_Switch = await opened_Switch.page.evaluate(() => ({
 }))
 
 test("a chevron after the task's name opens the switcher's card, never with the task's: the project's tasks, the editor's first, then those on its document, then the rest, then Manual; the footer counting them; Manual pressed, the editor's in manual, the file itself, the keyboard in the text; a line typed, the task pressed, it's back, its proposals carried across the line", () => {
-  expect(footer_Switch).toEqual({ counts: ["YOURS 2", "CONFLICTS 1", "WORKING 1", "DRAFTS 1"], title: "4 tasks: 2 need you, 1 conflict, 1 working, 1 draft" })
+  expect(footer_Switch).toEqual({ counts: ["YOURS 4", "CONFLICTS 1", "WORKING 2", "DRAFTS 1"], title: "6 tasks: 4 need you, 1 conflict, 2 working, 1 draft" })
   expect(cards_Chevron).toEqual(["hidden", "visible"])
   expect(cards_Name).toEqual(["visible", "hidden"])
   expect(options_Switch).toEqual([
-    "TASK | Tidy the retry loop | working | here",
-    "TASK | Rename attempts to tries | needs you | ",
-    "TASK | Add a timeout option | draft | ",
-    "TASK | Say what the README promises | needs you | ",
+    "TASK | Tidy the retry loop | 14 to decide · 2 running | here",
+    "TASK | Log each retry | 1 running | ",
+    "TASK | Rename attempts to tries | 1 conflict | ",
+    "TASK | Name the retry options | 2 queued | ",
+    "TASK | Add a timeout option | draft · 2 requests | ",
+    "TASK | Say what the README promises | 3 to decide | ",
     "MANUAL | Manual | the file itself | "
   ])
   expect(manual_Switch).toEqual({ name: "Manual", frames: 0, focus: "input_htmlView", card: "hidden", logged: { switched: "MANUAL" } })
@@ -2623,4 +2625,430 @@ test("the task's state said by its name, with no mark: working, shimmering, or W
   expect(name_Draft).toEqual({ name: "Add a timeout option", marks: 0, shimmers: [], isFaded: true, word: "Draft" })
   expect(name_Yours).toEqual({ name: "Say what the README promises", marks: 0, shimmers: [], isFaded: false, word: null })
   expect(opened_Switch.errors).toEqual([])
+})
+
+// the board, every task in the project, under the editor, hidden till the
+// editor's footer is pressed, as a host shows a view: a column for each of
+// who a task's waiting on, side by side, and one under another where the
+// board's narrow, by its own width; each task a line, its name and its
+// most pressing figure, what else it says always under it, its text
+// flush with its column's heading; never
+// scrolling as a whole, each
+// column's tasks scrolling on their own where they're side by side, the
+// columns together under its head where they're not; a task pressed switches the editor to
+// it, its tile marked as shown; one canceled from behind its ···, resolved,
+// the editor in it going to manual; a draft started from behind its ···,
+// working, then, with
+// no agent, waiting on you, its requests become proposals to decide;
+// Delete, in Resolved's heading, taking every resolved task away, for good; each asked of the host, which
+// reports it; and pressed again, the footer hides it
+const opened_Board = await openExample(
+  "javascript",
+  1
+)
+afterAll(() => opened_Board.close())
+await opened_Board.page.waitForSelector(".note_htmlView")
+const boardShown = () => opened_Board.page.evaluate(() => ({
+  hidden: (document.querySelector(".stage > .board") as HTMLElement | null)?.hidden ?? null,
+  columns: [...document.querySelectorAll(".column_Board_htmlView")].map((column) => `${column.getAttribute("data-kind")}: ${[...column.querySelectorAll(".tile_htmlView, .row_Resolved_htmlView")].map((tile) => `${tile.getAttribute("data-id")}${tile.hasAttribute("data-shown") ? " shown" : ""}`).join(" ")}`),
+  mode: document.querySelector(".header_htmlView :is(.name_Task_htmlView, .name_Manual_htmlView)")?.textContent ?? null
+}))
+const board_Before = await boardShown()
+await opened_Board.page.click(".tasks_Footer_htmlView")
+await opened_Board.page.waitForTimeout(200)
+const board_Shown = await boardShown()
+// each column's mark after its heading's words and before how many, as
+// the footer has it; with the agent's turning; a running part shimmering
+const marks_Board = await opened_Board.page.evaluate(() => [...document.querySelectorAll(".column_Board_htmlView")].map((column) => {
+  const label = column.querySelector(".label_Column_htmlView")!
+  const mark = label.querySelector(".mark_Column_htmlView")
+  const range = document.createRange()
+  range.selectNodeContents(label.firstChild!)
+  const words = range.getBoundingClientRect()
+  const count = label.querySelector(".count_Column_htmlView")!.getBoundingClientRect()
+  return mark === null
+    ? `${column.getAttribute("data-kind")}: none`
+    : `${column.getAttribute("data-kind")}: ${words.right <= mark.getBoundingClientRect().left && mark.getBoundingClientRect().right <= count.left ? "between" : "out of place"}${getComputedStyle(mark, "::before").animationName === "none" ? "" : " turning"}`
+}))
+const shimmer_Running = await opened_Board.page.evaluate(() => document.querySelector(".tile_htmlView[data-id=\"T-13\"] .part_Tile_htmlView[data-kind=\"AGENT\"]")?.getAnimations().map((animation) => animation instanceof CSSAnimation ? animation.animationName : "") ?? [])
+const tracks_Board = (width: string) => opened_Board.page.evaluate((width) => {
+  const board = document.querySelector(".stage > .board") as HTMLElement
+  board.style.width = width
+  return getComputedStyle(document.querySelector(".columns_Board_htmlView")!).gridTemplateColumns.split(" ").length
+}, width)
+const scrollOf_Board = () => opened_Board.page.evaluate(() => {
+  const scrolls = (element: Element) => ["auto", "scroll"].includes(getComputedStyle(element).overflowY) && element.scrollHeight > element.clientHeight
+  return {
+    board: scrolls(document.querySelector(".htmlView_board")!),
+    columns: scrolls(document.querySelector(".columns_Board_htmlView")!),
+    lists: [...document.querySelectorAll(".tiles_Column_htmlView, .rows_Resolved_htmlView")].filter((list) => scrolls(list)).map((list) => list.closest(".column_Board_htmlView")?.getAttribute("data-kind") ?? null)
+  }
+})
+// a task, its name, and under it its parts and the file the editor's
+// showing, if it touches it, and no other; its ⋮ hidden, its room kept;
+// pointed at, its ⋮ shown, and nothing moving, the task under it where
+// it was
+const tileShown = () => opened_Board.page.evaluate(() => {
+  const tile = document.querySelector(".tile_htmlView[data-id=\"T-14\"]")!
+  const details = tile.querySelector(".details_Tile_htmlView")!
+  return {
+    line: tile.querySelector(".switch_Tile_htmlView")?.textContent ?? null,
+    height: Math.round(tile.querySelector(".line_Tile_htmlView")!.getBoundingClientRect().height),
+    more: getComputedStyle(tile.querySelector(".trigger_More_htmlView")!).opacity === "0" ? "hidden" : "visible",
+    details: getComputedStyle(details).display === "none" ? null : details.textContent,
+    next: Math.round(document.querySelector(".tile_htmlView[data-id=\"T-15\"]")!.getBoundingClientRect().top)
+  }
+})
+await opened_Board.page.mouse.move(5, 5)
+const tile_Resting = await tileShown()
+await opened_Board.page.hover(".tile_htmlView[data-id=\"T-14\"] .switch_Tile_htmlView")
+const tile_Pointed = await tileShown()
+const details_Others = await opened_Board.page.evaluate(() => ["T-15", "T-12", "T-16"].map((id) => document.querySelector(`.tile_htmlView[data-id="${id}"] .details_Tile_htmlView`)?.textContent ?? null))
+await opened_Board.page.mouse.move(5, 5)
+const heightOf_Board = (height: string) => opened_Board.page.evaluate((height) => {
+  (document.querySelector(".stage > .board") as HTMLElement).style.height = height
+}, height)
+await heightOf_Board("150px")
+// each column's first task's text against its heading's, flush
+const flushOf_Board = () => opened_Board.page.evaluate(() => [...document.querySelectorAll(".column_Board_htmlView")].map((column) => {
+  const startOf = (element: Element | null) => {
+    if (element === null) return Number.NaN
+    const range = document.createRange()
+    range.selectNodeContents(element)
+    return range.getClientRects()[0]?.left ?? Number.NaN
+  }
+  return Math.round(Math.abs(startOf(column.querySelector(".name_Tile_htmlView, .name_Row_htmlView")) - startOf(column.querySelector(".label_Column_htmlView"))) * 10) / 10
+}))
+const tracks_Wide = await tracks_Board("")
+const scroll_Wide = await scrollOf_Board()
+const flush_Wide = await flushOf_Board()
+const tracks_Narrow = await tracks_Board("300px")
+const scroll_Narrow = await scrollOf_Board()
+const flush_Narrow = await flushOf_Board()
+await tracks_Board("")
+await heightOf_Board("")
+await opened_Board.page.click(".tile_htmlView[data-id=\"T-15\"] .switch_Tile_htmlView")
+await opened_Board.page.waitForTimeout(300)
+const board_Switched = await boardShown()
+await opened_Board.page.hover(".tile_htmlView[data-id=\"T-15\"] .switch_Tile_htmlView")
+await opened_Board.page.hover(".tile_htmlView[data-id=\"T-15\"] .switch_Tile_htmlView")
+await opened_Board.page.click(".tile_htmlView[data-id=\"T-15\"] .trigger_More_htmlView")
+await opened_Board.page.click(".tile_htmlView[data-id=\"T-15\"] .menu_Tile_htmlView [data-ask=\"CANCEL\"]")
+await opened_Board.page.waitForTimeout(300)
+const board_Canceled = await boardShown()
+await opened_Board.page.hover(".tile_htmlView[data-id=\"T-16\"] .switch_Tile_htmlView")
+await opened_Board.page.hover(".tile_htmlView[data-id=\"T-16\"] .switch_Tile_htmlView")
+await opened_Board.page.click(".tile_htmlView[data-id=\"T-16\"] .trigger_More_htmlView")
+await opened_Board.page.click(".tile_htmlView[data-id=\"T-16\"] .menu_Tile_htmlView [data-ask=\"START\"]")
+await opened_Board.page.waitForTimeout(200)
+const board_Started = await boardShown()
+await opened_Board.page.waitForTimeout(1800)
+const board_Answered = await boardShown()
+const figures_Answered = await opened_Board.page.evaluate(() => document.querySelector(".tile_htmlView[data-id=\"T-16\"] .part_Tile_htmlView")?.textContent ?? null)
+// Delete folded behind the ellipsis in Resolved's heading, the ellipsis
+// becoming it pointed at
+const collectOf = () => opened_Board.page.evaluate(() => {
+  const fold = document.querySelector(".column_Board_htmlView[data-kind=\"RESOLVED\"] .head_Column_htmlView > .fold_Board_htmlView")
+  const button = fold?.querySelector(".collect_Board_htmlView")
+  return [button?.textContent ?? null, button?.getAttribute("title") ?? null, getComputedStyle(fold!.querySelector(".more_Board_htmlView")!).display !== "none" ? "ellipsis" : "no ellipsis", getComputedStyle(fold!.querySelector(".folded_Board_htmlView")!).position === "absolute" ? "folded" : "shown"]
+})
+await opened_Board.page.mouse.move(5, 5)
+const collect_Folded = await collectOf()
+await opened_Board.page.hover(".fold_Board_htmlView")
+const collect_Shown = await collectOf()
+await opened_Board.page.click(".collect_Board_htmlView")
+await opened_Board.page.waitForTimeout(200)
+const board_Collected = await boardShown()
+const collect_Placed = await opened_Board.page.evaluate(() => document.querySelector(".column_Board_htmlView[data-kind=\"RESOLVED\"] .collect_Board_htmlView") === null)
+const empty_Resolved = await opened_Board.page.evaluate(() => document.querySelector(".column_Board_htmlView[data-kind=\"RESOLVED\"] .empty_Column_htmlView")?.textContent ?? null)
+await opened_Board.page.click(".tasks_Footer_htmlView")
+await opened_Board.page.waitForTimeout(200)
+const board_Hidden = await boardShown()
+const logged_Board = (await opened_Board.logged()).filter((entry) => "board" in entry)
+
+test("the board, from the footer: a column for each of who a task's waiting on, side by side, one under another where it's narrow; scrolling by its columns, never as a whole; a task pressed switches the editor to it; one canceled, resolved, the editor going to manual; a draft started, working, then waiting on you; Collect; each asked of the host", () => {
+  expect(board_Before.hidden).toBe(true)
+  expect(board_Shown).toEqual({ hidden: false, columns: ["YOURS: T-12 shown T-14 T-15 T-17", "AGENT: T-13", "DRAFTS: T-16", "RESOLVED: T-9 T-11"], mode: "Tidy the retry loop" })
+  expect([tracks_Wide, tracks_Narrow]).toEqual([4, 1])
+  expect(marks_Board).toEqual(["YOURS: between", "AGENT: between turning", "DRAFTS: between", "RESOLVED: none"])
+  expect(shimmer_Running).toEqual(["shimmer_Board_htmlView"])
+  expect({ ...scroll_Wide, lists: scroll_Wide.lists.includes("YOURS") }).toEqual({ board: false, columns: false, lists: true })
+  expect(scroll_Narrow).toEqual({ board: false, columns: true, lists: [] })
+  expect([flush_Wide, flush_Narrow]).toEqual([[0, 0, 0, 0], [0, 0, 0, 0]])
+  expect(tile_Resting).toEqual({ ...tile_Pointed, more: "hidden" })
+  expect(tile_Pointed).toEqual({ line: "Say what the README promises", height: tile_Resting.height, more: "visible", details: "3 to decide", next: tile_Resting.next })
+  expect(details_Others).toEqual(["1 conflictretry.js", "14 to decide2 runningretry.js", "2 requestsretry.js"])
+  expect(board_Switched).toEqual({ hidden: false, columns: ["YOURS: T-12 T-14 T-15 shown T-17", "AGENT: T-13", "DRAFTS: T-16", "RESOLVED: T-9 T-11"], mode: "Rename attempts to tries" })
+  expect(board_Canceled).toEqual({ hidden: false, columns: ["YOURS: T-12 T-14 T-17", "AGENT: T-13", "DRAFTS: T-16", "RESOLVED: T-9 T-11 T-15"], mode: "Manual" })
+  expect(board_Started.columns).toEqual(["YOURS: T-12 T-14 T-17", "AGENT: T-13 T-16", "DRAFTS: ", "RESOLVED: T-9 T-11 T-15"])
+  expect(board_Answered.columns).toEqual(["YOURS: T-12 T-14 T-17 T-16", "AGENT: T-13", "DRAFTS: ", "RESOLVED: T-9 T-11 T-15"])
+  expect(figures_Answered).toBe("2 to decide")
+  expect(collect_Folded).toEqual(["Delete", "Delete every resolved task, for good", "ellipsis", "folded"])
+  expect(collect_Shown).toEqual(["Delete", "Delete every resolved task, for good", "no ellipsis", "shown"])
+  expect(collect_Placed).toBe(true)
+  expect(board_Collected.columns).toEqual(["YOURS: T-12 T-14 T-17 T-16", "AGENT: T-13", "DRAFTS: ", "RESOLVED: "])
+  expect(empty_Resolved).toBe("None")
+  expect(board_Hidden.hidden).toBe(true)
+  expect(logged_Board).toEqual([
+    { board: "shown" },
+    { board: "SWITCH", tasks: "T-15" },
+    { board: "CANCEL", tasks: "T-15" },
+    { board: "START", tasks: "T-16" },
+    { board: "COLLECT", tasks: "T-9, T-11, T-15" },
+    { board: "hidden" }
+  ])
+  expect(opened_Board.errors).toEqual([])
+})
+
+// every ellipsis, a fold's in the document or a card, Resolved's on the
+// board, or a board task's ⋮, opening only with the pointer on its disc:
+// not just past it, either side, above or below, nor in its square's
+// corner, past its circle, nor where a request's actions wait unseen; on
+// it, open and steady, not flickering as it steps aside; open while the
+// pointer goes across what it opened; shut once the pointer's gone
+const opened_Discs = await openExample(
+  "javascript",
+  1
+)
+afterAll(() => opened_Discs.close())
+await opened_Discs.page.waitForSelector(".note_htmlView")
+const pausedFor = (ms: number) => opened_Discs.page.waitForTimeout(ms)
+const openedAround = async (row: string | null, disc: string, opened: string) => {
+  const isOpen = () => opened_Discs.page.evaluate((opened) => {
+    const element = document.querySelector(opened)
+    if (element === null) return false
+    const style = getComputedStyle(element)
+    return style.visibility !== "hidden" && style.display !== "none" && style.opacity !== "0" && style.clipPath === "none"
+  }, opened)
+  await opened_Discs.page.locator(disc).first().scrollIntoViewIfNeeded()
+  if (row !== null) {
+    const box_Row = await opened_Discs.page.locator(row).first().boundingBox()
+    if (box_Row !== null) await opened_Discs.page.mouse.move(box_Row.x + 4, box_Row.y + 4)
+    await pausedFor(150)
+  }
+  const box = await opened_Discs.page.locator(disc).first().boundingBox()
+  if (box === null) return "no disc"
+  const x_Middle = box.x + box.width / 2
+  const y_Middle = box.y + box.height / 2
+  const points_Past: Array<[number, number]> = [
+    [box.x - 2, y_Middle],
+    [box.x + box.width + 2, y_Middle],
+    [x_Middle, box.y - 2],
+    [x_Middle, box.y + box.height + 2],
+    [box.x + 0.8, box.y + 0.8]
+  ]
+  const past: Array<boolean> = []
+  for (const [x, y] of points_Past) {
+    await opened_Discs.page.mouse.move(x, y)
+    await pausedFor(120)
+    past.push(await isOpen())
+  }
+  await opened_Discs.page.mouse.move(x_Middle, y_Middle)
+  await pausedFor(150)
+  const on: Array<boolean> = []
+  for (let index = 0; index < 5; index++) {
+    on.push(await isOpen())
+    await pausedFor(50)
+  }
+  const box_Opened = await opened_Discs.page.locator(opened).first().boundingBox()
+  const across: Array<boolean> = []
+  if (box_Opened !== null) {
+    for (let step = 0; step <= 6; step++) {
+      await opened_Discs.page.mouse.move(box_Opened.x + 1 + (box_Opened.width - 2) * step / 6, box_Opened.y + box_Opened.height / 2)
+      await pausedFor(60)
+      across.push(await isOpen())
+    }
+  }
+  await opened_Discs.page.mouse.move(5, 5)
+  await pausedFor(300)
+  return [
+    past.some(Boolean) ? `opened past it: ${past.map((open) => open ? 1 : 0).join("")}` : "shut past it",
+    on.every(Boolean) ? "open on it" : `on it: ${on.map((open) => open ? 1 : 0).join("")}`,
+    across.length > 0 && across.every(Boolean) ? "open across" : `across: ${across.map((open) => open ? 1 : 0).join("")}`,
+    await isOpen() ? "open after" : "shut after"
+  ].join(", ")
+}
+const fold = (holder: string) => [
+  `${holder} > .fold_Action_htmlView > .more_htmlView`,
+  `${holder} > .fold_Action_htmlView > .folded_htmlView`
+] as const
+const opened_Request = await openedAround(".item_htmlView .said_htmlView > .row_Said_htmlView", ...fold(".item_htmlView .said_htmlView > .row_Said_htmlView"))
+const opened_Group = await openedAround(null, ...fold(".item_htmlView .head_Request_htmlView"))
+await opened_Discs.page.click(".trigger_Document_htmlView")
+await opened_Discs.page.waitForSelector(".card_Document_htmlView .said_htmlView")
+const opened_Line_Card = await openedAround(null, ...fold(".card_Document_htmlView .line_Card_htmlView"))
+const opened_Group_Card = await openedAround(null, ...fold(".card_Document_htmlView .head_Request_htmlView"))
+const opened_Request_Card = await openedAround(".card_Document_htmlView .said_htmlView > .row_Said_htmlView", ...fold(".card_Document_htmlView .said_htmlView > .row_Said_htmlView"))
+await opened_Discs.page.keyboard.press("Escape")
+await opened_Discs.page.click(".tasks_Footer_htmlView")
+await pausedFor(200)
+const opened_Resolved = await openedAround(null, ".more_Board_htmlView", ".folded_Board_htmlView")
+const opened_Tile = await openedAround(".tile_htmlView[data-id=\"T-13\"]", ".tile_htmlView[data-id=\"T-13\"] .trigger_More_htmlView", ".tile_htmlView[data-id=\"T-13\"] .menu_Tile_htmlView")
+test("an ellipsis, or a board task's ⋮, opens only with the pointer on its disc: not just past it, nor in its square's corners, nor where a request's actions wait unseen; on it, steady; open across what it opened; shut once the pointer's gone", () => {
+  const opened = "shut past it, open on it, open across, shut after"
+  expect({
+    request: opened_Request,
+    group: opened_Group,
+    line_Card: opened_Line_Card,
+    group_Card: opened_Group_Card,
+    request_Card: opened_Request_Card,
+    resolved: opened_Resolved,
+    tile: opened_Tile
+  }).toEqual({
+    request: opened,
+    group: opened,
+    line_Card: opened,
+    group_Card: opened,
+    request_Card: opened,
+    resolved: opened,
+    tile: opened
+  })
+  expect(opened_Discs.errors).toEqual([])
+})
+
+// a header's card, the board shown under the editor, making it shorter,
+// drawn over the footer, down to the editor's own bottom edge at most,
+// never past it, scrolling inside; scrolled with the pointer on its
+// requests, each lighting what it quotes as it comes under the pointer,
+// redrawing the editor, its scroll kept, its height kept through each
+// redraw, never its fallback's for a moment, which had left it 1px of
+// scroll and pulled it back to the top
+await opened_Discs.page.click(".trigger_Document_htmlView")
+await opened_Discs.page.waitForSelector(".card_Document_htmlView .said_htmlView")
+await opened_Discs.page.mouse.move(5, 5)
+await pausedFor(300)
+const card_Shorter = await opened_Discs.page.evaluate(() => {
+  const card = document.querySelector(".card_Document_htmlView")!
+  const rect_Card = card.getBoundingClientRect()
+  const rect_Header = document.querySelector(".header_htmlView")!.getBoundingClientRect()
+  const rect_Footer = document.querySelector(".footer_htmlView")!.getBoundingClientRect()
+  const rect_Editor = document.querySelector(".htmlView_editor")!.getBoundingClientRect()
+  return {
+    board: document.querySelector(".stage > .board:not([hidden])") !== null,
+    header: Math.round((rect_Card.top - rect_Header.bottom) * 10) / 10,
+    editor: Math.round((rect_Editor.bottom - rect_Card.bottom) * 10) / 10,
+    overFooter: document.elementFromPoint(rect_Card.left + 8, rect_Footer.top + rect_Footer.height / 2)?.closest(".card_Document_htmlView") === card,
+    scrolls: card.scrollHeight > card.clientHeight
+  }
+})
+const box_Said = await opened_Discs.page.locator(".card_Document_htmlView .said_htmlView .notes_Said_htmlView").nth(1).boundingBox()
+if (box_Said !== null) await opened_Discs.page.mouse.move(box_Said.x + 10, box_Said.y + box_Said.height / 2)
+await pausedFor(200)
+await opened_Discs.page.mouse.wheel(0, 60)
+await pausedFor(400)
+const scrolled_Card = await opened_Discs.page.evaluate(() => Math.round(document.querySelector(".card_Document_htmlView")!.scrollTop))
+test("a header's card, the editor made shorter by the board shown under it, drawn over the footer, down to the editor's own bottom edge at most, scrolling inside", () => {
+  expect(card_Shorter).toEqual({
+    board: true,
+    header: -1,
+    editor: 0,
+    overFooter: true,
+    scrolls: true
+  })
+  expect(scrolled_Card).toBe(60)
+})
+
+// a task's menu as a menu button's: Tab from the task's name onto its ⋮,
+// the menu not opened; ↓ opening it on its first choice, lit, ↑ on its
+// last; ↑ and ↓ going round it, Home and End to its ends; Esc back to
+// the ⋮, the menu shut; Enter opening it; Tab out of it, shut; pressed
+// with the pointer, not kept open once the pointer's gone
+await opened_Discs.page.keyboard.press("Escape")
+await opened_Discs.page.mouse.move(5, 300)
+await pausedFor(300)
+const shownOf_Menu = () => opened_Discs.page.evaluate(() => {
+  const element = document.activeElement
+  const tile = element?.closest(".tile_htmlView")?.getAttribute("data-id") ?? ""
+  const focus = element === null ? "none" : element.matches(".action_Tile_htmlView") ? `${element.textContent}${element.matches(":focus-visible") ? " lit" : ""}` : element.matches(".trigger_More_htmlView") ? "⋮" : element.matches(".switch_Tile_htmlView") ? "name" : element.tagName
+  const open = [...document.querySelectorAll(".menu_Tile_htmlView")].filter((menu) => getComputedStyle(menu).visibility === "visible").map((menu) => menu.closest(".tile_htmlView")?.getAttribute("data-id")).join(" ")
+  return `${tile} ${focus}, open: ${open === "" ? "none" : open}`
+})
+const keys_Menu: Array<string> = []
+await opened_Discs.page.focus(".tile_htmlView[data-id=\"T-13\"] .switch_Tile_htmlView")
+for (const key of ["Tab", "ArrowDown", "ArrowDown", "ArrowDown", "End", "Escape", "ArrowUp", "Home", "Escape", "Enter", "Tab"]) {
+  await opened_Discs.page.keyboard.press(key)
+  await pausedFor(300)
+  keys_Menu.push(`${key}: ${await shownOf_Menu()}`)
+}
+await opened_Discs.page.hover(".tile_htmlView[data-id=\"T-16\"] .switch_Tile_htmlView")
+await opened_Discs.page.click(".tile_htmlView[data-id=\"T-16\"] .trigger_More_htmlView")
+await opened_Discs.page.mouse.move(5, 300)
+await pausedFor(300)
+const pressed_Menu = await shownOf_Menu()
+const box_Drafts = await opened_Discs.page.locator(".column_Board_htmlView[data-kind=\"DRAFTS\"]").boundingBox()
+if (box_Drafts !== null) await opened_Discs.page.mouse.click(box_Drafts.x + box_Drafts.width / 2, box_Drafts.y + box_Drafts.height - 8)
+await pausedFor(300)
+const elsewhere_Menu = await shownOf_Menu()
+test("a task's menu as a menu button's: Tab onto its ⋮ without opening it; ↓ or Enter opening it on its first choice, ↑ on its last; ↑, ↓, Home and End moving through it; Esc back to the ⋮; Tab out shutting it; pressed with the pointer, not kept open once the pointer's gone", () => {
+  expect(keys_Menu).toEqual([
+    "Tab: T-13 ⋮, open: none",
+    "ArrowDown: T-13 Stop lit, open: T-13",
+    "ArrowDown: T-13 Cancel lit, open: T-13",
+    "ArrowDown: T-13 Stop lit, open: T-13",
+    "End: T-13 Cancel lit, open: T-13",
+    "Escape: T-13 ⋮, open: none",
+    "ArrowUp: T-13 Cancel lit, open: T-13",
+    "Home: T-13 Stop lit, open: T-13",
+    "Escape: T-13 ⋮, open: none",
+    "Enter: T-13 Stop lit, open: T-13",
+    "Tab: T-16 name, open: none"
+  ])
+  expect(pressed_Menu.endsWith("open: none")).toBe(true)
+  expect(elsewhere_Menu.endsWith("open: none")).toBe(true)
+  expect(opened_Discs.errors).toEqual([])
+})
+
+// a task's menu pointed open, the ⋮ there while the pointer's on it, gone
+// once it's left it, onto the strip beside it or into the menu; the menu
+// open wherever the pointer is inside it, over the task under it too,
+// whose unseen ⋮ never takes the pointer from it, and shut once the
+// pointer's past its edge
+await opened_Discs.page.mouse.move(5, 300)
+await pausedFor(150)
+const tile_Over = ".tile_htmlView[data-id=\"T-12\"]"
+const shownOf_Over = () => opened_Discs.page.evaluate((tile_Over) => {
+  const open = [...document.querySelectorAll(".menu_Tile_htmlView")].filter((menu) => getComputedStyle(menu).visibility === "visible").map((menu) => menu.closest(".tile_htmlView")?.getAttribute("data-id")).join(" ")
+  const trigger = getComputedStyle(document.querySelector(`${tile_Over} .trigger_More_htmlView`)!).opacity === "0" ? "gone" : "shown"
+  return `open: ${open === "" ? "none" : open}, ⋮ ${trigger}`
+}, tile_Over)
+await opened_Discs.page.hover(`${tile_Over} .switch_Tile_htmlView`)
+const box_Over = await opened_Discs.page.locator(`${tile_Over} .trigger_More_htmlView`).boundingBox()
+const over_Menu: Array<string> = []
+if (box_Over !== null) {
+  await opened_Discs.page.mouse.move(box_Over.x + box_Over.width / 2, box_Over.y + box_Over.height / 2)
+  await pausedFor(150)
+  over_Menu.push(`on the ⋮: ${await shownOf_Over()}`)
+  await opened_Discs.page.mouse.move(box_Over.x - 15, box_Over.y + box_Over.height / 2)
+  await pausedFor(100)
+  over_Menu.push(`beside it: ${await shownOf_Over()}`)
+  const box_Menu = await opened_Discs.page.evaluate((tile_Over) => {
+    const rect = document.querySelector(`${tile_Over} .menu_Tile_htmlView`)!.getBoundingClientRect()
+    const rect_Next = document.querySelector(`${tile_Over} + .tile_htmlView .trigger_More_htmlView`)!.getBoundingClientRect()
+    return {
+      left: rect.left,
+      right: rect.right,
+      bottom: rect.bottom,
+      x_Next: rect_Next.left + rect_Next.width / 2,
+      y_Next: rect_Next.top + rect_Next.height / 2
+    }
+  }, tile_Over)
+  const isOverNext = box_Menu.bottom > box_Menu.y_Next
+  await opened_Discs.page.mouse.move(box_Menu.x_Next, box_Menu.bottom - 4, { steps: 4 })
+  await pausedFor(100)
+  over_Menu.push(`in it, ${isOverNext ? "over the next task's ⋮" : "NOT over the next task"}: ${await shownOf_Over()}`)
+  await opened_Discs.page.mouse.move(box_Menu.x_Next, box_Menu.y_Next)
+  await pausedFor(100)
+  over_Menu.push(`on the next task's unseen ⋮: ${await shownOf_Over()}`)
+  await opened_Discs.page.mouse.move(box_Menu.left + 4, box_Menu.bottom + 1)
+  await pausedFor(300)
+  over_Menu.push(`past its edge: ${(await shownOf_Over()).split(",")[0]}`)
+}
+test("a task's menu pointed open: the ⋮ there while the pointer's on it, gone once it's left it; open wherever the pointer is inside it, over the task under it too, whose unseen ⋮ never takes the pointer; shut past its edge", () => {
+  expect(over_Menu).toEqual([
+    "on the ⋮: open: T-12, ⋮ shown",
+    "beside it: open: T-12, ⋮ gone",
+    "in it, over the next task's ⋮: open: T-12, ⋮ gone",
+    "on the next task's unseen ⋮: open: T-12, ⋮ gone",
+    "past its edge: open: none"
+  ])
 })

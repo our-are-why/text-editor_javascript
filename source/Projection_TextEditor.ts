@@ -38,6 +38,7 @@ import {
   type _Header_ViewModel_,
   type _Switcher_Header_,
   type _Option_Switcher_,
+  type _Part_Task_,
   type _Picker_Header_,
   type _Section_Picker_,
   type _File_Picker_,
@@ -97,7 +98,11 @@ export {
   type _Module_Reading_,
   type _Api___boxesOf__Replacement_,
   type _Box_Reading_,
-  ISAPPLIEDMAP__DECISION_PROPOSAL
+  ISAPPLIEDMAP__DECISION_PROPOSAL,
+  LABELMAP__STATE_TASK,
+  NOTEMAP__STATE_TASK,
+  partsOf__Counts_Task,
+  type _Counts_Task_
 }
 
 interface _Api___viewModelOf__Model_<State> {
@@ -486,12 +491,21 @@ function switcherOf__Tasks({
         ...tasks_Ordered.map((standing_Task): _Option_Switcher_ => ({
           kind: "TASK",
           label: standing_Task.name,
-          note: NOTEMAP__STATE_TASK[standing_Task.state],
           isHere: isHereOf(standing_Task),
           id: standing_Task.id,
           state: standing_Task.state,
-          figure: figureOf__Standing_Task(standing_Task),
-          isConflicted: standing_Task.count_Conflicts > 0
+          parts: standing_Task.state === "DRAFT"
+            ? [
+              {
+                kind: "PLAIN",
+                text: NOTEMAP__STATE_TASK.DRAFT
+              },
+              {
+                kind: "PLAIN",
+                text: requestsOf__Count(standing_Task.count_Queued)
+              }
+            ]
+            : partsOf__Counts_Task(standing_Task)
         })),
         {
           kind: "MANUAL",
@@ -516,16 +530,68 @@ const NOTEMAP__STATE_TASK: _NoteMap__State_Task_ = {
   DISCARDED: "discarded"
 }
 
-function figureOf__Standing_Task(
-  standing_Task: _Standing_Task_
-): string {
-  const figures = [
-    ...standing_Task.count_Conflicts === 0 ? [] : [`${standing_Task.count_Conflicts} ${standing_Task.count_Conflicts === 1 ? "conflict" : "conflicts"}`],
-    ...standing_Task.count_Running === 0 ? [] : [`${standing_Task.count_Running} running`],
-    ...standing_Task.count_Undecided === 0 ? [] : [`${standing_Task.count_Undecided} to decide`],
-    ...standing_Task.count_Queued === 0 ? [] : [`${standing_Task.count_Queued} ${standing_Task.count_Queued === 1 ? "request" : "requests"}`]
+interface _Counts_Task_ {
+  count_Undecided: number
+  count_Conflicts: number
+  count_Running: number
+  count_Queued: number
+}
+
+function partsOf__Counts_Task(
+  counts_Task: _Counts_Task_
+): Array<_Part_Task_> {
+  const yours: Array<_Part_Task_> = [
+    ...counts_Task.count_Conflicts === 0
+      ? []
+      : [
+        {
+          kind: "CONFLICT" as const,
+          text: `${counts_Task.count_Conflicts} ${counts_Task.count_Conflicts === 1 ? "conflict" : "conflicts"}`
+        }
+      ],
+    ...counts_Task.count_Undecided === 0
+      ? []
+      : [
+        {
+          kind: "YOURS" as const,
+          text: `${counts_Task.count_Undecided} to decide`
+        }
+      ],
+    ...counts_Task.count_Queued === 0
+      ? []
+      : [
+        {
+          kind: "QUEUED" as const,
+          text: `${counts_Task.count_Queued} queued`
+        }
+      ]
   ]
-  return figures[0] ?? ""
+  const agent: Array<_Part_Task_> = counts_Task.count_Running === 0
+    ? []
+    : [
+      {
+        kind: "AGENT",
+        text: `${counts_Task.count_Running} running`
+      }
+    ]
+  const [yours_First] = yours.length === 0 && agent.length === 0
+    ? [
+      {
+        kind: "YOURS" as const,
+        text: "ready to complete"
+      }
+    ]
+    : yours
+  return [
+    ...yours_First === undefined ? [] : [yours_First],
+    ...agent
+  ]
+}
+
+function requestsOf__Count(
+  count: number
+): string {
+  return `${count} ${count === 1 ? "request" : "requests"}`
 }
 
 interface _Api___pickerOf__Files_ {
@@ -595,7 +661,7 @@ function footerOf__Tasks({
   const counts: Array<_Count_Tasks_> = [
     {
       kind: "YOURS" as const,
-      count: tasks.filter((standing_Task) => standing_Task.state === "YOUR_TURN").length
+      count: tasks.filter((standing_Task) => standing_Task.state !== "DRAFT" && partsOf__Counts_Task(standing_Task).some((part_Task) => part_Task.kind !== "AGENT")).length
     },
     {
       kind: "CONFLICTS" as const,
@@ -603,7 +669,7 @@ function footerOf__Tasks({
     },
     {
       kind: "WORKING" as const,
-      count: tasks.filter((standing_Task) => standing_Task.state === "WORKING").length
+      count: tasks.filter((standing_Task) => standing_Task.count_Running > 0).length
     },
     {
       kind: "DRAFTS" as const,
