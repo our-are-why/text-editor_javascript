@@ -587,7 +587,7 @@ test("the tasks a host gives: in the header, a switcher listing them, the one th
   expect(optionsOf(inTask)).toEqual([
     "Tidy the retry loop | YOURS 14 to decide, AGENT 3 running | here",
     "Rename attempts to tries | CONFLICT 1 conflict",
-    "Add a timeout option | PLAIN draft, PLAIN 2 requests",
+    "Add a timeout option | PLAIN draft, QUEUED 2 queued",
     "Say what the README promises | YOURS 3 to decide",
     "Manual | the file itself"
   ])
@@ -595,7 +595,7 @@ test("the tasks a host gives: in the header, a switcher listing them, the one th
   expect(optionsOf(inManual)).toEqual([
     "Tidy the retry loop | YOURS 14 to decide, AGENT 3 running",
     "Rename attempts to tries | CONFLICT 1 conflict",
-    "Add a timeout option | PLAIN draft, PLAIN 2 requests",
+    "Add a timeout option | PLAIN draft, QUEUED 2 queued",
     "Say what the README promises | YOURS 3 to decide",
     "Manual | the file itself | here"
   ])

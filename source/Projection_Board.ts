@@ -130,8 +130,8 @@ function tileOf__Task_Board({
     parts: task_Board.state === "DRAFT"
       ? [
         {
-          kind: "PLAIN",
-          text: `${task_Board.count_Queued} ${task_Board.count_Queued === 1 ? "request" : "requests"}`
+          kind: "QUEUED",
+          text: `${task_Board.count_Queued} queued`
         }
       ]
       : partsOf__Counts_Task(task_Board),

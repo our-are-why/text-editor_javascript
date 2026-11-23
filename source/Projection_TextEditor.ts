@@ -501,8 +501,8 @@ function switcherOf__Tasks({
                 text: NOTEMAP__STATE_TASK.DRAFT
               },
               {
-                kind: "PLAIN",
-                text: requestsOf__Count(standing_Task.count_Queued)
+                kind: "QUEUED",
+                text: `${standing_Task.count_Queued} queued`
               }
             ]
             : partsOf__Counts_Task(standing_Task)
@@ -586,12 +586,6 @@ function partsOf__Counts_Task(
     ...yours_First === undefined ? [] : [yours_First],
     ...agent
   ]
-}
-
-function requestsOf__Count(
-  count: number
-): string {
-  return `${count} ${count === 1 ? "request" : "requests"}`
 }
 
 interface _Api___pickerOf__Files_ {

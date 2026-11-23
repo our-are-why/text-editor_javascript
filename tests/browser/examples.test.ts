@@ -2416,7 +2416,7 @@ test("a chevron after the task's name opens the switcher's card, never with the 
     "TASK | Log each retry | 1 running | ",
     "TASK | Rename attempts to tries | 1 conflict | ",
     "TASK | Name the retry options | 2 queued | ",
-    "TASK | Add a timeout option | draft · 2 requests | ",
+    "TASK | Add a timeout option | draft · 2 queued | ",
     "TASK | Say what the README promises | 3 to decide | ",
     "MANUAL | Manual | the file itself | "
   ])
@@ -2776,7 +2776,7 @@ test("the board, from the footer: a column for each of who a task's waiting on, 
   expect([flush_Wide, flush_Narrow]).toEqual([[0, 0, 0, 0], [0, 0, 0, 0]])
   expect(tile_Resting).toEqual({ ...tile_Pointed, more: "hidden" })
   expect(tile_Pointed).toEqual({ line: "Say what the README promises", height: tile_Resting.height, more: "visible", details: "3 to decide", next: tile_Resting.next })
-  expect(details_Others).toEqual(["1 conflictin file", "14 to decide2 runningin file", "2 requestsin file", "3 to decide"])
+  expect(details_Others).toEqual(["1 conflictin file", "14 to decide2 runningin file", "2 queuedin file", "3 to decide"])
   expect(board_Switched).toEqual({ hidden: false, columns: ["YOURS: T-12 T-14 T-15 shown T-17", "AGENT: T-13", "DRAFTS: T-16", "RESOLVED: T-9 T-11"], mode: "Rename attempts to tries" })
   expect(board_Canceled).toEqual({ hidden: false, columns: ["YOURS: T-12 T-14 T-17", "AGENT: T-13", "DRAFTS: T-16", "RESOLVED: T-9 T-11 T-15"], mode: "Manual" })
   expect(board_Started.columns).toEqual(["YOURS: T-12 T-14 T-17", "AGENT: T-13 T-16", "DRAFTS: ", "RESOLVED: T-9 T-11 T-15"])

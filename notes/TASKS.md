@@ -452,14 +452,15 @@ faking the moves, so it can all be drawn before the parts above are built:
 - **built 2026-11-22: what the editor's in, and switching.** The editor's
   told its mode, `MANUAL` or `TASK` with its task, and the project's open
   tasks, each with where it stands. Manual's "Manual", at the header's
-  start, where a task's name is, neither with a mark. After the mode's name, a hairline,
-  then two arrows open the switcher, a card of its own beside the task's, never open with it, the
-  one pointed at shown:
-  the tasks, the editor's first, then those on its document, then the
-  rest, then Manual, each its mark, its name, and its parts, yours then
-  the agent's, coloured as the board's columns are, or a draft's requests; one pressed asks the host to
-  switch, `SWITCH`. Draft task, and All tasks…, which opens the board, come
-  with drafts and the board;
+  start, where a task's name is, neither with a mark. After the mode's name,
+  a hairline, then two arrows open the switcher, a card of its own beside
+  the task's, never open with it, the one pointed at shown: the tasks, the
+  editor's first, then those on its document, then the rest, then Manual,
+  each its mark, its name, and its parts, yours then the agent's, coloured
+  as the board's columns are, or a draft's requests, said queued, in plum,
+  as an open task's are; one pressed asks the host to switch, `SWITCH`.
+  Draft task, and All tasks…, which opens the board, come with drafts and
+  the board;
 - **built 2026-11-22: the file, and opening another.** An editor shows a
   file in a mode, so switching one keeps the other. The file's at the
   header's end: its name, with no mark, a hairline, then an icon of files
