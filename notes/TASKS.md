@@ -30,6 +30,17 @@ still to decide is under **open**, at the end, each with a recommendation.
 - **manual:** the mode for editing the trunk itself. A mode in its own
   right, not the absence of a task.
 
+Decided 2026-11-23: Complete is shown as Apply, which says what it does,
+what's accepted in a task and your edits in it applied to every file it
+touches, and doesn't sit beside the proposals' Accept all meaning
+something else; a completed task's shown as applied, and one with nothing
+left as applicable, where ready to complete was too long. A draft's
+Discard is shown as Cancel, as every task's is, and it ends as discarded.
+Manual is shown as No task, in the header and the switcher, saying
+what's selected, as a task's name does, not what mode the editor's in,
+which it never says of a task. The code and these notes keep complete,
+discard and manual, as they keep document where what's shown says file.
+
 ## a task is a branch
 
 Kept from doctor. The file holds the trunk until a task completes; a task's
@@ -451,14 +462,22 @@ faking the moves, so it can all be drawn before the parts above are built:
 
 - **built 2026-11-22: what the editor's in, and switching.** The editor's
   told its mode, `MANUAL` or `TASK` with its task, and the project's open
-  tasks, each with where it stands. Manual's "Manual", at the header's
-  start, where a task's name is, neither with a mark. After the mode's name,
+  tasks, each with where it stands. Manual's "No task", muted, at the
+  header's start, where a task's name is, neither with a mark, saying
+  what's selected, as a task's name does, never naming the mode, where
+  "Manual" had, as no task's mode is named. After the mode's name,
   a hairline, then two arrows open the switcher, a card of its own beside
   the task's, never open with it, the one pointed at shown: the tasks, the
-  editor's first, then those on its document, then the rest, then Manual,
-  each its mark, its name, and its parts, yours then the agent's, coloured
-  as the board's columns are, or a draft's requests, said queued, in plum,
-  as an open task's are; one pressed asks the host to switch, `SWITCH`.
+  editor's first, then those on its document, then the rest, then No
+  task, each its mark, its name, and its parts, yours then the agent's,
+  coloured as the board's columns are, or a draft's requests, said queued,
+  in plum, as an open task's are, its name leaning, as in the header, its
+  dotted mark saying it's a draft, where the word draft was said too; its
+  order kept while it's open, a task pressed in it marked as the one the
+  editor's in where it is, so nothing moves under the pointer, and sorted
+  again only once it's shut, the view holding the order it shows through
+  each redraw while its card's open, and putting the view model's back
+  once the card's closed; one pressed asks the host to switch, `SWITCH`.
   Draft task, and All tasks…, which opens the board, come with drafts and
   the board;
 - **built 2026-11-22: the file, and opening another.** An editor shows a
@@ -485,9 +504,9 @@ faking the moves, so it can all be drawn before the parts above are built:
   editor in the project. It's told the project's tasks, `_Task_Board_`, each
   where it stands, the files it touches, its figures, and how many editors
   show it. Its columns are who each task is waiting on, Needs you, anything
-  of it yours, With the agent, only the agent's, Drafts, Resolved, not its
+  of it yours, With agent, only the agent's, Drafts, Resolved, not its
   state, each heading with the footer's mark for it before how many, `● 3`,
-  With the agent's turning while it holds anything, side by side where it's
+  With agent's turning while it holds anything, side by side where it's
   wide and one under another where it's narrow, by its own width, never
   scrolling as a whole, its head staying, each column's tasks scrolling on
   their own side by side, the columns together stacked, a tile's ⋮ menu
@@ -506,13 +525,14 @@ faking the moves, so it can all be drawn before the parts above are built:
   its column's heading; pressed, it asks the host to switch every editor to
   it, `SWITCH`; its ⋮, three dots standing, as a menu's are, shown while the
   task's pointed at or the keyboard's in it, as a request's ellipsis is, its
-  room kept so nothing moves, holds a draft's Start and Discard, or Start
-  all for what's queued, Stop while anything's running, Complete once
-  nothing's left on either side, and Cancel: the editor's menu, on the
-  proposals' band, its choices rows across it, each in the ink of whose move
-  it is, Start and Stop the agent's plum, Start bold, Complete your indigo,
-  Cancel and Discard, ending the task, plain, last, the words set to the
-  right; under the ⋮, the ⋮ gone, while it's open, once the pointer's left
+  room kept so nothing moves, holds Start all for what's queued, a
+  draft's too, as starting anything of it starts it, Stop while anything's
+  running, Apply once nothing's left on either side, and Cancel, a draft's
+  discarding it, where a draft's menu had Start and Discard: the editor's
+  menu, on the proposals' band, its choices rows across it, each in the
+  ink of whose move it is, Start and Stop the agent's plum, Start bold,
+  Apply your indigo, Cancel, ending the task, plain, last, the words set
+  to the right; under the ⋮, the ⋮ gone, while it's open, once the pointer's left
   it; an open menu over every other task's ⋮; opened by pointing at the ⋮,
   kept open while the pointer's on the menu or on an unseen strip, the ⋮'s
   own line across the menu's width, between the two whichever way the menu
@@ -538,8 +558,21 @@ faking the moves, so it can all be drawn before the parts above are built:
   drafting one, which stays in Drafts till it's started, where New task said
   less, which the playground only reports, as a new task's made with its
   first request, to come with drafts;
-- a draft's header: its name, how many requests, Start, Discard;
-- a task's header in each state, as now, with Complete and Cancel;
+- **built 2026-11-23: the ways a task ends, in its header,** at the end
+  of its card's heading, `T-12 · Working`, folded behind an ellipsis in
+  the muted ink its id's in, as a card's line's actions are, and as the
+  board's ⋮ is, only ever Apply and Cancel: Apply, in the proposals'
+  indigo, once nothing's left on either side, nothing to decide, being
+  revised, queued or running, and Cancel, neutral, as every Cancel is, a
+  draft's discarding it. A draft's starts are where every task's are, its
+  Start all in its card's Scope Revisions, its requests' own Starts, as
+  starting anything of it starts it; tried, a draft's Start and Discard in
+  its heading. Each asked of the host, `END`, `COMPLETE`, `CANCEL` or
+  `DISCARD`, of the task the editor's in, which it resolves, the editor
+  going to manual. The playground's host tells the editor where a task
+  switched to stands, as the example says, counted on the first file it
+  touches, so its card's figures and actions are right, and starts and
+  stops it from its card as from the board;
 - lines changed in the task, marked in the gutter;
 - in manual, the lines open tasks change, marked quietly in the gutter;
 - behind and conflicted, where they apply.

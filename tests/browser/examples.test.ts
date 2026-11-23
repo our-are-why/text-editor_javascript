@@ -949,13 +949,13 @@ test("a proposal's action pressed is asked of the host, which sends back what it
 })
 
 test("the header over the document stays put as it scrolls, saying the host's task, its mark where it stands, the agent at work or your turn, its state in words for what reads it aloud, and the document, by its file's name, at its end, nothing between them; the task's card hidden until the task's hovered: its id and where it stands, what the agent says of it, how far its proposals have got across the documents it touches, and each document, this one marked, how far its own have got, each figure's breakdown when hovered, Add a request for the task as a whole, and the host's actions for it; the document's card, hovered, what the agent says the task does here, how far its proposals have got, and the host's action for them, how many revisions are queued and in progress, Revise, Start all and Stop all, saying how many when they're hovered; the task's Stop all putting what's in progress back in the queue; the document's Start setting every proposal's queued requests going at once, each proposal's round its own; nothing asked, nothing to start", () => {
-  expect(header_Working).toEqual({ task: ["Tidy the retry loop", "WORKING", "Working"], parts: [], spinners: 0, document: ["retry.js", "WORKING", "Working"], card: ["Accept all (10)", "Start all (6)", "Stop all (3)"], card_Document: ["Accept all (7)", "Start all (5)", "Stop all (2)"], isSticky: true })
+  expect(header_Working).toEqual({ task: ["Tidy the retry loop", "WORKING", "Working"], parts: [], spinners: 0, document: ["retry.js", "WORKING", "Working"], card: ["Cancel", "Accept all (10)", "Start all (6)", "Stop all (3)"], card_Document: ["Accept all (7)", "Start all (5)", "Stop all (2)"], isSticky: true })
   expect(card_Resting.isShown).toBe(false)
-  expect(card_Hovered).toEqual({ isShown: true, head: "T-12Working", summary: "Keeps every error, names the attempt counter round, caps the delay, and stops once the caller aborts; drops the onRetry hook and the opening comment.", id: "T-12", figures: ["Proposals: 6 of 20 decided (11 to review · 1 revision requested · 2 revising · 5 accepted · 1 rejected)", "Scope Revisions: 7 queued · 3 running", "Level Revisions: "], documents: ["retry.js (this document): 4 of 14 decided (8 to review · 1 revision requested · 1 revising · 3 accepted · 1 rejected)", "README.md: 2 of 6 decided (3 to review · 1 revising · 2 accepted)"], parts: ["head_Card_htmlView", "summary_Card_htmlView", "section_Card_htmlView", "section_Card_htmlView", "section_Card_htmlView"] })
+  expect(card_Hovered).toEqual({ isShown: true, head: "T-12Working…Cancel", summary: "Keeps every error, names the attempt counter round, caps the delay, and stops once the caller aborts; drops the onRetry hook and the opening comment.", id: "T-12", figures: ["Proposals: 6 of 20 decided (11 to review · 1 revision requested · 2 revising · 5 accepted · 1 rejected)", "Scope Revisions: 7 queued · 3 running", "Level Revisions: "], documents: ["retry.js (this document): 4 of 14 decided (8 to review · 1 revision requested · 1 revising · 3 accepted · 1 rejected)", "README.md: 2 of 6 decided (3 to review · 1 revising · 2 accepted)"], parts: ["head_Card_htmlView", "summary_Card_htmlView", "section_Card_htmlView", "section_Card_htmlView", "section_Card_htmlView"] })
   expect(card_Document).toEqual({ isShown: true, label: "retry.js", summary: "In retry.js: the loop's errors, its counter's name, its delays and its abort, and two things it no longer needs.", figures: ["Proposals: 4 of 14 decided (8 to review · 1 revision requested · 1 revising · 3 accepted · 1 rejected)", "Scope Revisions: 6 queued · 2 running", "Level Revisions: "], actions: ["Accept all (7)", "Starts all 5 requests queued in this file, its own and its proposals'", "Stops all 2 running in this file, its own and its proposals', putting them back in the queue"] })
-  expect(header_Stopped).toEqual({ task: ["Tidy the retry loop", "YOUR_TURN", "Your turn"], parts: [], spinners: 0, document: ["retry.js", "YOUR_TURN", "Your turn"], card: ["Accept all (10)", "Start all (10)"], card_Document: ["Accept all (7)", "Start all (8)"], isSticky: true })
-  expect(header_Started).toEqual({ task: ["Tidy the retry loop", "WORKING", "Working"], parts: [], spinners: 0, document: ["retry.js", "WORKING", "Working"], card: ["Accept all (10)", "Start all (2)", "Stop all (8)"], card_Document: ["Accept all (7)", "Stop all (8)"], isSticky: true })
-  expect(header_Done).toEqual({ task: ["Tidy the retry loop", "YOUR_TURN", "Your turn"], parts: [], spinners: 0, document: ["retry.js", "YOUR_TURN", "Your turn"], card: ["Accept all (12)", "Start all (2)"], card_Document: ["Accept all (9)"], isSticky: true })
+  expect(header_Stopped).toEqual({ task: ["Tidy the retry loop", "YOUR_TURN", "Your turn"], parts: [], spinners: 0, document: ["retry.js", "YOUR_TURN", "Your turn"], card: ["Cancel", "Accept all (10)", "Start all (10)"], card_Document: ["Accept all (7)", "Start all (8)"], isSticky: true })
+  expect(header_Started).toEqual({ task: ["Tidy the retry loop", "WORKING", "Working"], parts: [], spinners: 0, document: ["retry.js", "WORKING", "Working"], card: ["Cancel", "Accept all (10)", "Start all (2)", "Stop all (8)"], card_Document: ["Accept all (7)", "Stop all (8)"], isSticky: true })
+  expect(header_Done).toEqual({ task: ["Tidy the retry loop", "YOUR_TURN", "Your turn"], parts: [], spinners: 0, document: ["retry.js", "YOUR_TURN", "Your turn"], card: ["Cancel", "Accept all (12)", "Start all (2)"], card_Document: ["Accept all (9)"], isSticky: true })
   expect(logged_Stopped).toEqual([{ stopped: "TASK", requests: 2 }, { revising: "hook, timeout, document", requests: 8 }, { revised: "hook, timeout, document" }])
   expect(opened_JavaScript.errors).toEqual([])
 })
@@ -2350,8 +2350,8 @@ describe("the menu's form, a popover", () => {
 // chevron, after the task's name, opening the switcher's card, never with
 // the task's, each the one pointed at; the project's tasks listed in it,
 // the one the editor's in first, saying so, then those on retry.js, then
-// the rest, then Manual; the footer counting them by what they're waiting
-// on; Manual pressed, the host asked, the editor in manual, the file
+// the rest, then No task; the footer counting them by what they're waiting
+// on; No task pressed, the host asked, the editor in manual, the file
 // itself, nothing proposed, the keyboard back in the text; a line typed
 // there, then the task pressed, the editor in it again, its proposals
 // carried across the line, which is still there
@@ -2375,7 +2375,7 @@ const cards_Chevron = await cardsOf_Switch()
 const options_Switch = await opened_Switch.page.evaluate(() => [...document.querySelectorAll(".choice_Switcher_htmlView")].map((choice) => [
   choice.getAttribute("data-switch"),
   choice.querySelector(".label_Option_htmlView")?.textContent,
-  [...choice.querySelectorAll(".part_Option_htmlView, .note_Option_htmlView")].map((part) => part.textContent).join(" · "),
+  [...choice.querySelectorAll(".part_Option_htmlView")].map((part) => part.textContent).join(" · "),
   choice.hasAttribute("aria-current") ? "here" : ""
 ].join(" | ")))
 await opened_Switch.page.hover(".trigger_Task_htmlView")
@@ -2407,7 +2407,7 @@ const back_Switch = await opened_Switch.page.evaluate(() => ({
   logged: window.logged.at(-1) ?? null
 }))
 
-test("a chevron after the task's name opens the switcher's card, never with the task's: the project's tasks, the editor's first, then those on its document, then the rest, then Manual; the footer counting them; Manual pressed, the editor's in manual, the file itself, the keyboard in the text; a line typed, the task pressed, it's back, its proposals carried across the line", () => {
+test("a chevron after the task's name opens the switcher's card, never with the task's: the project's tasks, the editor's first, then those on its document, then the rest, then No task; the footer counting them; No task pressed, the editor's in manual, the file itself, the keyboard in the text; a line typed, the task pressed, it's back, its proposals carried across the line", () => {
   expect(footer_Switch).toEqual({ counts: ["YOURS 4", "CONFLICTS 1", "WORKING 2", "DRAFTS 1"], title: "6 tasks: 4 need you, 1 conflict, 2 working, 1 draft" })
   expect(cards_Chevron).toEqual(["hidden", "visible"])
   expect(cards_Name).toEqual(["visible", "hidden"])
@@ -2416,11 +2416,11 @@ test("a chevron after the task's name opens the switcher's card, never with the 
     "TASK | Log each retry | 1 running | ",
     "TASK | Rename attempts to tries | 1 conflict | ",
     "TASK | Name the retry options | 2 queued | ",
-    "TASK | Add a timeout option | draft · 2 queued | ",
-    "TASK | Say what the README promises | 3 to decide | ",
-    "MANUAL | Manual | the file itself | "
+    "TASK | Add a timeout option | 2 queued | ",
+    "TASK | Say what the README promises | applicable | ",
+    "MANUAL | No task |  | "
   ])
-  expect(manual_Switch).toEqual({ name: "Manual", frames: 0, focus: "input_htmlView", card: "hidden", logged: { switched: "MANUAL" } })
+  expect(manual_Switch).toEqual({ name: "No task", frames: 0, focus: "input_htmlView", card: "hidden", logged: { switched: "MANUAL" } })
   expect(back_Switch).toEqual({ name: "Tidy the retry loop", frames: 7, first: "// typed in manual", logged: { switched: "T-12" } })
   expect(opened_Switch.errors).toEqual([])
 })
@@ -2587,8 +2587,9 @@ test("each hairline where it's meant to be between the ink either side of it, as
 
 // then the task's state said by its name, the header having no mark for
 // it, nor for manual: working, the name shimmering, or, where motion's
-// asked to be reduced, Working shown after it; a draft, faded, Draft
-// shown after it; your turn, the name as it rests
+// asked to be reduced, Working shown after it; a draft, leaning, in the
+// name's own ink, no word after it, as no other state has one; your turn,
+// the name as it rests
 const nameShown = () => opened_Switch.page.evaluate(async () => {
   await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)))
   const trigger = document.querySelector(".trigger_Task_htmlView")!
@@ -2599,6 +2600,7 @@ const nameShown = () => opened_Switch.page.evaluate(async () => {
     marks: document.querySelectorAll(".header_htmlView > :is(.task_Header_htmlView, .manual_Header_htmlView) :is(.mark_Task_htmlView, .mark_Manual_htmlView)").length,
     shimmers: name.getAnimations().flatMap((animation) => animation instanceof CSSAnimation ? [animation.animationName] : []),
     isFaded: getComputedStyle(name).color !== getComputedStyle(document.querySelector(".htmlView_editor")!).color,
+    isLeaning: getComputedStyle(name).fontStyle === "italic",
     word: word.getBoundingClientRect().width > 2 ? word.textContent : null
   }
 })
@@ -2618,11 +2620,11 @@ const name_Draft = await nameShown()
 await switchedTo("T-14")
 const name_Yours = await nameShown()
 
-test("the task's state said by its name, with no mark: working, shimmering, or Working shown where motion's asked to be reduced; a draft, faded, Draft shown after it; your turn, as it rests", () => {
-  expect(name_Working).toEqual({ name: "Tidy the retry loop", marks: 0, shimmers: ["shimmer_htmlView"], isFaded: false, word: null })
-  expect(name_Still).toEqual({ name: "Tidy the retry loop", marks: 0, shimmers: [], isFaded: false, word: "Working" })
-  expect(name_Draft).toEqual({ name: "Add a timeout option", marks: 0, shimmers: [], isFaded: true, word: "Draft" })
-  expect(name_Yours).toEqual({ name: "Say what the README promises", marks: 0, shimmers: [], isFaded: false, word: null })
+test("the task's state said by its name, with no mark: working, shimmering, or Working shown where motion's asked to be reduced; a draft, leaning, in the name's own ink, no word after it; your turn, as it rests", () => {
+  expect(name_Working).toEqual({ name: "Tidy the retry loop", marks: 0, shimmers: ["shimmer_htmlView"], isFaded: false, isLeaning: false, word: null })
+  expect(name_Still).toEqual({ name: "Tidy the retry loop", marks: 0, shimmers: [], isFaded: false, isLeaning: false, word: "Working" })
+  expect(name_Draft).toEqual({ name: "Add a timeout option", marks: 0, shimmers: [], isFaded: false, isLeaning: true, word: null })
+  expect(name_Yours).toEqual({ name: "Say what the README promises", marks: 0, shimmers: [], isFaded: false, isLeaning: false, word: null })
   expect(opened_Switch.errors).toEqual([])
 })
 
@@ -2775,10 +2777,10 @@ test("the board, from the footer: a column for each of who a task's waiting on, 
   expect(scroll_Narrow).toEqual({ board: false, columns: true, lists: [] })
   expect([flush_Wide, flush_Narrow]).toEqual([[0, 0, 0, 0], [0, 0, 0, 0]])
   expect(tile_Resting).toEqual({ ...tile_Pointed, more: "hidden" })
-  expect(tile_Pointed).toEqual({ line: "Say what the README promises", height: tile_Resting.height, more: "visible", details: "3 to decide", next: tile_Resting.next })
-  expect(details_Others).toEqual(["1 conflictin file", "14 to decide2 runningin file", "2 queuedin file", "3 to decide"])
+  expect(tile_Pointed).toEqual({ line: "Say what the README promises", height: tile_Resting.height, more: "visible", details: "applicable", next: tile_Resting.next })
+  expect(details_Others).toEqual(["1 conflictin file", "14 to decide2 runningin file", "2 queuedin file", "applicable"])
   expect(board_Switched).toEqual({ hidden: false, columns: ["YOURS: T-12 T-14 T-15 shown T-17", "AGENT: T-13", "DRAFTS: T-16", "RESOLVED: T-9 T-11"], mode: "Rename attempts to tries" })
-  expect(board_Canceled).toEqual({ hidden: false, columns: ["YOURS: T-12 T-14 T-17", "AGENT: T-13", "DRAFTS: T-16", "RESOLVED: T-9 T-11 T-15"], mode: "Manual" })
+  expect(board_Canceled).toEqual({ hidden: false, columns: ["YOURS: T-12 T-14 T-17", "AGENT: T-13", "DRAFTS: T-16", "RESOLVED: T-9 T-11 T-15"], mode: "No task" })
   expect(board_Started.columns).toEqual(["YOURS: T-12 T-14 T-17", "AGENT: T-13 T-16", "DRAFTS: ", "RESOLVED: T-9 T-11 T-15"])
   expect(board_Answered.columns).toEqual(["YOURS: T-12 T-14 T-17 T-16", "AGENT: T-13", "DRAFTS: ", "RESOLVED: T-9 T-11 T-15"])
   expect(figures_Answered).toBe("2 to decide")
@@ -3065,4 +3067,144 @@ const footer_Pressed = await opened_Discs.page.evaluate(() => document.querySele
 test("the footer's counts of the project's tasks stay while a proposal's pointed at or focused, the editor redrawn from its blocks keeping its footer as it keeps its header", () => {
   expect(footer_Before).not.toBe(null)
   expect(footer_Pressed).toBe(footer_Before)
+})
+
+// a task's own actions, at the end of its card's heading, folded behind
+// its ellipsis till it's pointed at, the ways it ends, each in the ink of
+// whose move it is: a draft, saying how many it has queued, Cancel alone,
+// neutral, discarding it; a task with nothing left on either side, Apply,
+// the proposals' indigo, resolving it, the editor going to manual, and
+// Cancel; one with anything left, Cancel alone, its Start all where it's
+// always been, in Scope Revisions, starting it, and Cancel resolving it
+// as canceled; each asked of the host
+const opened_Ends = await openExample(
+  "javascript",
+  1
+)
+afterAll(() => opened_Ends.close())
+await opened_Ends.page.waitForSelector(".note_htmlView")
+const switchedTo_Ends = async (id: string) => {
+  await opened_Ends.page.mouse.move(5, 300)
+  await opened_Ends.page.waitForTimeout(300)
+  await opened_Ends.page.hover(".trigger_Switcher_htmlView")
+  await opened_Ends.page.waitForTimeout(300)
+  await opened_Ends.page.click(`.choice_Switcher_htmlView[data-switch="TASK"][data-id="${id}"]`)
+  await opened_Ends.page.mouse.move(5, 300)
+  await opened_Ends.page.waitForTimeout(400)
+}
+const headOf_Ends = async () => {
+  const trigger = await opened_Ends.page.locator(".trigger_Task_htmlView").boundingBox()
+  if (trigger === null) throw new Error("no task")
+  await opened_Ends.page.mouse.move(trigger.x + 20, trigger.y + trigger.height / 2)
+  await opened_Ends.page.waitForTimeout(300)
+  const head = await opened_Ends.page.locator(".card_Task_htmlView .head_Card_htmlView").boundingBox()
+  if (head === null) throw new Error("no card")
+  await opened_Ends.page.mouse.move(trigger.x + 20, head.y + head.height / 2, { steps: 4 })
+  const shownOf = () => opened_Ends.page.evaluate(() => (document.querySelector(".card_Task_htmlView .head_Card_htmlView .actions_Card_htmlView")?.getBoundingClientRect().width ?? 0) > 2)
+  const isShown_Before = await shownOf()
+  const more = await opened_Ends.page.locator(".card_Task_htmlView .head_Card_htmlView .more_htmlView").boundingBox()
+  if (more === null) throw new Error("no ellipsis")
+  await opened_Ends.page.mouse.move(more.x + more.width / 2, more.y + more.height / 2, { steps: 8 })
+  await opened_Ends.page.waitForTimeout(300)
+  return {
+    isShown_Before,
+    isShown: await shownOf(),
+    ...await opened_Ends.page.evaluate(() => {
+      const editor = document.querySelector(".htmlView_editor")!
+      const colorOf = (color: string) => {
+        const probe = document.createElement("span")
+        probe.style.color = color
+        editor.append(probe)
+        const computed = getComputedStyle(probe).color
+        probe.remove()
+        return computed
+      }
+      const inks = new Map([
+        [colorOf("var(--accent_revision_htmlView)"), "plum"],
+        [colorOf("var(--accent_proposals_htmlView)"), "indigo"],
+        [colorOf("var(--view-action-ink, light-dark(#3b3b3b, #cccccc))"), "neutral"]
+      ])
+      return {
+        queued: (document.querySelector(".card_Task_htmlView [aria-label=\"Scope Revisions\"] .value_Card_htmlView") as HTMLElement | null)?.textContent ?? null,
+        actions: [...document.querySelectorAll(".card_Task_htmlView .head_Card_htmlView .actions_Card_htmlView > button")].map((button) => `${button.textContent} ${inks.get(getComputedStyle(button).color) ?? getComputedStyle(button).color}${Number(getComputedStyle(button).fontWeight) >= 600 ? " bold" : ""}`)
+      }
+    })
+  }
+}
+const modeOf_Ends = () => opened_Ends.page.evaluate(() => ({
+  name: document.querySelector(".header_htmlView :is(.name_Task_htmlView, .name_Manual_htmlView)")?.textContent ?? null,
+  state: document.querySelector(".trigger_Task_htmlView")?.getAttribute("data-state") ?? null
+}))
+await switchedTo_Ends("T-16")
+const head_Draft = await headOf_Ends()
+await opened_Ends.page.click(".card_Task_htmlView .head_Card_htmlView [data-end=\"DISCARD\"]")
+await opened_Ends.page.waitForTimeout(200)
+const mode_Discarded = await modeOf_Ends()
+await switchedTo_Ends("T-14")
+const head_Ready = await headOf_Ends()
+await opened_Ends.page.click(".card_Task_htmlView .head_Card_htmlView [data-end=\"COMPLETE\"]")
+await opened_Ends.page.waitForTimeout(200)
+const mode_Applied = await modeOf_Ends()
+await switchedTo_Ends("T-17")
+const head_Left = await headOf_Ends()
+const more_Scope = await opened_Ends.page.locator(".card_Task_htmlView [aria-label=\"Scope Revisions\"] .more_htmlView").boundingBox()
+if (more_Scope === null) throw new Error("no ellipsis")
+await opened_Ends.page.mouse.move(more_Scope.x + more_Scope.width / 2, more_Scope.y + more_Scope.height / 2, { steps: 8 })
+await opened_Ends.page.waitForTimeout(300)
+await opened_Ends.page.click(".card_Task_htmlView [aria-label=\"Scope Revisions\"] [data-scope=\"TASK\"][data-work=\"START\"]")
+await opened_Ends.page.waitForTimeout(200)
+const mode_Started = await modeOf_Ends()
+const head_Started = await headOf_Ends()
+await opened_Ends.page.click(".card_Task_htmlView .head_Card_htmlView [data-end=\"CANCEL\"]")
+await opened_Ends.page.waitForTimeout(200)
+const mode_Canceled = await modeOf_Ends()
+const logged_Ends = (await opened_Ends.logged()).filter((entry) => "ended" in entry || "started" in entry)
+test("a task's own actions, at the end of its card's heading, folded till its ellipsis is pointed at, the ways it ends: a draft's Cancel alone, neutral, discarding it; Apply, indigo, once nothing's left, resolving it, the editor going to manual; Cancel alone while anything's left, its Start all in Scope Revisions starting it; each asked of the host", () => {
+  expect(head_Draft).toEqual({ isShown_Before: false, isShown: true, queued: "2 queued", actions: ["Cancel neutral"] })
+  expect(mode_Discarded).toEqual({ name: "No task", state: null })
+  expect(head_Ready).toEqual({ isShown_Before: false, isShown: true, queued: "Nothing queued", actions: ["Apply indigo", "Cancel neutral"] })
+  expect(mode_Applied).toEqual({ name: "No task", state: null })
+  expect(head_Left).toEqual({ isShown_Before: false, isShown: true, queued: "2 queued", actions: ["Cancel neutral"] })
+  expect(mode_Started).toEqual({ name: "Name the retry options", state: "WORKING" })
+  expect(head_Started.actions).toEqual(["Cancel neutral"])
+  expect(mode_Canceled).toEqual({ name: "No task", state: null })
+  expect(logged_Ends).toEqual([
+    { ended: "DISCARD", task: "T-16" },
+    { ended: "COMPLETE", task: "T-14" },
+    { started: "TASK", task: "T-17" },
+    { ended: "CANCEL", task: "T-17" }
+  ])
+  expect(opened_Ends.errors).toEqual([])
+})
+
+// the switcher's order kept while it's open, a task pressed in it marked
+// as the one the editor's in where it is, nothing moving under the
+// pointer, nor while it fades, and sorted again once it's shut, the task
+// the editor's in first by the time it's opened again
+const opened_Order = await openExample(
+  "javascript",
+  1
+)
+afterAll(() => opened_Order.close())
+await opened_Order.page.waitForSelector(".note_htmlView")
+const orderOf_Switcher = () => opened_Order.page.evaluate(() => [...document.querySelectorAll(".choice_Switcher_htmlView")].map((choice) => `${choice.getAttribute("data-id") ?? "none"}${choice.hasAttribute("aria-current") ? " here" : ""}`))
+await opened_Order.page.hover(".trigger_Switcher_htmlView")
+await opened_Order.page.waitForTimeout(300)
+const order_Opened = await orderOf_Switcher()
+await opened_Order.page.click(".choice_Switcher_htmlView[data-switch=\"TASK\"][data-id=\"T-14\"]")
+await opened_Order.page.waitForTimeout(300)
+const order_Pressed = await orderOf_Switcher()
+await opened_Order.page.mouse.move(5, 400)
+await opened_Order.page.waitForTimeout(150)
+const order_Fading = await orderOf_Switcher()
+await opened_Order.page.waitForTimeout(400)
+await opened_Order.page.hover(".trigger_Switcher_htmlView")
+await opened_Order.page.waitForTimeout(300)
+const order_Reopened = await orderOf_Switcher()
+test("the switcher's order kept while it's open: a task pressed in it marked as the editor's where it is, nothing moving under the pointer, nor as it fades; sorted again once it's shut, the editor's task first when it's opened again", () => {
+  expect(order_Opened).toEqual(["T-12 here", "T-13", "T-15", "T-17", "T-16", "T-14", "none"])
+  expect(order_Pressed).toEqual(["T-12", "T-13", "T-15", "T-17", "T-16", "T-14 here", "none"])
+  expect(order_Fading).toEqual(order_Pressed)
+  expect(order_Reopened).toEqual(["T-14 here", "T-12", "T-13", "T-15", "T-17", "T-16", "none"])
+  expect(opened_Order.errors).toEqual([])
 })

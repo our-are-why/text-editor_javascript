@@ -3516,10 +3516,13 @@ path. No marks in the header: a state's said by a name. The task's, as
 the header only ever shows three, an editor whose task ends going to
 manual: working, the name shimmering, with whatever else is at work, or,
 where motion's asked to be reduced, Working shown after it; your turn,
-the name as it rests, what's waiting said beside it; a draft, faded,
-Draft shown after it. The file's the same: its name shimmering while
+the name as it rests, what's waiting said beside it; a draft, leaning,
+in the name's own ink, no word after it, as no other state has one,
+where Draft was shown after it, and the name faded, which read as
+disabled, till 2026-11-23. The file's the same: its name shimmering while
 work's under way on it, otherwise as it rests, the header's counts
-saying how far it's got. Manual's its word alone, as a task's name is.
+saying how far it's got. Manual's No task, muted, what's selected, as a
+task's name is, where Manual named the mode till 2026-11-23.
 The switcher's list keeps every mark, as it's scanned. Spacing, measured
 by the ink as drawn, read from the pixels: the task's hairline 13.2px
 from its name and 13px from the arrows, which read about 13.9px and

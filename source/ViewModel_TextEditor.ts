@@ -108,6 +108,8 @@ export {
   type _Document_Card_,
   type _Task_Header_,
   type _State_Task_,
+  type _End_Task_,
+  type _Kind_End_,
   type _Action_Task_,
   type _Section_Action_,
   type _Part_Header_,
@@ -223,9 +225,7 @@ interface __BASE_Option_Switcher_<Kind extends string> {
   isHere: boolean
 }
 
-interface _MANUAL_Option_Switcher_ extends __BASE_Option_Switcher_<"MANUAL"> {
-  note: string
-}
+interface _MANUAL_Option_Switcher_ extends __BASE_Option_Switcher_<"MANUAL"> {}
 
 interface _TASK_Option_Switcher_ extends __BASE_Option_Switcher_<"TASK"> {
   id: string
@@ -238,7 +238,7 @@ interface _Part_Task_ {
   text: string
 }
 
-type _Kind_Part_ = "CONFLICT" | "YOURS" | "QUEUED" | "AGENT" | "PLAIN"
+type _Kind_Part_ = "CONFLICT" | "YOURS" | "QUEUED" | "AGENT"
 
 interface _Picker_Header_ {
   label: string
@@ -324,6 +324,7 @@ interface _Task_Header_ {
   name: string
   state: _State_Task_
   label_State: string
+  ends: Array<_End_Task_>
   summary: string
   reason: string
   proposals: _Proposals_Card_
@@ -332,6 +333,14 @@ interface _Task_Header_ {
 }
 
 type _State_Task_ = "DRAFT" | "WORKING" | "YOUR_TURN" | "COMPLETED" | "CANCELED" | "DISCARDED"
+
+interface _End_Task_ {
+  kind: _Kind_End_
+  label: string
+  title: string
+}
+
+type _Kind_End_ = "COMPLETE" | "CANCEL" | "DISCARD"
 
 interface _Action_Task_ {
   command: string
@@ -630,7 +639,7 @@ function viewModelOf__Blocks(
 const HEADER_EMPTY: _Header_ViewModel_ = {
   mode: {
     kind: "MANUAL",
-    label: "Manual"
+    label: "No task"
   },
   switcher: {
     label: "Switch task",

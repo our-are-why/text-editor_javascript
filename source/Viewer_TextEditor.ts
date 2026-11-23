@@ -58,6 +58,7 @@ import {
   type _TASK_Target_Request_,
   type _Aim_Request_,
   type _Selected_Text_,
+  type _Kind_End_,
   sideOf__Run,
   type _Piece_Text_,
   type _Form_Request_,
@@ -103,6 +104,7 @@ export {
   type _START_Command_,
   type _STOP_Command_,
   type _TASK_Command_,
+  type _END_Command_,
   type _SWITCH_Command_,
   type _OPEN_FILE__Command_,
   type _SHOW_BOARD__Command_,
@@ -157,6 +159,7 @@ export {
   type _TASK_Scope_Work_,
   type _FRAME_Scope_Work_,
   type _TASK_Asked_Host_,
+  type _END_Asked_Host_,
   type _SWITCH_Asked_Host_,
   type _Target_Switch_,
   type __BASE_Target_Switch_,
@@ -513,7 +516,7 @@ interface _Answer_Edit_ {
   selection: _Selection_TextEditor_
 }
 
-type _Asked_Host_ = _ACTION_Asked_Host_ | _REQUEST_Asked_Host_ | _EDIT_Asked_Host_ | _REMOVE_Asked_Host_ | _DISMISS_Asked_Host_ | _START_Asked_Host_ | _STOP_Asked_Host_ | _TASK_Asked_Host_ | _SWITCH_Asked_Host_ | _OPEN_FILE__Asked_Host_ | _SHOW_BOARD__Asked_Host_ | _RERUN_Asked_Host_
+type _Asked_Host_ = _ACTION_Asked_Host_ | _REQUEST_Asked_Host_ | _EDIT_Asked_Host_ | _REMOVE_Asked_Host_ | _DISMISS_Asked_Host_ | _START_Asked_Host_ | _STOP_Asked_Host_ | _TASK_Asked_Host_ | _END_Asked_Host_ | _SWITCH_Asked_Host_ | _OPEN_FILE__Asked_Host_ | _SHOW_BOARD__Asked_Host_ | _RERUN_Asked_Host_
 
 interface __BASE_Asked_Host_<Kind extends string> {
   kind: Kind
@@ -582,6 +585,10 @@ interface _TASK_Asked_Host_ extends __BASE_Asked_Host_<"TASK"> {
   command: string
 }
 
+interface _END_Asked_Host_ extends __BASE_Asked_Host_<"END"> {
+  end: _Kind_End_
+}
+
 interface _SWITCH_Asked_Host_ extends __BASE_Asked_Host_<"SWITCH"> {
   target: _Target_Switch_
 }
@@ -637,7 +644,7 @@ interface _Adapter_Event_ {
   commandOf__Event: (event: Event) => _Command_TextEditor_ | null
 }
 
-type _Command_TextEditor_ = _POINT_Command_ | _POINT_WORDS__Command_ | _SHOW_WORDS__Command_ | _JUMP_Command_ | _FOLD_Command_ | _DRAFT_Command_ | _ACT_Command_ | _ACCEPT_ALL__Command_ | _CONFIRM_Command_ | _REMOVE_Command_ | _DISMISS_Command_ | _START_Command_ | _STOP_Command_ | _TASK_Command_ | _SWITCH_Command_ | _OPEN_FILE__Command_ | _SHOW_BOARD__Command_ | _RERUN_Command_ | _SEND_Command_ | _OPEN_MENU__Command_ | _STEP_MENU__Command_ | _CHOOSE_MENU__Command_ | _CLOSE_MENU__Command_ | _FOCUS_REQUEST__Command_ | _SCROLL_Command_ | _OPEN_REQUEST__Command_ | _CLOSE_CARD__Command_ | _SEND_REQUEST__Command_ | _CLOSE_REQUEST__Command_ | _DROP_QUOTE__Command_ | _LEAVE_REQUEST__Command_ | _EDIT_Command_ | _SAVE_EDIT__Command_ | _CLOSE_EDIT__Command_ | _DISCARD_Command_ | _VISIT_Command_ | _PLACE_Command_ | _DRAG_Command_ | _RELEASE_Command_ | _MOVE_Command_ | _EXTEND_Command_ | _INSERT_Command_ | _REPLACE_Command_ | _DELETE_Command_ | _UNDO_Command_ | _REDO_Command_ | _COPY_Command_ | _CUT_Command_ | _PASTE_Command_
+type _Command_TextEditor_ = _POINT_Command_ | _POINT_WORDS__Command_ | _SHOW_WORDS__Command_ | _JUMP_Command_ | _FOLD_Command_ | _DRAFT_Command_ | _ACT_Command_ | _ACCEPT_ALL__Command_ | _CONFIRM_Command_ | _REMOVE_Command_ | _DISMISS_Command_ | _START_Command_ | _STOP_Command_ | _TASK_Command_ | _END_Command_ | _SWITCH_Command_ | _OPEN_FILE__Command_ | _SHOW_BOARD__Command_ | _RERUN_Command_ | _SEND_Command_ | _OPEN_MENU__Command_ | _STEP_MENU__Command_ | _CHOOSE_MENU__Command_ | _CLOSE_MENU__Command_ | _FOCUS_REQUEST__Command_ | _SCROLL_Command_ | _OPEN_REQUEST__Command_ | _CLOSE_CARD__Command_ | _SEND_REQUEST__Command_ | _CLOSE_REQUEST__Command_ | _DROP_QUOTE__Command_ | _LEAVE_REQUEST__Command_ | _EDIT_Command_ | _SAVE_EDIT__Command_ | _CLOSE_EDIT__Command_ | _DISCARD_Command_ | _VISIT_Command_ | _PLACE_Command_ | _DRAG_Command_ | _RELEASE_Command_ | _MOVE_Command_ | _EXTEND_Command_ | _INSERT_Command_ | _REPLACE_Command_ | _DELETE_Command_ | _UNDO_Command_ | _REDO_Command_ | _COPY_Command_ | _CUT_Command_ | _PASTE_Command_
 
 interface __BASE_Command_<Kind extends string> {
   kind: Kind
@@ -701,6 +708,10 @@ interface _STOP_Command_ extends __BASE_Command_<"STOP"> {
 
 interface _TASK_Command_ extends __BASE_Command_<"TASK"> {
   command: string
+}
+
+interface _END_Command_ extends __BASE_Command_<"END"> {
+  end: _Kind_End_
 }
 
 interface _SWITCH_Command_ extends __BASE_Command_<"SWITCH"> {
@@ -1234,6 +1245,18 @@ function TASK_stateAfter__Command({
   ask_View({
     kind: "TASK",
     command: command.command
+  })
+  return state
+}
+
+function END_stateAfter__Command({
+  state,
+  command,
+  ask_View
+}: _Api___stateAfter__Command_<"END">): _State__Viewer_TextEditor_ {
+  ask_View({
+    kind: "END",
+    end: command.end
   })
   return state
 }
@@ -3409,6 +3432,7 @@ const HANDLERMAP__TEXTEDITOR: _HandlerMap__TextEditor_ = {
   START: START_stateAfter__Command,
   STOP: STOP_stateAfter__Command,
   TASK: TASK_stateAfter__Command,
+  END: END_stateAfter__Command,
   SWITCH: SWITCH_stateAfter__Command,
   OPEN_FILE: OPEN_FILE_stateAfter__Command,
   SHOW_BOARD: SHOW_BOARD_stateAfter__Command,

@@ -728,10 +728,10 @@
   }
 }
 
-/* on a card's line, set on its baseline as the figure beside it is, its
-   actions a hair taller than the figure's chip not making the line taller
-   as they open */
-.htmlView_editor .line_Card_htmlView > .fold_Action_htmlView {
+/* on a card's line, or its heading, set on its baseline as the figure
+   beside it is, its actions a hair taller than the figure's chip not
+   making the line taller as they open */
+.htmlView_editor :is(.line_Card_htmlView, .head_Card_htmlView) > .fold_Action_htmlView {
   margin-block: -1px;
 }
 
@@ -1794,26 +1794,22 @@
 }
 
 /* the task's state said by its name, the header having no mark for it,
-   as it only ever shows three, an editor whose task ends going to manual:
-   your turn, the name as it rests, what's waiting said beside it; a
-   draft, faded, its word shown after it, faded too, not bold; the agent
-   at work, the name shimmering, with whatever else is at work, or, where
-   motion's asked to be reduced, its word shown after it, as a draft's is;
-   the document's the same, its file's name shimmering while work's under
-   way on it, or its word shown, and otherwise as it rests, the header's
-   counts saying how far it's got */
-.htmlView_editor :is(.trigger_Task_htmlView > .state_Task_htmlView, .trigger_Document_htmlView > .state_Document_htmlView),
-.htmlView_editor .trigger_Task_htmlView[data-state="DRAFT"] > .name_Task_htmlView {
+   nor any word, as it only ever shows three, an editor whose task ends
+   going to manual: your turn, the name as it rests, what's waiting said
+   beside it; a draft, leaning, in the name's own ink, as nothing's under
+   way in it yet, where faded it read as disabled, its word only in its
+   card and the switcher, where it was shown after it, which no other
+   state's was; the agent at work, the name shimmering, with whatever else
+   is at work, or, where motion's asked to be reduced, its word shown after
+   it, faded, as the shimmer can't say it; the document's the same, its
+   file's name shimmering while work's under way on it, or its word shown,
+   and otherwise as it rests, the header's counts saying how far it's got */
+.htmlView_editor :is(.trigger_Task_htmlView > .state_Task_htmlView, .trigger_Document_htmlView > .state_Document_htmlView) {
   color: var(--view-placeholder-ink, color-mix(in srgb, CanvasText 58%, transparent));
 }
 
-.htmlView_editor .trigger_Task_htmlView[data-state="DRAFT"] > .state_Task_htmlView {
-  position: static;
-  width: auto;
-  height: auto;
-  margin-left: 0.45rem;
-  overflow: visible;
-  clip-path: none;
+.htmlView_editor .trigger_Task_htmlView[data-state="DRAFT"] > .name_Task_htmlView {
+  font-style: italic;
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -2001,9 +1997,12 @@
 }
 
 /* manual, this editor's mode where it's in no task, the file itself: in
-   the task's place, at the header's start, "Manual" where a task's
-   name is, with no mark, as a task has none there, opening no card of its
-   own, what it is said by the switcher after it */
+   the task's place, at the header's start, "No task" where a task's name
+   is, what's selected, none, as the name says which, never the mode,
+   where "Manual" named it, though no task's mode is named; muted, not
+   bold, as an empty state is, so it's never read as a task's name; with
+   no mark, as a task has none there, opening no card of its own, what it
+   is said by the switcher after it */
 .htmlView_editor .manual_Header_htmlView {
   display: flex;
   flex: none;
@@ -2013,8 +2012,7 @@
 }
 
 .htmlView_editor .name_Manual_htmlView {
-  font-weight: 600;
-  color: var(--view-ink, CanvasText);
+  color: var(--view-placeholder-ink, color-mix(in srgb, CanvasText 58%, transparent));
 }
 
 /* manual's mark, in the switcher's list, where a task's is: a pencil, in
@@ -2245,8 +2243,15 @@
   white-space: nowrap;
 }
 
-.htmlView_editor :is(.note_Option_htmlView, .here_Option_htmlView) {
+/* a draft's name leaning, as it does in the header, its dotted mark
+   saying the rest, where the word draft was said after it */
+.htmlView_editor .choice_Switcher_htmlView:has(> .mark_Task_htmlView[data-state="DRAFT"]) > .label_Option_htmlView {
+  font-style: italic;
+}
+
+.htmlView_editor .here_Option_htmlView {
   flex: none;
+  margin-left: auto;
   color: var(--view-placeholder-ink, color-mix(in srgb, CanvasText 58%, transparent));
   font-size: 0.88em;
 }
@@ -2264,10 +2269,10 @@
    stands, as part of a task can be the agent's while part waits on you:
    your part, what's to decide, or a conflict, in the removed red, or
    requests queued, waiting for you to start them, said as the cards say
-   them, in the revision's plum, still, or that it's ready to complete, in
-   the proposals' indigo, then the agent's, what's running, in the
-   revision's plum, the colours of the board's Needs you and With the
-   agent; a draft's in words, muted */
+   them, in the revision's plum, still, or that it's applicable, in the
+   proposals' indigo, then the agent's, what's running, in the revision's
+   plum, the colours of the board's Needs you and With agent; a draft's
+   only what it has queued, its name leaning */
 .htmlView_editor .parts_Option_htmlView {
   display: flex;
   flex: none;
@@ -2293,10 +2298,6 @@
 
 .htmlView_editor .part_Option_htmlView[data-kind="CONFLICT"] {
   color: color-mix(in srgb, var(--view-removed-edge, light-dark(#e51400, #f14c4c)) 80%, CanvasText);
-}
-
-.htmlView_editor .here_Option_htmlView {
-  margin-left: auto;
 }
 
 .htmlView_editor .tasks_Footer_htmlView {
@@ -2621,7 +2622,12 @@
 
 /* its heading: its id, in the editor's font, then where it stands, a
    floating dot between, after the one before it, so a heading that wraps
-   never starts a line with one; its name's the header's, just above */
+   never starts a line with one; its name's the header's, just above. At
+   its end, the ways the task ends, folded as a card's line's actions
+   are, Apply, once nothing's left on either side, and Cancel, a draft's
+   too, its starts where they've always been, as starting anything of it
+   starts it; its ellipsis in the muted ink its id's in, as the board's ⋮
+   is, no dot before it */
 .htmlView_editor .head_Card_htmlView {
   display: flex;
   flex-wrap: wrap;
@@ -2629,7 +2635,15 @@
   gap: 0 0.45rem;
 }
 
-.htmlView_editor .head_Card_htmlView > :not(:last-child)::after {
+.htmlView_editor .head_Card_htmlView > .fold_Action_htmlView {
+  margin-left: auto;
+}
+
+.htmlView_editor .head_Card_htmlView .more_htmlView {
+  --ink_More_htmlView: var(--view-placeholder-ink, color-mix(in srgb, CanvasText 58%, transparent));
+}
+
+.htmlView_editor .head_Card_htmlView > :not(:last-child, :has(+ .fold_Action_htmlView))::after {
   content: "·";
   margin-left: 0.45rem;
   color: var(--view-placeholder-ink, color-mix(in srgb, CanvasText 58%, transparent));
@@ -2731,7 +2745,7 @@
   color: var(--view-placeholder-ink, color-mix(in srgb, CanvasText 58%, transparent));
 }
 
-.htmlView_editor .line_Card_htmlView .actions_Card_htmlView {
+.htmlView_editor :is(.line_Card_htmlView, .head_Card_htmlView) .actions_Card_htmlView {
   margin-top: 0;
 }
 
@@ -2776,6 +2790,13 @@
 
 .htmlView_editor .actions_Card_htmlView > :is(.start_htmlView, .stop_htmlView, [data-ask]) {
   color: var(--accent_revision_htmlView);
+}
+
+/* a task's Cancel, a draft's letting it go as discarded, neutral, as
+   every Cancel is; its Apply yours, in the proposals' indigo, as the
+   card's actions are */
+.htmlView_editor .actions_Card_htmlView > :is([data-end="CANCEL"], [data-end="DISCARD"]) {
+  color: var(--view-action-ink, light-dark(#3b3b3b, #cccccc));
 }
 
 

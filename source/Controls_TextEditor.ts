@@ -5,11 +5,13 @@ import type {
   _SAVE_EDIT__Command_,
   _Scope_Work_,
   _Target_Switch_,
+  _END_Command_,
   _POINT_WORDS__Command_
 } from "./Viewer_TextEditor.ts"
 import type {
   _Id_Item_,
-  _Range_Lines_
+  _Range_Lines_,
+  _Kind_End_
 } from "./ViewModel_TextEditor.ts"
 
 export {
@@ -597,6 +599,15 @@ const CONTROLS__TEXTEDITOR: Array<_Adapter_Event_> = [
   {
     event: "click",
     commandOf__Event: (event) => {
+      const kind = event.target instanceof Element ? event.target.closest(".card_Task_htmlView [data-end]")?.getAttribute("data-end") : null
+      return typeof kind === "string" && isKind__End(kind)
+        ? COMMANDMAP__KIND_END[kind]
+        : null
+    }
+  },
+  {
+    event: "click",
+    commandOf__Event: (event) => {
       const element_Stop = event.target instanceof Element ? event.target.closest(".stop_Said_htmlView[data-stop]") : null
       const id = element_Stop?.getAttribute("data-stop")
       const asked = element_Stop === null || element_Stop === undefined
@@ -884,6 +895,31 @@ const SCOPEMAP__KIND_WORK: _ScopeMap__Kind_Work_ = {
   TASK: () => ({
     kind: "TASK"
   })
+}
+
+function isKind__End(
+  kind: string
+): kind is keyof _CommandMap__Kind_End_ {
+  return Object.hasOwn(COMMANDMAP__KIND_END, kind)
+}
+
+type _CommandMap__Kind_End_ = {
+  [Kind in _Kind_End_]: _END_Command_
+}
+
+const COMMANDMAP__KIND_END: _CommandMap__Kind_End_ = {
+  COMPLETE: {
+    kind: "END",
+    end: "COMPLETE"
+  },
+  CANCEL: {
+    kind: "END",
+    end: "CANCEL"
+  },
+  DISCARD: {
+    kind: "END",
+    end: "DISCARD"
+  }
 }
 
 interface _Api___idOf__Item_ {

@@ -27,7 +27,8 @@ import type {
   _Range_Lines_,
   _Decision_Proposal_,
   _State_Proposal_,
-  _State_Task_
+  _State_Task_,
+  _Kind_End_
 } from "../source/ViewModel_TextEditor.ts"
 import type { _Entry_Log_ } from "./example.ts"
 import { proposal_Yours, shownMap_State } from "./items.ts"
@@ -139,9 +140,12 @@ interface _Logged_Transaction_ {
 // as switching from the board moves every editor; a draft started works a
 // moment, with no agent, then waits on you, its requests become proposals
 // to decide, and the editor's own task starts and stops as its header's
-// Start and Stop do; completed, canceled or discarded, a task's resolved,
-// an editor in it going to manual; collected, it's gone. Each reported as
-// it's asked
+// Start and Stop do; completed, canceled or discarded, from the board or
+// from the card of the task an editor's in, a task's resolved, an editor
+// in it going to manual; collected, it's gone. Another task, switched to,
+// told the editor as the example says it stands, counted on the first
+// file it touches, and started and stopped from its card as from the
+// board. Each reported as it's asked
 function hostedOf__Editor<State>({
   containerElement,
   setup,
@@ -253,6 +257,31 @@ function hostedOf__Editor<State>({
       kind: "MANUAL"
     }
   }
+  const startedOther = (id: string) => {
+    restated(id, (task_Open) => ({
+      ...task_Open,
+      state: "WORKING",
+      count_Running: task_Open.count_Queued,
+      count_Queued: 0
+    }))
+    setTimeout(() => {
+      restated(id, (task_Open) => task_Open.state !== "WORKING"
+        ? task_Open
+        : {
+          ...task_Open,
+          state: "YOUR_TURN",
+          count_Undecided: task_Open.count_Undecided + task_Open.count_Running,
+          count_Running: 0
+        })
+      updated()
+    }, 1500)
+  }
+  const stoppedOther = (id: string) => restated(id, (task_Open) => ({
+    ...task_Open,
+    state: "YOUR_TURN",
+    count_Queued: task_Open.count_Queued + task_Open.count_Running,
+    count_Running: 0
+  }))
   const modeOf = (): _Mode_Host_ => {
     if (target_Mode.kind === "MANUAL") return {
       kind: "MANUAL"
@@ -270,7 +299,7 @@ function hostedOf__Editor<State>({
         }
         : {
           kind: "TASK",
-          task: taskOf__Standing(standing_Other)
+          task: taskOf__Other(standing_Other)
         }
   }
   const updated = () => {
@@ -623,9 +652,27 @@ function hostedOf__Editor<State>({
               board: containerElement_Board.hidden ? "hidden" : "shown"
             })
           } else if (asked_Host.kind === "START") {
-            started(asked_Host.scope)
+            if (target_Mode.kind === "TASK" && !isOwn()) {
+              log({
+                started: asked_Host.scope.kind,
+                task: target_Mode.id
+              })
+              startedOther(target_Mode.id)
+            } else started(asked_Host.scope)
           } else if (asked_Host.kind === "STOP") {
-            stopped(asked_Host.scope)
+            if (target_Mode.kind === "TASK" && !isOwn()) {
+              log({
+                stopped: asked_Host.scope.kind,
+                task: target_Mode.id
+              })
+              stoppedOther(target_Mode.id)
+            } else stopped(asked_Host.scope)
+          } else if (asked_Host.kind === "END") {
+            log({
+              ended: asked_Host.end,
+              task: target_Mode.kind === "TASK" ? target_Mode.id : null
+            })
+            if (target_Mode.kind === "TASK") resolved(target_Mode.id, stateMap_End[asked_Host.end])
           } else if (asked_Host.kind === "RERUN") {
             const source = asked_Host.source
             const requests_Base = bases_Source.get(source)?.requests ?? []
@@ -783,36 +830,12 @@ function hostedOf__Editor<State>({
             if (asked_Board.id === about_Task.id) started({
               kind: "TASK"
             })
-            else {
-              const id = asked_Board.id
-              restated(id, (task_Open) => ({
-                ...task_Open,
-                state: "WORKING",
-                count_Running: task_Open.count_Queued,
-                count_Queued: 0
-              }))
-              setTimeout(() => {
-                restated(id, (task_Open) => task_Open.state !== "WORKING"
-                  ? task_Open
-                  : {
-                    ...task_Open,
-                    state: "YOUR_TURN",
-                    count_Undecided: task_Open.count_Undecided + task_Open.count_Running,
-                    count_Running: 0
-                  })
-                updated()
-              }, 1500)
-            }
+            else startedOther(asked_Board.id)
           } else if (asked_Board.kind === "STOP") {
             if (asked_Board.id === about_Task.id) stopped({
               kind: "TASK"
             })
-            else restated(asked_Board.id, (task_Open) => ({
-              ...task_Open,
-              state: "YOUR_TURN",
-              count_Queued: task_Open.count_Queued + task_Open.count_Running,
-              count_Running: 0
-            }))
+            else stoppedOther(asked_Board.id)
           } else if (asked_Board.kind === "COMPLETE") {
             resolved(asked_Board.id, "COMPLETED")
           } else if (asked_Board.kind === "CANCEL") {
@@ -858,22 +881,54 @@ function boardedOf__Standing({
 }
 
 // one of the project's other tasks as the editor's told it, switched to:
-// what the example says of where it stands, and nothing of it here
-function taskOf__Standing(
-  standing_Task: _Standing_Task_
+// what the example says of where it stands, counted on the first file it
+// touches, none on the rest, and none as the file shown, which the editor
+// would count itself, as nothing of it's here
+function taskOf__Other(
+  task_Other: _Other_Task_
 ): _Task_Host_ {
   return {
-    id: standing_Task.id,
-    name: standing_Task.name,
-    state: standing_Task.state,
+    id: task_Other.id,
+    name: task_Other.name,
+    state: task_Other.state,
     summary: "",
     reason: "",
-    documents: [],
+    documents: task_Other.paths.map((
+      path,
+      index
+    ) => ({
+      name: path,
+      counts_Proposals: {
+        OPEN: index === 0 ? task_Other.count_Undecided : 0,
+        REQUESTED: 0,
+        REVISING: 0,
+        ACCEPTED: 0,
+        REJECTED: 0,
+        WITHDRAWN: 0
+      },
+      counts_Requests: {
+        QUEUED: index === 0 ? task_Other.count_Queued : 0,
+        RUNNING: index === 0 ? task_Other.count_Running : 0
+      },
+      isShown: false,
+      actions: []
+    })),
     summary_Document: "",
     requests: [],
     actions: [],
     actions_Document: []
   }
+}
+
+type _StateMap__Kind_End_ = {
+  [Kind in _Kind_End_]: _State_Task_
+}
+
+// the state each way of ending a task leaves it in
+const stateMap_End: _StateMap__Kind_End_ = {
+  COMPLETE: "COMPLETED",
+  CANCEL: "CANCELED",
+  DISCARD: "DISCARDED"
 }
 
 interface _Api___statedOf__Proposal_ {

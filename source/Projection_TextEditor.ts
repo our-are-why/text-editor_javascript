@@ -33,6 +33,7 @@ import {
   type _Aim_Request_,
   type _Request_Item_,
   type _State_Task_,
+  type _End_Task_,
   type _State_Document_,
   type _Action_Task_,
   type _Header_ViewModel_,
@@ -335,7 +336,7 @@ function headerOf__Proposals({
     mode: mode.kind === "MANUAL"
       ? {
         kind: "MANUAL",
-        label: "Manual"
+        label: "No task"
       }
       : {
         kind: "TASK",
@@ -344,6 +345,7 @@ function headerOf__Proposals({
           name: mode.task.name,
           state: mode.task.state,
           label_State: LABELMAP__STATE_TASK[mode.task.state],
+          ends: ENDSMAP__STATE_TASK[mode.task.state](totalOf__Counts(counts_Task) - decidedOf__Counts(counts_Task) + counts_Requests_Task.QUEUED + counts_Requests_Task.RUNNING),
           summary: mode.task.summary,
           reason: mode.task.reason,
           proposals: {
@@ -497,10 +499,6 @@ function switcherOf__Tasks({
           parts: standing_Task.state === "DRAFT"
             ? [
               {
-                kind: "PLAIN",
-                text: NOTEMAP__STATE_TASK.DRAFT
-              },
-              {
                 kind: "QUEUED",
                 text: `${standing_Task.count_Queued} queued`
               }
@@ -509,8 +507,7 @@ function switcherOf__Tasks({
         })),
         {
           kind: "MANUAL",
-          label: "Manual",
-          note: "the file itself",
+          label: "No task",
           isHere: mode.kind === "MANUAL"
         }
       ]
@@ -525,7 +522,7 @@ const NOTEMAP__STATE_TASK: _NoteMap__State_Task_ = {
   DRAFT: "draft",
   WORKING: "working",
   YOUR_TURN: "needs you",
-  COMPLETED: "completed",
+  COMPLETED: "applied",
   CANCELED: "canceled",
   DISCARDED: "discarded"
 }
@@ -578,7 +575,7 @@ function partsOf__Counts_Task(
     ? [
       {
         kind: "YOURS" as const,
-        text: "ready to complete"
+        text: "applicable"
       }
     ]
     : yours
@@ -915,9 +912,56 @@ const LABELMAP__STATE_TASK: _LabelMap__State_Task_ = {
   DRAFT: "Draft",
   WORKING: "Working",
   YOUR_TURN: "Your turn",
-  COMPLETED: "Completed",
+  COMPLETED: "Applied",
   CANCELED: "Canceled",
   DISCARDED: "Discarded"
+}
+
+type _EndsMap__State_Task_ = {
+  [State in _State_Task_]: (count_Left: number) => Array<_End_Task_>
+}
+
+const ENDSMAP__STATE_TASK: _EndsMap__State_Task_ = {
+  DRAFT: (count_Left) => [
+    ...applyOf__Count_Left(count_Left),
+    {
+      kind: "DISCARD",
+      label: "Cancel",
+      title: "Lets the draft go, its requests and any edits made in it"
+    }
+  ],
+  WORKING: (count_Left) => endsOf__Task_Open(count_Left),
+  YOUR_TURN: (count_Left) => endsOf__Task_Open(count_Left),
+  COMPLETED: () => [],
+  CANCELED: () => [],
+  DISCARDED: () => []
+}
+
+function applyOf__Count_Left(
+  count_Left: number
+): Array<_End_Task_> {
+  return count_Left > 0
+    ? []
+    : [
+      {
+        kind: "COMPLETE",
+        label: "Apply",
+        title: "Applies what's accepted in the task, and your edits in it, to every file it touches"
+      }
+    ]
+}
+
+function endsOf__Task_Open(
+  count_Left: number
+): Array<_End_Task_> {
+  return [
+    ...applyOf__Count_Left(count_Left),
+    {
+      kind: "CANCEL",
+      label: "Cancel",
+      title: "Lets the task go, what's accepted in it and your edits in it, stopping what's running"
+    }
+  ]
 }
 
 type _ProgressMap__Status_Request_ = {

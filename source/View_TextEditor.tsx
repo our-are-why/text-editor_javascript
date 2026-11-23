@@ -114,6 +114,7 @@ class _View_TextEditor_ {
   top_Jumped: number
   placed$: _Placed$_View_
   heightKept_Card: number
+  key$_Option_Switcher: Array<string>
 
   constructor({
     containerElement,
@@ -151,6 +152,14 @@ class _View_TextEditor_ {
       FORM: null
     }
     this.heightKept_Card = window.innerHeight
+    this.key$_Option_Switcher = []
+    this.containerElement.addEventListener(
+      "transitionend",
+      (event) => {
+        if (!(event.target instanceof Element) || !event.target.matches(".card_Switcher_htmlView") || event.propertyName !== "visibility" || getComputedStyle(event.target).visibility !== "hidden") return
+        this.closed_Switcher()
+      }
+    )
     this.containerElement.addEventListener(
       "scroll",
       () => this.scrolled(),
@@ -177,6 +186,9 @@ class _View_TextEditor_ {
     const class_Card = classOf__Card_Focused({
       containerElement_View: this.containerElement
     })
+    const key$_Option_Open = key$Of__Switcher_Open({
+      containerElement_View: this.containerElement
+    })
     draw__View_TextEditor({
       containerElement_View: this.containerElement,
       componentMap_View: this.componentMap,
@@ -196,6 +208,13 @@ class _View_TextEditor_ {
     keptOpen__Card({
       containerElement_View: this.containerElement,
       class_Card
+    })
+    this.key$_Option_Switcher = key$Of__Switcher({
+      containerElement_View: this.containerElement
+    })
+    drawOrder__Switcher({
+      containerElement_View: this.containerElement,
+      key$_Option: key$_Option_Open
     })
     this.run$ = viewModel_TextEditor.runs
     this.selection = viewModel_TextEditor.selection
@@ -420,6 +439,13 @@ class _View_TextEditor_ {
       containerElement_View: this.containerElement
     })
   }
+
+  closed_Switcher(): void {
+    drawOrder__Switcher({
+      containerElement_View: this.containerElement,
+      key$_Option: this.key$_Option_Switcher
+    })
+  }
 }
 
 interface _Api__View_TextEditor_ {
@@ -458,6 +484,38 @@ function classOf__Card_Focused({
   return element_Card === null || element_Card === undefined || !containerElement_View.contains(element_Card)
     ? null
     : [...element_Card.classList].find((name) => name !== "card_htmlView") ?? null
+}
+
+interface _Api___key$Of__Switcher_Open_ {
+  containerElement_View: HTMLElement
+}
+
+function key$Of__Switcher_Open({
+  containerElement_View
+}: _Api___key$Of__Switcher_Open_): Array<string> {
+  const element_Card = containerElement_View.querySelector(".card_Switcher_htmlView")
+  return element_Card === null || getComputedStyle(element_Card).visibility !== "visible"
+    ? []
+    : key$Of__Switcher({
+      containerElement_View
+    })
+}
+
+interface _Api___key$Of__Switcher_ {
+  containerElement_View: HTMLElement
+}
+
+function key$Of__Switcher({
+  containerElement_View
+}: _Api___key$Of__Switcher_): Array<string> {
+  return [...containerElement_View.querySelectorAll(".list_Switcher_htmlView > .option_Switcher_htmlView")].map((element_Option) => keyOf__Option_Switcher(element_Option))
+}
+
+function keyOf__Option_Switcher(
+  element_Option: Element
+): string {
+  const element_Choice = element_Option.querySelector(".choice_Switcher_htmlView")
+  return `${element_Choice?.getAttribute("data-switch") ?? ""} ${element_Choice?.getAttribute("data-id") ?? ""}`
 }
 
 interface _Api___draw__View_TextEditor_ {
@@ -674,6 +732,7 @@ function Task_Header__Html({
           >
             {task_Header.label_State}
           </span>
+          <Action$_Head__Html task_Header={task_Header} />
         </p>
         {task_Header.summary !== "" && (
           <p
@@ -698,6 +757,57 @@ function Task_Header__Html({
         />
       </div>
     </div>
+  )
+}
+
+interface _Api___Action$_Head__Html_ {
+  task_Header: _Task_Header_
+}
+
+function Action$_Head__Html({
+  task_Header
+}: _Api___Action$_Head__Html_): _Node_Jsx_ {
+  return task_Header.ends.length === 0
+    ? null
+    : (
+      <Fold_Action$__Html>
+        <span
+          class="actions_Card_htmlView folded_htmlView"
+          role="group"
+          aria-label="Task actions"
+        >
+          {task_Header.ends.map((end_Task) => (
+            <button
+              type="button"
+              class="action_htmlView"
+              data-end={end_Task.kind}
+              title={end_Task.title}
+            >
+              {end_Task.label}
+            </button>
+          ))}
+        </span>
+      </Fold_Action$__Html>
+    )
+}
+
+interface _Api___Fold_Action$__Html_ {
+  children: _Node_Jsx_
+}
+
+function Fold_Action$__Html({
+  children
+}: _Api___Fold_Action$__Html_): JSX.Element {
+  return (
+    <span class="fold_Action_htmlView">
+      <span
+        class="more_htmlView"
+        aria-hidden="true"
+      >
+        …
+      </span>
+      {children}
+    </span>
   )
 }
 
@@ -785,26 +895,6 @@ function Proposals_Card__Html({
           </div>
         )}
     </section>
-  )
-}
-
-interface _Api___Fold_Action$__Html_ {
-  children: _Node_Jsx_
-}
-
-function Fold_Action$__Html({
-  children
-}: _Api___Fold_Action$__Html_): JSX.Element {
-  return (
-    <span class="fold_Action_htmlView">
-      <span
-        class="more_htmlView"
-        aria-hidden="true"
-      >
-        …
-      </span>
-      {children}
-    </span>
   )
 }
 
@@ -1146,7 +1236,6 @@ function MANUAL_Option_Switcher__Html({
           aria-hidden="true"
         />
         <span class="label_Option_htmlView">{option_Switcher.label}</span>
-        <span class="note_Option_htmlView">{option_Switcher.note}</span>
         {option_Switcher.isHere && <span class="here_Option_htmlView">{label_Here}</span>}
       </button>
     </li>
@@ -5513,6 +5602,38 @@ function keptOpen__Card({
   containerElement_View.querySelector<HTMLElement>(`.${CSS.escape(class_Card)}`)?.focus({
     preventScroll: true
   })
+}
+
+interface _Api___drawOrder__Switcher_ {
+  containerElement_View: HTMLElement
+  key$_Option: Array<string>
+}
+
+function drawOrder__Switcher({
+  containerElement_View,
+  key$_Option
+}: _Api___drawOrder__Switcher_): void {
+  const element_List = containerElement_View.querySelector(".list_Switcher_htmlView")
+  if (element_List === null) return
+  const rankOf = (element_Option: Element) => {
+    const index = key$_Option.indexOf(keyOf__Option_Switcher(element_Option))
+    return index === -1 ? key$_Option.length : index
+  }
+  const option$ = [...element_List.children]
+  const option$_Ordered = option$.toSorted((
+    element_Option,
+    element_Option_Other
+  ) => rankOf(element_Option) - rankOf(element_Option_Other))
+  if (option$_Ordered.every((
+    element_Option,
+    index
+  ) => element_Option === option$[index])) return
+  for (const element_Option of option$_Ordered) {
+    element_List.moveBefore(
+      element_Option,
+      null
+    )
+  }
 }
 
 interface _Api___keptInEditor__View_TextEditor_ {

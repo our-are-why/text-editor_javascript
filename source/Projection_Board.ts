@@ -67,7 +67,7 @@ function viewModelOf__Tasks_Board({
       },
       {
         kind: "AGENT",
-        label: "With the agent",
+        label: "With agent",
         count: tiles_Agent.length,
         label_Empty: "None",
         tiles: tiles_Agent
@@ -148,26 +148,32 @@ type _ActionsMap__State_Task_ = {
 }
 
 const MOREMAP__STATE_TASK: _ActionsMap__State_Task_ = {
-  DRAFT: () => [
-    {
-      kind: "START",
-      label: "Start"
-    },
-    {
-      kind: "DISCARD",
-      label: "Discard"
-    }
-  ],
-  WORKING: (task_Board) => actionsOf__Task_Open(task_Board),
-  YOUR_TURN: (task_Board) => actionsOf__Task_Open(task_Board),
+  DRAFT: (task_Board) => actionsOf__Task_Open({
+    task_Board,
+    kind_Cancel: "DISCARD"
+  }),
+  WORKING: (task_Board) => actionsOf__Task_Open({
+    task_Board,
+    kind_Cancel: "CANCEL"
+  }),
+  YOUR_TURN: (task_Board) => actionsOf__Task_Open({
+    task_Board,
+    kind_Cancel: "CANCEL"
+  }),
   COMPLETED: () => [],
   CANCELED: () => [],
   DISCARDED: () => []
 }
 
-function actionsOf__Task_Open(
+interface _Api___actionsOf__Task_Open_ {
   task_Board: _Task_Board_
-): Array<_Action_Tile_> {
+  kind_Cancel: "CANCEL" | "DISCARD"
+}
+
+function actionsOf__Task_Open({
+  task_Board,
+  kind_Cancel
+}: _Api___actionsOf__Task_Open_): Array<_Action_Tile_> {
   return [
     ...task_Board.count_Queued === 0
       ? []
@@ -190,11 +196,11 @@ function actionsOf__Task_Open(
       : [
         {
           kind: "COMPLETE" as const,
-          label: "Complete"
+          label: "Apply"
         }
       ],
     {
-      kind: "CANCEL",
+      kind: kind_Cancel,
       label: "Cancel"
     }
   ]

@@ -575,7 +575,7 @@ const javascript: _Example_ = {
           name: "Say what the README promises",
           state: "YOUR_TURN",
           isOnDocument: false,
-          count_Undecided: 3,
+          count_Undecided: 0,
           count_Conflicts: 0,
           count_Queued: 0,
           count_Running: 0,

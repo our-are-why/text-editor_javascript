@@ -33,29 +33,29 @@ test("the board: how many are open, and a column for each of who they're waiting
   expect(viewModel_Board.label_Count).toBe("7 open")
   expect(viewModel_Board.columns.map((column) => `${column.kind} ${column.label} ${column.count}`)).toEqual([
     "YOURS Needs you 5",
-    "AGENT With the agent 1",
+    "AGENT With agent 1",
     "DRAFTS Drafts 1",
     "RESOLVED Resolved 3"
   ])
 })
 
-test("a tile: its parts, the most pressing of yours, a conflict over the rest, ready to complete when nothing's left, requests queued, said so, as the editor says them, yours till started, then the agent's, or a draft's requests, queued; in file, if it touches the file an editor's showing, not named; whether an editor shows it; and what it offers behind its ···: Complete only once nothing's running or left to decide", () => {
+test("a tile: its parts, the most pressing of yours, a conflict over the rest, applicable when nothing's left, requests queued, said so, as the editor says them, yours till started, then the agent's, or a draft's requests, queued; in file, if it touches the file an editor's showing, not named; whether an editor shows it; and what it offers behind its ···: Complete only once nothing's running or left to decide", () => {
   const tiles = viewModel_Board.columns.flatMap((column) => column.kind === "RESOLVED" ? [] : column.tiles)
   expect(tiles.map((tile) => [tile.id, tile.isInView, tile.label_InView, tile.parts.map((part) => `${part.kind} ${part.text}`).join(", "), tile.isShown, tile.actions_More.map((action) => action.label).join(" ")])).toEqual([
     ["T-1", false, "in file", "YOURS 3 to decide", false, "Cancel"],
     ["T-2", true, "in file", "CONFLICT 1 conflict", true, "Cancel"],
-    ["T-3", true, "in file", "YOURS ready to complete", false, "Complete Cancel"],
+    ["T-3", true, "in file", "YOURS applicable", false, "Apply Cancel"],
     ["T-4", true, "in file", "YOURS 14 to decide, AGENT 2 running", true, "Start all (8) Stop Cancel"],
     ["T-11", true, "in file", "QUEUED 2 queued", false, "Start all (2) Cancel"],
     ["T-10", true, "in file", "AGENT 1 running", false, "Stop Cancel"],
-    ["T-5", true, "in file", "QUEUED 1 queued", false, "Start Discard"]
+    ["T-5", true, "in file", "QUEUED 1 queued", false, "Start all (1) Cancel"]
   ])
 })
 
 test("resolved tasks: a row each, how it ended in a word, and Delete for them all, for good; an empty column says None, its heading saying what of", () => {
   const resolved = viewModel_Board.columns.find((column) => column.kind === "RESOLVED")
   expect(resolved?.kind === "RESOLVED" ? [resolved.rows.map((row) => `${row.id} ${row.label_State}`), resolved.ids, resolved.label_Collect, resolved.title_Collect] : null).toEqual([
-    ["T-6 completed", "T-7 canceled", "T-8 discarded"],
+    ["T-6 applied", "T-7 canceled", "T-8 discarded"],
     ["T-6", "T-7", "T-8"],
     "Delete",
     "Delete every resolved task, for good"

@@ -633,7 +633,7 @@ test("an action that would drop revisions queued is asked first: pressed, nothin
       ...state_Queued.viewModel_TextEditor,
       header: {
         ...state_Queued.viewModel_TextEditor.header,
-        mode: { kind: "TASK", task: { id: "T-3", name: "Tidy", state: "WORKING", label_State: "Working", summary: "", reason: "", proposals: { figure: null, documents: [], actions: [] }, revisions_Scope: { figure: null, start_All: null, stop_All: null, actions: [] }, revisions_Level: { requests: [], isStartable_Requests: false, isStoppable_Requests: false, ask: { label: "Revise", label_Form: "Revise the task" } } } }
+        mode: { kind: "TASK", task: { id: "T-3", name: "Tidy", state: "WORKING", label_State: "Working", ends: [], summary: "", reason: "", proposals: { figure: null, documents: [], actions: [] }, revisions_Scope: { figure: null, start_All: null, stop_All: null, actions: [] }, revisions_Level: { requests: [], isStartable_Requests: false, isStoppable_Requests: false, ask: { label: "Revise", label_Form: "Revise the task" } } } }
       }
     }
   }
