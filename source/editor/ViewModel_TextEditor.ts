@@ -6,7 +6,7 @@ import {
   type _NonEmpty_,
   mapped__NonEmpty,
   parseTexts_Line
-} from "./Model_TextEditor.ts"
+} from "../documents/index.ts"
 
 export {
   type _ViewModel_TextEditor_,

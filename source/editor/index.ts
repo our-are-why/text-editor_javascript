@@ -56,23 +56,6 @@ import {
   type _Side_Text_,
   type _Part_Task_
 } from "./ViewModel_TextEditor.ts"
-import {
-  parseTexts_Line,
-  type _Range_Text_,
-  comparisonOf__Texts,
-  indexOf__Position,
-  positionOf__Index,
-  type _Text_Model_,
-  type _Run_Comparison_,
-  type _Changes_Host_,
-  type _Change_Host_,
-  type _Model_TextEditor_,
-  type _Transaction_Model_,
-  type _Change_,
-  rebasedOf__Changes,
-  parseModel_TextEditor,
-  type _Mark_Text_
-} from "./Model_TextEditor.ts"
 import { MODULE_KEYBOARD } from "./modules/keyboard.ts"
 import { MODULE_MOUSE } from "./modules/mouse.ts"
 import { MODULE_WORDS_TEXT } from "./words/text.ts"
@@ -129,21 +112,6 @@ export {
   type _Piece_Text_,
   type _Side_Text_,
   type _Part_Task_,
-  parseTexts_Line,
-  type _Range_Text_,
-  comparisonOf__Texts,
-  indexOf__Position,
-  positionOf__Index,
-  type _Text_Model_,
-  type _Run_Comparison_,
-  type _Changes_Host_,
-  type _Change_Host_,
-  type _Model_TextEditor_,
-  type _Transaction_Model_,
-  type _Change_,
-  rebasedOf__Changes,
-  parseModel_TextEditor,
-  type _Mark_Text_,
   MODULE_KEYBOARD,
   MODULE_MOUSE,
   MODULE_WORDS_TEXT,

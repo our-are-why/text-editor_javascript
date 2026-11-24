@@ -301,8 +301,9 @@ interface _CHANGE_Step_Transaction_
 }
 ```
 
-Written, as `source/editor/Model_TextEditor.ts`, tested without a screen in
-`tests/Model_TextEditor.test.ts`, the host's changes given as
+Written, as `source/editor/Model_TextEditor.ts`, moved to
+`source/documents/` with the documents part (2026-11-24), tested without a
+screen in `tests/Model_TextEditor.test.ts`, the host's changes given as
 `_Changes_Host_`, each text one string, as it writes it. It was sketched
 once before, as `source/Model_Editor.ts`, and taken back out: the view's
 scenes came first, written by hand as what's shown, as turning a document

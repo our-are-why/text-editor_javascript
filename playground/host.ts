@@ -1,12 +1,7 @@
 import {
   _TextEditor_,
   type _Setup_TextEditor_,
-  type _Model_TextEditor_,
-  type _Transaction_Model_,
-  type _Change_,
-  rebasedOf__Changes,
   type _Proposal_Host_,
-  type _Landed_Round_,
   type _Request_Host_,
   type _Selected_Text_,
   type _Scope_Work_,
@@ -15,11 +10,22 @@ import {
   type _Mode_Host_
 } from "../source/editor/index.ts"
 import {
+  type _Model_TextEditor_,
+  type _Stale_Source_,
+  type _Changes_Source_,
+  _Documents_,
+  type _Document_Documents_,
+  type _Head_Document_,
+  carriedOf__Head,
+  checkedOf__Head
+} from "../source/documents/index.ts"
+import {
   _Board_,
   COMPONENTMAP__VIEW_BOARD
 } from "../source/board/index.ts"
 import {
   _Tasks_,
+  isOwn__Source,
   type _Task_Tasks_,
   type _Scope_Tasks_,
   type _Stamp_Tasks_,
@@ -36,9 +42,11 @@ import {
   taskHostOf__Task,
   waitingOf__Task,
   scopeOf__Work,
+  roundsOf__Stale,
   type _About_Task_,
   type _Other_Task_,
-  type _Resolved_Task_
+  type _Resolved_Task_,
+  type _Content_Task_
 } from "./tasks.ts"
 
 export {
@@ -53,7 +61,7 @@ interface _Api___hostedOf__Editor_<State> {
   model_TextEditor: _Model_TextEditor_
   name_Document: string
   proposals: Array<_Proposal_Host_>
-  rounds_Landed: Array<_Landed_Round_>
+  stale: Array<_Stale_Source_>
   about_Task: _About_Task_
   tasks_Other: Array<_Other_Task_>
   tasks_Resolved: Array<_Resolved_Task_>
@@ -64,71 +72,76 @@ interface _Api___hostedOf__Editor_<State> {
 }
 
 interface _Base_Run_ {
-  version: number
-  changes: Array<_Change_>
+  version: string
+  proposed: Array<_Changes_Source_>
   requests: Array<_Request_Host_>
 }
 
-interface _Logged_Transaction_ {
-  version: number
-  transaction: _Transaction_Model_
-}
-
-// the playground as a host: an editor of a document, and the project's
-// tasks, held by the tasks part, `_Tasks_`, from what the example says of
-// them, the task the playground's on and the project's others alike, open
-// or resolved; what's only the editor's kept here beside it: the words
-// every request was sent on, and the content on the document of the task
-// the playground's on, the one with proposals here, its proposals'
-// changes, the rounds that landed and each proposal's attributes. The
-// editor and the board told what they show from the tasks part, every
-// count of it the tasks part's, the editor in any task shown what's asked
-// of it on the document, and in the task the playground's on, its content.
-// The editor told of each edit, keeping the document it leaves, and the
-// changes of the task the playground's on, carried across it when the
-// editor's elsewhere;
-// and of each action asked of a proposal, taking it at once: decided, by
-// the tasks part, what was asked of it and not addressed let go; a
-// revision's notes queued on it, with the words they're on, if they are,
-// each its own id, one removed when you remove it; dismissed, it's gone,
-// its changes with it; and sending the editor what it now has. Start, at
-// any scope, in any task, sets what's queued there going, a proposal never
-// revised by two rounds at once, and, with no agent to revise them, a
-// moment later they're done with, as a new round would answer them, what's
-// queued since left for the next. A round's written on the document as it
-// was when it started, its base, here the proposal's changes as they were
-// then, as there's no agent to write others, and lands on the document as
-// it is, through every edit since, by the editor's rebasing, its landing
-// told the editor, so changes written before your edits are marked; Run
-// again puts that round's requests back in the queue and starts them, or,
-// for a round it didn't start, asks again, on the document as it is now. A
-// request on no proposal, the document's own or the task's, in any task,
-// answered with nothing to change, as there's no agent to propose one. Stop
-// puts what's running back in the queue.
+// the playground as a host: an editor of a document; the project's tasks,
+// held by the tasks part, `_Tasks_`, from what the example says of them,
+// the task the playground's on and the project's others alike, open or
+// resolved, each task's changes on the document its head there; and the
+// document, held by the documents part, `_Documents_`, its version, its copy
+// and the edits since any version a round's still written on. What's only
+// the editor's kept here beside them: the words every request was sent on,
+// and, of the task the playground's on, the one with proposals here, each
+// proposal's attributes and those dismissed. The editor and the board told
+// what they show from the tasks part, every count of it the tasks part's,
+// conflicts too, and the editor, in any task, that task's head, its changes
+// and which of them are stale.
+// The editor told of each edit: the document's own steps an edit of the
+// document, by the documents part, a new version; the head of the task the
+// editor's in as the editor leaves it; and every other open task's head on
+// the document carried across the edit by the documents part, a change the
+// edit touched stale, a conflict if it's the task's own, yours or accepted,
+// out of date if it's still a proposal, and clean again once the text it
+// was written over is back, the editor's task's checked too; the editor and the board told the
+// tasks as they then stand if that changed them, the editor keeping its
+// model, and its undo history. And of each action asked of a
+// proposal, taking it at once: decided, by the tasks part, what was asked of
+// it and not addressed let go, its being out of date with it; a revision's
+// notes queued on it, with the words they're on, if they are, each its own
+// id, one removed when you remove it; dismissed, it's gone, its changes with
+// it; and sending the editor what it now has. Start, at any scope, in any
+// task, sets what's queued there going, a proposal never revised by two
+// rounds at once, and, with no agent to revise them, a moment later they're
+// done with, as a new round would answer them, what's queued since left for
+// the next. A round's written on the document as it was when it started,
+// its base, here the proposal's changes as they were then, as there's no
+// agent to write others, and lands on the document as it is, carried
+// across every edit since by the documents part, which keeps those edits
+// till nothing's written on an older version, so changes written before
+// your edits are marked; Run again puts that round's requests back in the
+// queue and starts them, or, for a round it didn't start, asks again, on
+// the document as it is now. A request on no proposal, the document's own
+// or the task's, in any task, answered with nothing to change, as there's
+// no agent to propose one. Stop puts what's running back in the queue.
 // A request for a change on no proposal, with the words it was sent with,
 // or none, queued in the task the editor's in, started with the rest, or at
 // once when asked to; one sent with no task drafting a new one, named for
 // it, the editor in it from then on. Each reported as it's told.
 // The editor's mode, its task at first: switched, to manual or to another
 // of the project's tasks, the editor shown what's asked of it on the
-// document, and its content only in the task the playground's on. The project's files, the example's, listed for the editor to
-// open, an opening reported, as the playground has one document an
-// example, and an editor's language its setup's.
+// document and its head there. The project's files, the example's, listed
+// for the editor to open, an opening reported, as the playground has one
+// document an example, and an editor's language its setup's.
 // The board, every task of the project, under the editor, hidden till the
 // editor's footer is pressed, and hidden again when it's pressed again, as
 // a host shows and hides a view, told the file the editor shows: a task
 // pressed switches the editor to it, as switching from the board moves
-// every editor; started or stopped, as from its card; applied, canceled or
-// discarded, from the board or from the card of the task an editor's in, a
-// task's resolved, an editor in it going to manual; collected, it's gone.
-// Each reported as it's asked
+// every editor; started or stopped, as from its card; applied, from the
+// board or from the card of the task an editor's in, its head made the
+// document, its own changes and what's accepted, every other open task's
+// head carried across it; canceled or discarded, its head kept with it, the
+// document as it was; a task resolved, an editor in it going to manual;
+// collected, it's gone. Each reported as it's asked
 function hostedOf__Editor<State>({
   containerElement,
   setup,
   model_TextEditor,
   name_Document,
   proposals,
-  rounds_Landed,
+  stale,
   about_Task,
   tasks_Other,
   tasks_Resolved,
@@ -141,7 +154,7 @@ function hostedOf__Editor<State>({
     name_Document,
     model_TextEditor,
     proposals,
-    rounds_Landed,
+    stale,
     about_Task,
     tasks_Other,
     tasks_Resolved,
@@ -153,18 +166,30 @@ function hostedOf__Editor<State>({
     model_Tasks: seed.model_Tasks,
     observers: []
   })
+  const documents = new _Documents_({
+    model_Documents: {
+      documents: []
+    },
+    observers: []
+  })
+  documents.handle({
+    kind: "OPEN",
+    path: name_Document,
+    text: model_TextEditor.document
+  })
   const references = seed.references
   let content_Own = seed.content_Own
+  const content_Other: _Content_Task_ = {
+    attributes: new Map(),
+    sources_Dismissed: new Set()
+  }
   let target_Mode: _Target_Switch_ = {
     kind: "TASK",
     id: about_Task.id
   }
-  let document_Host = model_TextEditor.document
   let count_Request = 0
-  let version = 0
   let count_Round = 0
   const rounds_Request = new Map<string, number>()
-  const transactions_Logged: Array<_Logged_Transaction_> = []
   const bases_Source = new Map<string, _Base_Run_>()
   const keyOf = (
     id_Task: string,
@@ -175,7 +200,65 @@ function hostedOf__Editor<State>({
     const task = target_Mode.kind === "TASK" ? taskOf(target_Mode.id) : undefined
     return task?.kind === "OPEN" ? task : undefined
   }
-  const isOwn_Shown = () => taskIn()?.id === about_Task.id
+  const documentOf = (): _Document_Documents_ => {
+    const document = documents.model_Documents.documents.find((document_Each) => document_Each.path === name_Document)
+    if (document === undefined) throw new Error(`${name_Document} isn't kept`)
+    return document
+  }
+  const headOf = (task: _Task_Tasks_) => task.heads.find((head) => head.path === name_Document)
+  // a task's head on the document changed, restated by the tasks part, one
+  // it hasn't yet begun on the document as it is
+  const restated = (
+    id_Task: string,
+    change: (head: _Head_Document_) => _Head_Document_
+  ) => {
+    const task = taskOf(id_Task)
+    if (task === undefined) return
+    tasks.handle({
+      kind: "RESTATE",
+      id_Task,
+      head: change(headOf(task) ?? {
+        path: name_Document,
+        version: documentOf().version,
+        proposed: [],
+        stale: []
+      })
+    })
+  }
+  // every open task's head on the document carried across what moved the
+  // document since its version, but those already restated
+  const carried = (ids_Except: Array<string>) => {
+    const document = documentOf()
+    for (const task of tasks.model_Tasks.tasks) {
+      const head = headOf(task)
+      if (task.kind !== "OPEN" || ids_Except.includes(task.id) || head === undefined) continue
+      tasks.handle({
+        kind: "RESTATE",
+        id_Task: task.id,
+        head: carriedOf__Head({
+          document,
+          head
+        })
+      })
+    }
+  }
+  // the edits nothing's written on any more let go: kept from the oldest
+  // version a round still running was written on
+  const released = () => {
+    const versions = [...bases_Source].flatMap(([key, base]) => {
+      const [
+        id_Task,
+        source
+      ] = key.split("\n")
+      const isRunning = (taskOf(id_Task ?? "")?.requests ?? []).some((request) => request.status.kind === "STARTED" && request.aim.kind === "PROPOSAL" && request.aim.id_Proposal === source)
+      return isRunning ? [base.version] : []
+    })
+    documents.handle({
+      kind: "RELEASE",
+      path: name_Document,
+      versions
+    })
+  }
   const modeOf = (): _Mode_Host_ => {
     const task = taskIn()
     return task === undefined
@@ -193,11 +276,11 @@ function hostedOf__Editor<State>({
   }
   const proposalsOf = () => {
     const task = taskIn()
-    return task === undefined || !isOwn_Shown()
+    return task === undefined
       ? []
       : proposalsHostOf__Task({
         task,
-        content: content_Own,
+        content: task.id === about_Task.id ? content_Own : content_Other,
         name_Document,
         references
       })
@@ -230,65 +313,98 @@ function hostedOf__Editor<State>({
         kind: "MANUAL"
       }
     }
+    const task = taskIn()
+    const head = task === undefined ? undefined : headOf(task)
+    released()
     editor.update({
       model_TextEditor: {
-        document: document_Host,
-        proposed: isOwn_Shown() ? content_Own.proposed : []
+        document: documentOf().text,
+        proposed: head?.proposed ?? []
       },
       name_Document,
       proposals: proposalsOf(),
       mode: modeOf(),
       tasks: standingsOf(),
       files,
-      rounds_Landed: isOwn_Shown() ? content_Own.rounds : []
+      rounds_Landed: roundsOf__Stale({
+        stale: head?.stale ?? []
+      })
     })
     board.update({
       tasks: boardedOf(),
       paths_Shown: [name_Document]
     })
   }
-  // a round landed on a proposal of the task the playground's on: its
-  // changes as they were when it started, carried across every edit since
-  const landed = (source: string) => {
-    const base = bases_Source.get(source)
+  // the editor and the board told the tasks as they stand now, the editor
+  // keeping the model it has, and its undo history with it
+  const told = () => {
+    const task = taskIn()
+    const head = task === undefined ? undefined : headOf(task)
+    editor.update({
+      model_TextEditor: editor.model_TextEditor,
+      name_Document,
+      proposals: proposalsOf(),
+      mode: modeOf(),
+      tasks: standingsOf(),
+      files,
+      rounds_Landed: roundsOf__Stale({
+        stale: head?.stale ?? []
+      })
+    })
+    board.update({
+      tasks: boardedOf(),
+      paths_Shown: [name_Document]
+    })
+  }
+  // a round landed on a proposal: its changes as they were when it started,
+  // carried across every edit since by the documents part, what an edit
+  // touched stale
+  const landed = (
+    id_Task: string,
+    source: string
+  ) => {
+    const base = bases_Source.get(keyOf(
+      id_Task,
+      source
+    ))
     if (base === undefined) return
-    const rebased = rebasedOf__Changes({
-      changes: base.changes,
-      transactions: transactions_Logged
-        .filter((transaction_Logged) => transaction_Logged.version > base.version)
-        .map((transaction_Logged) => transaction_Logged.transaction)
+    const head_Round = carriedOf__Head({
+      document: documentOf(),
+      head: {
+        path: name_Document,
+        version: base.version,
+        proposed: base.proposed,
+        stale: []
+      }
     })
     const [
-      change_First,
-      ...changes_Rest
-    ] = rebased.changes
-    content_Own = {
-      ...content_Own,
-      proposed: change_First === undefined
-        ? content_Own.proposed
-        : content_Own.proposed.map((changes_Source) => changes_Source.source === source
-          ? {
-            source,
-            changes: [
-              change_First,
-              ...changes_Rest
-            ]
-          }
-          : changes_Source),
-      rounds: [
-        ...content_Own.rounds.filter((round_Landed) => round_Landed.source !== source),
-        ...rebased.indexes_Stale.length + rebased.count_Dropped === 0
-          ? []
-          : [
-            {
-              source,
-              indexes_Stale: rebased.indexes_Stale,
-              count_Dropped: rebased.count_Dropped
-            }
-          ]
-      ]
-    }
+      changes_Round
+    ] = head_Round.proposed
+    restated(
+      id_Task,
+      (head) => ({
+        ...head,
+        proposed: changes_Round === undefined
+          ? head.proposed
+          : head.proposed.map((changes_Source) => changes_Source.source === source ? changes_Round : changes_Source),
+        stale: [
+          ...head.stale.filter((stale_Source) => stale_Source.source !== source),
+          ...head_Round.stale
+        ]
+      })
+    )
   }
+  // what's stale of a proposal let go, decided, or answered
+  const freshened = (
+    id_Task: string,
+    sources: Array<string>
+  ) => restated(
+    id_Task,
+    (head) => ({
+      ...head,
+      stale: head.stale.filter((stale_Source) => !sources.includes(stale_Source.source))
+    })
+  )
   // a Start in a task, by the tasks part: the ids of what it set going
   const startedIn = (
     id_Task: string,
@@ -328,10 +444,10 @@ function hostedOf__Editor<State>({
     return ids_Before.filter((id) => !ids_After.includes(id))
   }
   // a Start in a task: what it set going revised, a proposal's round written
-  // on its changes as they are, landing a moment later on the document as
-  // it is then, in the task the playground's on, the one with proposals
-  // here; the file's and the task's own requests answered with nothing to
-  // change; the task the playground's on reporting what it revises
+  // on its changes as they are, on the document's version, landing a moment
+  // later on the document as it is then; the file's and the task's own
+  // requests answered with nothing to change; the task the playground's on
+  // reporting what it revises
   const started = (
     id_Task: string,
     scope_Work: _Scope_Work_
@@ -373,12 +489,15 @@ function hostedOf__Editor<State>({
         round
       )
     }
-    for (const source of isOwn ? sources_Revising : []) {
+    for (const source of sources_Revising) {
       bases_Source.set(
-        source,
+        keyOf(
+          id_Task,
+          source
+        ),
         {
-          version,
-          changes: content_Own.proposed.find((changes_Source) => changes_Source.source === source)?.changes ?? [],
+          version: documentOf().version,
+          proposed: (headOf(task)?.proposed ?? []).filter((changes_Source) => changes_Source.source === source),
           requests: requests_Started.flatMap((request) => request.aim.kind === "PROPOSAL" && request.aim.id_Proposal === source
             ? [
               {
@@ -414,7 +533,10 @@ function hostedOf__Editor<State>({
               ids_Proposal: [source]
             }
           })
-          if (isOwn) landed(source)
+          landed(
+            id_Task,
+            source
+          )
         }
         if (ids_Addressed.length > 0) {
           tasks.handle({
@@ -527,7 +649,7 @@ function hostedOf__Editor<State>({
     }
   }
   // the proposals of the task the editor's in that wait on nothing but you,
-  // accepted, on a file or on every file it touches
+  // accepted, on a file or on every file it touches, out of date no more
   const acceptedIn = (paths: Array<string>) => {
     const task = taskIn()
     if (task === undefined) return
@@ -543,13 +665,15 @@ function hostedOf__Editor<State>({
         decision: "ACCEPTED"
       })
     }
-    content_Own = {
-      ...content_Own,
-      rounds: content_Own.rounds.filter((round_Landed) => !sources_Accepted.includes(round_Landed.source))
-    }
+    freshened(
+      task.id,
+      sources_Accepted
+    )
   }
   // a task ended, applied, canceled or discarded, by the tasks part, an
-  // editor in it going to manual
+  // editor in it going to manual; applied, its head made the document by the
+  // documents part, its own changes and what's accepted, every other open
+  // task carried across it
   const ended = (
     id_Task: string,
     kind_End: "APPLY" | "CANCEL" | "DISCARD"
@@ -561,6 +685,22 @@ function hostedOf__Editor<State>({
         by: "HUMAN"
       })
     })
+    const task = taskOf(id_Task)
+    const head = task === undefined ? undefined : headOf(task)
+    if (task === undefined || head === undefined || task.kind !== "RESOLVED" || task.resolution.how !== "APPLIED") return
+    documents.handle({
+      kind: "APPLY",
+      path: name_Document,
+      version: head.version,
+      proposed: head.proposed,
+      sources: head.proposed.flatMap((changes_Source) => isOwn__Source({
+        task,
+        source: changes_Source.source
+      })
+        ? [changes_Source.source]
+        : [])
+    })
+    carried([id_Task])
   }
   const editor: _TextEditor_<State> = new _TextEditor_({
     containerElement,
@@ -571,43 +711,38 @@ function hostedOf__Editor<State>({
     mode: modeOf(),
     tasks: standingsOf(),
     files,
-    rounds_Landed,
+    rounds_Landed: roundsOf__Stale({
+      stale
+    }),
     source_Yours: proposal_Yours.source,
     ranges_Frame,
     observers: [
       {
         applied: (applied_Edit) => {
-          document_Host = applied_Edit.model_After.document
-          content_Own = {
-            ...content_Own,
-            proposed: isOwn_Shown()
-              ? applied_Edit.model_After.proposed
-              : content_Own.proposed.flatMap((changes_Source) => {
-                const [
-                  change_First,
-                  ...changes_Rest
-                ] = rebasedOf__Changes({
-                  changes: changes_Source.changes,
-                  transactions: [applied_Edit.transaction]
-                }).changes
-                return change_First === undefined
-                  ? []
-                  : [
-                    {
-                      source: changes_Source.source,
-                      changes: [
-                        change_First,
-                        ...changes_Rest
-                      ]
-                    }
-                  ]
-              })
-          }
-          version += 1
-          transactions_Logged.push({
-            version,
+          const task = taskIn()
+          const standings_Before = JSON.stringify(standingsOf())
+          documents.handle({
+            kind: "EDIT",
+            path: name_Document,
+            version: documentOf().version,
             transaction: applied_Edit.transaction
           })
+          if (task !== undefined) {
+            restated(
+              task.id,
+              (head) => checkedOf__Head({
+                document: documentOf(),
+                head: {
+                  ...head,
+                  version: documentOf().version,
+                  proposed: applied_Edit.model_After.proposed
+                }
+              })
+            )
+          }
+          carried(task === undefined ? [] : [task.id])
+          released()
+          if (JSON.stringify(standingsOf()) !== standings_Before) told()
           log({
             edited: applied_Edit.request_Edit.kind,
             proposals: applied_Edit.sources_Changed.join(", "),
@@ -710,7 +845,10 @@ function hostedOf__Editor<State>({
           } else if (asked_Host.kind === "RERUN") {
             const source = asked_Host.source
             if (task === undefined) return
-            const requests_Base = bases_Source.get(source)?.requests ?? []
+            const requests_Base = bases_Source.get(keyOf(
+              task.id,
+              source
+            ))?.requests ?? []
             const requests_Again = requests_Base.length > 0
               ? requests_Base
               : [
@@ -806,15 +944,21 @@ function hostedOf__Editor<State>({
             if (action_Item === undefined) return
             const stateAfter = action_Item.stateAfter
             if (stateAfter !== "REQUESTED" && stateAfter !== "REVISING") {
-              content_Own = {
-                ...content_Own,
-                rounds: content_Own.rounds.filter((round_Landed) => round_Landed.source !== asked_Action.source)
-              }
+              freshened(
+                task.id,
+                [asked_Action.source]
+              )
             }
             if (stateAfter === null) {
+              restated(
+                task.id,
+                (head) => ({
+                  ...head,
+                  proposed: head.proposed.filter((changes_Source) => changes_Source.source !== asked_Action.source)
+                })
+              )
               content_Own = {
                 ...content_Own,
-                proposed: content_Own.proposed.filter((changes_Source) => changes_Source.source !== asked_Action.source),
                 sources_Dismissed: new Set([
                   ...content_Own.sources_Dismissed,
                   asked_Action.source

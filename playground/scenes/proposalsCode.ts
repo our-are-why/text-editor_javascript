@@ -1,9 +1,9 @@
 import type { _Scene_ } from "../scene.ts"
 import {
   MODULE_PLAINTEXT,
-  parseTexts_Line,
   MODULE_READING_TEXT
 } from "../../source/editor/index.ts"
+import { parseTexts_Line } from "../../source/documents/index.ts"
 import { actions_Review } from "../items.ts"
 import { projectedOf } from "../projected.ts"
 import { readingTime } from "./code.ts"

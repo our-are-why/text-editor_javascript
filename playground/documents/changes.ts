@@ -1,13 +1,13 @@
 import type { _Document_, _Section_Document_ } from "../document.ts"
 import {
   MODULE_PLAINTEXT,
-  type _Change_Host_,
   type _Proposal_Host_,
   type _Request_Host_,
   type _Piece_Text_,
   type _Side_Text_,
   MODULE_READING_TEXT
 } from "../../source/editor/index.ts"
+import { type _Change_Host_ } from "../../source/documents/index.ts"
 import { projectedOf } from "../projected.ts"
 import { actions_Review, actions_Reopen } from "../items.ts"
 import { attributesOf__Marks } from "../looks.ts"

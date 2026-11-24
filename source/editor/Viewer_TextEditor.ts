@@ -75,7 +75,7 @@ import type {
   _Range_Text_,
   _Position_Text_,
   _NonEmpty_
-} from "./Model_TextEditor.ts"
+} from "../documents/index.ts"
 import type {
   _Request_Edit_,
   _Places_Caret_

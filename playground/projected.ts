@@ -1,8 +1,4 @@
 import {
-  parseModel_TextEditor,
-  type _Mark_Text_,
-  type _Changes_Host_,
-  type _Model_TextEditor_,
   viewModelOf__Model,
   type _Proposal_Host_,
   type _Landed_Round_,
@@ -11,6 +7,12 @@ import {
   type _Range_Lines_,
   type _ViewModel_TextEditor_
 } from "../source/editor/index.ts"
+import {
+  parseModel_TextEditor,
+  type _Mark_Text_,
+  type _Changes_Host_,
+  type _Model_TextEditor_
+} from "../source/documents/index.ts"
 
 export {
   modelOf,

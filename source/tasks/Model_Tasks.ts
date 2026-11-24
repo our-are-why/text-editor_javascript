@@ -1,3 +1,5 @@
+import type { _Head_Document_ } from "../documents/index.ts"
+
 export {
   modelAfter__Command,
   type _Api___modelAfter__Command_,
@@ -56,6 +58,7 @@ export {
   type _Asked_Proposal_,
   type _ADDRESS_Command_Tasks_,
   type _DECIDE_Command_Tasks_,
+  type _RESTATE_Command_Tasks_,
   type _RENAME_Command_Tasks_,
   type _SUMMARIZE_Command_Tasks_,
   type _APPLY_Command_Tasks_,
@@ -70,6 +73,8 @@ export {
   countsOf__Task,
   type _Api___countsOf__Task_,
   type _Counts_Task_Tasks_,
+  isOwn__Source,
+  type _Api___isOwn__Source_,
   pathsOf__Task,
   type _Api___pathsOf__Task_
 }
@@ -108,6 +113,7 @@ interface __BASE_Task_Tasks_<Kind extends string> {
   summaries_Document: Array<_Summary_Document_>
   requests: Array<_Request_Tasks_>
   proposals: Array<_Proposal_Tasks_>
+  heads: Array<_Head_Document_>
   start: _Start_Task_
 }
 
@@ -226,7 +232,7 @@ interface _Resolution_Task_ {
 
 type _How_Resolution_ = "APPLIED" | "CANCELED" | "DISCARDED"
 
-type _Command_Tasks_ = _DRAFT_Command_Tasks_ | _REQUEST_Command_Tasks_ | _EDIT_Command_Tasks_ | _REMOVE_Command_Tasks_ | _DISMISS_Command_Tasks_ | _START_Command_Tasks_ | _STOP_Command_Tasks_ | _PROPOSE_Command_Tasks_ | _ADDRESS_Command_Tasks_ | _DECIDE_Command_Tasks_ | _RENAME_Command_Tasks_ | _SUMMARIZE_Command_Tasks_ | _APPLY_Command_Tasks_ | _CANCEL_Command_Tasks_ | _DISCARD_Command_Tasks_ | _COLLECT_Command_Tasks_
+type _Command_Tasks_ = _DRAFT_Command_Tasks_ | _REQUEST_Command_Tasks_ | _EDIT_Command_Tasks_ | _REMOVE_Command_Tasks_ | _DISMISS_Command_Tasks_ | _START_Command_Tasks_ | _STOP_Command_Tasks_ | _PROPOSE_Command_Tasks_ | _ADDRESS_Command_Tasks_ | _DECIDE_Command_Tasks_ | _RESTATE_Command_Tasks_ | _RENAME_Command_Tasks_ | _SUMMARIZE_Command_Tasks_ | _APPLY_Command_Tasks_ | _CANCEL_Command_Tasks_ | _DISCARD_Command_Tasks_ | _COLLECT_Command_Tasks_
 
 interface __BASE_Command_Tasks_<Kind extends string> {
   kind: Kind
@@ -323,6 +329,11 @@ interface _DECIDE_Command_Tasks_ extends __BASE_Command_Tasks_<"DECIDE"> {
   decision: _Decision_Proposal_Tasks_
 }
 
+interface _RESTATE_Command_Tasks_ extends __BASE_Command_Tasks_<"RESTATE"> {
+  id_Task: string
+  head: _Head_Document_
+}
+
 interface _RENAME_Command_Tasks_ extends __BASE_Command_Tasks_<"RENAME"> {
   id_Task: string
   name: string
@@ -368,6 +379,7 @@ const HANDLERMAP__TASKS: _HandlerMap__Tasks_ = {
   PROPOSE: PROPOSE_modelAfter__Command,
   ADDRESS: ADDRESS_modelAfter__Command,
   DECIDE: DECIDE_modelAfter__Command,
+  RESTATE: RESTATE_modelAfter__Command,
   RENAME: RENAME_modelAfter__Command,
   SUMMARIZE: SUMMARIZE_modelAfter__Command,
   APPLY: APPLY_modelAfter__Command,
@@ -399,6 +411,7 @@ function DRAFT_modelAfter__Command({
             })
           ],
           proposals: [],
+          heads: [],
           start: {
             kind: "UNSTARTED"
           }
@@ -766,6 +779,33 @@ function DECIDE_modelAfter__Command({
   })
 }
 
+function RESTATE_modelAfter__Command({
+  model_Tasks,
+  command
+}: _Api___modelAfter__Command_<"RESTATE">): _Model_Tasks_ {
+  return openChangedIn__Model({
+    model_Tasks,
+    id_Task: command.id_Task,
+    change: (task) => {
+      const head_Before = task.heads.find((head) => head.path === command.head.path)
+      if (head_Before === command.head) return task
+      const isEmpty = command.head.proposed.length + command.head.stale.length === 0
+      if (head_Before === undefined && isEmpty) return task
+      return {
+        ...task,
+        heads: head_Before === undefined
+          ? [
+            ...task.heads,
+            command.head
+          ]
+          : isEmpty
+            ? task.heads.filter((head) => head !== head_Before)
+            : task.heads.map((head) => head === head_Before ? command.head : head)
+      }
+    }
+  })
+}
+
 function RENAME_modelAfter__Command({
   model_Tasks,
   command
@@ -804,7 +844,9 @@ function APPLY_modelAfter__Command({
   return openChangedIn__Model({
     model_Tasks,
     id_Task: command.id_Task,
-    change: (task) => task.requests.some((request) => request.status.kind === "STARTED")
+    change: (task) => task.requests.some((request) => request.status.kind === "STARTED") || countsOf__Task({
+      task
+    }).count_Conflicts > 0
       ? task
       : resolvedOf__Task({
         task,
@@ -916,6 +958,7 @@ interface _Api___countsOf__Task_ {
 
 interface _Counts_Task_Tasks_ {
   count_Undecided: number
+  count_Conflicts: number
   count_Queued: number
   count_Running: number
 }
@@ -925,9 +968,29 @@ function countsOf__Task({
 }: _Api___countsOf__Task_): _Counts_Task_Tasks_ {
   return {
     count_Undecided: task.proposals.filter((proposal) => proposal.decision === "OPEN").length,
+    count_Conflicts: task.heads.flatMap((head) => head.stale).filter((stale_Source) => isOwn__Source({
+      task,
+      source: stale_Source.source
+    })).reduce((
+      sum,
+      stale_Source
+    ) => sum + stale_Source.changes_Stale.length + stale_Source.count_Dropped, 0),
     count_Queued: task.requests.filter((request) => request.status.kind === "QUEUED").length,
     count_Running: task.requests.filter((request) => request.status.kind === "STARTED").length
   }
+}
+
+interface _Api___isOwn__Source_ {
+  task: _Task_Tasks_
+  source: string
+}
+
+function isOwn__Source({
+  task,
+  source
+}: _Api___isOwn__Source_): boolean {
+  const proposal = task.proposals.find((proposal_Each) => proposal_Each.id === source)
+  return proposal === undefined || proposal.decision === "ACCEPTED"
 }
 
 interface _Api___pathsOf__Task_ {
@@ -941,7 +1004,8 @@ function pathsOf__Task({
     ...new Set([
       ...task.proposals.map((proposal) => proposal.path),
       ...task.requests.flatMap((request) => request.aim.kind === "DOCUMENT" ? [request.aim.path] : []),
-      ...task.summaries_Document.map((summary_Document) => summary_Document.path)
+      ...task.summaries_Document.map((summary_Document) => summary_Document.path),
+      ...task.heads.map((head) => head.path)
     ])
   ]
 }

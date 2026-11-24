@@ -424,8 +424,8 @@ What it asks of the editor:
 - **an edit from outside,** another editor's, a replay's or a merge's,
   applied to what it shows, carrying its caret, selection, folds and undo
   history across it. Today `update` replaces its model and empties its
-  history, `HISTORY_EMPTY`, which two editors showing one version can't
-  live with;
+  history, `HISTORY_EMPTY`, unless it's given the model it has (2026-11-24),
+  which two editors showing one version can't live with;
 - **its mode,** told it, manual or a task, not a task or `null`.
 
 ## who holds what
@@ -434,8 +434,9 @@ Each part has its own interface, as the editor has: given what it needs,
 telling what happened. Each is a folder of `source/`, its `index.ts` its
 public API, nothing else of it imported from outside, as
 `.claude/rules/typescript-style.md` says under **Parts**: `editor/`,
-`board/` and `jsx/`, the runtime they draw with, so far; `tasks/`,
-`documents/`, `agent/` and `shell/` to come, in that order (2026-11-24).
+`board/` and `jsx/`, the runtime they draw with; `tasks/` and
+`documents/`, built 2026-11-24, the first of each; `agent/` and `shell/`
+to come, in that order.
 Doctor had all four, in its extension and its webviews; the playground's
 host, `playground/host.ts`, plays all four for now, faked.
 
@@ -474,9 +475,9 @@ host, `playground/host.ts`, plays all four for now, faked.
   the project's tasks in a `_Tasks_`, made from what the example says of
   them, `playground/tasks.ts`, the editor and the board told what they
   show from it, every count the tasks part's; the host keeping only what's
-  the editor's, the words requests were sent on, and the content on the
-  file shown of the task the playground's on, its proposals' changes, the
-  rounds that landed and its proposals' attributes. Every other task of
+  the editor's, the words requests were sent on, and, of the task the
+  playground's on, its proposals' attributes, its changes its head there
+  since the documents part, below. Every other task of
   the example has only requests on the file shown, real ones, on the words
   they were sent on, found in the file's card once the editor's in it,
   where at first they had only counts, made into requests and proposals
@@ -487,7 +488,7 @@ host, `playground/host.ts`, plays all four for now, faked.
   shown, as README.md, still only counted, made into as many proposals and
   requests. The agent still faked, the same for every task: a round on a
   proposal landing a moment later, a request on no proposal answered with
-  nothing to change. No conflicts till the documents part finds them, the
+  nothing to change. No conflicts but those the documents part finds, the
   example's one dropped, as nothing could show it. README.md's revision,
   running, is a request, stopped and started with the rest, its round
   landing; a request sent with no task drafts a new one, named for it, the
@@ -498,6 +499,52 @@ host, `playground/host.ts`, plays all four for now, faked.
   recorded as they're made, or, the document changed from outside, worked
   out by comparing it with that copy; carrying every open task across them;
   making an applied task's head the document.
+  **Built 2026-11-24, the first of it,** in `source/documents/`, plain data
+  and functions, no DOM: each document kept by its path, its version the
+  SHA-256 of its text, worked out there so it runs anywhere, the copy of
+  that version, and the edits since the oldest version anything's still
+  stated against; the moves as commands, by a map of them,
+  `HANDLERMAP__DOCUMENTS`: open, a document kept as it is, or, kept already
+  and changed since, read; edit, an edit made in an editor, on the document
+  as it is, recorded as it's made, only its own steps, a proposal's text and
+  changes not the document's; read, the document as it now is outside,
+  compared with the copy by the editor's `comparisonOf__Texts`, the
+  difference made into edits, once; apply, a head made the document, the
+  sources it's told to, a task's own changes and what's accepted, the rest
+  not, worked out the same way; release, the edits nothing's stated against
+  let go; and collect, the copies no open task needs; an edit leaving the
+  text as it was no new version. A head, `_Head_Document_`, a task's changes
+  on a document stated against its version, carried across what moved it
+  since, `carriedOf__Head`, each change by `rebasedOf__Changes`, one an edit
+  touched stale, a move with nothing left of it dropped and counted; a stale
+  change keeping the version it was written on and the text it was written
+  over, the stretch it covers, an insertion's line, a move's from its words
+  to where they land, and clean again once the document's back at that
+  version, by undo or by hand, or, a change of text, once its stretch,
+  whole, holds that text again, an insertion's line alone saying nothing, as
+  a blank line's like any other; the editor's own task, whose changes it
+  carries itself, rechecked the same way, `checkedOf__Head`; tested by
+  properties over random texts and edits, an untouched change still
+  replacing the text it did, the document's edit and the change landing
+  together, one cut into, replaced, deleted under or made the same as it,
+  stale. The editor's model moved here with it, `Model_TextEditor.ts`, the
+  editor drawing it, its index no longer handing it out. The tasks part
+  holds each task's heads, restated with `RESTATE`; a conflict is a stale
+  change of the task's own, yours or accepted, counted, Apply held while
+  there's any; a proposal still open that's stale is only out of date, drawn
+  as written before your edits. **The playground on it:** the document kept
+  by a `_Documents_`, every edit recorded and every other open task's head
+  carried across it, a round landing carried from the version it was written
+  on, those edits kept till nothing's running on an older one; Apply making
+  the task's head the document, every other open task carried across it; a
+  conflict typed in No task said at once in the switcher, the footer and on
+  the board, the editor told its tasks keeping its undo history. Not yet:
+  moves found in what's read from outside, a block's hash turning up
+  elsewhere; text repeated exactly, counted, so a change of what's read
+  can't land on the wrong copy; conflicts drawn as frames, to be decided,
+  with the text each was written over; your edits in a task going into its
+  head rather than the document, as they still do in the playground; and
+  storage, the shell's.
 - **the agent:** runs, which requests are running for which task; how the
   agent's given its work, doctor's `doctor wait` or otherwise; whether it's
   there and working.

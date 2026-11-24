@@ -12,7 +12,7 @@ import {
   parseTexts_Line,
   textIn__Range,
   shiftedBy__Position
-} from "./Model_TextEditor.ts"
+} from "../documents/index.ts"
 import {
   type _Proposal_Host_,
   ISAPPLIEDMAP__DECISION_PROPOSAL

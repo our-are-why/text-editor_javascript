@@ -10,6 +10,8 @@ export {
   type __BASE_Change_,
   type _Range_Text_,
   type _Position_Text_,
+  orderOf__Positions,
+  type _Api___orderOf__Positions_,
   type _REPLACE_Change_,
   type _MOVE_Change_,
   parseModel_TextEditor,

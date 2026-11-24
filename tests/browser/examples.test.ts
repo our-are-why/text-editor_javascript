@@ -1,4 +1,4 @@
-import { afterAll, describe, expect, test } from "bun:test"
+import { describe, expect, test } from "bun:test"
 import { openExample } from "./harness.ts"
 
 // the Markdown example, opened as you'd open it to read: its changes read as
@@ -9,7 +9,6 @@ const opened = await openExample(
   "markdown",
   1
 )
-afterAll(() => opened.close())
 
 const drawnAfter = async (label: string | null) => {
   if (label !== null) await opened.page.getByRole("button", { name: label }).click()
@@ -26,6 +25,7 @@ const drawnAfter = async (label: string | null) => {
 const shown_Markdown = await drawnAfter(null)
 const shown_Text = await drawnAfter("As text")
 const shown_Again = await drawnAfter("As Markdown")
+const logged_Perspectives = (await opened.logged()).filter((entry) => "perspective" in entry)
 const linked_Requested = await opened.page.evaluate(() => {
   const link = [...document.querySelectorAll(".text_htmlView [data-syntax~=\"link\"]")].find((element) => element.textContent === "why the waits grow")
   return {
@@ -41,9 +41,9 @@ describe("the Markdown example: a perspective for each way to read its changes, 
   test("read as text, its asterisks put in are each a ring of their own", () => {
     expect(shown_Text).toEqual({ rings: ["inserted", "inserted"], pressed: ["As Markdown false", "As text true"], look: "changes" })
   })
-  test("switched back, it's read as Markdown again, and each switch is reported", async () => {
+  test("switched back, it's read as Markdown again, and each switch is reported", () => {
     expect(shown_Again).toEqual(shown_Markdown)
-    expect((await opened.logged()).filter((entry) => "perspective" in entry)).toEqual([{ perspective: "changes" }, { perspective: "markdown" }])
+    expect(logged_Perspectives).toEqual([{ perspective: "changes" }, { perspective: "markdown" }])
   })
   test("a request on the link's words: the link keeps its own underline, the request's dotted line drawn under it, behind the text", () => {
     expect(linked_Requested).toEqual({ link: "underline", lines: true })
@@ -380,7 +380,6 @@ const opened_JavaScript = await openExample(
   "javascript",
   1
 )
-afterAll(() => opened_JavaScript.close())
 
 // the JavaScript example as it opens, before anything's pressed: a case of
 // each kind of thing asked and decided, as its host lists them
@@ -1834,7 +1833,6 @@ const opened_Dense = await openExample(
   "javascript",
   2
 )
-afterAll(() => opened_Dense.close())
 await opened_Dense.page.waitForSelector(".note_htmlView")
 const stilled_Dense = () => opened_Dense.page.evaluate(async () => {
   const scroller = document.querySelector(".document_htmlView")
@@ -1955,6 +1953,7 @@ await pressedIn_Dense(head_First, ":scope > .fold_Action_htmlView", "[data-accep
 const accepted_Frame = (await opened_Dense.logged()).slice(logged_Before_Accept).filter((entry) => "asked" in entry)
 const states_First = await head_First.evaluate((head) => [...(head.closest(".frame_htmlView")?.querySelectorAll(".item_htmlView") ?? [])].map((item) => item.getAttribute("data-state")))
 
+await opened_Dense.close()
 test("a frame's head says its lines and how far its proposals have got; its Start all starts what's queued for the proposals it lists; its Accept all accepts its open proposals, the host asked for each", () => {
   expect(heads_Dense).toEqual([
     "lines 1–2 0 of 1 decided Accept all (1)",
@@ -1982,7 +1981,6 @@ const opened_Tiers = await openExample(
   "javascript",
   1
 )
-afterAll(() => opened_Tiers.close())
 await opened_Tiers.page.waitForSelector(".note_htmlView")
 const rightClickedOn_Tiers = async (needle: string, word: string) => {
   const rect = await opened_Tiers.page.evaluate(({ needle, word }) => {
@@ -2135,6 +2133,7 @@ const rect_Document_Tiers = await opened_Tiers.page.evaluate(() => {
 const wheeled_OverDocument = await scrolledWith_Menu(rect_Document_Tiers.x, rect_Document_Tiers.y)
 const isFocused_Input_Scrolled = await opened_Tiers.page.evaluate(() => document.activeElement?.matches(".input_htmlView") === true)
 
+await opened_Tiers.close()
 describe("the menu's tiers", () => {
   test("a right-click on a proposal's selected words offers the proposal's, the document's and the task's tiers, the narrowest first, a hairline between each, each its proposal actions first, then its revisions', the keyboard on the first request; each request has the words with it, which the form quotes, and × leaves out; sent, the host's told what it's on and the words, and the document's card lists it with them, and where they are, which, pressed, scrolls the document to them, their line solid a moment, blinking twice as the caret does, then settling back to dotted, the keyboard back on the text, and blinking on while the pointer's still on the request's row", () => {
     expect(menu_Tiers.map((choice) => choice === "—" ? choice : choice.slice(0, choice.indexOf(" "))).filter((tier, index, tiers) => tier !== tiers[index - 1])).toEqual(["PROPOSAL", "—", "DOCUMENT", "—", "TASK"])
@@ -2186,7 +2185,6 @@ const opened_Popover = await openExample(
   "javascript",
   1
 )
-afterAll(() => opened_Popover.close())
 await opened_Popover.page.waitForSelector(".note_htmlView")
 const page_Popover = opened_Popover.page
 const at_Popover = await page_Popover.evaluate(() => {
@@ -2318,6 +2316,7 @@ const isPeekGone_Popover = await page_Popover.evaluate(() => {
 })
 await page_Popover.keyboard.press("Escape")
 
+await opened_Popover.close()
 describe("the menu's form's words", () => {
   test("the form opened for words selected over three lines opens just below them, clear of them; they're shown in it by their start, cut, and how many lines; pointed at, they're lit where they are in the file, not peeked at while they can all be seen there; the first of them scrolled away, a moment after pointing, peeked at, gone when the pointer leaves", () => {
     expect(placed_Quoted_Popover).toEqual({ isClear: true, isBelow: true })
@@ -2359,7 +2358,6 @@ const opened_Switch = await openExample(
   "javascript",
   1
 )
-afterAll(() => opened_Switch.close())
 await opened_Switch.page.waitForSelector(".note_htmlView")
 const cardsOf_Switch = () => opened_Switch.page.evaluate(() => [".card_Task_htmlView", ".card_Switcher_htmlView"].map((selector) => {
   const element = document.querySelector(selector)
@@ -2519,7 +2517,6 @@ const opened_Ink = await openExample(
   "javascript",
   4
 )
-afterAll(() => opened_Ink.close())
 await opened_Ink.page.waitForSelector(".note_htmlView")
 await opened_Ink.page.mouse.move(5, 5)
 const inkAround = async (selector_Name: string, selector_Part: string, selector_End: string) => {
@@ -2576,6 +2573,7 @@ const inkAround = async (selector_Name: string, selector_Part: string, selector_
 const ink_File = await inkAround(".name_Document_htmlView", ".picker_Header_htmlView", ".header_htmlView")
 const ink_Task = await inkAround(".name_Task_htmlView", ".switcher_Header_htmlView", ".switcher_Header_htmlView")
 
+await opened_Ink.close()
 test("each hairline where it's meant to be between the ink either side of it, as drawn: the task's 13.2px before it and 13px after, one step of 1.25 tighter than the file's; the file's name, hairline, icon and the right edge evenly spaced, 17px apart", () => {
   const [before_File = 0, after_File = 0, edge_File = 0] = ink_File
   const [before_Task = 0, after_Task = 0] = ink_Task
@@ -2620,6 +2618,7 @@ const name_Draft = await nameShown()
 await switchedTo("T-14")
 const name_Yours = await nameShown()
 
+await opened_Switch.close()
 test("the task's state said by its name, with no mark: working, shimmering, or Working shown where motion's asked to be reduced; a draft, leaning, in the name's own ink, no word after it; your turn, as it rests", () => {
   expect(name_Working).toEqual({ name: "Tidy the retry loop", marks: 0, shimmers: ["shimmer_htmlView"], isFaded: false, isLeaning: false, word: null })
   expect(name_Still).toEqual({ name: "Tidy the retry loop", marks: 0, shimmers: [], isFaded: false, isLeaning: false, word: "Working" })
@@ -2647,7 +2646,6 @@ const opened_Board = await openExample(
   "javascript",
   1
 )
-afterAll(() => opened_Board.close())
 await opened_Board.page.waitForSelector(".note_htmlView")
 const boardShown = () => opened_Board.page.evaluate(() => ({
   hidden: (document.querySelector(".stage > .board") as HTMLElement | null)?.hidden ?? null,
@@ -2767,6 +2765,7 @@ await opened_Board.page.waitForTimeout(200)
 const board_Hidden = await boardShown()
 const logged_Board = (await opened_Board.logged()).filter((entry) => "board" in entry)
 
+await opened_Board.close()
 test("the board, from the footer: a column for each of who a task's waiting on, side by side, one under another where it's narrow; scrolling by its columns, never as a whole; a task pressed switches the editor to it; one canceled, resolved, the editor going to manual; a draft started, working, then waiting on you; Collect; each asked of the host", () => {
   expect(board_Before.hidden).toBe(true)
   expect(board_Shown).toEqual({ hidden: false, columns: ["YOURS: T-12 shown T-14 T-15 T-17", "AGENT: T-13", "DRAFTS: T-16", "RESOLVED: T-9 T-11"], mode: "Tidy the retry loop" })
@@ -2811,7 +2810,6 @@ const opened_Discs = await openExample(
   "javascript",
   1
 )
-afterAll(() => opened_Discs.close())
 await opened_Discs.page.waitForSelector(".note_htmlView")
 const pausedFor = (ms: number) => opened_Discs.page.waitForTimeout(ms)
 const openedAround = async (row: string | null, disc: string, opened: string) => {
@@ -3056,6 +3054,7 @@ test("a task's menu pointed open: the ⋮ there while the pointer's on it, gone 
 
 // the footer's counts of the project's tasks kept whatever's pointed at or
 // focused in the document: a proposal pressed redraws the editor from its
+await opened_JavaScript.close()
 // blocks, which had left the footer empty, its header put back and its
 // footer not
 await opened_Discs.page.mouse.move(5, 300)
@@ -3064,6 +3063,7 @@ await opened_Discs.page.locator(".item_htmlView .title_htmlView").first().scroll
 await opened_Discs.page.locator(".item_htmlView .title_htmlView").first().click()
 await pausedFor(300)
 const footer_Pressed = await opened_Discs.page.evaluate(() => document.querySelector(".tasks_Footer_htmlView")?.textContent ?? null)
+await opened_Discs.close()
 test("the footer's counts of the project's tasks stay while a proposal's pointed at or focused, the editor redrawn from its blocks keeping its footer as it keeps its header", () => {
   expect(footer_Before).not.toBe(null)
   expect(footer_Pressed).toBe(footer_Before)
@@ -3081,7 +3081,6 @@ const opened_Ends = await openExample(
   "javascript",
   1
 )
-afterAll(() => opened_Ends.close())
 await opened_Ends.page.waitForSelector(".note_htmlView")
 const switchedTo_Ends = async (id: string) => {
   await opened_Ends.page.mouse.move(5, 300)
@@ -3159,6 +3158,7 @@ await opened_Ends.page.click(".card_Task_htmlView .head_Card_htmlView [data-end=
 await opened_Ends.page.waitForTimeout(200)
 const mode_Canceled = await modeOf_Ends()
 const logged_Ends = (await opened_Ends.logged()).filter((entry) => "ended" in entry || "started" in entry)
+await opened_Ends.close()
 test("a task's own actions, at the end of its card's heading, folded till its ellipsis is pointed at, the ways it ends: a draft's Cancel alone, neutral, discarding it; Apply, indigo, once nothing's left, resolving it, the editor going to manual; Cancel alone while anything's left, its Start all in Scope Revisions starting it; each asked of the host", () => {
   expect(head_Draft).toEqual({ isShown_Before: false, isShown: true, queued: "2 queued", actions: ["Cancel neutral"] })
   expect(mode_Discarded).toEqual({ name: "No task", state: null })
@@ -3181,6 +3181,7 @@ test("a task's own actions, at the end of its card's heading, folded till its el
 // board, the pointer on the switcher, marked as the one the editor's in
 // where it is, nothing moving under the pointer, nor as it fades, and
 // sorted again once it's shut, the editor's task first when it's opened
+await opened.close()
 // again; a task chosen in it, the switcher shut at once, though the
 // pointer's still on it, sorted, still shut as the pointer moves where it
 // was, shown again once the pointer's left it and come back; and chosen
@@ -3189,7 +3190,6 @@ const opened_Order = await openExample(
   "javascript",
   1
 )
-afterAll(() => opened_Order.close())
 await opened_Order.page.waitForSelector(".note_htmlView")
 const orderOf_Switcher = () => opened_Order.page.evaluate(() => [...document.querySelectorAll(".choice_Switcher_htmlView")].map((choice) => `${choice.getAttribute("data-id") ?? "none"}${choice.hasAttribute("aria-current") ? " here" : ""}`))
 const visibilityOf_Switcher = () => opened_Order.page.evaluate(() => getComputedStyle(document.querySelector(".card_Switcher_htmlView")!).visibility)
@@ -3242,6 +3242,7 @@ const visibility_Keyed = await visibilityOf_Switcher()
 await opened_Order.page.focus(".trigger_Switcher_htmlView")
 await opened_Order.page.waitForTimeout(300)
 const visibility_Refocused = await visibilityOf_Switcher()
+await opened_Order.close()
 test("the switcher's order kept while it's open, a task switched to from the board marked where it is, nothing moving, nor as it fades, sorted again once it's shut; a task chosen in it, shut at once though the pointer's still on it, shown again once the pointer's left it and come back; chosen from the keyboard, shown again when its chevron's focused", () => {
   expect(order_Opened).toEqual(["T-12 here", "T-13", "T-15", "T-17", "T-16", "T-14", "none"])
   expect(switcher_Elsewhere).toEqual({ order: ["T-12", "T-13", "T-15", "T-17", "T-16", "T-14 here", "none"], visibility: "visible" })
@@ -3263,7 +3264,6 @@ const opened_Draft = await openExample(
   "javascript",
   1
 )
-afterAll(() => opened_Draft.close())
 await opened_Draft.page.waitForSelector(".note_htmlView")
 const shownOf_Draft = () => opened_Draft.page.evaluate(() => ({
   name: document.querySelector(".header_htmlView :is(.name_Task_htmlView, .name_Manual_htmlView)")?.textContent ?? null,
@@ -3299,10 +3299,94 @@ const draft_Started = await shownOf_Draft()
 await opened_Draft.page.mouse.move(700, 700)
 await opened_Draft.page.waitForTimeout(1800)
 const draft_Answered = await shownOf_Draft()
+await opened_Draft.close()
 test("a request sent with no task drafts a new one, named for it, the editor in it, its request queued; started, working; answered a moment later with nothing to change, your turn, applicable; the footer counting it each time", () => {
   expect(draft_Made).toEqual({ name: "Say what the timeout throws.", state: "DRAFT", footer: "7 tasks: 4 need you, 2 working, 2 drafts" })
   expect(queued_Draft).toBe("1 queued")
   expect(draft_Started).toEqual({ name: "Say what the timeout throws.", state: "WORKING", footer: "7 tasks: 4 need you, 3 working, 1 draft" })
   expect(draft_Answered).toEqual({ name: "Say what the timeout throws.", state: "YOUR_TURN", footer: "7 tasks: 5 need you, 2 working, 1 draft" })
   expect(opened_Draft.errors).toEqual([])
+})
+
+// typing in No task over a change of the playground's task's own, the
+// status line its accepted proposal moves: the documents part carries the
+// task across the edit, the change it touched stale, a conflict, said at
+// once in the switcher, the footer and on the board; the words taken back
+// out by hand, or by undo, the text it was written over back, no conflict
+// left, the editor keeping its undo history; typing beside a proposal's
+// change, nothing touched; "further " taken out of the opening comment, the
+// comment as its round was written on it, that round not out of date any
+// more; and in the task, nothing written before your edits
+const opened_Conflict = await openExample(
+  "javascript",
+  1
+)
+await opened_Conflict.page.waitForSelector(".note_htmlView")
+const standingOf_Conflict = () => opened_Conflict.page.evaluate(() => ({
+  switcher: [...document.querySelectorAll(".choice_Switcher_htmlView[data-id=\"T-12\"] .part_Option_htmlView")].map((part) => part.textContent).join(" · "),
+  footer: document.querySelector(".tasks_Footer_htmlView")?.getAttribute("title") ?? null,
+  board: [...document.querySelectorAll(".tile_htmlView[data-id=\"T-12\"] .part_Tile_htmlView")].map((part) => part.textContent).join(" · ")
+}))
+const lineWith_Conflict = (snippet: string) => opened_Conflict.page.evaluate((snippet) => [...document.querySelectorAll(".line_htmlView")].map((line) => line.textContent ?? "").find((text) => text.includes(snippet)) ?? null, snippet)
+const typedAtEnd_Conflict = async (snippet: string, words: string) => {
+  await opened_Conflict.page.locator(".line_htmlView", { hasText: snippet }).first().click()
+  await opened_Conflict.page.keyboard.press("End")
+  await opened_Conflict.page.keyboard.type(words)
+  await opened_Conflict.page.waitForTimeout(300)
+}
+const writtenBefore_Conflict = () => opened_Conflict.page.evaluate(() => [...document.querySelectorAll(".item_htmlView")].filter((item) => /before your edits/i.test(item.textContent ?? "")).map((item) => item.querySelector(".title_htmlView")?.textContent ?? null))
+const switchedTo_Conflict = async (selector: string) => {
+  await opened_Conflict.page.mouse.move(5, 400)
+  await opened_Conflict.page.waitForTimeout(300)
+  await opened_Conflict.page.hover(".trigger_Switcher_htmlView")
+  await opened_Conflict.page.waitForTimeout(300)
+  await opened_Conflict.page.click(selector)
+  await opened_Conflict.page.mouse.move(5, 400)
+  await opened_Conflict.page.waitForTimeout(500)
+}
+const written_Seeded = await writtenBefore_Conflict()
+await switchedTo_Conflict(".choice_Switcher_htmlView[data-switch=\"MANUAL\"]")
+const standing_Manual = await standingOf_Conflict()
+await typedAtEnd_Conflict("let lastError", " // kept")
+const standing_Beside = await standingOf_Conflict()
+await typedAtEnd_Conflict("const status = error?.response?.status", " // why")
+const standing_Typed = await standingOf_Conflict()
+const line_Conflicted = await lineWith_Conflict("const status = error?.response?.status")
+for (let count = 0; count < " // why".length; count = count + 1) {
+  await opened_Conflict.page.keyboard.press("Backspace")
+  await opened_Conflict.page.waitForTimeout(50)
+}
+await opened_Conflict.page.waitForTimeout(300)
+const standing_Erased = await standingOf_Conflict()
+const line_Erased = await lineWith_Conflict("const status = error?.response?.status")
+await typedAtEnd_Conflict("const status = error?.response?.status", " // why")
+const standing_Retyped = await standingOf_Conflict()
+for (let count = 0; count < 8 && ((await lineWith_Conflict("const status = error?.response?.status")) ?? "").includes("// why"); count = count + 1) await opened_Conflict.page.keyboard.press("Control+z")
+await opened_Conflict.page.waitForTimeout(300)
+const standing_Undone = await standingOf_Conflict()
+const line_Undone_Conflict = await lineWith_Conflict("const status = error?.response?.status")
+await opened_Conflict.page.locator(".line_htmlView", { hasText: "backing off further each time" }).first().click()
+await opened_Conflict.page.keyboard.press("Home")
+for (let count = 0; count < "// Retries a flaky async call, backing off ".length; count = count + 1) await opened_Conflict.page.keyboard.press("ArrowRight")
+for (let count = 0; count < "further ".length; count = count + 1) {
+  await opened_Conflict.page.keyboard.press("Shift+ArrowRight")
+  await opened_Conflict.page.waitForTimeout(30)
+}
+await opened_Conflict.page.keyboard.press("Backspace")
+await opened_Conflict.page.waitForTimeout(300)
+const line_Comment = await lineWith_Conflict("backing off each time")
+await switchedTo_Conflict(".choice_Switcher_htmlView[data-switch=\"TASK\"][data-id=\"T-12\"]")
+const written_After = await writtenBefore_Conflict()
+await opened_Conflict.close()
+test("typing in No task over a change of a task's own, one it's accepted, a conflict, said at once in the switcher, the footer and on the board; taken back out by hand, or by undo, the conflict gone with it; typing beside a proposal's change, nothing; the opening comment put back as its round was written on it, its round not out of date any more", () => {
+  expect(written_Seeded).toEqual(["Drop the module's opening comment"])
+  expect(standing_Manual).toEqual({ switcher: "14 to decide · 3 running", footer: "6 tasks: 4 need you, 2 working, 1 draft", board: "14 to decide · 3 running" })
+  expect(standing_Beside).toEqual(standing_Manual)
+  expect(standing_Typed).toEqual({ switcher: "1 conflict · 3 running", footer: "6 tasks: 4 need you, 1 conflict, 2 working, 1 draft", board: "1 conflict · 3 running" })
+  expect(line_Conflicted).toBe("38  const status = error?.response?.status ?? 0; // why")
+  expect([standing_Erased, line_Erased]).toEqual([standing_Manual, "38  const status = error?.response?.status ?? 0;"])
+  expect([standing_Retyped, standing_Undone, line_Undone_Conflict]).toEqual([standing_Typed, standing_Manual, "38  const status = error?.response?.status ?? 0;"])
+  expect(line_Comment).toBe("1// Retries a flaky async call, backing off each time, until it")
+  expect(written_After).toEqual([])
+  expect(opened_Conflict.errors).toEqual([])
 })

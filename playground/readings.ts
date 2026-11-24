@@ -2,15 +2,17 @@ import {
   type _Module_Reading_,
   type _Box_Reading_,
   type _Perspective_TextEditor_,
+  parseLines_ViewModel,
+  LOOK_CHANGES
+} from "../source/editor/index.ts"
+import {
   comparisonOf__Texts,
   indexOf__Position,
   positionOf__Index,
   parseTexts_Line,
   type _Text_Model_,
-  type _Run_Comparison_,
-  parseLines_ViewModel,
-  LOOK_CHANGES
-} from "../source/editor/index.ts"
+  type _Run_Comparison_
+} from "../source/documents/index.ts"
 import { module_Markdown } from "./syntax.ts"
 
 export {

@@ -1,9 +1,9 @@
 import type { _Scene_ } from "../scene.ts"
 import {
   MODULE_PLAINTEXT,
-  type _Range_Text_,
   MODULE_READING_TEXT
 } from "../../source/editor/index.ts"
+import { type _Range_Text_ } from "../../source/documents/index.ts"
 import { actions_Review } from "../items.ts"
 import { attributesOf__Marks } from "../looks.ts"
 import { projectedOf } from "../projected.ts"

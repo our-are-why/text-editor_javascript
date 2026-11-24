@@ -17,7 +17,7 @@ import {
   landedOf__Move,
   piecesWith__Sources,
   parseTexts_Line
-} from "./Model_TextEditor.ts"
+} from "../documents/index.ts"
 import {
   isLines__Part_Frame,
   type _Range_Lines_,
@@ -345,7 +345,7 @@ function headerOf__Proposals({
           name: mode.task.name,
           state: mode.task.state,
           label_State: LABELMAP__STATE_TASK[mode.task.state],
-          ends: ENDSMAP__STATE_TASK[mode.task.state](totalOf__Counts(counts_Task) - decidedOf__Counts(counts_Task) + counts_Requests_Task.QUEUED + counts_Requests_Task.RUNNING),
+          ends: ENDSMAP__STATE_TASK[mode.task.state](totalOf__Counts(counts_Task) - decidedOf__Counts(counts_Task) + counts_Requests_Task.QUEUED + counts_Requests_Task.RUNNING + (tasks.find((standing_Task) => standing_Task.id === mode.task.id)?.count_Conflicts ?? 0)),
           summary: mode.task.summary,
           reason: mode.task.reason,
           proposals: {

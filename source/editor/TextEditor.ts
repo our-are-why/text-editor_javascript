@@ -2,7 +2,7 @@ import {
   type _Model_TextEditor_,
   type _NonEmpty_,
   type _Transaction_Model_
-} from "./Model_TextEditor.ts"
+} from "../documents/index.ts"
 import {
   viewModelOf__Model,
   type _Proposal_Host_,
@@ -138,6 +138,7 @@ class _TextEditor_<State> {
   update(
     update_Host: _Update_Host_
   ): void {
+    const isKept_Model = update_Host.model_TextEditor === this.model_TextEditor
     this.model_TextEditor = update_Host.model_TextEditor
     this.name_Document = update_Host.name_Document
     this.proposals = update_Host.proposals
@@ -145,7 +146,7 @@ class _TextEditor_<State> {
     this.tasks = update_Host.tasks
     this.files = update_Host.files
     this.rounds_Landed = update_Host.rounds_Landed
-    this.history = HISTORY_EMPTY
+    if (!isKept_Model) this.history = HISTORY_EMPTY
     this.viewer.show(this.projected())
   }
 

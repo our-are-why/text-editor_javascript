@@ -61,6 +61,7 @@ import {
   type _Asked_Proposal_,
   type _ADDRESS_Command_Tasks_,
   type _DECIDE_Command_Tasks_,
+  type _RESTATE_Command_Tasks_,
   type _RENAME_Command_Tasks_,
   type _SUMMARIZE_Command_Tasks_,
   type _APPLY_Command_Tasks_,
@@ -75,6 +76,8 @@ import {
   countsOf__Task,
   type _Api___countsOf__Task_,
   type _Counts_Task_Tasks_,
+  isOwn__Source,
+  type _Api___isOwn__Source_,
   pathsOf__Task,
   type _Api___pathsOf__Task_
 } from "./Model_Tasks.ts"
@@ -140,6 +143,7 @@ export {
   type _Asked_Proposal_,
   type _ADDRESS_Command_Tasks_,
   type _DECIDE_Command_Tasks_,
+  type _RESTATE_Command_Tasks_,
   type _RENAME_Command_Tasks_,
   type _SUMMARIZE_Command_Tasks_,
   type _APPLY_Command_Tasks_,
@@ -154,6 +158,8 @@ export {
   countsOf__Task,
   type _Api___countsOf__Task_,
   type _Counts_Task_Tasks_,
+  isOwn__Source,
+  type _Api___isOwn__Source_,
   pathsOf__Task,
   type _Api___pathsOf__Task_
 }

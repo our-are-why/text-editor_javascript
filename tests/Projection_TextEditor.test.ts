@@ -1,10 +1,11 @@
 import { expect, test } from "bun:test"
-import { parseModel_TextEditor, type _Changes_Host_, type _Change_Host_, type _Model_TextEditor_ } from "../source/editor/Model_TextEditor.ts"
+import { parseModel_TextEditor, type _Changes_Host_, type _Change_Host_, type _Model_TextEditor_ } from "../source/documents/Model_TextEditor.ts"
 import { viewModelOf__Model, type _Proposal_Host_, type _Task_Host_, type _Mode_Host_, type _Standing_Task_, type _Counts_Proposals_, type _Counts_Requests_ } from "../source/editor/Projection_TextEditor.ts"
 import { MODULE_READING_TEXT } from "../source/editor/readings/text.ts"
 import { MODULE_PLAINTEXT, isLines__Part_Frame, type _State_Task_, type _Header_ViewModel_, type _Decision_Proposal_, type _Status_Request_, type _Piece_Text_, type _Range_Lines_, type _ViewModel_TextEditor_, type _Line_Run_, type _Underlay_Text_, type _Run_Lines_ } from "../source/editor/ViewModel_TextEditor.ts"
 import { actions_Review } from "../playground/items.ts"
-import { model_retry, proposals_retry, rounds_retry, ranges_retry, setup_retry } from "../playground/examples/javascript.ts"
+import { model_retry, proposals_retry, stale_retry, ranges_retry, setup_retry } from "../playground/examples/javascript.ts"
+import { roundsOf__Stale } from "../playground/tasks.ts"
 import { model_readme, proposals_readme, ranges_readme, setup_readme } from "../playground/examples/markdown.ts"
 import { perspective_Markdown } from "../playground/readings.ts"
 import { PERSPECTIVE_CHANGES } from "../source/editor/perspectives/changes.ts"
@@ -267,7 +268,7 @@ test("a change inside words another restyles is no condition of it either, as th
 // each example as the editor draws it, put together as the example puts it:
 // the JavaScript one in its one perspective, the editor's changes; the
 // Markdown one in that, and read as Markdown
-const viewModel_retry = viewModelOf__Model({ model_TextEditor: model_retry, name_Document: "notes/digits.txt", proposals: proposals_retry, rounds_Landed: rounds_retry, mode: { kind: "MANUAL" }, tasks: [], files: [], ranges_Frame: ranges_retry, module_Language: setup_retry.module_Language, module_Reading: setup_retry.perspectives[0].module_Reading })
+const viewModel_retry = viewModelOf__Model({ model_TextEditor: model_retry, name_Document: "notes/digits.txt", proposals: proposals_retry, rounds_Landed: roundsOf__Stale({ stale: stale_retry }), mode: { kind: "MANUAL" }, tasks: [], files: [], ranges_Frame: ranges_retry, module_Language: setup_retry.module_Language, module_Reading: setup_retry.perspectives[0].module_Reading })
 const viewModel_readme = viewModelOf__Model({ model_TextEditor: model_readme, name_Document: "notes/digits.txt", proposals: proposals_readme, rounds_Landed: [], mode: { kind: "MANUAL" }, tasks: [], files: [], ranges_Frame: ranges_readme, module_Language: setup_readme.module_Language, module_Reading: PERSPECTIVE_CHANGES.module_Reading })
 const viewModel_readme_Markdown = viewModelOf__Model({ model_TextEditor: model_readme, name_Document: "notes/digits.txt", proposals: proposals_readme, rounds_Landed: [], mode: { kind: "MANUAL" }, tasks: [], files: [], ranges_Frame: ranges_readme, module_Language: setup_readme.module_Language, module_Reading: perspective_Markdown.module_Reading })
 
@@ -414,23 +415,24 @@ test("the header over the document: how many of its proposals are decided, how m
   expect(headerOf(["RUNNING"], "OPEN", inTask(task("WORKING"))).parts).toEqual([])
 })
 
-test("a task's own actions, at the end of its card's heading, the ways it ends: Apply, only once nothing's left on either side, nothing to decide, being revised, queued or running, and Cancel, always, a draft's discarding it; a draft's Start all where every task's is, its starts never in its heading; none for a resolved task", () => {
+test("a task's own actions, at the end of its card's heading, the ways it ends: Apply, only once nothing's left on either side, nothing to decide, conflicted, being revised, queued or running, and Cancel, always, a draft's discarding it; a draft's Start all where every task's is, its starts never in its heading; none for a resolved task", () => {
   const parsed = parseModel_TextEditor({ multilineText: "one two three", marks: [], proposed: [] })
   if (parsed.kind === "REFUSED") throw new Error("refused")
   const counts_None: _Counts_Proposals_ = { OPEN: 0, REQUESTED: 0, REVISING: 0, ACCEPTED: 0, REJECTED: 0, WITHDRAWN: 0 }
   const taskOf = (state: _State_Task_, counts_Proposals: _Counts_Proposals_, counts_Requests: _Counts_Requests_): _Task_Host_ => ({ id: "tidy", name: "Tidy", state, summary: "", reason: "", documents: [{ name: "README.md", counts_Proposals, counts_Requests, isShown: false, actions: [] }], summary_Document: "", requests: [], actions: [], actions_Document: [] })
-  const headOf = (task_Host: _Task_Host_) => {
-    const header = viewModelOf__Model({ model_TextEditor: parsed.model_TextEditor, name_Document: "notes/digits.txt", proposals: [], mode: { kind: "TASK", task: task_Host }, tasks: [], files: [], rounds_Landed: [], ranges_Frame: [], module_Language: MODULE_PLAINTEXT, module_Reading: MODULE_READING_TEXT }).header
+  const headOf = (task_Host: _Task_Host_, count_Conflicts: number) => {
+    const header = viewModelOf__Model({ model_TextEditor: parsed.model_TextEditor, name_Document: "notes/digits.txt", proposals: [], mode: { kind: "TASK", task: task_Host }, tasks: [{ id: "tidy", name: "Tidy", state: task_Host.state, isOnDocument: false, count_Undecided: 0, count_Conflicts, count_Queued: 0, count_Running: 0 }], files: [], rounds_Landed: [], ranges_Frame: [], module_Language: MODULE_PLAINTEXT, module_Reading: MODULE_READING_TEXT }).header
     if (header.mode.kind !== "TASK") throw new Error("not in a task")
     return [...header.mode.task.ends.map((end_Task) => `${end_Task.label} ${end_Task.kind}`), header.mode.task.revisions_Scope.start_All?.label ?? null]
   }
-  expect(headOf(taskOf("DRAFT", counts_None, { QUEUED: 2, RUNNING: 0 }))).toEqual(["Cancel DISCARD", "Start all (2)"])
-  expect(headOf(taskOf("DRAFT", counts_None, { QUEUED: 0, RUNNING: 0 }))).toEqual(["Apply APPLY", "Cancel DISCARD", null])
-  expect(headOf(taskOf("YOUR_TURN", counts_None, { QUEUED: 2, RUNNING: 0 }))).toEqual(["Cancel CANCEL", "Start all (2)"])
-  expect(headOf(taskOf("YOUR_TURN", { ...counts_None, OPEN: 1, ACCEPTED: 1 }, { QUEUED: 0, RUNNING: 0 }))).toEqual(["Cancel CANCEL", null])
-  expect(headOf(taskOf("WORKING", { ...counts_None, REVISING: 1 }, { QUEUED: 0, RUNNING: 1 }))).toEqual(["Cancel CANCEL", null])
-  expect(headOf(taskOf("YOUR_TURN", { ...counts_None, ACCEPTED: 2, REJECTED: 1, WITHDRAWN: 1 }, { QUEUED: 0, RUNNING: 0 }))).toEqual(["Apply APPLY", "Cancel CANCEL", null])
-  expect(headOf(taskOf("APPLIED", counts_None, { QUEUED: 0, RUNNING: 0 }))).toEqual([null])
+  expect(headOf(taskOf("DRAFT", counts_None, { QUEUED: 2, RUNNING: 0 }), 0)).toEqual(["Cancel DISCARD", "Start all (2)"])
+  expect(headOf(taskOf("DRAFT", counts_None, { QUEUED: 0, RUNNING: 0 }), 0)).toEqual(["Apply APPLY", "Cancel DISCARD", null])
+  expect(headOf(taskOf("YOUR_TURN", counts_None, { QUEUED: 2, RUNNING: 0 }), 0)).toEqual(["Cancel CANCEL", "Start all (2)"])
+  expect(headOf(taskOf("YOUR_TURN", { ...counts_None, OPEN: 1, ACCEPTED: 1 }, { QUEUED: 0, RUNNING: 0 }), 0)).toEqual(["Cancel CANCEL", null])
+  expect(headOf(taskOf("WORKING", { ...counts_None, REVISING: 1 }, { QUEUED: 0, RUNNING: 1 }), 0)).toEqual(["Cancel CANCEL", null])
+  expect(headOf(taskOf("YOUR_TURN", { ...counts_None, ACCEPTED: 2, REJECTED: 1, WITHDRAWN: 1 }, { QUEUED: 0, RUNNING: 0 }), 0)).toEqual(["Apply APPLY", "Cancel CANCEL", null])
+  expect(headOf(taskOf("YOUR_TURN", { ...counts_None, ACCEPTED: 2 }, { QUEUED: 0, RUNNING: 0 }), 1)).toEqual(["Cancel CANCEL", null])
+  expect(headOf(taskOf("APPLIED", counts_None, { QUEUED: 0, RUNNING: 0 }), 0)).toEqual([null])
 })
 
 test("a round that landed after your edits: each change of it written before them, its ring marked stale, the others not; its item saying how many, and how many dropped, their text gone, with Run again while it's open and no round of it's under way; none said of a round that landed clean", () => {

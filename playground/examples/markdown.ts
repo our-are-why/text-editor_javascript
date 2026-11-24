@@ -5,16 +5,18 @@ import {
   type _Perspective_TextEditor_,
   MODULE_MOUSE,
   MODULE_KEYBOARD,
-  parseTexts_Line,
-  type _Range_Text_,
-  type _Changes_Host_,
-  type _Change_Host_,
   type _Proposal_Host_,
   type _Request_Task_,
   type _Range_Lines_,
   MODULE_WORDS_TEXT,
   PERSPECTIVE_CHANGES
 } from "../../source/editor/index.ts"
+import {
+  parseTexts_Line,
+  type _Range_Text_,
+  type _Changes_Host_,
+  type _Change_Host_
+} from "../../source/documents/index.ts"
 import { modelOf } from "../projected.ts"
 import { actions_Review, actions_Reopen, actions_Dismiss, proposal_Yours } from "../items.ts"
 import { module_Markdown, type _State_Markdown_ } from "../syntax.ts"
@@ -375,7 +377,7 @@ const markdown: _Example_ = {
       model_TextEditor: model_readme,
       name_Document: "README.md",
       proposals: proposals_readme,
-      rounds_Landed: [],
+      stale: [],
       about_Task: {
         id: "T-7",
         name: "Bring the README up to date",

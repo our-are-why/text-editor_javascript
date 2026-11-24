@@ -4,18 +4,21 @@ import {
   type _Setup_TextEditor_,
   MODULE_MOUSE,
   MODULE_KEYBOARD,
-  parseTexts_Line,
-  type _Range_Text_,
-  type _Changes_Host_,
-  type _Change_Host_,
   type _Proposal_Host_,
-  type _Landed_Round_,
   type _Request_Task_,
   type _Range_Lines_,
   type _Selected_Text_,
   MODULE_WORDS_TEXT,
   PERSPECTIVE_CHANGES
 } from "../../source/editor/index.ts"
+import {
+  parseTexts_Line,
+  type _Range_Text_,
+  type _Changes_Host_,
+  type _Change_Host_,
+  type _Stale_Source_,
+  versionOf__Text
+} from "../../source/documents/index.ts"
 import { modelOf } from "../projected.ts"
 import { actions_Review, actions_Reopen, actions_Dismiss, proposal_Yours } from "../items.ts"
 import { module_JavaScript, type _State_JavaScript_ } from "../syntax.ts"
@@ -25,7 +28,7 @@ export {
   retry,
   proposed_retry,
   proposals_retry,
-  rounds_retry,
+  stale_retry,
   model_retry,
   ranges_retry,
   setup_retry,
@@ -412,18 +415,37 @@ const proposals_retry: Array<_Proposal_Host_> = [
 ]
 
 // how rounds landed: the opening comment's last, written before an edit of
-// yours touched what it was on, so its one change's ring's dashed, and Run
-// again's offered; and the order's last, a third move dropped, your edits
-// having taken its text, said in its items, Run again offered too
-const rounds_retry: Array<_Landed_Round_> = [
+// yours touched what it was on, "further" put in, so its one change's ring's
+// dashed, and Run again's offered, the comment as it was kept with it, so
+// taking "further " back out makes it clean again; and the order's last, a
+// third move dropped, your edits having taken its text, said in its items,
+// Run again offered too
+const stale_retry: Array<_Stale_Source_> = [
   {
     source: "header",
-    indexes_Stale: [0],
+    changes_Stale: [
+      {
+        index: 0,
+        over: {
+          kind: "RANGE",
+          version: versionOf__Text({
+            text_Model: {
+              lines: parseTexts_Line(retry.replace("backing off further each time", "backing off each time")),
+              marks: []
+            }
+          }),
+          text: {
+            lines: parseTexts_Line("// Retries a flaky async call, backing off each time, until it\n// succeeds, runs out of attempts, or the caller gives up on it.\n"),
+            marks: []
+          }
+        }
+      }
+    ],
     count_Dropped: 0
   },
   {
     source: "order",
-    indexes_Stale: [],
+    changes_Stale: [],
     count_Dropped: 1
   }
 ]
@@ -607,7 +629,7 @@ const javascript: _Example_ = {
       model_TextEditor: model_retry,
       name_Document: "retry.js",
       proposals: proposals_retry,
-      rounds_Landed: rounds_retry,
+      stale: stale_retry,
       about_Task: {
         id: "T-12",
         name: "Tidy the retry loop",

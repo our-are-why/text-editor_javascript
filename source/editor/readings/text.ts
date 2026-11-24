@@ -9,7 +9,7 @@ import {
   type _Kind_Run_,
   positionOf__Index,
   indexOf__Position
-} from "../Model_TextEditor.ts"
+} from "../../documents/index.ts"
 
 export {
   MODULE_READING_TEXT

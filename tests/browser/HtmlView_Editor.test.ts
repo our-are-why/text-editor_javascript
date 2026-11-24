@@ -2,7 +2,7 @@ import { afterAll, describe, expect, test } from "bun:test"
 import fc from "fast-check"
 import { everything } from "../../playground/scenes/everything.ts"
 import { type _Segment_Line_ } from "../../source/editor/ViewModel_TextEditor.ts"
-import { parseTexts_Line } from "../../source/editor/Model_TextEditor.ts"
+import { parseTexts_Line } from "../../source/documents/Model_TextEditor.ts"
 import fixture from "./fixtures/HtmlView_Editor.html"
 import { openFixture } from "./harness.ts"
 

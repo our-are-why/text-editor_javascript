@@ -1,7 +1,7 @@
 import { expect, test } from "bun:test"
 import fc from "fast-check"
 import { segmentsOf__Stretches, parseLines_ViewModel, MODULE_PLAINTEXT, viewModelOf__Blocks, pointedAt__ViewModel, foldedAt__ViewModel, draftingAt__ViewModel, type _Id_Item_, type _Stretch_Line_, type _Module_Language_, type _Group_Underlay_, type _Item_Proposals_ } from "../source/editor/ViewModel_TextEditor.ts"
-import { parseTexts_Line } from "../source/editor/Model_TextEditor.ts"
+import { parseTexts_Line } from "../source/documents/Model_TextEditor.ts"
 
 // a line's text, short, so stretches often share edges and overlap
 const text_Line = fc.string({ unit: fc.constantFrom("a", "b", " "), maxLength: 12 }).map((text) => parseTexts_Line(text)[0])

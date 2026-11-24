@@ -8,9 +8,9 @@ import {
   type _Module_Language_,
   type _Group_Underlay_,
   type _STRETCH_Underlay_Text_,
-  type _Position_Run_,
-  parseTexts_Line
+  type _Position_Run_
 } from "../source/editor/index.ts"
+import { parseTexts_Line } from "../source/documents/index.ts"
 
 export {
   type _Piece_Line_,

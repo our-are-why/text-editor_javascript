@@ -13,7 +13,6 @@ import {
   type _Scope_Tasks_
 } from "../source/tasks/index.ts"
 import type {
-  _Model_TextEditor_,
   _Proposal_Host_,
   _Landed_Round_,
   _Request_Task_,
@@ -28,6 +27,12 @@ import type {
   _State_Task_,
   _Scope_Work_
 } from "../source/editor/index.ts"
+import {
+  type _Model_TextEditor_,
+  type _Stale_Source_,
+  versionOf__Text,
+  type _Head_Document_
+} from "../source/documents/index.ts"
 import type { _Task_Board_ } from "../source/board/index.ts"
 import { proposal_Yours, shownMap_State } from "./items.ts"
 
@@ -45,14 +50,15 @@ export {
   proposalsHostOf__Task,
   taskHostOf__Task,
   waitingOf__Task,
-  scopeOf__Work
+  scopeOf__Work,
+  roundsOf__Stale
 }
 
 interface _Api___seededOf__Example_ {
   name_Document: string
   model_TextEditor: _Model_TextEditor_
   proposals: Array<_Proposal_Host_>
-  rounds_Landed: Array<_Landed_Round_>
+  stale: Array<_Stale_Source_>
   about_Task: _About_Task_
   tasks_Other: Array<_Other_Task_>
   tasks_Resolved: Array<_Resolved_Task_>
@@ -100,7 +106,8 @@ interface _Resolved_Task_ {
 
 // the example's tasks as the tasks part holds them, and what's only the
 // editor's of them, kept beside: the words each request was sent on, as the
-// editor quotes them; and the content of the task the playground's on
+// editor quotes them; and what only the editor draws of the task the
+// playground's on
 interface _Seed_Tasks_ {
   model_Tasks: _Model_Tasks_
   references: Map<string, _Selected_Text_ | null>
@@ -108,12 +115,9 @@ interface _Seed_Tasks_ {
 }
 
 // what the task the playground's on, the one with proposals here, has on
-// the document shown that only the editor draws: its proposals' changes,
-// the rounds that landed on them, each proposal's attributes, and the
-// proposals dismissed
+// the document shown that only the editor draws: each proposal's
+// attributes, and the proposals dismissed
 interface _Content_Task_ {
-  proposed: _Model_TextEditor_["proposed"]
-  rounds: Array<_Landed_Round_>
   attributes: Map<string, _Attributes_Element_>
   sources_Dismissed: Set<string>
 }
@@ -122,19 +126,24 @@ interface _Content_Task_ {
 // playground's on and each of the project's other tasks alike, what's asked
 // of each here, and, of each document it has anything on elsewhere, as many
 // proposals and requests as the example counts there, the task the
-// playground's on alone with proposals here; each resolved one, as it
-// ended; and what only the editor draws of the task the playground's on
+// playground's on alone with proposals here, its changes on the document
+// shown its head there, stated against the document's version, what landed
+// on it written before your edits stale; each resolved one, as it ended;
+// and what only the editor draws of the task the playground's on
 function seededOf__Example({
   name_Document,
   model_TextEditor,
   proposals,
-  rounds_Landed,
+  stale,
   about_Task,
   tasks_Other,
   tasks_Resolved,
   stamp
 }: _Api___seededOf__Example_): _Seed_Tasks_ {
   const proposals_Own = proposals.filter((proposal_Host) => proposal_Host.source !== proposal_Yours.source)
+  const version = versionOf__Text({
+    text_Model: model_TextEditor.document
+  })
   return {
     model_Tasks: {
       tasks: [
@@ -147,6 +156,14 @@ function seededOf__Example({
           proposals: proposals_Own,
           requests: about_Task.requests,
           documents_Elsewhere: about_Task.documents_Elsewhere,
+          heads: [
+            {
+              path: name_Document,
+              version,
+              proposed: model_TextEditor.proposed,
+              stale
+            }
+          ],
           name_Document,
           stamp
         }),
@@ -159,6 +176,7 @@ function seededOf__Example({
           proposals: [],
           requests: task_Other.requests,
           documents_Elsewhere: task_Other.documents_Elsewhere,
+          heads: [],
           name_Document,
           stamp
         })),
@@ -182,8 +200,6 @@ function seededOf__Example({
       ]))
     ]),
     content_Own: {
-      proposed: model_TextEditor.proposed,
-      rounds: rounds_Landed,
       attributes: new Map(proposals_Own.map((proposal_Host) => [
         proposal_Host.source,
         proposal_Host.attributes
@@ -202,6 +218,7 @@ interface _Api___taskOf__Content_ {
   proposals: Array<_Proposal_Host_>
   requests: Array<_Request_Task_>
   documents_Elsewhere: Array<_Elsewhere_Task_>
+  heads: Array<_Head_Document_>
   name_Document: string
   stamp: _Stamp_Tasks_
 }
@@ -209,8 +226,8 @@ interface _Api___taskOf__Content_ {
 // an open task as the tasks part holds it, from what the example says it
 // has: its proposals here, each in its state, with what's asked of them;
 // its own requests, on the document shown or the task, each where it
-// stands; and what the example counts it has elsewhere, made into as many
-// proposals and requests
+// stands; what the example counts it has elsewhere, made into as many
+// proposals and requests; and its changes, its heads
 function taskOf__Content({
   id,
   name,
@@ -220,6 +237,7 @@ function taskOf__Content({
   proposals,
   requests,
   documents_Elsewhere,
+  heads,
   name_Document,
   stamp
 }: _Api___taskOf__Content_): _Task_Tasks_ {
@@ -298,6 +316,7 @@ function taskOf__Content({
       })),
       ...elsewhere.flatMap((counted) => counted.proposals)
     ],
+    heads,
     start: isStarted
       ? {
         kind: "STARTED",
@@ -496,6 +515,7 @@ function taskOf__Resolved({
     summaries_Document: [],
     requests: [],
     proposals: [],
+    heads: [],
     start: how === "DISCARDED"
       ? {
         kind: "UNSTARTED"
@@ -528,8 +548,9 @@ interface _Api___standingOf__Tasks_ {
 }
 
 // a task as the editor's told of it, for its switcher and its footer: where
-// it stands and how much of each part it has, none of it conflicted till
-// the documents part finds what is, and whether it touches the file shown
+// it stands and how much of each part it has, its conflicts what carrying
+// it across the document's edits found, and whether it touches the file
+// shown
 function standingOf__Tasks({
   task,
   name_Document
@@ -547,7 +568,7 @@ function standingOf__Tasks({
       task
     }).includes(name_Document),
     count_Undecided: counts.count_Undecided,
-    count_Conflicts: 0,
+    count_Conflicts: counts.count_Conflicts,
     count_Queued: counts.count_Queued,
     count_Running: counts.count_Running
   }
@@ -580,7 +601,7 @@ function boardedOf__Tasks({
       })
       : [],
     count_Undecided: isOpen ? counts.count_Undecided : 0,
-    count_Conflicts: 0,
+    count_Conflicts: isOpen ? counts.count_Conflicts : 0,
     count_Running: isOpen ? counts.count_Running : 0,
     count_Queued: isOpen ? counts.count_Queued : 0,
     count_Editors
@@ -903,4 +924,21 @@ const scopeMap_Work: _ScopeMap__Kind_Work_ = {
   TASK: () => ({
     kind: "TASK"
   })
+}
+
+interface _Api___roundsOf__Stale_ {
+  stale: Array<_Stale_Source_>
+}
+
+// what's stale of a task's changes as the editor marks it, a round's
+// changes written before your edits: by each change's index in its source,
+// and how many were dropped
+function roundsOf__Stale({
+  stale
+}: _Api___roundsOf__Stale_): Array<_Landed_Round_> {
+  return stale.map((stale_Source) => ({
+    source: stale_Source.source,
+    indexes_Stale: stale_Source.changes_Stale.map((stale_Change) => stale_Change.index),
+    count_Dropped: stale_Source.count_Dropped
+  }))
 }

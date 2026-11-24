@@ -1,5 +1,5 @@
 import { expect, test } from "bun:test"
-import { parseModel_TextEditor, type _Changes_Host_ } from "../source/editor/Model_TextEditor.ts"
+import { parseModel_TextEditor, type _Changes_Host_ } from "../source/documents/Model_TextEditor.ts"
 import { viewModelOf__Model } from "../source/editor/Projection_TextEditor.ts"
 import { MODULE_READING_TEXT } from "../source/editor/readings/text.ts"
 import { MODULE_PLAINTEXT, confirmingAt__ViewModel, editingAt__ViewModel, askingAt__ViewModel, wordsAt__ViewModel, headOf__Quote, sizeOf__Quote, peekOf__Quote, placeIn__Line, positionIn__Run, textOf__Line, type _Selection_TextEditor_, type _End_Selection_, type _Piece_Text_ } from "../source/editor/ViewModel_TextEditor.ts"
