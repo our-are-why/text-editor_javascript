@@ -2521,6 +2521,17 @@
   z-index: 7;
 }
 
+/* the switcher's card shut once a task's chosen in it, though the
+   pointer's still on it, at once, as a menu shuts on a choice, not fading as
+   a card the pointer's left does in case it's coming back; shown again only
+   once the pointer's left the switcher and come back, or its chevron's
+   focused */
+.htmlView_editor .switcher_Header_htmlView.shut_Switcher_htmlView > .card_htmlView {
+  visibility: hidden;
+  opacity: 0;
+  transition: none;
+}
+
 .htmlView_editor :is(.head_Card_htmlView, .summary_Card_htmlView, .reason_Card_htmlView, .label_Card_htmlView) {
   margin: 0;
 }

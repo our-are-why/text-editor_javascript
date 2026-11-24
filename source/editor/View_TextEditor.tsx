@@ -115,6 +115,7 @@ class _View_TextEditor_ {
   placed$: _Placed$_View_
   heightKept_Card: number
   key$_Option_Switcher: Array<string>
+  isShut_Switcher: boolean
 
   constructor({
     containerElement,
@@ -153,11 +154,33 @@ class _View_TextEditor_ {
     }
     this.heightKept_Card = window.innerHeight
     this.key$_Option_Switcher = []
+    this.isShut_Switcher = false
     this.containerElement.addEventListener(
       "transitionend",
       (event) => {
         if (!(event.target instanceof Element) || !event.target.matches(".card_Switcher_htmlView") || event.propertyName !== "visibility" || getComputedStyle(event.target).visibility !== "hidden") return
         this.closed_Switcher()
+      }
+    )
+    this.containerElement.addEventListener(
+      "click",
+      (event) => {
+        if (!(event.target instanceof Element) || event.target.closest(".choice_Switcher_htmlView") === null) return
+        this.chosen_Switcher()
+      }
+    )
+    this.containerElement.addEventListener(
+      "pointerout",
+      (event) => {
+        if (!this.isShut_Switcher || (event.relatedTarget instanceof Element && event.relatedTarget.closest(".switcher_Header_htmlView") !== null)) return
+        this.released_Switcher()
+      }
+    )
+    this.containerElement.addEventListener(
+      "focusin",
+      (event) => {
+        if (!this.isShut_Switcher || !(event.target instanceof Element) || !event.target.matches(".trigger_Switcher_htmlView")) return
+        this.released_Switcher()
       }
     )
     this.containerElement.addEventListener(
@@ -215,6 +238,10 @@ class _View_TextEditor_ {
     drawOrder__Switcher({
       containerElement_View: this.containerElement,
       key$_Option: key$_Option_Open
+    })
+    drawShut__Switcher({
+      containerElement_View: this.containerElement,
+      isShut_Switcher: this.isShut_Switcher
     })
     this.run$ = viewModel_TextEditor.runs
     this.selection = viewModel_TextEditor.selection
@@ -444,6 +471,26 @@ class _View_TextEditor_ {
     drawOrder__Switcher({
       containerElement_View: this.containerElement,
       key$_Option: this.key$_Option_Switcher
+    })
+  }
+
+  chosen_Switcher(): void {
+    this.isShut_Switcher = true
+    drawShut__Switcher({
+      containerElement_View: this.containerElement,
+      isShut_Switcher: this.isShut_Switcher
+    })
+    drawOrder__Switcher({
+      containerElement_View: this.containerElement,
+      key$_Option: this.key$_Option_Switcher
+    })
+  }
+
+  released_Switcher(): void {
+    this.isShut_Switcher = false
+    drawShut__Switcher({
+      containerElement_View: this.containerElement,
+      isShut_Switcher: this.isShut_Switcher
     })
   }
 }
@@ -5634,6 +5681,21 @@ function drawOrder__Switcher({
       null
     )
   }
+}
+
+interface _Api___drawShut__Switcher_ {
+  containerElement_View: HTMLElement
+  isShut_Switcher: boolean
+}
+
+function drawShut__Switcher({
+  containerElement_View,
+  isShut_Switcher
+}: _Api___drawShut__Switcher_): void {
+  containerElement_View.querySelector(".switcher_Header_htmlView")?.classList.toggle(
+    "shut_Switcher_htmlView",
+    isShut_Switcher
+  )
 }
 
 interface _Api___keptInEditor__View_TextEditor_ {

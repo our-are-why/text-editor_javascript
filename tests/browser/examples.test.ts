@@ -3177,10 +3177,14 @@ test("a task's own actions, at the end of its card's heading, folded till its el
   expect(opened_Ends.errors).toEqual([])
 })
 
-// the switcher's order kept while it's open, a task pressed in it marked
-// as the one the editor's in where it is, nothing moving under the
-// pointer, nor while it fades, and sorted again once it's shut, the task
-// the editor's in first by the time it's opened again
+// the switcher's order kept while it's open: a task switched to from the
+// board, the pointer on the switcher, marked as the one the editor's in
+// where it is, nothing moving under the pointer, nor as it fades, and
+// sorted again once it's shut, the editor's task first when it's opened
+// again; a task chosen in it, the switcher shut at once, though the
+// pointer's still on it, sorted, still shut as the pointer moves where it
+// was, shown again once the pointer's left it and come back; and chosen
+// from the keyboard, shut, shown again when its chevron's focused
 const opened_Order = await openExample(
   "javascript",
   1
@@ -3188,12 +3192,19 @@ const opened_Order = await openExample(
 afterAll(() => opened_Order.close())
 await opened_Order.page.waitForSelector(".note_htmlView")
 const orderOf_Switcher = () => opened_Order.page.evaluate(() => [...document.querySelectorAll(".choice_Switcher_htmlView")].map((choice) => `${choice.getAttribute("data-id") ?? "none"}${choice.hasAttribute("aria-current") ? " here" : ""}`))
+const visibilityOf_Switcher = () => opened_Order.page.evaluate(() => getComputedStyle(document.querySelector(".card_Switcher_htmlView")!).visibility)
 await opened_Order.page.hover(".trigger_Switcher_htmlView")
 await opened_Order.page.waitForTimeout(300)
 const order_Opened = await orderOf_Switcher()
-await opened_Order.page.click(".choice_Switcher_htmlView[data-switch=\"TASK\"][data-id=\"T-14\"]")
+const box_Choice = await opened_Order.page.locator(".choice_Switcher_htmlView[data-switch=\"TASK\"][data-id=\"T-16\"]").boundingBox()
+if (box_Choice === null) throw new Error("no T-16 in the switcher")
+await opened_Order.page.mouse.move(box_Choice.x + 40, box_Choice.y + box_Choice.height / 2, { steps: 4 })
+await opened_Order.page.evaluate(() => document.querySelector<HTMLElement>(".tile_htmlView[data-id=\"T-14\"] .switch_Tile_htmlView")?.click())
 await opened_Order.page.waitForTimeout(300)
-const order_Pressed = await orderOf_Switcher()
+const switcher_Elsewhere = {
+  order: await orderOf_Switcher(),
+  visibility: await visibilityOf_Switcher()
+}
 await opened_Order.page.mouse.move(5, 400)
 await opened_Order.page.waitForTimeout(150)
 const order_Fading = await orderOf_Switcher()
@@ -3201,11 +3212,45 @@ await opened_Order.page.waitForTimeout(400)
 await opened_Order.page.hover(".trigger_Switcher_htmlView")
 await opened_Order.page.waitForTimeout(300)
 const order_Reopened = await orderOf_Switcher()
-test("the switcher's order kept while it's open: a task pressed in it marked as the editor's where it is, nothing moving under the pointer, nor as it fades; sorted again once it's shut, the editor's task first when it's opened again", () => {
+const box_Pressed = await opened_Order.page.locator(".choice_Switcher_htmlView[data-switch=\"TASK\"][data-id=\"T-13\"]").boundingBox()
+if (box_Pressed === null) throw new Error("no T-13 in the switcher")
+await opened_Order.page.mouse.move(box_Pressed.x + 40, box_Pressed.y + box_Pressed.height / 2, { steps: 4 })
+const visibility_Pressed = await opened_Order.page.evaluate(() => {
+  document.querySelector<HTMLElement>(".choice_Switcher_htmlView[data-switch=\"TASK\"][data-id=\"T-13\"]")?.click()
+  return getComputedStyle(document.querySelector(".card_Switcher_htmlView")!).visibility
+})
+await opened_Order.page.waitForTimeout(300)
+const switcher_Shut = {
+  order: await orderOf_Switcher(),
+  visibility: await visibilityOf_Switcher()
+}
+await opened_Order.page.mouse.move(box_Pressed.x + 60, box_Pressed.y + box_Pressed.height / 2 + 10, { steps: 4 })
+await opened_Order.page.waitForTimeout(300)
+const visibility_Moved = await visibilityOf_Switcher()
+await opened_Order.page.mouse.move(5, 400)
+await opened_Order.page.waitForTimeout(300)
+await opened_Order.page.hover(".trigger_Switcher_htmlView")
+await opened_Order.page.waitForTimeout(300)
+const visibility_Back = await visibilityOf_Switcher()
+await opened_Order.page.mouse.move(5, 400)
+await opened_Order.page.waitForTimeout(400)
+await opened_Order.page.focus(".trigger_Switcher_htmlView")
+await opened_Order.page.focus(".choice_Switcher_htmlView[data-switch=\"TASK\"][data-id=\"T-17\"]")
+await opened_Order.page.keyboard.press("Enter")
+await opened_Order.page.waitForTimeout(400)
+const visibility_Keyed = await visibilityOf_Switcher()
+await opened_Order.page.focus(".trigger_Switcher_htmlView")
+await opened_Order.page.waitForTimeout(300)
+const visibility_Refocused = await visibilityOf_Switcher()
+test("the switcher's order kept while it's open, a task switched to from the board marked where it is, nothing moving, nor as it fades, sorted again once it's shut; a task chosen in it, shut at once though the pointer's still on it, shown again once the pointer's left it and come back; chosen from the keyboard, shown again when its chevron's focused", () => {
   expect(order_Opened).toEqual(["T-12 here", "T-13", "T-15", "T-17", "T-16", "T-14", "none"])
-  expect(order_Pressed).toEqual(["T-12", "T-13", "T-15", "T-17", "T-16", "T-14 here", "none"])
-  expect(order_Fading).toEqual(order_Pressed)
+  expect(switcher_Elsewhere).toEqual({ order: ["T-12", "T-13", "T-15", "T-17", "T-16", "T-14 here", "none"], visibility: "visible" })
+  expect(order_Fading).toEqual(switcher_Elsewhere.order)
   expect(order_Reopened).toEqual(["T-14 here", "T-12", "T-13", "T-15", "T-17", "T-16", "none"])
+  expect(visibility_Pressed).toBe("hidden")
+  expect(switcher_Shut).toEqual({ order: ["T-13 here", "T-12", "T-15", "T-17", "T-16", "T-14", "none"], visibility: "hidden" })
+  expect([visibility_Moved, visibility_Back]).toEqual(["hidden", "visible"])
+  expect([visibility_Keyed, visibility_Refocused]).toEqual(["hidden", "visible"])
   expect(opened_Order.errors).toEqual([])
 })
 

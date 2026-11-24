@@ -524,11 +524,15 @@ faking the moves, so it can all be drawn before the parts above are built:
   coloured as the board's columns are, or a draft's requests, said queued,
   in plum, as an open task's are, its name leaning, as in the header, its
   dotted mark saying it's a draft, where the word draft was said too; its
-  order kept while it's open, a task pressed in it marked as the one the
-  editor's in where it is, so nothing moves under the pointer, and sorted
-  again only once it's shut, the view holding the order it shows through
-  each redraw while its card's open, and putting the view model's back
-  once the card's closed; one pressed asks the host to switch, `SWITCH`.
+  order kept while it's open, a task switched to while it's open, from the
+  board, say, marked as the one the editor's in where it is, so nothing
+  moves under the pointer, and sorted again only once it's shut, the view
+  holding the order it shows through each redraw while its card's open,
+  and putting the view model's back once the card's closed; one pressed
+  asks the host to switch, `SWITCH`, and shuts the card at once, though
+  the pointer's still on it, as a menu shuts on a choice, sorted then,
+  shown again only once the pointer's left it and come back, or its
+  chevron's focused.
   Draft task, and All tasks…, which opens the board, come with drafts and
   the board;
 - **built 2026-11-22: the file, and opening another.** An editor shows a
