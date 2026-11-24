@@ -551,14 +551,14 @@
   font-weight: 600;
 }
 
-.htmlView_board .menu_Tile_htmlView > .action_Tile_htmlView[data-ask="COMPLETE"] {
+.htmlView_board .menu_Tile_htmlView > .action_Tile_htmlView[data-ask="APPLY"] {
   color: var(--accent_proposals_htmlView);
 }
 
 /* resolved tasks, quiet: a row each, its name in the text's ink, as a
    task's is, never the muted ink an empty column's None is in, and, after
    it, in the same run of text, muted and smaller, how it ended, in a
-   word, as its column holds them all, completed, canceled and discarded,
+   word, as its column holds them all, applied, canceled and discarded,
    the name wrapping as a task's does, no id, as a task has none; and, in
    its heading, right after its count, the heading's own gap after it,
    Delete, every one of them, for good, collected, a quiet word, a link in

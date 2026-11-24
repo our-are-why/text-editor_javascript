@@ -16,7 +16,7 @@ export {
   type _SWITCH_Asked_Board_,
   type _START_Asked_Board_,
   type _STOP_Asked_Board_,
-  type _COMPLETE_Asked_Board_,
+  type _APPLY_Asked_Board_,
   type _CANCEL_Asked_Board_,
   type _DISCARD_Asked_Board_,
   type _COLLECT_Asked_Board_,
@@ -133,7 +133,7 @@ interface _Observer_Board_ {
   asked: (asked_Board: _Asked_Board_) => void
 }
 
-type _Asked_Board_ = _SWITCH_Asked_Board_ | _START_Asked_Board_ | _STOP_Asked_Board_ | _COMPLETE_Asked_Board_ | _CANCEL_Asked_Board_ | _DISCARD_Asked_Board_ | _COLLECT_Asked_Board_ | _NEW_TASK__Asked_Board_
+type _Asked_Board_ = _SWITCH_Asked_Board_ | _START_Asked_Board_ | _STOP_Asked_Board_ | _APPLY_Asked_Board_ | _CANCEL_Asked_Board_ | _DISCARD_Asked_Board_ | _COLLECT_Asked_Board_ | _NEW_TASK__Asked_Board_
 
 interface __BASE_Asked_Board_<Kind extends string> {
   kind: Kind
@@ -151,7 +151,7 @@ interface _STOP_Asked_Board_ extends __BASE_Asked_Board_<"STOP"> {
   id: string
 }
 
-interface _COMPLETE_Asked_Board_ extends __BASE_Asked_Board_<"COMPLETE"> {
+interface _APPLY_Asked_Board_ extends __BASE_Asked_Board_<"APPLY"> {
   id: string
 }
 
@@ -270,10 +270,10 @@ const ASKEDMAP__KIND: _AskedMap__Kind_ = {
       id
     })
   }),
-  COMPLETE: (element) => askedOf__Tile({
+  APPLY: (element) => askedOf__Tile({
     element,
     askedOf__Id: (id) => ({
-      kind: "COMPLETE",
+      kind: "APPLY",
       id
     })
   }),

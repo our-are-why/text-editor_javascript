@@ -67,7 +67,7 @@ interface _Action_Tile_ {
   label: string
 }
 
-type _Kind_Action_ = "START" | "STOP" | "COMPLETE" | "CANCEL" | "DISCARD"
+type _Kind_Action_ = "START" | "STOP" | "APPLY" | "CANCEL" | "DISCARD"
 
 interface _RESOLVED_Column_Board_ extends __BASE_Column_Board_<"RESOLVED"> {
   rows: Array<_Row_Resolved_>

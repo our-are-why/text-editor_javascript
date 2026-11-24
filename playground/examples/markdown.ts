@@ -388,15 +388,14 @@ const markdown: _Example_ = {
         {
           id: "T-12",
           name: "Tidy the retry loop",
-          state: "WORKING",
-          isOnDocument: false,
-          count_Undecided: 14,
-          count_Conflicts: 0,
-          count_Queued: 8,
-          count_Running: 3,
-          paths: [
-            "retry.js",
-            "README.md"
+          isStarted: true,
+          requests: [],
+          documents_Elsewhere: [
+            {
+              name: "retry.js",
+              counts_Proposals: { OPEN: 14, REQUESTED: 0, REVISING: 0, ACCEPTED: 0, REJECTED: 0, WITHDRAWN: 0 },
+              counts_Requests: { QUEUED: 8, RUNNING: 3 }
+            }
           ]
         }
       ],
@@ -404,7 +403,7 @@ const markdown: _Example_ = {
         {
           id: "T-6",
           name: "Say which errors are retried",
-          state: "COMPLETED"
+          state: "APPLIED"
         }
       ],
       containerElement_Board,

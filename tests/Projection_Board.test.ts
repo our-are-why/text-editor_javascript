@@ -23,7 +23,7 @@ const tasks = [
   taskOf("T-11", "YOUR_TURN", { paths: ["retry.js"], count_Queued: 2 }),
   taskOf("T-10", "WORKING", { paths: ["retry.js"], count_Running: 1 }),
   taskOf("T-5", "DRAFT", { paths: ["retry.js"], count_Queued: 1 }),
-  taskOf("T-6", "COMPLETED", {}),
+  taskOf("T-6", "APPLIED", {}),
   taskOf("T-7", "CANCELED", {}),
   taskOf("T-8", "DISCARDED", {})
 ]
@@ -39,7 +39,7 @@ test("the board: how many are open, and a column for each of who they're waiting
   ])
 })
 
-test("a tile: its parts, the most pressing of yours, a conflict over the rest, applicable when nothing's left, requests queued, said so, as the editor says them, yours till started, then the agent's, or a draft's requests, queued; in file, if it touches the file an editor's showing, not named; whether an editor shows it; and what it offers behind its ···: Complete only once nothing's running or left to decide", () => {
+test("a tile: its parts, the most pressing of yours, a conflict over the rest, applicable when nothing's left, requests queued, said so, as the editor says them, yours till started, then the agent's, or a draft's requests, queued; in file, if it touches the file an editor's showing, not named; whether an editor shows it; and what it offers behind its ···: Apply only once nothing's running or left to decide", () => {
   const tiles = viewModel_Board.columns.flatMap((column) => column.kind === "RESOLVED" ? [] : column.tiles)
   expect(tiles.map((tile) => [tile.id, tile.isInView, tile.label_InView, tile.parts.map((part) => `${part.kind} ${part.text}`).join(", "), tile.isShown, tile.actions_More.map((action) => action.label).join(" ")])).toEqual([
     ["T-1", false, "in file", "YOURS 3 to decide", false, "Cancel"],

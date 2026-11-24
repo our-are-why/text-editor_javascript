@@ -99,7 +99,7 @@ const KINDMAP__STATE_TASK: _KindMap__State_Task_ = {
   DRAFT: () => "DRAFTS",
   WORKING: (task_Board) => kindOf__Task_Open(task_Board),
   YOUR_TURN: (task_Board) => kindOf__Task_Open(task_Board),
-  COMPLETED: () => "RESOLVED",
+  APPLIED: () => "RESOLVED",
   CANCELED: () => "RESOLVED",
   DISCARDED: () => "RESOLVED"
 }
@@ -158,7 +158,7 @@ const MOREMAP__STATE_TASK: _ActionsMap__State_Task_ = {
     task_Board,
     kind_Cancel: "CANCEL"
   }),
-  COMPLETED: () => [],
+  APPLIED: () => [],
   CANCELED: () => [],
   DISCARDED: () => []
 }
@@ -193,7 +193,7 @@ function actionsOf__Task_Open({
       ? []
       : [
         {
-          kind: "COMPLETE" as const,
+          kind: "APPLY" as const,
           label: "Apply"
         }
       ],

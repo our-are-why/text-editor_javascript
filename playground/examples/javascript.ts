@@ -19,7 +19,7 @@ import {
 import { modelOf } from "../projected.ts"
 import { actions_Review, actions_Reopen, actions_Dismiss, proposal_Yours } from "../items.ts"
 import { module_JavaScript, type _State_JavaScript_ } from "../syntax.ts"
-import { hostedOf__Editor } from "../host.ts"
+import { hostedOf__Editor, type _Other_Task_ } from "../host.ts"
 
 export {
   retry,
@@ -501,6 +501,76 @@ const model_retry = modelOf({
   proposed: proposed_retry
 })
 
+// the project's other tasks, each with what's asked of it on this
+// module, on the words it was asked on, so all the editor's told of them is
+// here to see once it's switched to them; what they'd propose, and what the
+// agent would answer, left for the documents and the agent parts, as
+// nothing here could stand for them
+
+// logging each retry, its one request running, on the catch
+const task_Log: _Other_Task_ = {
+  id: "T-13",
+  name: "Log each retry",
+  isStarted: true,
+  requests: [
+    { id: "T-13 a", notes: "Log each attempt that fails, with its error and which round it was.", aim: { kind: "DOCUMENT", reference: wordsOf(quoteOf(19, "} catch (error) {", 0)) }, status: "RUNNING", sources_Answering: [] }
+  ],
+  documents_Elsewhere: []
+}
+
+// the README's promises, all of it in the README, decided, nothing left:
+// nothing of it on this module
+const task_Promises: _Other_Task_ = {
+  id: "T-14",
+  name: "Say what the README promises",
+  isStarted: true,
+  requests: [],
+  documents_Elsewhere: [
+    {
+      name: "README.md",
+      counts_Proposals: { OPEN: 0, REQUESTED: 0, REVISING: 0, ACCEPTED: 2, REJECTED: 0, WITHDRAWN: 0 },
+      counts_Requests: { QUEUED: 0, RUNNING: 0 }
+    }
+  ]
+}
+
+// attempts renamed tries, asked of the option and the constant, queued
+const task_Tries: _Other_Task_ = {
+  id: "T-15",
+  name: "Rename attempts to tries",
+  isStarted: true,
+  requests: [
+    { id: "T-15 a", notes: "Call attempts tries, the option and the constant both.", aim: { kind: "DOCUMENT", reference: wordsOf(quoteOf(13, "attempts = ATTEMPTS", 0)) }, status: "QUEUED", sources_Answering: [] }
+  ],
+  documents_Elsewhere: []
+}
+
+// the options named, started before, two requests queued since, on the
+// options' type and on how they're taken
+const task_Options: _Other_Task_ = {
+  id: "T-17",
+  name: "Name the retry options",
+  isStarted: true,
+  requests: [
+    { id: "T-17 a", notes: "Name the options' type RetryOptions, in a typedef of its own.", aim: { kind: "DOCUMENT", reference: wordsOf(quoteOf(10, "{{ attempts?: number, signal?: AbortSignal, onRetry?: (error: unknown, n: number) => void }}", 0)) }, status: "QUEUED", sources_Answering: [] },
+    { id: "T-17 b", notes: "Take the options whole, as options, and take them apart in the body.", aim: { kind: "DOCUMENT", reference: wordsOf(quoteOf(13, "{ attempts = ATTEMPTS, signal, onRetry } = {}", 0)) }, status: "QUEUED", sources_Answering: [] }
+  ],
+  documents_Elsewhere: []
+}
+
+// a timeout, drafted, never started, two requests queued, on the signal
+// and on the doc comment
+const task_Timeout: _Other_Task_ = {
+  id: "T-16",
+  name: "Add a timeout option",
+  isStarted: false,
+  requests: [
+    { id: "T-16 a", notes: "Take a timeout, in milliseconds, and give up once it's passed.", aim: { kind: "DOCUMENT", reference: wordsOf(quoteOf(13, "signal", 0)) }, status: "QUEUED", sources_Answering: [] },
+    { id: "T-16 b", notes: "Say in the doc comment what timeout does.", aim: { kind: "DOCUMENT", reference: wordsOf(quoteOf(10, "signal?: AbortSignal", 0)) }, status: "QUEUED", sources_Answering: [] }
+  ],
+  documents_Elsewhere: []
+}
+
 // the lines the playground, as host, frames whole, beyond what the changes
 // touch, as a frame a function each reads: retry, backoff and isRetryable,
 // so the editor draws seven frames
@@ -563,67 +633,17 @@ const javascript: _Example_ = {
         ]
       },
       tasks_Other: [
-        {
-          id: "T-13",
-          name: "Log each retry",
-          state: "WORKING",
-          isOnDocument: true,
-          count_Undecided: 0,
-          count_Conflicts: 0,
-          count_Queued: 0,
-          count_Running: 1,
-          paths: ["retry.js"]
-        },
-        {
-          id: "T-14",
-          name: "Say what the README promises",
-          state: "YOUR_TURN",
-          isOnDocument: false,
-          count_Undecided: 0,
-          count_Conflicts: 0,
-          count_Queued: 0,
-          count_Running: 0,
-          paths: ["README.md"]
-        },
-        {
-          id: "T-15",
-          name: "Rename attempts to tries",
-          state: "YOUR_TURN",
-          isOnDocument: true,
-          count_Undecided: 2,
-          count_Conflicts: 1,
-          count_Queued: 0,
-          count_Running: 0,
-          paths: ["retry.js"]
-        },
-        {
-          id: "T-17",
-          name: "Name the retry options",
-          state: "YOUR_TURN",
-          isOnDocument: true,
-          count_Undecided: 0,
-          count_Conflicts: 0,
-          count_Queued: 2,
-          count_Running: 0,
-          paths: ["retry.js"]
-        },
-        {
-          id: "T-16",
-          name: "Add a timeout option",
-          state: "DRAFT",
-          isOnDocument: true,
-          count_Undecided: 0,
-          count_Conflicts: 0,
-          count_Queued: 2,
-          count_Running: 0,
-          paths: ["retry.js"]
-        }
+        task_Log,
+        task_Promises,
+        task_Tries,
+        task_Options,
+        task_Timeout
       ],
       tasks_Resolved: [
         {
           id: "T-9",
           name: "Fix the docs' typos",
-          state: "COMPLETED"
+          state: "APPLIED"
         },
         {
           id: "T-11",

@@ -354,8 +354,8 @@ another's removal, one carried in a move, three sources on one line.
   happen here, as all a proposal touches is in a frame, and its spans move
   with the document's edits; nothing opens under the caret as it types, a
   frame where a plain line was, which that design held the line purple
-  against; and what's left of it, the file kept at the trunk till a task
-  completes, your edits going with the task, is where the host keeps what's
+  against; and what's left of it, the file kept at the trunk till a task's
+  applied, your edits going with the task, is where the host keeps what's
   typed, which it's told of, every edit, by observers, not how it's typed.
   What it gives up: what you type outside frames isn't reviewed beside the
   agent's proposals; if that turns out to matter, it's looked at again.
@@ -2496,7 +2496,7 @@ changes it changed, `sources_Changed`, each a proposal's next round, yours
 among them, and whether it changed the document, `isChanged_Document`. A
 host keeps what it's told as it likes: doctor, a proposal edited as its
 next round, once the caret leaves it, say; the document's edits written to
-the file, or kept with a task till it completes. And told `asked`, an
+the file, or kept with a task till it's applied. And told `asked`, an
 `_Asked_Host_`: an `ACTION` once a proposal's action's pressed, `ACT`, or
 a revision's notes sent, `SEND`, or a note on it sent from the menu: the
 proposal's source, the action's command, the host's own, what was
@@ -3493,7 +3493,7 @@ Given no tasks, there's no switcher. The footer, at its right, counts
 them by what they're waiting on, each count after its mark in its ink,
 needing you, conflicts, at work, drafts, its words its title, the rest of
 the footer left for what else a footer holds. A task's states follow the
-task model: `DONE` is `COMPLETED`, and `DISCARDED` is new, a cross as
+task model: `DONE` is `APPLIED`, and `DISCARDED` is new, a cross as
 canceled is. The playground's host keeps the editor's mode, the example's
 task to begin with, its other tasks the example's, and, in manual or
 another task, shows the document as it is, nothing proposed, its edits

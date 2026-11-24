@@ -425,12 +425,12 @@ test("a task's own actions, at the end of its card's heading, the ways it ends: 
     return [...header.mode.task.ends.map((end_Task) => `${end_Task.label} ${end_Task.kind}`), header.mode.task.revisions_Scope.start_All?.label ?? null]
   }
   expect(headOf(taskOf("DRAFT", counts_None, { QUEUED: 2, RUNNING: 0 }))).toEqual(["Cancel DISCARD", "Start all (2)"])
-  expect(headOf(taskOf("DRAFT", counts_None, { QUEUED: 0, RUNNING: 0 }))).toEqual(["Apply COMPLETE", "Cancel DISCARD", null])
+  expect(headOf(taskOf("DRAFT", counts_None, { QUEUED: 0, RUNNING: 0 }))).toEqual(["Apply APPLY", "Cancel DISCARD", null])
   expect(headOf(taskOf("YOUR_TURN", counts_None, { QUEUED: 2, RUNNING: 0 }))).toEqual(["Cancel CANCEL", "Start all (2)"])
   expect(headOf(taskOf("YOUR_TURN", { ...counts_None, OPEN: 1, ACCEPTED: 1 }, { QUEUED: 0, RUNNING: 0 }))).toEqual(["Cancel CANCEL", null])
   expect(headOf(taskOf("WORKING", { ...counts_None, REVISING: 1 }, { QUEUED: 0, RUNNING: 1 }))).toEqual(["Cancel CANCEL", null])
-  expect(headOf(taskOf("YOUR_TURN", { ...counts_None, ACCEPTED: 2, REJECTED: 1, WITHDRAWN: 1 }, { QUEUED: 0, RUNNING: 0 }))).toEqual(["Apply COMPLETE", "Cancel CANCEL", null])
-  expect(headOf(taskOf("COMPLETED", counts_None, { QUEUED: 0, RUNNING: 0 }))).toEqual([null])
+  expect(headOf(taskOf("YOUR_TURN", { ...counts_None, ACCEPTED: 2, REJECTED: 1, WITHDRAWN: 1 }, { QUEUED: 0, RUNNING: 0 }))).toEqual(["Apply APPLY", "Cancel CANCEL", null])
+  expect(headOf(taskOf("APPLIED", counts_None, { QUEUED: 0, RUNNING: 0 }))).toEqual([null])
 })
 
 test("a round that landed after your edits: each change of it written before them, its ring marked stale, the others not; its item saying how many, and how many dropped, their text gone, with Run again while it's open and no round of it's under way; none said of a round that landed clean", () => {

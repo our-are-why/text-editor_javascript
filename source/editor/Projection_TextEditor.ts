@@ -522,7 +522,7 @@ const NOTEMAP__STATE_TASK: _NoteMap__State_Task_ = {
   DRAFT: "draft",
   WORKING: "working",
   YOUR_TURN: "needs you",
-  COMPLETED: "applied",
+  APPLIED: "applied",
   CANCELED: "canceled",
   DISCARDED: "discarded"
 }
@@ -912,7 +912,7 @@ const LABELMAP__STATE_TASK: _LabelMap__State_Task_ = {
   DRAFT: "Draft",
   WORKING: "Working",
   YOUR_TURN: "Your turn",
-  COMPLETED: "Applied",
+  APPLIED: "Applied",
   CANCELED: "Canceled",
   DISCARDED: "Discarded"
 }
@@ -932,7 +932,7 @@ const ENDSMAP__STATE_TASK: _EndsMap__State_Task_ = {
   ],
   WORKING: (count_Left) => endsOf__Task_Open(count_Left),
   YOUR_TURN: (count_Left) => endsOf__Task_Open(count_Left),
-  COMPLETED: () => [],
+  APPLIED: () => [],
   CANCELED: () => [],
   DISCARDED: () => []
 }
@@ -944,7 +944,7 @@ function applyOf__Count_Left(
     ? []
     : [
       {
-        kind: "COMPLETE",
+        kind: "APPLY",
         label: "Apply",
         title: "Applies what's accepted in the task, and your edits in it, to every file it touches"
       }

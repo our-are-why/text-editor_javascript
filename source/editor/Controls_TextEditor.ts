@@ -908,9 +908,9 @@ type _CommandMap__Kind_End_ = {
 }
 
 const COMMANDMAP__KIND_END: _CommandMap__Kind_End_ = {
-  COMPLETE: {
+  APPLY: {
     kind: "END",
-    end: "COMPLETE"
+    end: "APPLY"
   },
   CANCEL: {
     kind: "END",

@@ -30,24 +30,25 @@ still to decide is under **open**, at the end, each with a recommendation.
 - **manual:** the mode for editing the trunk itself. A mode in its own
   right, not the absence of a task.
 
-Decided 2026-11-23: Complete is shown as Apply, which says what it does,
-what's accepted in a task and your edits in it applied to every file it
-touches, and doesn't sit beside the proposals' Accept all meaning
-something else; a completed task's shown as applied, and one with nothing
-left as applicable, where ready to complete was too long. A draft's
-Discard is shown as Cancel, as every task's is, and it ends as discarded.
-Manual is shown as No task, in the header and the switcher, saying
-what's selected, as a task's name does, not what mode the editor's in,
-which it never says of a task. The code and these notes keep complete,
-discard and manual, as they keep document where what's shown says file.
+Decided 2026-11-23: Apply, where it was Complete, which says what it
+does, what's accepted in a task and your edits in it applied to every file
+it touches, and doesn't sit beside the proposals' Accept all meaning
+something else; a task applied shown as applied, and one with nothing left
+as applicable, where ready to complete was too long. A draft's Discard is
+shown as Cancel, as every task's is, and it ends as discarded. Manual is
+shown as No task, in the header and the switcher, saying what's selected,
+as a task's name does, not what mode the editor's in, which it never says
+of a task. Decided 2026-11-24: the code and these notes say apply too,
+`APPLY` and `APPLIED`, complete gone from both; they keep discard and
+manual, as they keep document where what's shown says file.
 
 ## a task is a branch
 
-Kept from doctor. The file holds the trunk until a task completes; a task's
+Kept from doctor. The file holds the trunk until a task's applied; a task's
 head is kept apart from it, so anything reading the files, git included, only
 ever sees finished work. Accepting a proposal applies it to the head, not the
 file, which is what the editor's "accepted, not yet applied" already draws;
-completing the task merges the head into the trunk. Git is the history: only
+applying the task merges the head into the trunk. Git is the history: only
 what open work needs is kept, under **what's kept, and for how long**.
 
 ## the mode: manual, or a task
@@ -59,7 +60,7 @@ stood for by a task left out, `null` or none. The mode says two things only:
 
 - **what you see:** in manual, each document's trunk; in a task, its head,
   with the lines the task has changed marked, as doctor's design had it, a
-  neutral mark in the gutter, applied when the task completes;
+  neutral mark in the gutter, the file's once the task's applied;
 - **where your edits go:** in manual, to the trunk, written to the file as
   now; in a task, into its head.
 
@@ -89,7 +90,7 @@ a way a task ends:
 | `DRAFT` | made, nothing started yet |
 | `WORKING` | something of it is running |
 | `YOUR_TURN` | started before, nothing running now |
-| `COMPLETED` | resolved: its head made the document's |
+| `APPLIED` | resolved: its head made the document's |
 | `CANCELED` | resolved: its head let go, your edits in it too |
 | `DISCARDED` | resolved: a draft let go, never started |
 
@@ -98,7 +99,7 @@ never stored: `WORKING` while any request of it is running, `DRAFT`
 while none has ever been started, `YOUR_TURN` otherwise. The resolved states are stored, as they're decisions, each with
 when it was made and who made it, and a resolved task's kept, with all it
 held, till it's collected, under **where it's kept, and collection**. The
-editor's `DONE` becomes `COMPLETED`, and `DISCARDED` is new.
+editor's `DONE` becomes `APPLIED`, and `DISCARDED` is new.
 
 How it moves:
 
@@ -106,24 +107,24 @@ How it moves:
 |---|---|---|
 | a start, at any scope: a request, a proposal's revision, a frame, a document, the task | `DRAFT`, `YOUR_TURN` | `WORKING` |
 | the last run ends, or Stop | `WORKING` | `YOUR_TURN` |
-| Complete | `YOUR_TURN` | `COMPLETED` |
+| Apply, once nothing's running | `DRAFT`, `YOUR_TURN` | `APPLIED` |
 | Cancel | `WORKING`, `YOUR_TURN` | `CANCELED` |
 | Discard | `DRAFT` | `DISCARDED` |
 
 Decided 2026-11-22: `WORKING` and `YOUR_TURN` say too little, as part of a
 task can be the agent's while part waits on you: a round revising one
 proposal while others are ready to decide. So a task has one lifecycle,
-draft, open, then completed, canceled or discarded, and, while it's open,
+draft, open, then applied, canceled or discarded, and, while it's open,
 two parts side by side, worked out from its runs and proposals, never
 stored, shown together wherever a task's standing is: **yours**, a
 conflict, what's to decide, requests queued and not started, or, with
-nothing left on either side, that it's ready to complete; and **the
+nothing left on either side, that it's applicable; and **the
 agent's**, what's running. Each says its most pressing, yours in the
 proposals' indigo, a conflict in the removed red, requests queued, as
 the editor says them, "2 queued", in the revision's plum, still, though
 they're yours till you start them, the agent's in the revision's plum.
 A task's menu offers Start all for what's queued, Stop while anything's
-running, and Complete only once nothing's left on either side. A task with anything of yours needs you, even while the
+running, and Apply only once nothing's left on either side. A task with anything of yours needs you, even while the
 agent works on the rest; it's with the agent only when nothing of it
 waits on you. Counted, a task counts under each part it has. The
 editor's still told `_State_Task_`, `WORKING` meaning something's running,
@@ -137,9 +138,9 @@ layer over it, never the model's to say:
 - **anyone makes requests,** you or an agent: a request records who made
   it, and whether an agent's may go straight into a task, or waits for you
   to take it, is decided above the model;
-- **someone completes a task,** you, or an agent you let: never the model
-  on its own. Completing on its own, under conditions, is a layer to build
-  over Complete, not part of it;
+- **someone applies a task,** you, or an agent you let: never the model
+  on its own. Applying on its own, under conditions, is a layer to build
+  over Apply, not part of it;
 - **collection's asked for,** by you, or by an agent judging what's done
   with: under **where it's kept, and collection**.
 
@@ -224,7 +225,7 @@ across layers, never across time: when a layer changes, all that's stated
 against it is restated against its new version at once, and the old one's
 let go. Nothing accumulates.
 
-**What moves a document:** typing in manual, a task completing, or an edit
+**What moves a document:** typing in manual, a task applied, or an edit
 made outside the system. One rule then, at every layer: what's stated
 against a version that's moved is carried across it, cleanly where nothing
 it touched changed, **conflicted** where something did. Nothing's guessed
@@ -250,11 +251,11 @@ the same carrying, at one layer.
 ### tasks on one document at once
 
 Tasks are branches, apart: none sees another's changes, proposals or runs
-until it completes. When one completes, its head becomes the document, and
+until it's applied. When one is, its head becomes the document, and
 every other open task on that document is carried across it at once. So
-every task always stands on the document as it is now, and completing one
+every task always stands on the document as it is now, and applying one
 never meets a conflict: its conflicts were shown and settled while it was
-open, and completing just makes its head the document's. That also answers
+open, and applying just makes its head the document's. That also answers
 doctor's question, replaying whenever the trunk moves or only when a task's
 next active: whenever, so doctor's **behind** never arises.
 
@@ -270,7 +271,7 @@ What happens to a task when a document it's on moves under it:
 In its editor, what moved in comes as the document's own text, unmarked,
 as it's the document's now, but shown coming in, briefly, so text never
 changes under you unseen; conflicts come as frames, counted in its header
-and in the switcher. Nothing stops but its Complete, while it has
+and in the switcher. Nothing stops but its Apply, while it has
 conflicts. Tasks on other documents aren't touched.
 
 What's hard, done first and tested hardest, by properties over random
@@ -361,7 +362,7 @@ is a layer over it, under **abilities, and what decides them**.
 
 ## finishing
 
-- **Complete** makes the head the document's, every document's: what's
+- **Apply** makes the head the document's, every document's: what's
   accepted, and your edits. Only when someone says, you, or an agent you
   let, never on its own; offered when nothing's running and every proposal
   is decided.
@@ -373,7 +374,7 @@ is a layer over it, under **abilities, and what decides them**.
 - **Discard** a draft: its requests, and any edits prepared in it, let go,
   the draft kept as `DISCARDED` till it's collected.
 
-Every editor in a task that's completed, canceled or discarded goes to
+Every editor in a task that's applied, canceled or discarded goes to
 manual, and says why.
 
 ## several editors
@@ -384,10 +385,10 @@ of it: the trunk, in manual, or a task's head. Walked through, two editors:
 
 1. **Two tasks, two files.** Each editor's edits go into its own task's
    head, its requests to its own task. Nothing passes between them until
-   one task completes.
+   one task's applied.
 2. **Two tasks, one file.** Two versions of one file side by side, as two
    branches checked out side by side. Each edit goes into its own task's
-   head. When one task completes, the other's replayed at once, its editor
+   head. When one task's applied, the other's replayed at once, its editor
    redrawn on the trunk as it now is, any change of it that hit what the
    first changed shown there as a conflict.
 3. **One version in both:** the same task and file, or manual and the same
@@ -404,7 +405,7 @@ of it: the trunk, in manual, or a task's head. Walked through, two editors:
    manual makes a new task, that editor's mode, the other editor as it was.
    So composing the next task while the agent works on this one is two
    editors, nothing switched.
-6. **A task ending.** Completed, canceled or discarded in either editor,
+6. **A task ending.** Applied, canceled or discarded in either editor,
    every editor in that task goes to manual, showing the trunk, the merge
    in it, and saying why it's now in manual.
 7. **Switching** in one editor changes that editor only; from the board,
@@ -445,12 +446,58 @@ host, `playground/host.ts`, plays all four for now, faked.
   `task`, `_Task_Host_ | null`, manual told as `null`: that becomes the
   mode.
 - **tasks:** tasks, their requests, proposals, rounds and decisions; the
-  moves between states.
+  moves between states. **Built 2026-11-24, the first of it,** in
+  `source/tasks/`, plain data and functions, no DOM: a task open, never
+  started or started, when first, or resolved, how, when and by whom; its
+  requests, each with who made it and when, its aim, the task, a file or a
+  proposal, its words all of it or quoted, and its status, queued, started
+  or addressed, with the proposals that answer it or a note that nothing
+  needed changing; its proposals, each its file, title, why and decision;
+  the moves as commands, each a pure function, `modelAfter__Command`, by a
+  map of them, `HANDLERMAP__TASKS`: draft, with the first request; request,
+  edit and remove, a request's only while it's queued; start and stop, at
+  any scope, the task, a file, some proposals, some requests, a proposal
+  never revised by two rounds at once; propose, a proposal or its next
+  round, open again; address; decide, what was asked of a proposal and not
+  started let go as it's decided; rename and summarize; apply, once
+  nothing's running, a draft too, as its header offers Apply once nothing's
+  left; cancel, a started task's, what's running stopped; discard, a
+  draft's; and collect, only what's resolved; a move that changes nothing
+  giving back the same model, so nothing's told. Worked out, never stored:
+  a task's state, its counts and the files it touches. `_Tasks_` holds
+  them, taking each command, telling its observers what changed. Started
+  stands for running till the agent part says what's running of what's
+  started. Not yet: a proposal's rounds' text and a task's changes, which
+  need the documents part's versions; a request's words are kept by their
+  text alone till then, the editor's own of them, where they're drawn,
+  kept by its host. **The playground on it, 2026-11-24:** its host holds
+  the project's tasks in a `_Tasks_`, made from what the example says of
+  them, `playground/tasks.ts`, the editor and the board told what they
+  show from it, every count the tasks part's; the host keeping only what's
+  the editor's, the words requests were sent on, and the content on the
+  file shown of the task the playground's on, its proposals' changes, the
+  rounds that landed and its proposals' attributes. Every other task of
+  the example has only requests on the file shown, real ones, on the words
+  they were sent on, found in the file's card once the editor's in it,
+  where at first they had only counts, made into requests and proposals
+  with nothing to show, which counted what couldn't be found; none of them
+  proposes anything here, as proposals with changes of their own, carried
+  across edits, are the documents part's, and answers the agent's, and
+  nothing here should stand in for them. What a task has on files not
+  shown, as README.md, still only counted, made into as many proposals and
+  requests. The agent still faked, the same for every task: a round on a
+  proposal landing a moment later, a request on no proposal answered with
+  nothing to change. No conflicts till the documents part finds them, the
+  example's one dropped, as nothing could show it. README.md's revision,
+  running, is a request, stopped and started with the rest, its round
+  landing; a request sent with no task drafts a new one, named for it, the
+  editor in it; your edits aren't a proposal of the task, so never one to
+  decide; resolved tasks are on the board in the order they were resolved.
 - **documents:** each document's current version, its hash, and one copy
   of it while an open task's on it; the edits that make each new version,
   recorded as they're made, or, the document changed from outside, worked
   out by comparing it with that copy; carrying every open task across them;
-  making a completed task's head the document.
+  making an applied task's head the document.
 - **the agent:** runs, which requests are running for which task; how the
   agent's given its work, doctor's `doctor wait` or otherwise; whether it's
   there and working.
@@ -571,7 +618,7 @@ faking the moves, so it can all be drawn before the parts above are built:
   draft's discarding it. A draft's starts are where every task's are, its
   Start all in its card's Scope Revisions, its requests' own Starts, as
   starting anything of it starts it; tried, a draft's Start and Discard in
-  its heading. Each asked of the host, `END`, `COMPLETE`, `CANCEL` or
+  its heading. Each asked of the host, `END`, `APPLY`, `CANCEL` or
   `DISCARD`, of the task the editor's in, which it resolves, the editor
   going to manual. The playground's host tells the editor where a task
   switched to stands, as the example says, counted on the first file it
@@ -591,13 +638,13 @@ Settled, of the questions this note began with:
   by switching and manual (2026-11-21);
 - **a mode per editor,** where doctor had one for everything, so editors
   side by side can each be in their own task (2026-11-21);
-- **Complete when someone says,** never on its own; completing on its own,
+- **Apply when someone says,** never on its own; applying on its own,
   under conditions, a layer to build over it (2026-11-22);
 - **Cancel lets your edits in the task go** with the rest of its head, its
   changes kept with it, to pick from later (2026-11-22);
 - **who makes requests isn't the model's question:** anyone can, and who
   may is a layer over it (2026-11-22);
-- **resolved tasks are kept,** `COMPLETED`, `CANCELED` or `DISCARDED`,
+- **resolved tasks are kept,** `APPLIED`, `CANCELED` or `DISCARDED`,
   in the system's own folder, till collected, by you or an agent
   (2026-11-22).
 - **a request made in manual makes a new task,** that editor's mode, for

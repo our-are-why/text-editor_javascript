@@ -7,7 +7,7 @@
     "#jsx/jsx-dev-runtime": "./source/jsx/Jsx.ts"
   },
   "scripts": {
-    "check": "tsc -p tsconfig.json && tsc -p playground && tsc -p source/jsx && tsc -p source/editor && tsc -p source/board",
+    "check": "tsc -p tsconfig.json && tsc -p playground && tsc -p source/jsx && tsc -p source/editor && tsc -p source/board && tsc -p source/tasks",
     "test": "bun test",
     "playground": "bun scripts/servePlayground.ts"
   },

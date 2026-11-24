@@ -332,7 +332,7 @@ interface _Task_Header_ {
   revisions_Level: _Revisions_Level_
 }
 
-type _State_Task_ = "DRAFT" | "WORKING" | "YOUR_TURN" | "COMPLETED" | "CANCELED" | "DISCARDED"
+type _State_Task_ = "DRAFT" | "WORKING" | "YOUR_TURN" | "APPLIED" | "CANCELED" | "DISCARDED"
 
 interface _End_Task_ {
   kind: _Kind_End_
@@ -340,7 +340,7 @@ interface _End_Task_ {
   title: string
 }
 
-type _Kind_End_ = "COMPLETE" | "CANCEL" | "DISCARD"
+type _Kind_End_ = "APPLY" | "CANCEL" | "DISCARD"
 
 interface _Action_Task_ {
   command: string

@@ -956,7 +956,7 @@ test("the header over the document stays put as it scrolls, saying the host's ta
   expect(header_Stopped).toEqual({ task: ["Tidy the retry loop", "YOUR_TURN", "Your turn"], parts: [], spinners: 0, document: ["retry.js", "YOUR_TURN", "Your turn"], card: ["Cancel", "Accept all (10)", "Start all (10)"], card_Document: ["Accept all (7)", "Start all (8)"], isSticky: true })
   expect(header_Started).toEqual({ task: ["Tidy the retry loop", "WORKING", "Working"], parts: [], spinners: 0, document: ["retry.js", "WORKING", "Working"], card: ["Cancel", "Accept all (10)", "Start all (2)", "Stop all (8)"], card_Document: ["Accept all (7)", "Stop all (8)"], isSticky: true })
   expect(header_Done).toEqual({ task: ["Tidy the retry loop", "YOUR_TURN", "Your turn"], parts: [], spinners: 0, document: ["retry.js", "YOUR_TURN", "Your turn"], card: ["Cancel", "Accept all (12)", "Start all (2)"], card_Document: ["Accept all (9)"], isSticky: true })
-  expect(logged_Stopped).toEqual([{ stopped: "TASK", requests: 2 }, { revising: "hook, timeout, document", requests: 8 }, { revised: "hook, timeout, document" }])
+  expect(logged_Stopped).toEqual([{ stopped: "TASK", requests: 3 }, { revising: "hook, timeout, document", requests: 8 }, { revised: "hook, timeout, document" }])
   expect(opened_JavaScript.errors).toEqual([])
 })
 
@@ -1328,7 +1328,7 @@ test("each scope's Start: a request's own actions behind an ellipsis till the el
   expect(scopes_Group).toEqual(["TASK START", "TASK_REQUESTS START", "DOCUMENT START", "DOCUMENT_REQUESTS START"])
   expect(started_Document).toEqual([{ revising: "document", requests: 2 }])
   expect(started_Task).toEqual([{ revising: "document", requests: 2 }, { revising: "task", requests: 2 }])
-  expect(started_All.slice(2)).toEqual([{ revising: "aborted, document, task", requests: 3 }])
+  expect(started_All.slice(2)).toEqual([{ revising: "aborted, README.md 4, document, task", requests: 4 }])
   expect(opened_JavaScript.errors).toEqual([])
 })
 
@@ -1508,9 +1508,9 @@ const head_Accepted = await opened_JavaScript.page.evaluate(async () => {
 const logged_Accepting = (await opened_JavaScript.logged()).slice(count_Accepting).filter((entry) => "task" in entry)
 
 test("the task's documents, each with its own Accept all on the right, for what's waiting there, the one this editor has open set apart by its row, not in words; another document's pressed, the host told, that document's proposals all decided, nothing more to accept there; the task's own Accept all, by its figure, accepting what's waiting everywhere, nothing left to offer it for", () => {
-  expect(rows_Before.find((row) => row.name === "README.md")).toEqual({ name: "README.md", value: "2 of 6 decided", actions: ["Accept all (3)"] })
+  expect(rows_Before.find((row) => row.name === "README.md")).toEqual({ name: "README.md", value: "2 of 6 decided", actions: ["Accept all (4)"] })
   expect(rows_Before.find((row) => row.name === "retry.js")?.actions.every((action) => action?.startsWith("Accept all ("))).toBe(true)
-  expect(rows_After.find((row) => row.name === "README.md")).toEqual({ name: "README.md", value: "5 of 6 decided", actions: [] })
+  expect(rows_After.find((row) => row.name === "README.md")).toEqual({ name: "README.md", value: "6 of 6 decided", actions: [] })
   expect(rows_Marked).toEqual({ isSetApart: true, words: false })
   expect(head_Accepted).toEqual([])
   expect(logged_Accepting).toEqual([{ task: "accept-in:README.md" }, { task: "accept-task" }])
@@ -2408,13 +2408,13 @@ const back_Switch = await opened_Switch.page.evaluate(() => ({
 }))
 
 test("a chevron after the task's name opens the switcher's card, never with the task's: the project's tasks, the editor's first, then those on its document, then the rest, then No task; the footer counting them; No task pressed, the editor's in manual, the file itself, the keyboard in the text; a line typed, the task pressed, it's back, its proposals carried across the line", () => {
-  expect(footer_Switch).toEqual({ counts: ["YOURS 4", "CONFLICTS 1", "WORKING 2", "DRAFTS 1"], title: "6 tasks: 4 need you, 1 conflict, 2 working, 1 draft" })
+  expect(footer_Switch).toEqual({ counts: ["YOURS 4", "WORKING 2", "DRAFTS 1"], title: "6 tasks: 4 need you, 2 working, 1 draft" })
   expect(cards_Chevron).toEqual(["hidden", "visible"])
   expect(cards_Name).toEqual(["visible", "hidden"])
   expect(options_Switch).toEqual([
-    "TASK | Tidy the retry loop | 14 to decide · 2 running | here",
+    "TASK | Tidy the retry loop | 14 to decide · 3 running | here",
     "TASK | Log each retry | 1 running | ",
-    "TASK | Rename attempts to tries | 1 conflict | ",
+    "TASK | Rename attempts to tries | 1 queued | ",
     "TASK | Name the retry options | 2 queued | ",
     "TASK | Add a timeout option | 2 queued | ",
     "TASK | Say what the README promises | applicable | ",
@@ -2640,7 +2640,7 @@ test("the task's state said by its name, with no mark: working, shimmering, or W
 // it, its tile marked as shown; one canceled from behind its ···, resolved,
 // the editor in it going to manual; a draft started from behind its ···,
 // working, then, with
-// no agent, waiting on you, its requests become proposals to decide;
+// no agent, its requests answered with nothing to change, applicable;
 // Delete, in Resolved's heading, taking every resolved task away, for good; each asked of the host, which
 // reports it; and pressed again, the footer hides it
 const opened_Board = await openExample(
@@ -2778,12 +2778,12 @@ test("the board, from the footer: a column for each of who a task's waiting on, 
   expect([flush_Wide, flush_Narrow]).toEqual([[0, 0, 0, 0], [0, 0, 0, 0]])
   expect(tile_Resting).toEqual({ ...tile_Pointed, more: "hidden" })
   expect(tile_Pointed).toEqual({ line: "Say what the README promises", height: tile_Resting.height, more: "visible", details: "applicable", next: tile_Resting.next })
-  expect(details_Others).toEqual(["1 conflictin file", "14 to decide2 runningin file", "2 queuedin file", "applicable"])
+  expect(details_Others).toEqual(["1 queuedin file", "14 to decide3 runningin file", "2 queuedin file", "applicable"])
   expect(board_Switched).toEqual({ hidden: false, columns: ["YOURS: T-12 T-14 T-15 shown T-17", "AGENT: T-13", "DRAFTS: T-16", "RESOLVED: T-9 T-11"], mode: "Rename attempts to tries" })
   expect(board_Canceled).toEqual({ hidden: false, columns: ["YOURS: T-12 T-14 T-17", "AGENT: T-13", "DRAFTS: T-16", "RESOLVED: T-9 T-11 T-15"], mode: "No task" })
   expect(board_Started.columns).toEqual(["YOURS: T-12 T-14 T-17", "AGENT: T-13 T-16", "DRAFTS: ", "RESOLVED: T-9 T-11 T-15"])
   expect(board_Answered.columns).toEqual(["YOURS: T-12 T-14 T-17 T-16", "AGENT: T-13", "DRAFTS: ", "RESOLVED: T-9 T-11 T-15"])
-  expect(figures_Answered).toBe("2 to decide")
+  expect(figures_Answered).toBe("applicable")
   expect(collect_Folded).toEqual(["Delete", "Delete every resolved task, for good", "ellipsis", "folded"])
   expect(collect_Shown).toEqual(["Delete", "Delete every resolved task, for good", "no ellipsis", "shown"])
   expect(collect_Placed).toBe(true)
@@ -3142,7 +3142,7 @@ await opened_Ends.page.waitForTimeout(200)
 const mode_Discarded = await modeOf_Ends()
 await switchedTo_Ends("T-14")
 const head_Ready = await headOf_Ends()
-await opened_Ends.page.click(".card_Task_htmlView .head_Card_htmlView [data-end=\"COMPLETE\"]")
+await opened_Ends.page.click(".card_Task_htmlView .head_Card_htmlView [data-end=\"APPLY\"]")
 await opened_Ends.page.waitForTimeout(200)
 const mode_Applied = await modeOf_Ends()
 await switchedTo_Ends("T-17")
@@ -3170,7 +3170,7 @@ test("a task's own actions, at the end of its card's heading, folded till its el
   expect(mode_Canceled).toEqual({ name: "No task", state: null })
   expect(logged_Ends).toEqual([
     { ended: "DISCARD", task: "T-16" },
-    { ended: "COMPLETE", task: "T-14" },
+    { ended: "APPLY", task: "T-14" },
     { started: "TASK", task: "T-17" },
     { ended: "CANCEL", task: "T-17" }
   ])
@@ -3207,4 +3207,57 @@ test("the switcher's order kept while it's open: a task pressed in it marked as 
   expect(order_Fading).toEqual(order_Pressed)
   expect(order_Reopened).toEqual(["T-14 here", "T-12", "T-13", "T-15", "T-17", "T-16", "none"])
   expect(opened_Order.errors).toEqual([])
+})
+
+// a request sent with no task drafts a new one, named for it, the editor in
+// it from then on, its request queued; started, from its card's Start all,
+// working, and a moment later, with no agent and nothing scripted for it,
+// answered with nothing to change, nothing left, your turn, applicable; the
+// footer counting it each time, all of it the tasks part's
+const opened_Draft = await openExample(
+  "javascript",
+  1
+)
+afterAll(() => opened_Draft.close())
+await opened_Draft.page.waitForSelector(".note_htmlView")
+const shownOf_Draft = () => opened_Draft.page.evaluate(() => ({
+  name: document.querySelector(".header_htmlView :is(.name_Task_htmlView, .name_Manual_htmlView)")?.textContent ?? null,
+  state: document.querySelector(".trigger_Task_htmlView")?.getAttribute("data-state") ?? null,
+  footer: document.querySelector(".tasks_Footer_htmlView")?.getAttribute("title") ?? null
+}))
+await opened_Draft.page.hover(".trigger_Switcher_htmlView")
+await opened_Draft.page.waitForTimeout(300)
+await opened_Draft.page.click(".choice_Switcher_htmlView[data-switch=\"MANUAL\"]")
+await opened_Draft.page.mouse.move(5, 400)
+await opened_Draft.page.waitForTimeout(500)
+await opened_Draft.page.hover(".trigger_Document_htmlView")
+await opened_Draft.page.waitForTimeout(300)
+await opened_Draft.page.click(".card_Document_htmlView [data-ask=\"DOCUMENT\"]")
+await opened_Draft.page.waitForTimeout(200)
+await opened_Draft.page.keyboard.type("Say what the timeout throws.")
+await opened_Draft.page.keyboard.press("Control+Enter")
+await opened_Draft.page.waitForTimeout(300)
+await opened_Draft.page.keyboard.press("Escape")
+await opened_Draft.page.mouse.move(700, 700)
+await opened_Draft.page.waitForTimeout(500)
+const draft_Made = await shownOf_Draft()
+await opened_Draft.page.hover(".trigger_Task_htmlView")
+await opened_Draft.page.waitForTimeout(300)
+const queued_Draft = await opened_Draft.page.evaluate(() => document.querySelector(".card_Task_htmlView [aria-label=\"Scope Revisions\"] .value_Card_htmlView")?.textContent ?? null)
+const more_Draft = await opened_Draft.page.locator(".card_Task_htmlView [aria-label=\"Scope Revisions\"] .more_htmlView").boundingBox()
+if (more_Draft === null) throw new Error("no ellipsis")
+await opened_Draft.page.mouse.move(more_Draft.x + more_Draft.width / 2, more_Draft.y + more_Draft.height / 2, { steps: 8 })
+await opened_Draft.page.locator(".card_Task_htmlView [aria-label=\"Scope Revisions\"] [data-work=\"START\"]").waitFor({ state: "visible", timeout: 3000 })
+await opened_Draft.page.click(".card_Task_htmlView [aria-label=\"Scope Revisions\"] [data-work=\"START\"]")
+await opened_Draft.page.waitForTimeout(200)
+const draft_Started = await shownOf_Draft()
+await opened_Draft.page.mouse.move(700, 700)
+await opened_Draft.page.waitForTimeout(1800)
+const draft_Answered = await shownOf_Draft()
+test("a request sent with no task drafts a new one, named for it, the editor in it, its request queued; started, working; answered a moment later with nothing to change, your turn, applicable; the footer counting it each time", () => {
+  expect(draft_Made).toEqual({ name: "Say what the timeout throws.", state: "DRAFT", footer: "7 tasks: 4 need you, 2 working, 2 drafts" })
+  expect(queued_Draft).toBe("1 queued")
+  expect(draft_Started).toEqual({ name: "Say what the timeout throws.", state: "WORKING", footer: "7 tasks: 4 need you, 3 working, 1 draft" })
+  expect(draft_Answered).toEqual({ name: "Say what the timeout throws.", state: "YOUR_TURN", footer: "7 tasks: 5 need you, 2 working, 1 draft" })
+  expect(opened_Draft.errors).toEqual([])
 })

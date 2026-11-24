@@ -1828,7 +1828,7 @@
    where it stands: a
    draft, a dotted ring; the agent at work on it, a spinner turning, as a
    proposal being revised turns its arc, still where motion's asked to be
-   reduced; your turn, a dot, what's yours to decide; completed, a check;
+   reduced; your turn, a dot, what's yours to decide; applied, a check;
    canceled, or a draft discarded, a cross, fainter than its word, as a
    withdrawn proposal's is; each in the task's ink */
 .htmlView_editor .mark_Task_htmlView {
@@ -1863,7 +1863,7 @@
   --ink_Mark_htmlView: var(--view-state-revising, var(--view-status-ink, var(--accent_revision_htmlView)));
 }
 
-.htmlView_editor :is(.mark_Task_htmlView, .state_Card_htmlView):is([data-state="YOUR_TURN"], [data-state="DONE"], [data-state="COMPLETED"]) {
+.htmlView_editor :is(.mark_Task_htmlView, .state_Card_htmlView):is([data-state="YOUR_TURN"], [data-state="DONE"], [data-state="APPLIED"]) {
   --ink_Mark_htmlView: var(--view-status-ink, var(--accent_proposals_htmlView));
 }
 
@@ -1892,13 +1892,13 @@
   background: var(--ink_Mark_htmlView);
 }
 
-.htmlView_editor .mark_Task_htmlView:is([data-state="COMPLETED"], [data-state="CANCELED"], [data-state="DISCARDED"])::before {
+.htmlView_editor .mark_Task_htmlView:is([data-state="APPLIED"], [data-state="CANCELED"], [data-state="DISCARDED"])::before {
   border-radius: 0;
   background: var(--ink_Mark_htmlView);
   mask: var(--icon_Mark_htmlView) center / contain no-repeat;
 }
 
-.htmlView_editor .mark_Task_htmlView[data-state="COMPLETED"] {
+.htmlView_editor .mark_Task_htmlView[data-state="APPLIED"] {
   --icon_Mark_htmlView: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none' stroke='black' stroke-width='1.9' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M3 8.6l3.2 3.1L13 4.6'/%3E%3C/svg%3E");
 }
 
