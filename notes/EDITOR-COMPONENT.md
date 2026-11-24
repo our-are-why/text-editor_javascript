@@ -301,7 +301,7 @@ interface _CHANGE_Step_Transaction_
 }
 ```
 
-Written, as `source/Model_TextEditor.ts`, tested without a screen in
+Written, as `source/editor/Model_TextEditor.ts`, tested without a screen in
 `tests/Model_TextEditor.test.ts`, the host's changes given as
 `_Changes_Host_`, each text one string, as it writes it. It was sketched
 once before, as `source/Model_Editor.ts`, and taken back out: the view's
@@ -476,7 +476,7 @@ Its functions, each tested without a screen:
   projection draws the lines as proposed from them, each ring from the piece
   it's in, each notch at its empty piece.
 
-The projection, as `source/Projection_TextEditor.ts`: `viewModelOf__Model`,
+The projection, as `source/editor/Projection_TextEditor.ts`: `viewModelOf__Model`,
 from the model, what the host says of each source, `_Proposal_Host_`, its
 title, state, words and actions, the ranges it asks to frame, and the
 language module, the view model the view draws now. Its frames are the lines
@@ -1016,7 +1016,7 @@ the document or its changes changing:
   the text underlays measured again, as a look can move the text, making
   room: the view watches its container's attributes, as it watches its
   size. The editor offers one, "changes", `LOOK_CHANGES`, doctor's look,
-  in `source/looks/changes.css`, which a perspective names or names its
+  in `source/editor/looks/changes.css`, which a perspective names or names its
   own in its place: a ring round a change's words, red
   where they go, yellow where they're replaced, green where they're new,
   dashed where only their look changes; a line in a frame saying what it
@@ -1041,7 +1041,7 @@ the document or its changes changing:
   regroup them: where one box goes round `*5*` and `**5**` and another
   reading's two go round the asterisks put in, the boxes differ, not the
   look. The editor ships one, `MODULE_READING_TEXT`, in
-  `source/readings/text.ts`, reading a change as text, as doctor does: a
+  `source/editor/readings/text.ts`, reading a change as text, as doctor does: a
   box for each run that changed, removed, inserted or replaced, replaced
   and restyled where the words put in are marked otherwise, and for words
   kept whose marks differ, restyled; a move, moved. A host passes it, or
@@ -2033,21 +2033,21 @@ What holds state, the DOM and its listeners, the view and the editor, is a
 class, so its fields show when it's inspected in the browser's tools, which
 a closure's don't. Data stays plain, as `type-construction.md` says: the
 model and the view model are data, and functions over it. The view is a
-class, `_View_TextEditor_`, in `source/View_TextEditor.tsx`, holding what
+class, `_View_TextEditor_`, in `source/editor/View_TextEditor.tsx`, holding what
 lasts between draws: its container, its components, and an observer of the
 container's size. `draw(viewModel_TextEditor)` draws the view model into the
 container, as an element of its own, `.htmlView_editor`, leaving the
 container as the host made it, its classes, styles and attributes the
 host's; then draws the text underlays, and the observer draws them again
 whenever the container's size changes. The view model's types and parsers
-are `source/ViewModel_TextEditor.ts`.
+are `source/editor/ViewModel_TextEditor.ts`.
 
-The editor is a class too, `_TextEditor_`, in `source/TextEditor.ts`: given
+The editor is a class too, `_TextEditor_`, in `source/editor/TextEditor.ts`: given
 its container, its setup and its content, the model, the proposals and the
 ranges to frame, it projects the model, with the perspective shown, and
 hands the view model to its viewer, and again, `show(perspective)`, when
 another's shown, setting its looks. The viewer, `_Viewer_TextEditor_`, in
-`source/Viewer_TextEditor.ts`, is what the reader does with what's drawn,
+`source/editor/Viewer_TextEditor.ts`, is what the reader does with what's drawn,
 given a view model, as the changes document's cases and the gallery's
 scenes are, and the browser tests' made by hand; `show(viewModel)` draws
 another, keeping what's pointed at, folded and drafted. It holds the view,
@@ -2108,11 +2108,11 @@ where the pointer last was, a `POINT` of its own, as what's drawn can move
 under a pointer that doesn't, a frame folded above it, or the one it's on,
 and a pointer that doesn't move sends nothing; where nothing under it
 changed, the state's the same, and nothing's drawn again. One module,
-`MODULE_MOUSE`, in `source/modules/mouse.ts`, every move of the pointer a
+`MODULE_MOUSE`, in `source/editor/modules/mouse.ts`, every move of the pointer a
 `POINT` where it is, as it can move out of a ring still over the same
 element, leaving the editor a `POINT` at nothing. A click on a note, a
 `JUMP`, and on a frame's fold control or its bar, a `FOLD`, are the editor's
-own controls', `CONTROLS__TEXTEDITOR`, in `source/Controls_TextEditor.ts`,
+own controls', `CONTROLS__TEXTEDITOR`, in `source/editor/Controls_TextEditor.ts`,
 which it always listens with, before any module's. Not yet: the model,
 lowering's stages, results beyond taken, observers, the keyboard and the
 current proposal.
@@ -2148,7 +2148,7 @@ How it's drawn:
   get slow; each line's measurements are kept until the line changes.
 - **written in JSX, as descriptions:** the drawing reads as Preact's would,
   and works as it does: JSX makes descriptions, and one step,
-  `draw__Node_Jsx` in `source/Jsx.ts`, ours, makes them into elements in a
+  `draw__Node_Jsx` in `source/jsx/Jsx.ts`, ours, makes them into elements in a
   container. A component can give text, or nothing, or a DOM node a host
   made its own way. Nothing a host has to load, so it's as portable as
   hand-written DOM; no diffing yet. Nothing's done to an element in the
@@ -2351,7 +2351,7 @@ Then typing, the second of editing:
 - **what a word is, the host says:** a words module, `_Module_Words_`,
   `wordsOf` a line's words, in the setup beside the language and the
   perspectives, `module_Words`; the editor's own, `MODULE_WORDS_TEXT`, in
-  `source/words/text.ts`, text as text, Unicode's words, letters and
+  `source/editor/words/text.ts`, text as text, Unicode's words, letters and
   digits, `_` inside them, a `.` between letters too (`errors.push`,
   `e.g.`), what a word step's always gone by; a host passes it, or its
   own, a language's tokens, say, as text, code and prose may well want
@@ -2411,7 +2411,7 @@ Then typing, the second of editing:
   original and the document checked unchanged, and undoing checked to give
   back the start.
 - **done by the editor,** `editedOf__Request`, in
-  `source/Editing_TextEditor.ts`, without a screen: the lock first, the
+  `source/editor/Editing_TextEditor.ts`, without a screen: the lock first, the
   document's text inside what a pending or accepted proposal's span holds
   refused, its edges not, nor what a rejected or withdrawn one's would; a
   proposal's own text edited only while it's open. Then the transaction,

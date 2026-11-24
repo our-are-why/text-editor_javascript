@@ -1,12 +1,15 @@
 import { examples } from "./examples/index.ts"
 import { documents } from "./documents/index.ts"
 import { scenes } from "./scenes/index.ts"
-import { COMPONENTMAP__VIEW_TEXTEDITOR, type _ComponentMap__View_TextEditor_ } from "../source/View_TextEditor.tsx"
-import { _Viewer_TextEditor_ } from "../source/Viewer_TextEditor.ts"
-import { LOOK_CHANGES } from "../source/looks/changes.ts"
-import { MODULE_MOUSE } from "../source/modules/mouse.ts"
-import { MODULE_KEYBOARD } from "../source/modules/keyboard.ts"
-import { MODULE_WORDS_TEXT } from "../source/words/text.ts"
+import {
+  COMPONENTMAP__VIEW_TEXTEDITOR,
+  type _ComponentMap__View_TextEditor_,
+  _Viewer_TextEditor_,
+  LOOK_CHANGES,
+  MODULE_MOUSE,
+  MODULE_KEYBOARD,
+  MODULE_WORDS_TEXT
+} from "../source/editor/index.ts"
 import type { _Entry_Log_, _Example_ } from "./example.ts"
 import type { _Case_Document_, _Document_, _Status_Case_ } from "./document.ts"
 import type { _Invariant_Scene_, _Scene_ } from "./scene.ts"

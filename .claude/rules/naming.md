@@ -52,7 +52,7 @@ renames freely: follow the code as it stands, not an older name.
   `_Row$__Underlay_Text_`. Never in names that aren't: the DOM's
   (`childNodes`, `getClientRects`), JSX's (`children`), or a CSS class or
   data attribute (`underlays_htmlView`, `data-marks`), where a `$` would
-  need escaping. So far in `source/View_TextEditor.tsx`; elsewhere, for
+  need escaping. So far in `source/editor/View_TextEditor.tsx`; elsewhere, for
   now, an s.
 - **One concept, one head.** The element a view draws into is a container
   everywhere, never a root.
@@ -63,10 +63,11 @@ renames freely: follow the code as it stands, not an older name.
   is its parser, `parseLines_ViewModel`.
 - **Constants** in `source/` are all caps: `REGEXP_LINEBREAK`.
 - **Files** are named after the class they hold, or, holding none, after
-  what they hold: `source/View_TextEditor.tsx` and `.css`, the view,
-  `_View_TextEditor_`, and its stylesheet;
-  `source/ViewModel_TextEditor.ts`, the view model's types and parsers;
-  `source/Jsx.ts`, the JSX runtime. A folder's list module is `index.ts`.
+  what they hold: `source/editor/View_TextEditor.tsx` and `.css`, the
+  view, `_View_TextEditor_`, and its stylesheet;
+  `source/editor/ViewModel_TextEditor.ts`, the view model's types and
+  parsers; `source/jsx/Jsx.ts`, the JSX runtime. A folder's list module is
+  `index.ts`; a part's, under `source/`, is its public API.
 - **CSS classes** follow the value scheme: `htmlView_editor` on the view's
   own element, which it draws into the host's container, `line_htmlView` on
   a line. The variables are still `--view-*`.

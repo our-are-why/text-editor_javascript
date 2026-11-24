@@ -1,7 +1,7 @@
 import type {
   _State_Task_,
   _Part_Task_
-} from "./ViewModel_TextEditor.ts"
+} from "../editor/index.ts"
 
 export {
   type _ViewModel_Board_,

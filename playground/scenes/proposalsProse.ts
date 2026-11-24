@@ -1,9 +1,11 @@
 import type { _Scene_ } from "../scene.ts"
-import { MODULE_PLAINTEXT } from "../../source/ViewModel_TextEditor.ts"
-import type { _Range_Text_ } from "../../source/Model_TextEditor.ts"
+import {
+  MODULE_PLAINTEXT,
+  type _Range_Text_,
+  MODULE_READING_TEXT
+} from "../../source/editor/index.ts"
 import { actions_Review } from "../items.ts"
 import { attributesOf__Marks } from "../looks.ts"
-import { MODULE_READING_TEXT } from "../../source/readings/text.ts"
 import { projectedOf } from "../projected.ts"
 import { movingTheWorkshop } from "./plainText.ts"
 

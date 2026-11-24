@@ -1,0 +1,12 @@
+{
+  // source/board/, every task of the project, which runs in the browser:
+  // the DOM, no Bun; and what source/ declares for the stylesheets its parts
+  // import, and the editor for the EditContext it draws with, as the board
+  // reads the editor through its index
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "lib": ["ES2024", "DOM", "DOM.Iterable"],
+    "types": []
+  },
+  "include": ["./**/*", "../stylesheets.d.ts", "../editor/editContext.d.ts"]
+}

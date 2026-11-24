@@ -1,35 +1,32 @@
-import { _TextEditor_, type _Setup_TextEditor_ } from "../source/TextEditor.ts"
-import { _Board_ } from "../source/Board.ts"
-import { COMPONENTMAP__VIEW_BOARD } from "../source/View_Board.tsx"
-import type { _Task_Board_ } from "../source/Projection_Board.ts"
 import {
+  _TextEditor_,
+  type _Setup_TextEditor_,
   type _Model_TextEditor_,
   type _Transaction_Model_,
   type _Change_,
-  rebasedOf__Changes
-} from "../source/Model_TextEditor.ts"
-import type {
-  _Proposal_Host_,
-  _Mode_Host_,
-  _Standing_Task_,
-  _Task_Host_,
-  _Request_Task_,
-  _Counts_Proposals_,
-  _Counts_Requests_,
-  _Landed_Round_,
-  _Request_Host_
-} from "../source/Projection_TextEditor.ts"
-import type {
-  _Scope_Work_,
-  _Target_Switch_
-} from "../source/Viewer_TextEditor.ts"
-import type {
-  _Range_Lines_,
-  _Decision_Proposal_,
-  _State_Proposal_,
-  _State_Task_,
-  _Kind_End_
-} from "../source/ViewModel_TextEditor.ts"
+  rebasedOf__Changes,
+  type _Proposal_Host_,
+  type _Mode_Host_,
+  type _Standing_Task_,
+  type _Task_Host_,
+  type _Request_Task_,
+  type _Counts_Proposals_,
+  type _Counts_Requests_,
+  type _Landed_Round_,
+  type _Request_Host_,
+  type _Scope_Work_,
+  type _Target_Switch_,
+  type _Range_Lines_,
+  type _Decision_Proposal_,
+  type _State_Proposal_,
+  type _State_Task_,
+  type _Kind_End_
+} from "../source/editor/index.ts"
+import {
+  _Board_,
+  COMPONENTMAP__VIEW_BOARD,
+  type _Task_Board_
+} from "../source/board/index.ts"
 import type { _Entry_Log_ } from "./example.ts"
 import { proposal_Yours, shownMap_State } from "./items.ts"
 

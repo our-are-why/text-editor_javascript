@@ -23,6 +23,17 @@ scene's template literal, is content: leave it as written.
   }
   ```
 
+- **Parts.** `source/` holds one folder per part, each a module of its
+  own: `jsx/`, the JSX runtime; `editor/`, the text editor; `board/`, every
+  task of the project; and, to come, `tasks/`, `documents/`, `agent/` and
+  `shell/`. A part's `index.ts` is its public API: another part, or a host,
+  the playground included, imports only from it, never from a file inside;
+  the tests may reach in, as they test what's inside. A name another part
+  or a host needs is added to the index, imported from its file and
+  exported again. Each part has its own `tsconfig.json`, giving it only
+  what it may use: the DOM for the editor, the board and the runtime; none
+  for a part that isn't drawn, as `tasks/` won't be, so it runs anywhere.
+
 - **Interfaces for object types.** `interface X { … }`, never
   `type X = { … }`, index signatures and options objects included. A union,
   or anything else an interface can't express, stays a `type` alias. A
@@ -74,9 +85,9 @@ scene's template literal, is content: leave it as written.
 - **Constants in `source/` are all caps**, keeping the `_` between head and
   qualifier: `REGEXP_LINEBREAK`. Constants elsewhere keep camelCase, for
   now.
-- **Comments.** Match the file: `source/ViewModel_TextEditor.ts`,
-  `source/View_TextEditor.tsx` and `source/Jsx.ts` have none.
-- **JSX for drawing.** Elements are written in JSX, which `source/Jsx.ts`
+- **Comments.** Match the file: `source/editor/ViewModel_TextEditor.ts`,
+  `source/editor/View_TextEditor.tsx` and `source/jsx/Jsx.ts` have none.
+- **JSX for drawing.** Elements are written in JSX, which `source/jsx/Jsx.ts`
   makes into descriptions, as Preact does, and `draw__Node_Jsx` draws into a
   container: tags with string attributes, and components. An `<svg>`, and
   what's drawn in one, or into one, is made in SVG's namespace; what's in

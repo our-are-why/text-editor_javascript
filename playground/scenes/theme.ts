@@ -1,5 +1,8 @@
 import type { _Scene_ } from "../scene.ts"
-import { viewModelOf__Blocks, MODULE_PLAINTEXT } from "../../source/ViewModel_TextEditor.ts"
+import {
+  viewModelOf__Blocks,
+  MODULE_PLAINTEXT
+} from "../../source/editor/index.ts"
 import { blocksOf__Text } from "../lines.ts"
 import { fieldNotes } from "./markdown.ts"
 

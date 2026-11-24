@@ -1,6 +1,6 @@
 import { expect, test } from "bun:test"
 import fc from "fast-check"
-import { parseTexts_Line, type _Changes_Host_, type _Model_TextEditor_, parseModel_TextEditor, type _Range_Text_, textWith__Sources, piecesWith__Sources, type _Step_Transaction_, applied__Transaction, rebasedOf__Changes, type _Position_Text_, carried__Position, comparisonOf__Texts } from "../source/Model_TextEditor.ts"
+import { parseTexts_Line, type _Changes_Host_, type _Model_TextEditor_, parseModel_TextEditor, type _Range_Text_, textWith__Sources, piecesWith__Sources, type _Step_Transaction_, applied__Transaction, rebasedOf__Changes, type _Position_Text_, carried__Position, comparisonOf__Texts } from "../source/editor/Model_TextEditor.ts"
 
 // every line break a text can hold: each ends a line, "\r\n" as one
 const lineBreaks = ["\r\n", "\n", "\r", "\v", "\f", "\u0085", "\u2028", "\u2029"]

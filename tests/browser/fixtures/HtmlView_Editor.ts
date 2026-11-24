@@ -1,11 +1,11 @@
-import "../../../source/looks/changes.css"
+import "../../../source/editor/looks/changes.css"
 import { everything } from "../../../playground/scenes/everything.ts"
-import { _View_TextEditor_, COMPONENTMAP__VIEW_TEXTEDITOR } from "../../../source/View_TextEditor.tsx"
-import { draw__Node_Jsx, jsx } from "../../../source/Jsx.ts"
-import { _Viewer_TextEditor_ } from "../../../source/Viewer_TextEditor.ts"
-import { MODULE_MOUSE } from "../../../source/modules/mouse.ts"
-import { viewModelOf__Blocks, parseLines_ViewModel, MODULE_PLAINTEXT } from "../../../source/ViewModel_TextEditor.ts"
-import { MODULE_WORDS_TEXT } from "../../../source/words/text.ts"
+import { _View_TextEditor_, COMPONENTMAP__VIEW_TEXTEDITOR } from "../../../source/editor/View_TextEditor.tsx"
+import { draw__Node_Jsx, jsx } from "../../../source/jsx/Jsx.ts"
+import { _Viewer_TextEditor_ } from "../../../source/editor/Viewer_TextEditor.ts"
+import { MODULE_MOUSE } from "../../../source/editor/modules/mouse.ts"
+import { viewModelOf__Blocks, parseLines_ViewModel, MODULE_PLAINTEXT } from "../../../source/editor/ViewModel_TextEditor.ts"
+import { MODULE_WORDS_TEXT } from "../../../source/editor/words/text.ts"
 
 // the view, with its stylesheet, its "changes" look, on where a test
 // sets it, and its own components, for a test to make and draw with in the

@@ -1,6 +1,10 @@
 import type { _Invariant_Scene_, _Scene_ } from "../scene.ts"
-import { viewModelOf__Blocks } from "../../source/ViewModel_TextEditor.ts"
-import type { _Line_Run_, _Group_Underlay_, _STRETCH_Underlay_Text_ } from "../../source/ViewModel_TextEditor.ts"
+import {
+  viewModelOf__Blocks,
+  type _Line_Run_,
+  type _Group_Underlay_,
+  type _STRETCH_Underlay_Text_
+} from "../../source/editor/index.ts"
 import { groupsOf__Lines, lineOf, originsOf__Document, textElementsIn } from "../lines.ts"
 import { attributesOf__Link, attributesOf__Change, attributesOf__Marks } from "../looks.ts"
 

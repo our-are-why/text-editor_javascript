@@ -1,8 +1,9 @@
 {
   // The rules every part of the component is checked with, as doctor's are.
   // Each part's own tsconfig.json adds only what that part may use: Bun and
-  // the DOM for scripts/ and tests/, the DOM alone for source/ and
-  // playground/.
+  // the DOM for scripts/ and tests/, the DOM alone for the editor, the board
+  // and the JSX runtime, source/editor/, source/board/ and source/jsx/, and
+  // for playground/.
   "compilerOptions": {
     "target": "ES2024",
     "module": "Preserve",
@@ -18,7 +19,7 @@
     "verbatimModuleSyntax": true,
     "erasableSyntaxOnly": true,
     "isolatedModules": true,
-    // JSX made into real elements by source/Jsx.ts, which package.json's
+    // JSX made into real elements by source/jsx/Jsx.ts, which package.json's
     // imports map #jsx/jsx-runtime to, and #jsx/jsx-dev-runtime, which Bun
     // asks for when it bundles for development, for tsc and Bun alike
     "jsx": "react-jsx",

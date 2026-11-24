@@ -1,12 +1,10 @@
 import {
   LABELMAP__STATE_TASK,
   NOTEMAP__STATE_TASK,
-  partsOf__Counts_Task
-} from "./Projection_TextEditor.ts"
-import type {
-  _State_Task_,
-  _Part_Task_
-} from "./ViewModel_TextEditor.ts"
+  partsOf__Counts_Task,
+  type _State_Task_,
+  type _Part_Task_
+} from "../editor/index.ts"
 import type {
   _ViewModel_Board_,
   _Kind_Tiles_,

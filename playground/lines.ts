@@ -1,5 +1,16 @@
-import { type _Attributes_Element_, type _Line_Run_, type _Segment_Line_, type _Origin_Line_, type _Block_ViewModel_, parseLines_ViewModel, type _Module_Language_, type _Group_Underlay_, type _STRETCH_Underlay_Text_, type _Position_Run_ } from "../source/ViewModel_TextEditor.ts"
-import { parseTexts_Line } from "../source/Model_TextEditor.ts"
+import {
+  type _Attributes_Element_,
+  type _Line_Run_,
+  type _Segment_Line_,
+  type _Origin_Line_,
+  type _Block_ViewModel_,
+  parseLines_ViewModel,
+  type _Module_Language_,
+  type _Group_Underlay_,
+  type _STRETCH_Underlay_Text_,
+  type _Position_Run_,
+  parseTexts_Line
+} from "../source/editor/index.ts"
 
 export {
   type _Piece_Line_,

@@ -1,8 +1,10 @@
 import type { _Scene_ } from "../scene.ts"
-import { MODULE_PLAINTEXT } from "../../source/ViewModel_TextEditor.ts"
-import { parseTexts_Line } from "../../source/Model_TextEditor.ts"
+import {
+  MODULE_PLAINTEXT,
+  parseTexts_Line,
+  MODULE_READING_TEXT
+} from "../../source/editor/index.ts"
 import { actions_Review } from "../items.ts"
-import { MODULE_READING_TEXT } from "../../source/readings/text.ts"
 import { projectedOf } from "../projected.ts"
 import { readingTime } from "./code.ts"
 

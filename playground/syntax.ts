@@ -1,4 +1,8 @@
-import type { _Stretch_Line_, _Module_Language_, _Syntax_Line_ } from "../source/ViewModel_TextEditor.ts"
+import type {
+  _Stretch_Line_,
+  _Module_Language_,
+  _Syntax_Line_
+} from "../source/editor/index.ts"
 
 export {
   type _Syntax_,

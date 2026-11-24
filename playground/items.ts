@@ -1,8 +1,8 @@
 import type {
   _Action_Item_,
-  _Decision_Proposal_
-} from "../source/ViewModel_TextEditor.ts"
-import type { _Proposal_Host_ } from "../source/Projection_TextEditor.ts"
+  _Decision_Proposal_,
+  _Proposal_Host_
+} from "../source/editor/index.ts"
 
 export {
   actions_Review,

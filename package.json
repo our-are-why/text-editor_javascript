@@ -3,11 +3,11 @@
   "private": true,
   "type": "module",
   "imports": {
-    "#jsx/jsx-runtime": "./source/Jsx.ts",
-    "#jsx/jsx-dev-runtime": "./source/Jsx.ts"
+    "#jsx/jsx-runtime": "./source/jsx/Jsx.ts",
+    "#jsx/jsx-dev-runtime": "./source/jsx/Jsx.ts"
   },
   "scripts": {
-    "check": "tsc -p tsconfig.json && tsc -p playground && tsc -p source",
+    "check": "tsc -p tsconfig.json && tsc -p playground && tsc -p source/jsx && tsc -p source/editor && tsc -p source/board",
     "test": "bun test",
     "playground": "bun scripts/servePlayground.ts"
   },

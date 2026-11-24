@@ -1,11 +1,12 @@
 {
   // scripts/ and tests/, which Bun runs: Bun's APIs, and the DOM of the
   // pages the browser tests drive; and what source/ declares for the
-  // stylesheets it imports, as the tests' fixtures import source/
+  // stylesheets its parts import, and the EditContext the editor draws with,
+  // as the tests' fixtures import source/
   "extends": "./tsconfig.base.json",
   "compilerOptions": {
     "lib": ["ES2024", "DOM", "DOM.Iterable"],
     "types": ["bun"]
   },
-  "include": ["scripts/**/*", "tests/**/*", "source/stylesheets.d.ts", "source/editContext.d.ts"]
+  "include": ["scripts/**/*", "tests/**/*", "source/stylesheets.d.ts", "source/editor/editContext.d.ts"]
 }

@@ -1,4 +1,4 @@
-import type { _ViewModel_TextEditor_ } from "../source/ViewModel_TextEditor.ts"
+import type { _ViewModel_TextEditor_ } from "../source/editor/index.ts"
 
 export {
   type _Size_Scene_,

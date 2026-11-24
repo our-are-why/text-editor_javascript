@@ -1,8 +1,16 @@
-import type { _Module_Reading_, _Box_Reading_ } from "../source/Projection_TextEditor.ts"
-import type { _Perspective_TextEditor_ } from "../source/TextEditor.ts"
-import { comparisonOf__Texts, indexOf__Position, positionOf__Index, parseTexts_Line, type _Text_Model_, type _Run_Comparison_ } from "../source/Model_TextEditor.ts"
-import { parseLines_ViewModel } from "../source/ViewModel_TextEditor.ts"
-import { LOOK_CHANGES } from "../source/looks/changes.ts"
+import {
+  type _Module_Reading_,
+  type _Box_Reading_,
+  type _Perspective_TextEditor_,
+  comparisonOf__Texts,
+  indexOf__Position,
+  positionOf__Index,
+  parseTexts_Line,
+  type _Text_Model_,
+  type _Run_Comparison_,
+  parseLines_ViewModel,
+  LOOK_CHANGES
+} from "../source/editor/index.ts"
 import { module_Markdown } from "./syntax.ts"
 
 export {

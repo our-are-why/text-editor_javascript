@@ -1,5 +1,5 @@
 import { expect, test } from "bun:test"
-import { parseLines_ViewModel } from "../source/ViewModel_TextEditor.ts"
+import { parseLines_ViewModel } from "../source/editor/ViewModel_TextEditor.ts"
 import { retry } from "../playground/examples/javascript.ts"
 import { module_JavaScript, module_Markdown } from "../playground/syntax.ts"
 

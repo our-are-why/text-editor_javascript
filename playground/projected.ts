@@ -1,6 +1,16 @@
-import { parseModel_TextEditor, type _Mark_Text_, type _Changes_Host_, type _Model_TextEditor_ } from "../source/Model_TextEditor.ts"
-import { viewModelOf__Model, type _Proposal_Host_, type _Landed_Round_, type _Module_Reading_ } from "../source/Projection_TextEditor.ts"
-import type { _Module_Language_, _Range_Lines_, _ViewModel_TextEditor_ } from "../source/ViewModel_TextEditor.ts"
+import {
+  parseModel_TextEditor,
+  type _Mark_Text_,
+  type _Changes_Host_,
+  type _Model_TextEditor_,
+  viewModelOf__Model,
+  type _Proposal_Host_,
+  type _Landed_Round_,
+  type _Module_Reading_,
+  type _Module_Language_,
+  type _Range_Lines_,
+  type _ViewModel_TextEditor_
+} from "../source/editor/index.ts"
 
 export {
   modelOf,

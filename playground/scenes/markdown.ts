@@ -1,5 +1,5 @@
 import type { _Scene_ } from "../scene.ts"
-import { viewModelOf__Blocks } from "../../source/ViewModel_TextEditor.ts"
+import { viewModelOf__Blocks } from "../../source/editor/index.ts"
 import { blocksOf__Text } from "../lines.ts"
 import { module_Markdown } from "../syntax.ts"
 

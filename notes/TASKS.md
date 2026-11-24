@@ -430,9 +430,13 @@ What it asks of the editor:
 ## who holds what
 
 Each part has its own interface, as the editor has: given what it needs,
-telling what happened. Doctor had all four, in its extension and its
-webviews; the playground's host, `playground/host.ts`, plays all four for
-now, faked.
+telling what happened. Each is a folder of `source/`, its `index.ts` its
+public API, nothing else of it imported from outside, as
+`.claude/rules/typescript-style.md` says under **Parts**: `editor/`,
+`board/` and `jsx/`, the runtime they draw with, so far; `tasks/`,
+`documents/`, `agent/` and `shell/` to come, in that order (2026-11-24).
+Doctor had all four, in its extension and its webviews; the playground's
+host, `playground/host.ts`, plays all four for now, faked.
 
 - **the editor:** nothing of tasks but what it's told. It's given the mode:
   in manual, its document's trunk; in a task, the task's head of its

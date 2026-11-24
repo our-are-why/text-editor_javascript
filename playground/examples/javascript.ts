@@ -1,17 +1,21 @@
 import type { _Example_ } from "../example.ts"
-import { COMPONENTMAP__VIEW_TEXTEDITOR } from "../../source/View_TextEditor.tsx"
-import type { _Setup_TextEditor_ } from "../../source/TextEditor.ts"
-import { MODULE_MOUSE } from "../../source/modules/mouse.ts"
-import { MODULE_KEYBOARD } from "../../source/modules/keyboard.ts"
-import { parseTexts_Line, type _Range_Text_, type _Changes_Host_, type _Change_Host_ } from "../../source/Model_TextEditor.ts"
-import type {
-  _Proposal_Host_,
-  _Landed_Round_,
-  _Request_Task_
-} from "../../source/Projection_TextEditor.ts"
-import type { _Range_Lines_, _Selected_Text_ } from "../../source/ViewModel_TextEditor.ts"
-import { MODULE_WORDS_TEXT } from "../../source/words/text.ts"
-import { PERSPECTIVE_CHANGES } from "../../source/perspectives/changes.ts"
+import {
+  COMPONENTMAP__VIEW_TEXTEDITOR,
+  type _Setup_TextEditor_,
+  MODULE_MOUSE,
+  MODULE_KEYBOARD,
+  parseTexts_Line,
+  type _Range_Text_,
+  type _Changes_Host_,
+  type _Change_Host_,
+  type _Proposal_Host_,
+  type _Landed_Round_,
+  type _Request_Task_,
+  type _Range_Lines_,
+  type _Selected_Text_,
+  MODULE_WORDS_TEXT,
+  PERSPECTIVE_CHANGES
+} from "../../source/editor/index.ts"
 import { modelOf } from "../projected.ts"
 import { actions_Review, actions_Reopen, actions_Dismiss, proposal_Yours } from "../items.ts"
 import { module_JavaScript, type _State_JavaScript_ } from "../syntax.ts"

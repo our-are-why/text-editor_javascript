@@ -1,4 +1,4 @@
-import type { _Attributes_Element_ } from "../source/ViewModel_TextEditor.ts"
+import type { _Attributes_Element_ } from "../source/editor/index.ts"
 
 export {
   type _Mark_,

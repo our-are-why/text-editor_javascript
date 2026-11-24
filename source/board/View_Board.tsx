@@ -3,7 +3,7 @@ import {
   draw__Node_Jsx,
   type JSX,
   type _Node_Jsx_
-} from "./Jsx.ts"
+} from "../jsx/index.ts"
 import type {
   _ViewModel_Board_,
   _Column_Board_,
