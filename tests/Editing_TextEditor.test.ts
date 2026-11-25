@@ -51,7 +51,7 @@ function typed(
   multilineText: string,
   isTyping: boolean
 ): _Edited_Model_ | null {
-  return editedOf__Request({ model_TextEditor, proposals: proposalsIn(state), source_Yours: "yours", module_Words: MODULE_WORDS_TEXT, history, request_Edit: { kind: "TEXT", id_Text, range, multilineText, id_Run: "run", selection_Before: caretAt(id_Text, range.from.line, range.from.offset), isTyping, isProposed: false, places_Caret: null } })
+  return editedOf__Request({ model_TextEditor, proposals: proposalsIn(state), source_Yours: "yours", isHeld_Document: false, module_Words: MODULE_WORDS_TEXT, history, request_Edit: { kind: "TEXT", id_Text, range, multilineText, id_Run: "run", selection_Before: caretAt(id_Text, range.from.line, range.from.offset), isTyping, isProposed: false, places_Caret: null } })
 }
 
 test("the document's text inside what a pending or accepted proposal's span holds is locked, its edges not, nor what a rejected or withdrawn one's would; a proposal's own text, shown, is edited whatever its decision, revisions queued on it or not, but not while a round of it's under way, a request of it running, as the agent's rewriting it", () => {
@@ -64,7 +64,7 @@ test("the document's text inside what a pending or accepted proposal's span hold
   expect<unknown>(typed(model, HISTORY_EMPTY, "REJECTED", document_Text, on(0, 5, 5), "x", true)?.model_TextEditor.document.lines).toEqual(["one txwo three", "four"])
   expect(typed(model, HISTORY_EMPTY, "OPEN", digit_Text, on(0, 1, 1), "!", true)?.model_TextEditor.proposed[0]?.changes[0]).toMatchObject({ next: { lines: ["2!"] } })
   expect(typed(model, HISTORY_EMPTY, "ACCEPTED", digit_Text, on(0, 1, 1), "!", true)?.model_TextEditor.proposed[0]?.changes[0]).toMatchObject({ next: { lines: ["2!"] } })
-  const asked = (status: _Status_Request_) => editedOf__Request({ model_TextEditor: model, proposals: proposalsIn("OPEN").map((proposal_Host) => proposal_Host.source === "digit" ? { ...proposal_Host, requests: [{ id: "spell", notes: "Spell it.", reference: null, status }] } : proposal_Host), source_Yours: "yours", module_Words: MODULE_WORDS_TEXT, history: HISTORY_EMPTY, request_Edit: { kind: "TEXT", id_Text: digit_Text, range: on(0, 1, 1), multilineText: "!", id_Run: "run", selection_Before: caretAt(digit_Text, 0, 1), isTyping: true, isProposed: false, places_Caret: null } })
+  const asked = (status: _Status_Request_) => editedOf__Request({ model_TextEditor: model, proposals: proposalsIn("OPEN").map((proposal_Host) => proposal_Host.source === "digit" ? { ...proposal_Host, requests: [{ id: "spell", notes: "Spell it.", reference: null, status }] } : proposal_Host), source_Yours: "yours", isHeld_Document: false, module_Words: MODULE_WORDS_TEXT, history: HISTORY_EMPTY, request_Edit: { kind: "TEXT", id_Text: digit_Text, range: on(0, 1, 1), multilineText: "!", id_Run: "run", selection_Before: caretAt(digit_Text, 0, 1), isTyping: true, isProposed: false, places_Caret: null } })
   expect(asked("QUEUED")?.model_TextEditor.proposed[0]?.changes[0]).toMatchObject({ next: { lines: ["2!"] } })
   expect(asked("RUNNING")).toBe(null)
   for (const state of ["REJECTED", "WITHDRAWN"] as const) expect(typed(model, HISTORY_EMPTY, state, digit_Text, on(0, 1, 1), "!", true)).toBe(null)
@@ -90,8 +90,8 @@ test("typing runs together into one undo while the caret's where the last left i
   expect(pasted.history.undos.length).toBe(2)
   const apart = typed(second.model_TextEditor, second.history, "OPEN", document_Text, on(1, 0, 0), "z", true)
   expect(apart?.history.undos.length).toBe(2)
-  const undoOf = (edited: _Edited_Model_) => editedOf__Request({ model_TextEditor: edited.model_TextEditor, proposals: proposalsIn("OPEN"), source_Yours: "yours", module_Words: MODULE_WORDS_TEXT, history: edited.history, request_Edit: { kind: "UNDO" } })
-  const redoOf = (edited: _Edited_Model_) => editedOf__Request({ model_TextEditor: edited.model_TextEditor, proposals: proposalsIn("OPEN"), source_Yours: "yours", module_Words: MODULE_WORDS_TEXT, history: edited.history, request_Edit: { kind: "REDO" } })
+  const undoOf = (edited: _Edited_Model_) => editedOf__Request({ model_TextEditor: edited.model_TextEditor, proposals: proposalsIn("OPEN"), source_Yours: "yours", isHeld_Document: false, module_Words: MODULE_WORDS_TEXT, history: edited.history, request_Edit: { kind: "UNDO" } })
+  const redoOf = (edited: _Edited_Model_) => editedOf__Request({ model_TextEditor: edited.model_TextEditor, proposals: proposalsIn("OPEN"), source_Yours: "yours", isHeld_Document: false, module_Words: MODULE_WORDS_TEXT, history: edited.history, request_Edit: { kind: "REDO" } })
   const undone_Paste = undoOf(pasted)
   if (undone_Paste === null) throw new Error("nothing to undo")
   expect(undone_Paste.model_TextEditor).toEqual(second.model_TextEditor)
@@ -115,7 +115,7 @@ function typedAmong(
   range: _Range_Text_,
   multilineText: string
 ): _Edited_Model_ | null {
-  return editedOf__Request({ model_TextEditor, proposals: proposalsIn("OPEN"), source_Yours: "yours", module_Words: MODULE_WORDS_TEXT, history, request_Edit: { kind: "TEXT", id_Text: document_Text, range, multilineText, id_Run: "run", selection_Before: caretAt(document_Text, range.from.line, range.from.offset), isTyping: true, isProposed: true, places_Caret: null } })
+  return editedOf__Request({ model_TextEditor, proposals: proposalsIn("OPEN"), source_Yours: "yours", isHeld_Document: false, module_Words: MODULE_WORDS_TEXT, history, request_Edit: { kind: "TEXT", id_Text: document_Text, range, multilineText, id_Run: "run", selection_Before: caretAt(document_Text, range.from.line, range.from.offset), isTyping: true, isProposed: true, places_Caret: null } })
 }
 
 test("typed among what's proposed, where it's the document's own words, an edit's a change of yours over the whole word it's in, the caret in it after what's typed: the document, and so the lines as they are, as they were; typed on in it, the same change; undone, gone", () => {
@@ -127,18 +127,18 @@ test("typed among what's proposed, where it's the document's own words, an edit'
   expect(first.model_TextEditor.proposed[1]?.changes).toMatchObject([{ kind: "REPLACE", range: on(0, 0, 3), next: { lines: ["onXe"] } }])
   expect<unknown>(textWith__Sources({ model_TextEditor: first.model_TextEditor, sources: ["digit", "yours"] }).lines).toEqual(["onXe 2 three", "four"])
   expect(first.selection.head).toEqual({ id_Run: "run", id_Text: { kind: "CHANGE", source: "yours", index: 0 }, position: { line: 0, offset: 3 } })
-  const again = editedOf__Request({ model_TextEditor: first.model_TextEditor, proposals: proposalsIn("OPEN"), source_Yours: "yours", module_Words: MODULE_WORDS_TEXT, history: first.history, request_Edit: { kind: "TEXT", id_Text: first.selection.head.id_Text, range: on(0, 3, 3), multilineText: "Y", id_Run: "run", selection_Before: first.selection, isTyping: true, isProposed: true, places_Caret: null } })
+  const again = editedOf__Request({ model_TextEditor: first.model_TextEditor, proposals: proposalsIn("OPEN"), source_Yours: "yours", isHeld_Document: false, module_Words: MODULE_WORDS_TEXT, history: first.history, request_Edit: { kind: "TEXT", id_Text: first.selection.head.id_Text, range: on(0, 3, 3), multilineText: "Y", id_Run: "run", selection_Before: first.selection, isTyping: true, isProposed: true, places_Caret: null } })
   if (again === null) throw new Error("refused")
   expect(again.model_TextEditor.proposed[1]?.changes.length).toBe(1)
   expect<unknown>(textWith__Sources({ model_TextEditor: again.model_TextEditor, sources: ["digit", "yours"] }).lines).toEqual(["onXYe 2 three", "four"])
-  const undone = editedOf__Request({ model_TextEditor: first.model_TextEditor, proposals: proposalsIn("OPEN"), source_Yours: "yours", module_Words: MODULE_WORDS_TEXT, history: first.history, request_Edit: { kind: "UNDO" } })
+  const undone = editedOf__Request({ model_TextEditor: first.model_TextEditor, proposals: proposalsIn("OPEN"), source_Yours: "yours", isHeld_Document: false, module_Words: MODULE_WORDS_TEXT, history: first.history, request_Edit: { kind: "UNDO" } })
   expect(undone?.model_TextEditor).toEqual(model)
 })
 
 test("typed among a move's words, as they land, an edit's a change of yours the move carries; one that would cross another proposal's span is refused", () => {
   const result = parseModel_TextEditor({ multilineText: "alpha beta\ngamma", marks: [], proposed: [{ source: "swap", changes: [{ kind: "MOVE", range: on(0, 6, 10), at: { line: 0, offset: 0 } }] }] })
   if (result.kind === "REFUSED") throw new Error("refused")
-  const carried = editedOf__Request({ model_TextEditor: result.model_TextEditor, proposals: [{ source: "swap", title: "Beta first", state: "OPEN", status: "", rationale: "", requests: [], actions: [], attributes: {} }, { source: "yours", title: "Your edits", state: "OPEN", status: "", rationale: "", requests: [], actions: [], attributes: {} }], source_Yours: "yours", module_Words: MODULE_WORDS_TEXT, history: HISTORY_EMPTY, request_Edit: { kind: "TEXT", id_Text: document_Text, range: on(0, 8, 8), multilineText: "!", id_Run: "run", selection_Before: caretAt(document_Text, 0, 8), isTyping: true, isProposed: true, places_Caret: null } })
+  const carried = editedOf__Request({ model_TextEditor: result.model_TextEditor, proposals: [{ source: "swap", title: "Beta first", state: "OPEN", status: "", rationale: "", requests: [], actions: [], attributes: {} }, { source: "yours", title: "Your edits", state: "OPEN", status: "", rationale: "", requests: [], actions: [], attributes: {} }], source_Yours: "yours", isHeld_Document: false, module_Words: MODULE_WORDS_TEXT, history: HISTORY_EMPTY, request_Edit: { kind: "TEXT", id_Text: document_Text, range: on(0, 8, 8), multilineText: "!", id_Run: "run", selection_Before: caretAt(document_Text, 0, 8), isTyping: true, isProposed: true, places_Caret: null } })
   expect<unknown>(carried === null ? null : textWith__Sources({ model_TextEditor: carried.model_TextEditor, sources: ["swap", "yours"] }).lines).toEqual(["be!taalpha ", "gamma"])
   expect<unknown>(carried?.model_TextEditor.document.lines).toEqual(["alpha beta", "gamma"])
   expect(typedAmong(modelOf(), HISTORY_EMPTY, on(0, 2, 5), "")).toBe(null)
@@ -147,7 +147,7 @@ test("typed among a move's words, as they land, an edit's a change of yours the 
 test("typed at the very start of what a move carries, as it lands, an edit's still the move's to carry: the change of yours takes in the first character it carries, as it is, its text put before it", () => {
   const result = parseModel_TextEditor({ multilineText: "one\n\nmoved\ntwo", marks: [], proposed: [{ source: "lift", changes: [{ kind: "MOVE", range: { from: { line: 1, offset: 0 }, to: { line: 3, offset: 0 } }, at: { line: 0, offset: 0 } }] }] })
   if (result.kind === "REFUSED") throw new Error("refused")
-  const edited = editedOf__Request({ model_TextEditor: result.model_TextEditor, proposals: [{ source: "lift", title: "Lift it", state: "OPEN", status: "", rationale: "", requests: [], actions: [], attributes: {} }, { source: "yours", title: "Your edits", state: "OPEN", status: "", rationale: "", requests: [], actions: [], attributes: {} }], source_Yours: "yours", module_Words: MODULE_WORDS_TEXT, history: HISTORY_EMPTY, request_Edit: { kind: "TEXT", id_Text: document_Text, range: on(1, 0, 0), multilineText: "Q", id_Run: "run", selection_Before: caretAt(document_Text, 1, 0), isTyping: true, isProposed: true, places_Caret: null } })
+  const edited = editedOf__Request({ model_TextEditor: result.model_TextEditor, proposals: [{ source: "lift", title: "Lift it", state: "OPEN", status: "", rationale: "", requests: [], actions: [], attributes: {} }, { source: "yours", title: "Your edits", state: "OPEN", status: "", rationale: "", requests: [], actions: [], attributes: {} }], source_Yours: "yours", isHeld_Document: false, module_Words: MODULE_WORDS_TEXT, history: HISTORY_EMPTY, request_Edit: { kind: "TEXT", id_Text: document_Text, range: on(1, 0, 0), multilineText: "Q", id_Run: "run", selection_Before: caretAt(document_Text, 1, 0), isTyping: true, isProposed: true, places_Caret: null } })
   expect<unknown>(edited === null ? null : textWith__Sources({ model_TextEditor: edited.model_TextEditor, sources: ["lift", "yours"] }).lines).toEqual(["Q", "moved", "one", "two"])
   expect(edited?.model_TextEditor.proposed[1]?.changes).toMatchObject([{ range: { from: { line: 1, offset: 0 }, to: { line: 2, offset: 0 } }, next: { lines: ["Q", ""] } }])
 })
@@ -161,7 +161,7 @@ function typedIn(
   range: _Range_Text_,
   multilineText: string
 ): _Edited_Model_ | null {
-  return editedOf__Request({ model_TextEditor, proposals: proposalsIn(state), source_Yours: "yours", module_Words: MODULE_WORDS_TEXT, history, request_Edit: { kind: "TEXT", id_Text, range, multilineText, id_Run: "run", selection_Before: caretAt(id_Text, range.from.line, range.from.offset), isTyping: true, isProposed: true, places_Caret: null } })
+  return editedOf__Request({ model_TextEditor, proposals: proposalsIn(state), source_Yours: "yours", isHeld_Document: false, module_Words: MODULE_WORDS_TEXT, history, request_Edit: { kind: "TEXT", id_Text, range, multilineText, id_Run: "run", selection_Before: caretAt(id_Text, range.from.line, range.from.offset), isTyping: true, isProposed: true, places_Caret: null } })
 }
 
 // the lines as proposed, by digit and yours both
@@ -212,7 +212,7 @@ function typedAcross(
   pieces: [{ id_Text: _Id_Text_, range: _Range_Text_ }, ...Array<{ id_Text: _Id_Text_, range: _Range_Text_ }>],
   multilineText: string
 ): _Edited_Model_ | null {
-  return editedOf__Request({ model_TextEditor, proposals: proposalsIn("OPEN"), source_Yours: "yours", module_Words: MODULE_WORDS_TEXT, history: HISTORY_EMPTY, request_Edit: { kind: "ACROSS", pieces, multilineText, id_Run: "run", selection_Before: caretAt(pieces[0].id_Text, pieces[0].range.from.line, pieces[0].range.from.offset), isTyping: true } })
+  return editedOf__Request({ model_TextEditor, proposals: proposalsIn("OPEN"), source_Yours: "yours", isHeld_Document: false, module_Words: MODULE_WORDS_TEXT, history: HISTORY_EMPTY, request_Edit: { kind: "ACROSS", pieces, multilineText, id_Run: "run", selection_Before: caretAt(pieces[0].id_Text, pieces[0].range.from.line, pieces[0].range.from.offset), isTyping: true } })
 }
 
 test("typed over a selection across texts, a proposal's words and the document's, each text's piece is edited in it: the proposal's, in the proposal; the document's, as changes of yours; what's typed goes where the selection starts, the caret after it", () => {
@@ -244,7 +244,7 @@ function typedBetween(
 ): _Edited_Model_ | null {
   const result = parseModel_TextEditor({ multilineText: "one three", marks: [], proposed: [{ source: "digit", changes: [{ kind: "REPLACE", range: on(0, 3, 3), multilineText: " two", marks: [] }] }] })
   if (result.kind === "REFUSED") throw new Error("refused")
-  return editedOf__Request({ model_TextEditor: result.model_TextEditor, proposals: proposalsIn("OPEN"), source_Yours: "yours", module_Words, history: HISTORY_EMPTY, request_Edit: { kind: "TEXT", id_Text: digit_Text, range: on(0, 0, 0), multilineText, id_Run: "run", selection_Before: caretAt(digit_Text, 0, 0), isTyping: true, isProposed: true, places_Caret: { place_Before: { id_Text: document_Text, position: { line: 0, offset: 3 } }, place_After: { id_Text: digit_Text, position: { line: 0, offset: 0 } } } } })
+  return editedOf__Request({ model_TextEditor: result.model_TextEditor, proposals: proposalsIn("OPEN"), source_Yours: "yours", isHeld_Document: false, module_Words, history: HISTORY_EMPTY, request_Edit: { kind: "TEXT", id_Text: digit_Text, range: on(0, 0, 0), multilineText, id_Run: "run", selection_Before: caretAt(digit_Text, 0, 0), isTyping: true, isProposed: true, places_Caret: { place_Before: { id_Text: document_Text, position: { line: 0, offset: 3 } }, place_After: { id_Text: digit_Text, position: { line: 0, offset: 0 } } } } })
 }
 
 test("where two texts meet, what's typed goes to the text whose word it joins: a letter after the document's word, a change of yours over that word, never in the proposal's words after it; what joins no word, yours too, before their words; what joins their word, theirs", () => {
@@ -257,7 +257,7 @@ test("where two texts meet, what's typed goes to the text whose word it joins: a
   expect(spaced?.model_TextEditor.proposed[0]?.changes).toMatchObject([{ next: { lines: [" two"] } }])
   const result = parseModel_TextEditor({ multilineText: "one three", marks: [], proposed: [{ source: "digit", changes: [{ kind: "REPLACE", range: on(0, 4, 4), multilineText: "two ", marks: [] }] }] })
   if (result.kind === "REFUSED") throw new Error("refused")
-  const prefixed = editedOf__Request({ model_TextEditor: result.model_TextEditor, proposals: proposalsIn("OPEN"), source_Yours: "yours", module_Words: MODULE_WORDS_TEXT, history: HISTORY_EMPTY, request_Edit: { kind: "TEXT", id_Text: digit_Text, range: on(0, 0, 0), multilineText: "X", id_Run: "run", selection_Before: caretAt(digit_Text, 0, 0), isTyping: true, isProposed: true, places_Caret: { place_Before: { id_Text: document_Text, position: { line: 0, offset: 4 } }, place_After: { id_Text: digit_Text, position: { line: 0, offset: 0 } } } } })
+  const prefixed = editedOf__Request({ model_TextEditor: result.model_TextEditor, proposals: proposalsIn("OPEN"), source_Yours: "yours", isHeld_Document: false, module_Words: MODULE_WORDS_TEXT, history: HISTORY_EMPTY, request_Edit: { kind: "TEXT", id_Text: digit_Text, range: on(0, 0, 0), multilineText: "X", id_Run: "run", selection_Before: caretAt(digit_Text, 0, 0), isTyping: true, isProposed: true, places_Caret: { place_Before: { id_Text: document_Text, position: { line: 0, offset: 4 } }, place_After: { id_Text: digit_Text, position: { line: 0, offset: 0 } } } } })
   expect(linesOf(prefixed)).toEqual(["one Xtwo three"])
   expect(prefixed?.model_TextEditor.proposed[0]?.changes).toMatchObject([{ next: { lines: ["Xtwo "] } }])
   expect(prefixed?.model_TextEditor.proposed.length).toBe(1)
@@ -271,7 +271,7 @@ const module_Words_Spaced = {
 test("what a word is, the host says, by the words module it passes: as text, letters and digits, so what's typed after a closing bracket is a word of its own; with words as anything between spaces, it's part of the word before", () => {
   const result = parseModel_TextEditor({ multilineText: "push(error); next", marks: [], proposed: [] })
   if (result.kind === "REFUSED") throw new Error("refused")
-  const typedWith = (module_Words: typeof MODULE_WORDS_TEXT) => editedOf__Request({ model_TextEditor: result.model_TextEditor, proposals: proposalsIn("OPEN"), source_Yours: "yours", module_Words, history: HISTORY_EMPTY, request_Edit: { kind: "TEXT", id_Text: document_Text, range: on(0, 11, 11), multilineText: "X", id_Run: "run", selection_Before: caretAt(document_Text, 0, 11), isTyping: true, isProposed: true, places_Caret: null } })?.model_TextEditor.proposed[0]?.changes
+  const typedWith = (module_Words: typeof MODULE_WORDS_TEXT) => editedOf__Request({ model_TextEditor: result.model_TextEditor, proposals: proposalsIn("OPEN"), source_Yours: "yours", isHeld_Document: false, module_Words, history: HISTORY_EMPTY, request_Edit: { kind: "TEXT", id_Text: document_Text, range: on(0, 11, 11), multilineText: "X", id_Run: "run", selection_Before: caretAt(document_Text, 0, 11), isTyping: true, isProposed: true, places_Caret: null } })?.model_TextEditor.proposed[0]?.changes
   expect(typedWith(MODULE_WORDS_TEXT)).toMatchObject([{ range: on(0, 11, 11), next: { lines: ["X"] } }])
   expect(typedWith(module_Words_Spaced)).toMatchObject([{ range: on(0, 0, 12), next: { lines: ["push(error)X;"] } }])
 })
@@ -280,10 +280,10 @@ test("each edit says what it did, its own transaction, the model before made the
   const model = modelOf()
   const first = typedIn(model, HISTORY_EMPTY, "OPEN", document_Text, on(0, 9, 9), "x")
   if (first === null) throw new Error("refused")
-  const second = editedOf__Request({ model_TextEditor: first.model_TextEditor, proposals: proposalsIn("OPEN"), source_Yours: "yours", module_Words: MODULE_WORDS_TEXT, history: first.history, request_Edit: { kind: "TEXT", id_Text: first.selection.head.id_Text, range: { from: first.selection.head.position, to: first.selection.head.position }, multilineText: "y", id_Run: "run", selection_Before: first.selection, isTyping: true, isProposed: true, places_Caret: null } })
+  const second = editedOf__Request({ model_TextEditor: first.model_TextEditor, proposals: proposalsIn("OPEN"), source_Yours: "yours", isHeld_Document: false, module_Words: MODULE_WORDS_TEXT, history: first.history, request_Edit: { kind: "TEXT", id_Text: first.selection.head.id_Text, range: { from: first.selection.head.position, to: first.selection.head.position }, multilineText: "y", id_Run: "run", selection_Before: first.selection, isTyping: true, isProposed: true, places_Caret: null } })
   if (second === null) throw new Error("refused")
   expect(second.history.undos.length).toBe(1)
-  const undone = editedOf__Request({ model_TextEditor: second.model_TextEditor, proposals: proposalsIn("OPEN"), source_Yours: "yours", module_Words: MODULE_WORDS_TEXT, history: second.history, request_Edit: { kind: "UNDO" } })
+  const undone = editedOf__Request({ model_TextEditor: second.model_TextEditor, proposals: proposalsIn("OPEN"), source_Yours: "yours", isHeld_Document: false, module_Words: MODULE_WORDS_TEXT, history: second.history, request_Edit: { kind: "UNDO" } })
   if (undone === null) throw new Error("refused")
   for (const [before, edited] of [[model, first], [first.model_TextEditor, second], [second.model_TextEditor, undone]] as const) {
     expect(applied__Transaction({ model_TextEditor: before, transaction: edited.transaction }).model_TextEditor).toEqual(edited.model_TextEditor)
@@ -296,7 +296,16 @@ test("where a move leaves, a change of yours put in just after the gap, and one 
   const result = parseModel_TextEditor({ multilineText: "a\nb\nc d", marks: [], proposed: [{ source: "lift", changes: [{ kind: "MOVE", range: { from: { line: 1, offset: 0 }, to: { line: 2, offset: 0 } }, at: { line: 0, offset: 0 } }] }, { source: "yours", changes: [{ kind: "REPLACE", range: on(2, 0, 0), multilineText: "Q", marks: [] }] }] })
   if (result.kind === "REFUSED") throw new Error("refused")
   const proposals: Array<_Proposal_Host_> = [{ source: "lift", title: "Lift b", state: "OPEN", status: "", rationale: "", requests: [], actions: [], attributes: {} }, { source: "yours", title: "Your edits", state: "OPEN", status: "", rationale: "", requests: [], actions: [], attributes: {} }]
-  const deleted = editedOf__Request({ model_TextEditor: result.model_TextEditor, proposals, source_Yours: "yours", module_Words: MODULE_WORDS_TEXT, history: HISTORY_EMPTY, request_Edit: { kind: "TEXT", id_Text: document_Text, range: on(2, 0, 1), multilineText: "", id_Run: "run", selection_Before: caretAt(document_Text, 2, 0), isTyping: false, isProposed: true, places_Caret: null } })
+  const deleted = editedOf__Request({ model_TextEditor: result.model_TextEditor, proposals, source_Yours: "yours", isHeld_Document: false, module_Words: MODULE_WORDS_TEXT, history: HISTORY_EMPTY, request_Edit: { kind: "TEXT", id_Text: document_Text, range: on(2, 0, 1), multilineText: "", id_Run: "run", selection_Before: caretAt(document_Text, 2, 0), isTyping: false, isProposed: true, places_Caret: null } })
   expect(deleted?.model_TextEditor.proposed[1]?.changes).toMatchObject([{ range: on(2, 0, 1), next: { lines: ["Q"] } }])
   expect<unknown>(deleted === null ? null : textWith__Sources({ model_TextEditor: deleted.model_TextEditor, sources: ["lift", "yours"] }).lines).toEqual(["b", "a", "Q d"])
+})
+
+test("in a task the document's held: what's typed into its words, on a line shown once too, is a change of yours over the words it touches, the document as it was; in No task, the document's", () => {
+  const model = modelOf()
+  const typedIn = (isHeld_Document: boolean) => editedOf__Request({ model_TextEditor: model, proposals: proposalsIn("OPEN"), source_Yours: "yours", isHeld_Document, module_Words: MODULE_WORDS_TEXT, history: HISTORY_EMPTY, request_Edit: { kind: "TEXT", id_Text: document_Text, range: on(1, 4, 4), multilineText: "s", id_Run: "run", selection_Before: caretAt(document_Text, 1, 4), isTyping: true, isProposed: false, places_Caret: null } })
+  const held = typedIn(true)
+  expect(held?.model_TextEditor.document.lines).toEqual(model.document.lines)
+  expect(held?.model_TextEditor.proposed.find((changes_Source) => changes_Source.source === "yours")?.changes).toMatchObject([{ kind: "REPLACE", range: on(1, 0, 4), next: { lines: ["fours"] } }])
+  expect<unknown>(typedIn(false)?.model_TextEditor.document.lines).toEqual(["one two three", "fours"])
 })

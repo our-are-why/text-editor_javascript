@@ -1323,8 +1323,9 @@ function pointedIn__Run({
   place,
   target_Note
 }: _Api___pointedIn__Run_): _Run_Lines_ {
+  const isPointed = (group_Underlay: _Group_Underlay_): boolean => source !== null && group_Underlay.attributes["data-source"] === source && (place === null || group_Underlay.attributes["data-place"] === undefined || group_Underlay.attributes["data-place"] === place.place)
   const underlay$_Pointed = run_Lines.groups
-    .filter((group_Underlay) => source !== null && group_Underlay.attributes["data-source"] === source)
+    .filter(isPointed)
     .flatMap((group_Underlay) => group_Underlay.underlays)
   const isCovered = (
     underlay$_Text: Array<_Underlay_Text_>,
@@ -1348,7 +1349,7 @@ function pointedIn__Run({
     })),
     groups: run_Lines.groups.map((group_Underlay) => ({
       ...group_Underlay,
-      attributes: group_Underlay.attributes["data-source"] === source
+      attributes: isPointed(group_Underlay)
         ? {
           ...group_Underlay.attributes,
           "data-pointed": ""

@@ -231,6 +231,7 @@ class _Viewer_TextEditor_ {
       isSelecting: false,
       x_Goal: null,
       isRevealing_Caret: false,
+      isHolding_Caret: false,
       isFocusing_Input: false,
       menu: null,
       request: null,
@@ -434,7 +435,15 @@ class _Viewer_TextEditor_ {
     if (this.request_Draw !== null) return
     this.request_Draw = requestAnimationFrame(() => {
       this.request_Draw = null
+      const top_Caret = this.state.isHolding_Caret ? this.view.measureCaret() : null
       this.view.draw(viewModelOf__State(this.state))
+      if (top_Caret !== null) this.view.holdCaret(top_Caret)
+      if (this.state.isHolding_Caret) {
+        this.state = {
+          ...this.state,
+          isHolding_Caret: false
+        }
+      }
       this.tell()
       if (this.state.focus_Draft !== null) {
         this.view.focusDraft(this.state.focus_Draft)
@@ -872,6 +881,7 @@ interface _State__Viewer_TextEditor_ {
   isSelecting: boolean
   x_Goal: number | null
   isRevealing_Caret: boolean
+  isHolding_Caret: boolean
   isFocusing_Input: boolean
   menu: _Menu_ViewModel_ | null
   request: _Form_Request_ | null
@@ -2680,8 +2690,15 @@ function editedAt__State({
       viewModel_TextEditor: answer_Edit.viewModel_TextEditor,
       selection: answer_Edit.selection,
       x_Goal: null,
-      isRevealing_Caret: true
+      isRevealing_Caret: true,
+      isHolding_Caret: isInLine__Request_Edit(request_Edit)
     }
+}
+
+function isInLine__Request_Edit(
+  request_Edit: _Request_Edit_
+): boolean {
+  return request_Edit.kind === "TEXT" && !request_Edit.multilineText.includes("\n") && request_Edit.range.from.line === request_Edit.range.to.line
 }
 
 type _EditableMap__Kind_Section_ = {

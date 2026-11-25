@@ -25,6 +25,7 @@ const viewModel = viewModelOf__Model({
   model_TextEditor: result.model_TextEditor,
   name_Document: "notes/digits.txt",
   proposals: [{ source: "digit", title: "Write two as a digit", state: "OPEN", status: "", rationale: "", requests: [], actions: actions_Review, attributes: {} }],
+  source_Yours: "yours",
   rounds_Landed: [],
   mode: { kind: "MANUAL" },
   tasks: [],
@@ -59,7 +60,7 @@ const layout_View: _Layout_View_ = {
 function stateOf(
   selection: _Selection_TextEditor_ | null
 ): _State__Viewer_TextEditor_ {
-  return { viewModel_TextEditor: viewModel, source_Pointed: null, place_Pointed: null, target_Pointed: null, target_Revealed: null, ranges_Folded: [], range_Peeked: null, items_Drafted: [], focus_Draft: null, visit_Item: null, selection, isSelecting: false, x_Goal: null, isRevealing_Caret: false, isFocusing_Input: false, menu: null, request: null, focus_Asking: null, confirm_Item: null, editing_Request: null, focus_Edited: null, words_Pointed: null, words_Shown: null, isRevealing_Words: false }
+  return { viewModel_TextEditor: viewModel, source_Pointed: null, place_Pointed: null, target_Pointed: null, target_Revealed: null, ranges_Folded: [], range_Peeked: null, items_Drafted: [], focus_Draft: null, visit_Item: null, selection, isSelecting: false, x_Goal: null, isRevealing_Caret: false, isHolding_Caret: false, isFocusing_Input: false, menu: null, request: null, focus_Asking: null, confirm_Item: null, editing_Request: null, focus_Edited: null, words_Pointed: null, words_Shown: null, isRevealing_Words: false }
 }
 
 // the state after each command in turn, as the viewer works it out
@@ -229,6 +230,7 @@ test("a selection all in one text, but not running on in it, as across a move's 
     model_TextEditor: result_Move.model_TextEditor,
     name_Document: "notes/digits.txt",
     proposals: [{ source: "swap", title: "Beta first", state: "OPEN", status: "", rationale: "", requests: [], actions: actions_Review, attributes: {} }],
+    source_Yours: "yours",
     rounds_Landed: [],
     mode: { kind: "MANUAL" },
     tasks: [],
@@ -269,6 +271,7 @@ function viewModelWith(
     model_TextEditor: result_Yours.model_TextEditor,
     name_Document: "notes/digits.txt",
     proposals: [{ source: "yours", title: "Your edits", state: "OPEN", status: "", rationale: "", requests: [], actions: [], attributes: {} }],
+    source_Yours: "yours",
     rounds_Landed: [],
     mode: { kind: "MANUAL" },
     tasks: [],
@@ -509,6 +512,7 @@ test("a listed request's words pointed at, by the pointer or the keyboard, lit w
     model_TextEditor: result.model_TextEditor,
     name_Document: "notes/digits.txt",
     proposals: [{ source: "digit", title: "Write two as a digit", state: "OPEN", status: "", rationale: "", requests: [{ id: "spell", notes: "Spell it.", reference: reference_Digit, status: "QUEUED" }], actions: actions_Review, attributes: {} }],
+    source_Yours: "yours",
     rounds_Landed: [],
     mode: { kind: "TASK", task: { id: "T-3", name: "Tidy", state: "WORKING", summary: "", requests: [{ id: "count", notes: "Count them.", aim: { kind: "DOCUMENT", reference: reference_One }, status: "QUEUED", sources_Answering: [] }, { id: "done", notes: "Say it.", aim: { kind: "DOCUMENT", reference: reference_Four }, status: "ADDRESSED", sources_Answering: [] }], reason: "", documents: [], summary_Document: "", actions: [], actions_Document: [] } },
     tasks: [],
@@ -587,6 +591,7 @@ test("an action that would drop revisions queued is asked first: pressed, nothin
     model_TextEditor: result.model_TextEditor,
     name_Document: "notes/digits.txt",
     proposals: [{ source: "digit", title: "Write two as a digit", state: "OPEN", status: "", rationale: "", requests: [{ id: "say", notes: "Say it.", reference: null, status: "QUEUED" }, { id: "spell", notes: "Spell it.", reference: null, status: "QUEUED" }], actions: actions_Review, attributes: {} }],
+    source_Yours: "yours",
     rounds_Landed: [],
     mode: { kind: "MANUAL" },
     tasks: [],
@@ -696,6 +701,7 @@ test("an action that would drop revisions queued is asked first: pressed, nothin
     model_TextEditor: result.model_TextEditor,
     name_Document: "notes/digits.txt",
     proposals: [{ source: "digit", title: "Write two as a digit", state: "OPEN", status: "", rationale: "", requests: [{ id: "say", notes: "Say it.", reference: null, status: "RUNNING" }, { id: "spell", notes: "Spell it.", reference: null, status: "QUEUED" }], actions: actions_Review, attributes: {} }],
+    source_Yours: "yours",
     rounds_Landed: [],
     mode: { kind: "MANUAL" },
     tasks: [],

@@ -48,6 +48,7 @@ interface _Api___editedOf__Request_ {
   model_TextEditor: _Model_TextEditor_
   proposals: Array<_Proposal_Host_>
   source_Yours: string
+  isHeld_Document: boolean
   module_Words: _Module_Words_
   history: _History_TextEditor_
   request_Edit: _Request_Edit_
@@ -57,6 +58,7 @@ function editedOf__Request({
   model_TextEditor,
   proposals,
   source_Yours,
+  isHeld_Document,
   module_Words,
   history,
   request_Edit
@@ -65,6 +67,7 @@ function editedOf__Request({
     model_TextEditor,
     proposals,
     source_Yours,
+    isHeld_Document,
     module_Words,
     history,
     request_Edit
@@ -141,6 +144,7 @@ interface _Api___edited__Kind_<Kind extends _Request_Edit_["kind"]> {
   model_TextEditor: _Model_TextEditor_
   proposals: Array<_Proposal_Host_>
   source_Yours: string
+  isHeld_Document: boolean
   module_Words: _Module_Words_
   history: _History_TextEditor_
   request_Edit: Extract<
@@ -153,6 +157,7 @@ function TEXT_editedOf__Request({
   model_TextEditor,
   proposals,
   source_Yours,
+  isHeld_Document,
   module_Words,
   history,
   request_Edit
@@ -163,7 +168,7 @@ function TEXT_editedOf__Request({
     module_Words,
     request_Edit
   })
-  const edit_Text = request_Edit.isProposed && place_Typed.id_Text.kind === "DOCUMENT"
+  const edit_Text = (request_Edit.isProposed || isHeld_Document) && place_Typed.id_Text.kind === "DOCUMENT"
     ? yoursOf__Edit({
       model_TextEditor,
       proposals,

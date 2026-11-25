@@ -120,6 +120,7 @@ interface _Api___viewModelOf__Model_<State> {
   tasks: Array<_Standing_Task_>
   files: Array<string>
   rounds_Landed: Array<_Landed_Round_>
+  source_Yours: string
   ranges_Frame: Array<_Range_Lines_>
   module_Language: _Module_Language_<State>
   module_Reading: _Module_Reading_
@@ -156,6 +157,7 @@ function viewModelOf__Model<State>({
   tasks,
   files,
   rounds_Landed,
+  source_Yours,
   ranges_Frame,
   module_Language,
   module_Reading
@@ -177,7 +179,8 @@ function viewModelOf__Model<State>({
   const frames_Model = framesOf__Changes({
     model_TextEditor,
     changes_Placed,
-    ranges_Frame
+    ranges_Frame,
+    source_Yours
   })
   const frames_Drawn = frames_Model.map((frame_Model) => drawnOf__Frame({
     model_TextEditor,
@@ -185,6 +188,7 @@ function viewModelOf__Model<State>({
     changes_Placed,
     lines_Document,
     rounds_Landed,
+    source_Yours,
     module_Language
   }))
   const blocks: Array<_Block_ViewModel_> = []
@@ -203,7 +207,8 @@ function viewModelOf__Model<State>({
         frame_Drawn,
         changes_Placed,
         proposals,
-        rounds_Landed
+        rounds_Landed,
+        source_Yours
       })
     )
     line_Next = Math.max(
@@ -1421,6 +1426,7 @@ interface _Api___framesOf__Changes_ {
   model_TextEditor: _Model_TextEditor_
   changes_Placed: Array<_Placed_Change_>
   ranges_Frame: Array<_Range_Lines_>
+  source_Yours: string
 }
 
 interface _Frame_Model_ {
@@ -1439,48 +1445,52 @@ type _Kind_End_ = "SPAN" | "LANDING"
 function framesOf__Changes({
   model_TextEditor,
   changes_Placed,
-  ranges_Frame
+  ranges_Frame,
+  source_Yours
 }: _Api___framesOf__Changes_): Array<_Frame_Model_> {
-  return mergedOf__Frames([
-    ...changes_Placed.flatMap((change_Placed): Array<_Frame_Model_> => {
-      const change = change_Placed.change
-      return [
-        {
-          ...linesOf__Span({
-            model_TextEditor,
-            change
-          }),
-          ends: [
-            {
-              change_Placed,
-              kind: "SPAN"
-            }
-          ]
-        },
-        ...(change.kind === "MOVE"
-          ? [
-            {
-              ...linesOf__Landing({
-                model_TextEditor,
-                change
-              }),
-              ends: [
-                {
-                  change_Placed,
-                  kind: "LANDING" as const
-                }
-              ]
-            }
-          ]
-          : [])
-      ]
-    }),
-    ...ranges_Frame.map((range_Frame) => ({
-      first: range_Frame.first - 1,
-      last: range_Frame.last - 1,
-      ends: []
-    }))
-  ]).filter((frame_Model) => frame_Model.ends.length > 0)
+  return yoursJoinedOf__Frames({
+    frames_Model: mergedOf__Frames([
+      ...changes_Placed.flatMap((change_Placed): Array<_Frame_Model_> => {
+        const change = change_Placed.change
+        return [
+          {
+            ...linesOf__Span({
+              model_TextEditor,
+              change
+            }),
+            ends: [
+              {
+                change_Placed,
+                kind: "SPAN"
+              }
+            ]
+          },
+          ...(change.kind === "MOVE"
+            ? [
+              {
+                ...linesOf__Landing({
+                  model_TextEditor,
+                  change
+                }),
+                ends: [
+                  {
+                    change_Placed,
+                    kind: "LANDING" as const
+                  }
+                ]
+              }
+            ]
+            : [])
+        ]
+      }),
+      ...ranges_Frame.map((range_Frame) => ({
+        first: range_Frame.first - 1,
+        last: range_Frame.last - 1,
+        ends: []
+      }))
+    ]).filter((frame_Model) => frame_Model.ends.length > 0),
+    source_Yours
+  })
 }
 
 interface _Api___linesOf__Span_ {
@@ -1671,6 +1681,42 @@ function isAt__Frame({
   return frame_Model.first <= line && line <= frame_Model.last
 }
 
+interface _Api___yoursJoinedOf__Frames_ {
+  frames_Model: Array<_Frame_Model_>
+  source_Yours: string
+}
+
+function yoursJoinedOf__Frames({
+  frames_Model,
+  source_Yours
+}: _Api___yoursJoinedOf__Frames_): Array<_Frame_Model_> {
+  const isYours = (frame_Model: _Frame_Model_): boolean => frame_Model.ends.every((end_Change) => end_Change.change_Placed.source === source_Yours)
+  return frames_Model.reduce(
+    (
+      frames_Joined: Array<_Frame_Model_>,
+      frame_Model
+    ) => {
+      const frame_Last = frames_Joined.at(-1)
+      return frame_Last !== undefined && isYours(frame_Last) && isYours(frame_Model) && frame_Last.last + 1 === frame_Model.first
+        ? [
+          ...frames_Joined.slice(
+            0,
+            -1
+          ),
+          joinedOf__Frames({
+            frame_Model: frame_Last,
+            frame_Other: frame_Model
+          })
+        ]
+        : [
+          ...frames_Joined,
+          frame_Model
+        ]
+    },
+    []
+  )
+}
+
 interface _Api___joinedOf__Frames_ {
   frame_Model: _Frame_Model_
   frame_Other: _Frame_Model_
@@ -1713,6 +1759,7 @@ interface _Api___drawnOf__Frame_<State> {
   changes_Placed: Array<_Placed_Change_>
   lines_Document: Array<_Line_Run_>
   rounds_Landed: Array<_Landed_Round_>
+  source_Yours: string
   module_Language: _Module_Language_<State>
 }
 
@@ -1730,6 +1777,7 @@ function drawnOf__Frame<State>({
   changes_Placed,
   lines_Document,
   rounds_Landed,
+  source_Yours,
   module_Language
 }: _Api___drawnOf__Frame_<State>): _Drawn_Frame_ {
   const isPoint = frame_Model.last < frame_Model.first
@@ -1795,15 +1843,21 @@ function drawnOf__Frame<State>({
     sources,
     run_Current: run_Current === null
       ? null
-      : pairedOf__Run({
-        run_Lines: run_Current,
-        pairs,
-        frame_Model,
-        module_Language
+      : eachOf__Yours({
+        run_Lines: pairedOf__Run({
+          run_Lines: run_Current,
+          pairs,
+          frame_Model,
+          module_Language
+        }),
+        source_Yours
       }),
-    run_Proposed: filedOf__Run({
-      run_Lines: proposed.run_Proposed,
-      pairs
+    run_Proposed: eachOf__Yours({
+      run_Lines: filedOf__Run({
+        run_Lines: proposed.run_Proposed,
+        pairs
+      }),
+      source_Yours
     }),
     ranges_Shown: [
       ...ranges_Current,
@@ -3630,6 +3684,40 @@ function filedOf__Range({
   ) : underlays
 }
 
+interface _Api___eachOf__Yours_ {
+  run_Lines: _Run_Lines_
+  source_Yours: string
+}
+
+function eachOf__Yours({
+  run_Lines,
+  source_Yours
+}: _Api___eachOf__Yours_): _Run_Lines_ {
+  return run_Lines.groups.some((group_Underlay) => group_Underlay.attributes["data-source"] === source_Yours)
+    ? {
+      id: run_Lines.id,
+      lines: run_Lines.lines,
+      groups: run_Lines.groups.flatMap((group_Underlay) => group_Underlay.attributes["data-source"] === source_Yours
+        ? [
+          ...Map.groupBy(
+            group_Underlay.underlays,
+            (underlay) => underlay.attributes["data-place"] ?? ""
+          )
+        ].map(([
+          place,
+          underlays
+        ]) => ({
+          attributes: {
+            ...group_Underlay.attributes,
+            "data-place": place
+          },
+          underlays
+        }))
+        : [group_Underlay])
+    }
+    : run_Lines
+}
+
 interface _Api___blocksOf__Lines_ {
   lines_Run: Array<_Line_Run_>
   line_First: number
@@ -3659,6 +3747,7 @@ interface _Api___frameOf__Drawn_ {
   changes_Placed: Array<_Placed_Change_>
   proposals: Array<_Proposal_Host_>
   rounds_Landed: Array<_Landed_Round_>
+  source_Yours: string
 }
 
 function frameOf__Drawn({
@@ -3666,7 +3755,8 @@ function frameOf__Drawn({
   frame_Drawn,
   changes_Placed,
   proposals,
-  rounds_Landed
+  rounds_Landed,
+  source_Yours
 }: _Api___frameOf__Drawn_): _FRAME_Block__ViewModel_ {
   for (const source of frame_Drawn.sources) {
     if (!proposals.some((proposal_Host) => proposal_Host.source === source)) throw new Error(`no proposal for the source ${source}`)
@@ -3765,22 +3855,26 @@ function frameOf__Drawn({
     first: frame_Drawn.frame_Model.first + 1,
     last: frame_Drawn.frame_Model.last + 1
   }
-  const part_Head = headOf__Frame({
-    range_Frame,
-    items: [
-      item_First,
-      ...items_Rest
-    ],
-    proposals_Listed: proposals.filter((proposal_Host) => frame_Drawn.sources.includes(proposal_Host.source))
-  })
+  const parts_Listed: Array<_Part_Frame_> = frame_Drawn.sources.every((source) => source === source_Yours)
+    ? []
+    : [
+      headOf__Frame({
+        range_Frame,
+        items: [
+          item_First,
+          ...items_Rest
+        ],
+        proposals_Listed: proposals.filter((proposal_Host) => frame_Drawn.sources.includes(proposal_Host.source))
+      }),
+      part_List
+    ]
   return {
     kind: "FRAME",
     range: range_Frame,
     parts: frame_Drawn.run_Current === null
       ? [
         part_Proposed,
-        part_Head,
-        part_List
+        ...parts_Listed
       ]
       : [
         {
@@ -3795,8 +3889,7 @@ function frameOf__Drawn({
           })
         },
         part_Proposed,
-        part_Head,
-        part_List
+        ...parts_Listed
       ]
   }
 }

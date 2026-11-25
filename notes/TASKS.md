@@ -189,11 +189,40 @@ it active.
 ## your edits
 
 - **In manual:** to the trunk.
-- **In a task:** into its head, as the editor already makes them, likely
-  to change as this goes deeper: in a frame, on proposed lines, an edit is
-  the proposal's next round, yours; anywhere else it's a change of yours,
-  a source the host names, `source_Yours`, described as any proposal is,
-  "Your edits" in the playground, kept in the task's head as yours.
+- **In a task:** into its head, wherever it's typed, never the file: in a
+  frame, on a proposal's words, the proposal's next round, yours; anywhere
+  else, a line shown once too, a change of yours, a source the host names,
+  `source_Yours`, described as any proposal is, "Your edits" in the
+  playground, kept in the task's head as yours, applied with the task and
+  let go with it. Decided 2026-11-25, tried in the playground first: all
+  lines the same, in a frame or not, frames deciding only how it's shown.
+
+**How your edits are shown,** decided 2026-11-25. Typed on a line shown once,
+a frame of your edits opens round it, as every change is shown twice, the
+line as the file has it above, hatched, read only, and as yours below; a
+frame of only yours small, its lines and nothing else, no head or list, as
+there's nothing in it to decide; frames of only yours on lines next to each
+other one frame, a line put in between too, never joined to a proposal's
+frame beside them, which stays the proposal's. The line you're typing on
+held where it was as the frame opens, what's above moving up, not what's
+under the caret, while an edit keeps to its line; Enter, or a line joined,
+moves the caret as it would. Each edit of yours its own, pointed at alone:
+a proposal's changes belong together, one idea of the agent's, so pointing
+at one lights them all; yours share a source only because they're yours,
+so pointing at one lights it, and only your edits' item, where a frame has
+one, lights them all.
+
+Still open: **joining and splitting frames by hand,** a frame range of
+yours, stated against the head's version and carried as changes are, over
+the agent's or the host's, which shape the frames you're given; a change's
+extent the floor, never cut, as a ring is one shape, a request's words a
+soft one, kept whole by default but cut by a split you make, as an
+underline drawn in two pieces is still one request. Kept with the task, by
+document, beside its head. Waits on the host's frame ranges being carried
+across versions, which an agent giving them needs anyway. And **a ring of
+its own for your edits,** a gentle wave, say, so a frame holding a
+proposal's changes and yours tells them apart, a squiggle reading as an
+error the risk; to be drawn.
 
 This keeps the editor's frames decision of 2026-11-18: there's no suggesting
 mode turning every edit into a proposal. In a task, your edits are the task's,
@@ -753,9 +782,9 @@ Settled, of the questions this note began with:
   (2026-11-22).
 - **a request made in manual makes a new task,** that editor's mode, for
   now (2026-11-22);
-- **your edits in a task are as the editor makes them,** a proposal's
-  next round in a frame, a change of yours anywhere else, likely to change
-  as this goes deeper (2026-11-22);
+- **your edits in a task go into its head wherever they're typed,** a
+  proposal's next round on its words, a change of yours anywhere else, a
+  line shown once too, a frame of yours opening round it (2026-11-25);
 - **tasks are flat:** none stands on or waits on another, so a request's
   either waiting to be started, or started and running, nothing between
   (2026-11-22);

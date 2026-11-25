@@ -3,7 +3,7 @@ import { parseModel_TextEditor, parseTexts_Line, type _Changes_Host_, type _Chan
 import { type _Over_Change_ } from "../source/documents/Model_Documents.ts"
 import { viewModelOf__Model, type _Proposal_Host_, type _Task_Host_, type _Mode_Host_, type _Standing_Task_, type _Counts_Proposals_, type _Counts_Requests_ } from "../source/editor/Projection_TextEditor.ts"
 import { MODULE_READING_TEXT } from "../source/editor/readings/text.ts"
-import { MODULE_PLAINTEXT, isLines__Part_Frame, type _State_Task_, type _Header_ViewModel_, type _Decision_Proposal_, type _Status_Request_, type _Piece_Text_, type _Range_Lines_, type _ViewModel_TextEditor_, type _Line_Run_, type _Underlay_Text_, type _Run_Lines_ } from "../source/editor/ViewModel_TextEditor.ts"
+import { MODULE_PLAINTEXT, isLines__Part_Frame, pointedAt__ViewModel, type _State_Task_, type _Header_ViewModel_, type _Decision_Proposal_, type _Status_Request_, type _Piece_Text_, type _Range_Lines_, type _ViewModel_TextEditor_, type _Line_Run_, type _Underlay_Text_, type _Run_Lines_ } from "../source/editor/ViewModel_TextEditor.ts"
 import { actions_Review } from "../playground/items.ts"
 import { model_retry, proposals_retry, stale_retry, ranges_retry, setup_retry } from "../playground/examples/javascript.ts"
 import { roundsOf__Stale } from "../playground/tasks.ts"
@@ -171,6 +171,7 @@ test("frames are the lines changes touch, run together only where they share a l
     model_TextEditor: modelOf(text, proposed),
     name_Document: "notes/digits.txt",
     proposals: [proposalOf("one", "One", ""), proposalOf("other", "Other", "")],
+    source_Yours: "yours",
     rounds_Landed: [],
     mode: { kind: "MANUAL" },
     tasks: [],
@@ -194,6 +195,7 @@ test("lines put in at a frame's first line's start, or at its last line's end, a
       model_TextEditor: modelOf(text, [{ source: "one", changes: [spanOf([1, 0], [1, 1], "B")] }, { source: "other", changes: [insert] }]),
       name_Document: "notes/digits.txt",
       proposals: [proposalOf("one", "One", ""), proposalOf("other", "Other", "")],
+      source_Yours: "yours",
       rounds_Landed: [],
       mode: { kind: "MANUAL" },
       tasks: [],
@@ -219,6 +221,7 @@ test("a change inside another's span, where the other keeps its words, is no con
     ]),
     name_Document: "notes/digits.txt",
     proposals: [proposalOf("loop", "Return, don't break", ""), round],
+    source_Yours: "yours",
     rounds_Landed: [],
     mode: { kind: "MANUAL" },
     tasks: [],
@@ -244,6 +247,7 @@ test("a change inside words another restyles is no condition of it either, as th
     ]),
     name_Document: "notes/digits.txt",
     proposals: [proposalOf("bold", "Stress the last two", ""), proposalOf("digit", "Write two as a digit", "")],
+    source_Yours: "yours",
     rounds_Landed: [],
     mode: { kind: "MANUAL" },
     tasks: [],
@@ -269,9 +273,9 @@ test("a change inside words another restyles is no condition of it either, as th
 // each example as the editor draws it, put together as the example puts it:
 // the JavaScript one in its one perspective, the editor's changes; the
 // Markdown one in that, and read as Markdown
-const viewModel_retry = viewModelOf__Model({ model_TextEditor: model_retry, name_Document: "notes/digits.txt", proposals: proposals_retry, rounds_Landed: roundsOf__Stale({ stale: stale_retry }), mode: { kind: "MANUAL" }, tasks: [], files: [], ranges_Frame: ranges_retry, module_Language: setup_retry.module_Language, module_Reading: setup_retry.perspectives[0].module_Reading })
-const viewModel_readme = viewModelOf__Model({ model_TextEditor: model_readme, name_Document: "notes/digits.txt", proposals: proposals_readme, rounds_Landed: [], mode: { kind: "MANUAL" }, tasks: [], files: [], ranges_Frame: ranges_readme, module_Language: setup_readme.module_Language, module_Reading: PERSPECTIVE_CHANGES.module_Reading })
-const viewModel_readme_Markdown = viewModelOf__Model({ model_TextEditor: model_readme, name_Document: "notes/digits.txt", proposals: proposals_readme, rounds_Landed: [], mode: { kind: "MANUAL" }, tasks: [], files: [], ranges_Frame: ranges_readme, module_Language: setup_readme.module_Language, module_Reading: perspective_Markdown.module_Reading })
+const viewModel_retry = viewModelOf__Model({ model_TextEditor: model_retry, name_Document: "notes/digits.txt", proposals: proposals_retry, source_Yours: "yours", rounds_Landed: roundsOf__Stale({ stale: stale_retry }), mode: { kind: "MANUAL" }, tasks: [], files: [], ranges_Frame: ranges_retry, module_Language: setup_retry.module_Language, module_Reading: setup_retry.perspectives[0].module_Reading })
+const viewModel_readme = viewModelOf__Model({ model_TextEditor: model_readme, name_Document: "notes/digits.txt", proposals: proposals_readme, source_Yours: "yours", rounds_Landed: [], mode: { kind: "MANUAL" }, tasks: [], files: [], ranges_Frame: ranges_readme, module_Language: setup_readme.module_Language, module_Reading: PERSPECTIVE_CHANGES.module_Reading })
+const viewModel_readme_Markdown = viewModelOf__Model({ model_TextEditor: model_readme, name_Document: "notes/digits.txt", proposals: proposals_readme, source_Yours: "yours", rounds_Landed: [], mode: { kind: "MANUAL" }, tasks: [], files: [], ranges_Frame: ranges_readme, module_Language: setup_readme.module_Language, module_Reading: perspective_Markdown.module_Reading })
 
 test("the JavaScript example draws as it was drawn by hand", () => {
   expect(viewModel_retry.runs).toEqual(runsIn(viewModel_retry))
@@ -320,6 +324,7 @@ test("what's asked of a proposal: each request listed on its item, the words it 
     model_TextEditor: parsed.model_TextEditor,
     name_Document: "notes/digits.txt",
     proposals: [{ source: "digit", title: "Write two as a digit", state, status, rationale: "", requests: [{ id: "both", notes: "Both.", reference, status: statuses[0] }, { id: "this", notes: "And this.", reference: null, status: statuses[1] }], actions: actions_Review, attributes: {} }],
+    source_Yours: "yours",
     rounds_Landed: [],
     mode: { kind: "MANUAL" },
     tasks: [],
@@ -374,6 +379,7 @@ test("the header over the document: how many of its proposals are decided, how m
     mode: mode_Host,
     tasks: [],
     files: [],
+    source_Yours: "yours",
     rounds_Landed: [],
     ranges_Frame: [],
     module_Language: MODULE_PLAINTEXT,
@@ -389,7 +395,7 @@ test("the header over the document: how many of its proposals are decided, how m
   expect(taskIn(headerOf([], "OPEN", inTask(task("CANCELED"))))).toEqual(header_Task("CANCELED", "Canceled", task_Open, here_Open))
   const parsed_Unproposed = parseModel_TextEditor({ multilineText: "one two three", marks: [], proposed: [] })
   if (parsed_Unproposed.kind === "REFUSED") throw new Error("refused")
-  const headerOf_Unproposed = (mode_Host: _Mode_Host_) => viewModelOf__Model({ model_TextEditor: parsed_Unproposed.model_TextEditor, name_Document: "notes/digits.txt", proposals: [], mode: mode_Host, tasks: [], files: [], rounds_Landed: [], ranges_Frame: [], module_Language: MODULE_PLAINTEXT, module_Reading: MODULE_READING_TEXT }).header
+  const headerOf_Unproposed = (mode_Host: _Mode_Host_) => viewModelOf__Model({ model_TextEditor: parsed_Unproposed.model_TextEditor, name_Document: "notes/digits.txt", proposals: [], mode: mode_Host, tasks: [], files: [], source_Yours: "yours", rounds_Landed: [], ranges_Frame: [], module_Language: MODULE_PLAINTEXT, module_Reading: MODULE_READING_TEXT }).header
   const header_Draft = headerOf_Unproposed(inTask({ ...task("DRAFT"), documents: [{ name: "notes/digits.txt", counts_Proposals: { OPEN: 0, REQUESTED: 0, REVISING: 0, ACCEPTED: 0, REJECTED: 0, WITHDRAWN: 0 }, counts_Requests: { QUEUED: 0, RUNNING: 0 }, isShown: true, actions: [] }] }))
   expect([taskIn(header_Draft).revisions_Level.ask, header_Draft.document.revisions_Level.ask, headerOf_Unproposed(MANUAL).document.revisions_Level.ask]).toEqual([
     { label: "Add a request", label_Form: "Add a request to the task" },
@@ -422,7 +428,7 @@ test("a task's own actions, at the end of its card's heading, the ways it ends: 
   const counts_None: _Counts_Proposals_ = { OPEN: 0, REQUESTED: 0, REVISING: 0, ACCEPTED: 0, REJECTED: 0, WITHDRAWN: 0 }
   const taskOf = (state: _State_Task_, counts_Proposals: _Counts_Proposals_, counts_Requests: _Counts_Requests_): _Task_Host_ => ({ id: "tidy", name: "Tidy", state, summary: "", reason: "", documents: [{ name: "README.md", counts_Proposals, counts_Requests, isShown: false, actions: [] }], summary_Document: "", requests: [], actions: [], actions_Document: [] })
   const headOf = (task_Host: _Task_Host_, count_Conflicts: number) => {
-    const header = viewModelOf__Model({ model_TextEditor: parsed.model_TextEditor, name_Document: "notes/digits.txt", proposals: [], mode: { kind: "TASK", task: task_Host }, tasks: [{ id: "tidy", name: "Tidy", state: task_Host.state, isOnDocument: false, count_Undecided: 0, count_Conflicts, count_Queued: 0, count_Running: 0 }], files: [], rounds_Landed: [], ranges_Frame: [], module_Language: MODULE_PLAINTEXT, module_Reading: MODULE_READING_TEXT }).header
+    const header = viewModelOf__Model({ model_TextEditor: parsed.model_TextEditor, name_Document: "notes/digits.txt", proposals: [], mode: { kind: "TASK", task: task_Host }, tasks: [{ id: "tidy", name: "Tidy", state: task_Host.state, isOnDocument: false, count_Undecided: 0, count_Conflicts, count_Queued: 0, count_Running: 0 }], files: [], source_Yours: "yours", rounds_Landed: [], ranges_Frame: [], module_Language: MODULE_PLAINTEXT, module_Reading: MODULE_READING_TEXT }).header
     if (header.mode.kind !== "TASK") throw new Error("not in a task")
     return [...header.mode.task.ends.map((end_Task) => `${end_Task.label} ${end_Task.kind}`), header.mode.task.revisions_Scope.start_All?.label ?? null]
   }
@@ -448,6 +454,7 @@ test("a round that landed after your edits: open, it's out of date, said under i
     model_TextEditor: parsed.model_TextEditor,
     name_Document: "retry.js",
     proposals: [{ source: "errors", title: "Keep every error", state, status: "", rationale: "", requests: status === null ? [] : [{ id: "again", notes: "Again.", reference: null, status }], actions: actions_Review, attributes: {} }],
+    source_Yours: "yours",
     rounds_Landed: [{ source: "errors", changes_Stale: indexes_Stale.map((index) => ({ index, over })), count_Dropped }],
     mode: { kind: "MANUAL" },
     tasks: [],
@@ -477,6 +484,46 @@ test("a round that landed after your edits: open, it's out of date, said under i
   expect(runOf(viewModelOf([], 0, null, "OPEN"), "-current")?.lines.map((line) => line.layer)).toEqual(["DOCUMENT"])
 })
 
+test("your edits in a task: frames of only yours on lines next to each other, a line put in between too, one frame, small, its lines as they are and as yours and no head or list, as there's nothing to decide; never joined to a proposal's frame beside it; each edit of yours its own group, so pointing at one points at it alone, and at your edits as a whole, all of them", () => {
+  const parsed = parseModel_TextEditor({
+    multilineText: "one\ntwo\nthree\nfour",
+    marks: [],
+    proposed: [
+      { source: "yours", changes: [{ kind: "REPLACE", range: { from: { line: 0, offset: 3 }, to: { line: 0, offset: 3 } }, multilineText: "\nhalf", marks: [] }, { kind: "REPLACE", range: { from: { line: 1, offset: 0 }, to: { line: 1, offset: 3 } }, multilineText: "2", marks: [] }, { kind: "REPLACE", range: { from: { line: 2, offset: 0 }, to: { line: 2, offset: 5 } }, multilineText: "3", marks: [] }] },
+      { source: "digits", changes: [{ kind: "REPLACE", range: { from: { line: 3, offset: 0 }, to: { line: 3, offset: 4 } }, multilineText: "4", marks: [] }] }
+    ]
+  })
+  if (parsed.kind === "REFUSED") throw new Error("refused")
+  const viewModel = viewModelOf__Model({
+    model_TextEditor: parsed.model_TextEditor,
+    name_Document: "notes/digits.txt",
+    proposals: [
+      { source: "yours", title: "Your edits", state: "OPEN", status: "", rationale: "", requests: [], actions: [], attributes: {} },
+      { source: "digits", title: "Write them as digits", state: "OPEN", status: "", rationale: "", requests: [], actions: actions_Review, attributes: {} }
+    ],
+    rounds_Landed: [],
+    source_Yours: "yours",
+    mode: { kind: "MANUAL" },
+    tasks: [],
+    files: [],
+    ranges_Frame: [],
+    module_Language: MODULE_PLAINTEXT,
+    module_Reading: MODULE_READING_TEXT
+  })
+  const frames = viewModel.blocks.flatMap((block) => block.kind === "FRAME" ? [block] : [])
+  expect(frames.map((frame) => ({ range: frame.range, parts: frame.parts.map((part) => part.kind) }))).toEqual([
+    { range: { first: 2, last: 3 }, parts: ["CURRENT_LINES", "PROPOSAL_LINES"] },
+    { range: { first: 4, last: 4 }, parts: ["CURRENT_LINES", "PROPOSAL_LINES", "PROPOSAL_HEAD", "PROPOSAL_LIST"] }
+  ])
+  const run_Yours = viewModel.runs.find((run) => run.id === "frame-2-proposed")
+  expect(run_Yours?.lines.map((line) => line.segments.map((segment) => segment.text).join(""))).toEqual(["half", "2", "3"])
+  const places = (run_Yours?.groups ?? []).flatMap((group) => group.attributes["data-source"] === "yours" ? [group.attributes["data-place"] ?? ""] : [])
+  expect(new Set(places).size).toBe(3)
+  const pointedOf = (place: string | null) => pointedAt__ViewModel({ viewModel_TextEditor: viewModel, source: "yours", place: place === null ? null : { place, side: "after" }, target_Note: null }).runs.flatMap((run) => run.groups.flatMap((group) => "data-pointed" in group.attributes ? [group.attributes["data-place"] ?? ""] : []))
+  expect(new Set(pointedOf(places[0] ?? ""))).toEqual(new Set([places[0] ?? ""]))
+  expect(new Set(pointedOf(null))).toEqual(new Set(places))
+})
+
 test("requests' words underlined with one line however many requests are on them: dotted where one is, dashed where more than one overlap, each stretch as long as the words it's on", () => {
   const parsed = parseModel_TextEditor({
     multilineText: "one two three four",
@@ -492,6 +539,7 @@ test("requests' words underlined with one line however many requests are on them
     mode: { kind: "TASK", task: { id: "T-3", name: "Tidy", state: "WORKING", summary: "", requests: [requestOf("a", 0, 7), requestOf("b", 4, 13), requestOf("c", 14, 18), requestOf("d", 14, 18)], reason: "", documents: [], summary_Document: "", actions: [], actions_Document: [] } },
     tasks: [],
     files: [],
+    source_Yours: "yours",
     rounds_Landed: [],
     ranges_Frame: [],
     module_Language: MODULE_PLAINTEXT,
@@ -535,6 +583,7 @@ test("a task's own requests, on no proposal, aimed at the whole document or the 
     },
     tasks: [],
     files: [],
+    source_Yours: "yours",
     rounds_Landed: [],
     ranges_Frame: [],
     module_Language: MODULE_PLAINTEXT,
@@ -614,7 +663,7 @@ test("the tasks a host gives: in the header, a switcher listing them, the one th
     standing("T-16", "Add a timeout option", "DRAFT", true, [0, 0, 2, 0])
   ]
   const task_Here: _Task_Host_ = { id: "T-12", name: "Tidy the retry loop", state: "WORKING", summary: "", reason: "", documents: [], summary_Document: "", requests: [], actions: [], actions_Document: [] }
-  const viewModelIn = (mode_Host: _Mode_Host_, tasks_Given: Array<_Standing_Task_>) => viewModelOf__Model({ model_TextEditor: parsed.model_TextEditor, name_Document: "retry.js", proposals: [], mode: mode_Host, tasks: tasks_Given, files: [], rounds_Landed: [], ranges_Frame: [], module_Language: MODULE_PLAINTEXT, module_Reading: MODULE_READING_TEXT })
+  const viewModelIn = (mode_Host: _Mode_Host_, tasks_Given: Array<_Standing_Task_>) => viewModelOf__Model({ model_TextEditor: parsed.model_TextEditor, name_Document: "retry.js", proposals: [], mode: mode_Host, tasks: tasks_Given, files: [], source_Yours: "yours", rounds_Landed: [], ranges_Frame: [], module_Language: MODULE_PLAINTEXT, module_Reading: MODULE_READING_TEXT })
   const optionsOf = (viewModel: _ViewModel_TextEditor_) => viewModel.header.switcher.options.map((option) => option.kind === "TASK" ? `${option.label} | ${option.parts.map((part) => `${part.kind} ${part.text}`).join(", ")}${option.isHere ? " | here" : ""}` : `${option.label}${option.isHere ? " | here" : ""}`)
   const inTask = viewModelIn({ kind: "TASK", task: task_Here }, tasks)
   expect(optionsOf(inTask)).toEqual([
@@ -647,7 +696,7 @@ test("the files a host gives: in a task, the picker lists the task's files, how 
   const counts = (open: number, accepted: number) => ({ OPEN: open, REQUESTED: 0, REVISING: 0, ACCEPTED: accepted, REJECTED: 0, WITHDRAWN: 0 })
   const task_Here: _Task_Host_ = { id: "T-12", name: "Tidy the retry loop", state: "WORKING", summary: "", reason: "", documents: [{ name: "retry.js", counts_Proposals: counts(0, 0), counts_Requests: { QUEUED: 0, RUNNING: 0 }, isShown: true, actions: [] }, { name: "README.md", counts_Proposals: counts(4, 2), counts_Requests: { QUEUED: 0, RUNNING: 0 }, isShown: false, actions: [] }], summary_Document: "", requests: [], actions: [], actions_Document: [] }
   const files_Project = ["retry.js", "README.md", "CHANGELOG.md", "source/backoff.js"]
-  const pickerIn = (mode_Host: _Mode_Host_, files_Given: Array<string>) => viewModelOf__Model({ model_TextEditor: parsed.model_TextEditor, name_Document: "retry.js", proposals: [], mode: mode_Host, tasks: [], files: files_Given, rounds_Landed: [], ranges_Frame: [], module_Language: MODULE_PLAINTEXT, module_Reading: MODULE_READING_TEXT }).header.picker.sections.map((section) => [section.label, ...section.files.map((file) => `${file.folder}|${file.name}${file.figure === "" ? "" : ` ${file.figure}`}${file.isHere ? " here" : ""}`)])
+  const pickerIn = (mode_Host: _Mode_Host_, files_Given: Array<string>) => viewModelOf__Model({ model_TextEditor: parsed.model_TextEditor, name_Document: "retry.js", proposals: [], mode: mode_Host, tasks: [], files: files_Given, source_Yours: "yours", rounds_Landed: [], ranges_Frame: [], module_Language: MODULE_PLAINTEXT, module_Reading: MODULE_READING_TEXT }).header.picker.sections.map((section) => [section.label, ...section.files.map((file) => `${file.folder}|${file.name}${file.figure === "" ? "" : ` ${file.figure}`}${file.isHere ? " here" : ""}`)])
   expect(pickerIn({ kind: "TASK", task: task_Here }, files_Project)).toEqual([
     ["Files in task", "|retry.js here", "|README.md 2 of 6 decided"],
     ["Other files", "|CHANGELOG.md", "source/|backoff.js"]

@@ -230,21 +230,33 @@ const clickAt = async (id_Run: string, line: number, offset: number) => {
   await opened.page.mouse.click(point.x, point.y)
 }
 
-// line 13, "Wrap the call in a function, ...", the tenth of run lines-4:
-// typed into after "Wrap ", a character taken back, the line broken there,
-// then each undone, and the typing done again
+// line 13, "Wrap the call in a function, ...", the tenth of run lines-4,
+// a line shown once, in the example's task: typed into after "Wrap ", the
+// caret's line held where it was as the frame of your edits opens round it,
+// the line as the file has it above, its own lines as yours, no head or
+// list; a character taken back, the line broken there, then each undone,
+// the frame gone with the last, and the typing done again
+const caretTop = () => opened.page.evaluate(async () => {
+  await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)))
+  return document.querySelector(".caret_htmlView")?.getBoundingClientRect().top ?? null
+})
 const line_Before = (await linesOf("lines-4"))[9]
 await clickAt("lines-4", 9, 5)
+const top_Typing = await caretTop()
 await opened.page.keyboard.type("XY")
-const line_Typed = (await linesOf("lines-4"))[9]
+const top_Typed = await caretTop()
+const line_Typed = (await linesOf("frame-13-proposed"))[0]
+const line_File = (await linesOf("frame-13-current"))[0]
+const isHeaded_Yours = await opened.page.evaluate(() => document.querySelector(".run_htmlView[data-run=\"frame-13-proposed\"]")?.closest(".frame_htmlView")?.querySelector(".head_Proposals_htmlView, .proposals_htmlView") !== null)
+const logged_Typed = (await opened.logged()).at(-1)
 await opened.page.keyboard.press("Backspace")
-const line_Deleted = (await linesOf("lines-4"))[9]
+const line_Deleted = (await linesOf("frame-13-proposed"))[0]
 await opened.page.keyboard.press("Enter")
-const lines_Broken = (await linesOf("lines-4")).slice(9, 11)
+const lines_Broken = (await linesOf("frame-13-proposed")).slice(0, 2)
 for (let step = 0; step < 3; step = step + 1) await opened.page.keyboard.press("Control+z")
 const line_Undone = (await linesOf("lines-4"))[9]
 await opened.page.keyboard.press("Control+Shift+z")
-const line_Redone = (await linesOf("lines-4"))[9]
+const line_Redone = (await linesOf("frame-13-proposed"))[0]
 
 // typed into the words a proposal puts in, on line 18 as proposed; and into
 // words an open proposal replaces, on line 24 as it is, which are locked
@@ -258,14 +270,20 @@ await opened.page.keyboard.type("Q")
 const line_Locked_Typed = (await linesOf("frame-23-current"))[1]
 
 // "Wrap" selected by a word, copied, and pasted at the line's end
-await clickAt("lines-4", 9, 0)
+await clickAt("frame-13-proposed", 0, 0)
 await opened.page.keyboard.press("Shift+Alt+ArrowRight")
 await opened.page.keyboard.press("Control+c")
 await opened.page.keyboard.press("End")
 await opened.page.keyboard.press("Control+v")
-const line_Pasted = (await linesOf("lines-4"))[9]
+const line_Pasted = (await linesOf("frame-13-proposed"))[0]
 
 describe("the Markdown example, typed into: the document's own words, a proposal's, and what's locked", () => {
+  test("in a task, typing on a line shown once goes into the task's head, a change of yours, never the file: a frame of it opens round the line, the line as the file has it above, read only, as yours below, no head or list, as there's nothing to decide, the caret's line held where it was", () => {
+    expect(line_File).toBe(line_Before)
+    expect(isHeaded_Yours).toBe(false)
+    expect(logged_Typed).toMatchObject({ proposals: "yours", document: false })
+    expect(Math.abs((top_Typed ?? 0) - (top_Typing ?? 0))).toBeLessThan(1)
+  })
   test("typing puts its characters in where the caret is, Backspace takes one back, Enter breaks the line there", () => {
     expect(line_Before).toBe("Wrap the call in a function, and pass it to `retry`, with any options:")
     expect(line_Typed).toBe("Wrap XYthe call in a function, and pass it to `retry`, with any options:")
@@ -650,9 +668,9 @@ test("typed onto the end of a word where another proposal's words begin, a lette
 const logged_Markdown = await opened.logged()
 const logged_JavaScript = await opened_JavaScript.logged()
 
-test("each edit's told to the host as it's applied, as the playground reports it: what kind it was, whose proposals' changes it changed, each its next round, and whether the document changed; typing outside frames, the document; among what's proposed, a proposal's own words, that proposal, and anywhere else, yours; undoing too", () => {
+test("each edit's told to the host as it's applied, as the playground reports it: what kind it was, whose proposals' changes it changed, each its next round, and whether the document changed; in a task, never: a proposal's own words, that proposal, and anywhere else, outside frames too, yours; undoing too", () => {
   const edits = logged_Markdown.filter((entry) => "edited" in entry)
-  expect(edits).toContainEqual({ edited: "TEXT", proposals: "", document: true })
+  expect(edits.filter((entry) => entry["document"] !== false)).toEqual([])
   expect(edits).toContainEqual({ edited: "TEXT", proposals: "example", document: false })
   expect(edits).toContainEqual({ edited: "TEXT", proposals: "yours", document: false })
   expect(edits.some((entry) => entry["edited"] === "UNDO")).toBe(true)

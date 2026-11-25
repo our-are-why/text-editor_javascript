@@ -407,6 +407,20 @@ class _View_TextEditor_ {
     })
   }
 
+  measureCaret(): number | null {
+    return this.containerElement.querySelector(".caret_htmlView")?.getBoundingClientRect().top ?? null
+  }
+
+  holdCaret(
+    top_Before: number
+  ): void {
+    const element_Caret = this.containerElement.querySelector(".caret_htmlView")
+    const element_Document = this.containerElement.querySelector(".document_htmlView")
+    if (element_Caret === null || element_Document === null) return
+    const top_Moved = element_Caret.getBoundingClientRect().top - top_Before
+    if (Math.abs(top_Moved) > 0.5) element_Document.scrollTop += top_Moved
+  }
+
   revealWords(): void {
     revealWords__View_TextEditor({
       containerElement_View: this.containerElement

@@ -109,6 +109,7 @@ class _TextEditor_<State> {
       model_TextEditor: this.model_TextEditor,
       proposals: this.proposals,
       source_Yours: this.source_Yours,
+      isHeld_Document: ISHELDMAP__KIND_MODE[this.mode.kind],
       module_Words: this.setup.module_Words,
       history: this.history,
       request_Edit
@@ -168,6 +169,7 @@ class _TextEditor_<State> {
       tasks: this.tasks,
       files: this.files,
       rounds_Landed: this.rounds_Landed,
+      source_Yours: this.source_Yours,
       ranges_Frame: this.ranges_Frame,
       module_Language: this.setup.module_Language,
       module_Reading: this.perspective_Shown.module_Reading
@@ -237,6 +239,15 @@ function lookOf__Perspective(
   perspective_TextEditor: _Perspective_TextEditor_
 ): string {
   return perspective_TextEditor.looks.map((look) => look.name).join(" ")
+}
+
+type _IsHeldMap__Kind_Mode_ = {
+  [Kind in _Mode_Host_["kind"]]: boolean
+}
+
+const ISHELDMAP__KIND_MODE: _IsHeldMap__Kind_Mode_ = {
+  MANUAL: false,
+  TASK: true
 }
 
 function sourcesOf__Transaction(

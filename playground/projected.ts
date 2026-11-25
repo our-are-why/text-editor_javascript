@@ -13,6 +13,7 @@ import {
   type _Changes_Host_,
   type _Model_TextEditor_
 } from "../source/documents/index.ts"
+import { proposal_Yours } from "./items.ts"
 
 export {
   modelOf,
@@ -68,5 +69,5 @@ function projectedOf<State>({
   rounds_Landed,
   ranges_Frame
 }: _Api___projectedOf_<State>): _ViewModel_TextEditor_ {
-  return viewModelOf__Model({ model_TextEditor: modelOf({ multilineText, marks, proposed }), name_Document: "", proposals, rounds_Landed, mode: { kind: "MANUAL" }, tasks: [], files: [], ranges_Frame, module_Language, module_Reading })
+  return viewModelOf__Model({ model_TextEditor: modelOf({ multilineText, marks, proposed }), name_Document: "", proposals, rounds_Landed, source_Yours: proposal_Yours.source, mode: { kind: "MANUAL" }, tasks: [], files: [], ranges_Frame, module_Language, module_Reading })
 }

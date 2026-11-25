@@ -2367,6 +2367,22 @@ Then typing, the second of editing:
   never change for what's typed among what's proposed. A frame whose
   lines as proposed are none, all taken out or moved away, has nowhere to
   put a caret, and so nothing typed there, yet.
+- **in a task, the document's held:** decided 2026-11-25, `TASKS.md`
+  saying why, what's typed into the document's words is a change of
+  yours wherever it's typed, a line shown once too, never the file, the
+  editor told so by its mode, `isHeld_Document`, true in a task; in
+  manual, a line shown once is the document's, as before. A change of yours
+  on a line shown once is shown as every change is, in a frame: one of
+  only yours small, its lines as they are and as yours, no head or list,
+  the host's `source_Yours` telling the projection whose; frames of only
+  yours on neighbouring lines one, `yoursJoinedOf__Frames`, a line put in
+  between too, never a proposal's frame beside them; each change of
+  yours its own group, its place on it, `data-place`, so pointing at one
+  points at it alone, and your edits' item at them all. The line being
+  typed on held where it was as a frame opens or grows round it,
+  `holdCaret`, the view scrolling by what the caret moved, while an edit
+  keeps to its line, `isHolding_Caret`; one that breaks or joins lines
+  moves the caret as it would.
 - **what a word is, the host says:** a words module, `_Module_Words_`,
   `wordsOf` a line's words, in the setup beside the language and the
   perspectives, `module_Words`; the editor's own, `MODULE_WORDS_TEXT`, in
