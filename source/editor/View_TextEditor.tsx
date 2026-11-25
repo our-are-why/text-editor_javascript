@@ -1673,6 +1673,7 @@ function Line_Run__Html({
   return (
     <div
       class="line_htmlView"
+      data-layer={line_Run.layer}
       data-marker={line_Run.gutter.marker}
     >
       <Gutter_Line__Html gutter_Line={line_Run.gutter} />
@@ -2027,8 +2028,13 @@ function Item_ProposalList__Html({
         neighbors_Item={item_ProposalList.neighbors}
       />
       {item_ProposalList.stale !== null && (
-        <p class="stale_htmlView">
-          {item_ProposalList.stale.label}
+        <p
+          class="stale_htmlView"
+          data-kind={item_ProposalList.stale.kind}
+        >
+          <span class="head_Stale_htmlView">{item_ProposalList.stale.head}</span>
+          {" · "}
+          <span class="label_Stale_htmlView">{item_ProposalList.stale.label}</span>
           {item_ProposalList.stale.isRerunnable && (
             <button
               type="button"
@@ -2072,18 +2078,35 @@ function Item_ProposalList__Html({
         </Request$__Html>
       )}
       {item_ProposalList.confirming === null
-        ? (
-          <div class="actions_htmlView">
-            {item_ProposalList.actions
-              .filter((action_Item) => item_ProposalList.requests.length === 0 || action_Item.stateAfter !== "REQUESTED")
-              .map((action_Item) => (
-                <Action_Item__Html
-                  action_Item={action_Item}
-                  isExpanded={ISREVISABLEMAP__STATE_PROPOSAL[item_ProposalList.state] && action_Item.stateAfter === "REQUESTED" ? item_ProposalList.isDrafting : null}
-                />
+        ? item_ProposalList.stale !== null && item_ProposalList.stale.ways.length > 0
+          ? (
+            <div
+              class="actions_htmlView"
+              data-ways=""
+            >
+              {item_ProposalList.stale.ways.map((way_Stale) => (
+                <button
+                  type="button"
+                  class="action_htmlView way_htmlView"
+                  data-way={way_Stale.kind}
+                >
+                  {way_Stale.label}
+                </button>
               ))}
-          </div>
-        )
+            </div>
+          )
+          : (
+            <div class="actions_htmlView">
+              {item_ProposalList.actions
+                .filter((action_Item) => item_ProposalList.requests.length === 0 || action_Item.stateAfter !== "REQUESTED")
+                .map((action_Item) => (
+                  <Action_Item__Html
+                    action_Item={action_Item}
+                    isExpanded={ISREVISABLEMAP__STATE_PROPOSAL[item_ProposalList.state] && action_Item.stateAfter === "REQUESTED" ? item_ProposalList.isDrafting : null}
+                  />
+                ))}
+            </div>
+          )
         : (
           <div
             class="actions_htmlView"

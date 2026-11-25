@@ -1533,7 +1533,7 @@ describe("beside it: what can't live in one document", () => {
     expect(gaps).toEqual({ given: [3, 3], none: [2, 2], pressed: { gaps: [3, 3, 3], clearOfWord: true } })
   })
 
-  test("in the changes look, a ring replaced and restyled is dotted, its dashes round dots, heavier than a restyle's dashed ring, but solid at half strength where it's latent and dashed where it was written before your edits, as every ring is; and every dashed ring's dashes fitted by one formula, an element on each corner, its sides' elements evenly spaced, near the look's own pattern", async () => {
+  test("in the changes look, a ring replaced and restyled is dotted, its dashes round dots, heavier than a restyle's dashed ring, but solid at half strength where it's latent; dotted too where it was written before your edits, as a stale ring takes no dash of its own; and every dashed ring's dashes fitted by one formula, an element on each corner, its sides' elements evenly spaced, near the look's own pattern", async () => {
     const rings = await opened.page.evaluate(async () => {
       const containerElement = document.createElement("div")
       containerElement.style.width = "40rem"
@@ -1617,7 +1617,7 @@ describe("beside it: what can't live in one document", () => {
         "restyled: 1px butt 1 elements 3",
         "replacedRestyled: 2px round 1 elements 0.02",
         "replacedRestyled latent: 1px butt 0.5 solid",
-        "replacedRestyled stale: 1px butt 1 elements 3"
+        "replacedRestyled stale: 2px round 1 elements 0.02"
       ],
       fitted: [
         { corners: 4, arms: [1.5], isEven: true },
@@ -3097,7 +3097,7 @@ async function drawnOf(
     new window._View_TextEditor_({
       containerElement,
       componentMap: window.COMPONENTMAP__VIEW_TEXTEDITOR
-    }).draw(window.viewModelOf__Blocks([{ kind: "LINES", run: { id: "line", lines: [{ gutter: { label: "", marker: "none", pointed: "none" }, note: null, segments: segments_Line, origins: [] }], groups: [] } }]))
+    }).draw(window.viewModelOf__Blocks([{ kind: "LINES", run: { id: "line", lines: [{ layer: "DOCUMENT", gutter: { label: "", marker: "none", pointed: "none" }, note: null, segments: segments_Line, origins: [] }], groups: [] } }]))
     const textElement = containerElement.querySelector(".text_htmlView")
     if (textElement === null) throw new Error("the line's text wasn't drawn")
     return [...textElement.childNodes].map((node) => ({

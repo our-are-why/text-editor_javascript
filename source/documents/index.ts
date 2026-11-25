@@ -13,7 +13,14 @@ import {
   carriedOf__Head,
   checkedOf__Head,
   type _Head_Document_,
-  type _Stale_Source_
+  type _Stale_Source_,
+  type _Stale_Change_,
+  type _Over_Change_,
+  type _Written_Change_,
+  pairOf__Stale,
+  type _Pair_Stale_,
+  settledOf__Head,
+  type _Way_Settle_
 } from "./Model_Documents.ts"
 import {
   type _Model_TextEditor_,
@@ -64,6 +71,13 @@ export {
   checkedOf__Head,
   type _Head_Document_,
   type _Stale_Source_,
+  type _Stale_Change_,
+  type _Over_Change_,
+  type _Written_Change_,
+  pairOf__Stale,
+  type _Pair_Stale_,
+  settledOf__Head,
+  type _Way_Settle_,
   type _Model_TextEditor_,
   type _Text_Model_,
   type _NonEmpty_,

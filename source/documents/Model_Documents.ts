@@ -10,7 +10,12 @@ import {
   type _Change_,
   rebasedOf__Changes,
   type _Range_Text_,
-  orderOf__Positions
+  orderOf__Positions,
+  type _Position_Text_,
+  type _Run_Comparison_,
+  indexOf__Position,
+  type _Kind_Run_,
+  positionOf__Index
 } from "./Model_TextEditor.ts"
 
 export {
@@ -44,10 +49,17 @@ export {
   type __BASE_Over_Change_,
   type _RANGE_Over_Change_,
   type _LINE_Over_Change_,
+  type _Written_Change_,
   textAt__Version,
   type _Api___textAt__Version_,
   checkedOf__Head,
-  type _Api___checkedOf__Head_
+  type _Api___checkedOf__Head_,
+  pairOf__Stale,
+  type _Api___pairOf__Stale_,
+  type _Pair_Stale_,
+  settledOf__Head,
+  type _Api___settledOf__Head_,
+  type _Way_Settle_
 }
 
 interface _Api___modelAfter__Command_<Kind extends _Command_Documents_["kind"]> {
@@ -665,6 +677,12 @@ interface __BASE_Over_Change_<Kind extends string> {
   kind: Kind
   version: string
   text: _Text_Model_
+  written: _Written_Change_
+}
+
+interface _Written_Change_ {
+  lines: _Text_Model_
+  change: _Change_
 }
 
 interface _RANGE_Over_Change_ extends __BASE_Over_Change_<"RANGE"> {}
@@ -839,16 +857,22 @@ function overOf__Change({
   }) === 0
     ? "LINE"
     : "RANGE"
+  const span = spanOf__Over({
+    kind,
+    change,
+    text_Model
+  })
   return {
     kind,
     version,
     text: textIn__Range({
       text_Model,
-      range: spanOf__Over({
-        kind,
-        change,
-        text_Model
-      })
+      range: span
+    }),
+    written: writtenOf__Change({
+      change,
+      span,
+      text_Model
     })
   }
 }
@@ -891,6 +915,91 @@ function spanOf__Over({
     }) > 0
       ? change.at
       : change.range.to
+  }
+}
+
+interface _Api___writtenOf__Change_ {
+  change: _Change_
+  span: _Range_Text_
+  text_Model: _Text_Model_
+}
+
+function writtenOf__Change({
+  change,
+  span,
+  text_Model
+}: _Api___writtenOf__Change_): _Written_Change_ {
+  const line_First = span.from.line
+  const [
+    line,
+    ...lines_Rest
+  ] = text_Model.lines.slice(
+    line_First,
+    span.to.line + 1
+  )
+  if (line === undefined) throw new Error(`a change at line ${line_First + 1} is past its text's end`)
+  return {
+    lines: {
+      lines: [
+        line,
+        ...lines_Rest
+      ],
+      marks: []
+    },
+    change: shiftedOf__Change({
+      change,
+      lines: -line_First
+    })
+  }
+}
+
+interface _Api___shiftedOf__Change_ {
+  change: _Change_
+  lines: number
+}
+
+function shiftedOf__Change({
+  change,
+  lines
+}: _Api___shiftedOf__Change_): _Change_ {
+  const range = {
+    from: shiftedOf__Position({
+      position: change.range.from,
+      lines
+    }),
+    to: shiftedOf__Position({
+      position: change.range.to,
+      lines
+    })
+  }
+  return change.kind === "MOVE"
+    ? {
+      kind: "MOVE",
+      range,
+      at: shiftedOf__Position({
+        position: change.at,
+        lines
+      })
+    }
+    : {
+      kind: "REPLACE",
+      range,
+      next: change.next
+    }
+}
+
+interface _Api___shiftedOf__Position_ {
+  position: _Position_Text_
+  lines: number
+}
+
+function shiftedOf__Position({
+  position,
+  lines
+}: _Api___shiftedOf__Position_): _Position_Text_ {
+  return {
+    line: position.line + lines,
+    offset: position.offset
   }
 }
 
@@ -966,4 +1075,398 @@ function checkedOf__Head({
       ...head,
       stale
     }
+}
+
+interface _Api___pairOf__Stale_ {
+  text_Model: _Text_Model_
+  change: _Change_
+  over: _Over_Change_
+}
+
+interface _Pair_Stale_ {
+  line_First: number
+  lines: _Text_Model_
+  runs: Array<_Run_Comparison_>
+}
+
+function pairOf__Stale({
+  text_Model,
+  change,
+  over
+}: _Api___pairOf__Stale_): _Pair_Stale_ {
+  const span = spanOf__Over({
+    kind: over.kind,
+    change,
+    text_Model
+  })
+  const line_First = span.from.line
+  const [
+    line,
+    ...lines_Rest
+  ] = text_Model.lines.slice(
+    line_First,
+    span.to.line + 1
+  )
+  if (line === undefined) throw new Error(`a stale change at line ${line_First + 1} is past its text's end`)
+  const lines: _Text_Model_ = {
+    lines: [
+      line,
+      ...lines_Rest
+    ],
+    marks: []
+  }
+  return {
+    line_First,
+    lines,
+    runs: comparisonOf__Texts({
+      text_Before: over.written.lines,
+      text_After: lines
+    }).flatMap((run) => narrowedOf__Run({
+      run,
+      text_Before: over.written.lines,
+      text_After: lines
+    }))
+  }
+}
+
+interface _Api___narrowedOf__Run_ {
+  run: _Run_Comparison_
+  text_Before: _Text_Model_
+  text_After: _Text_Model_
+}
+
+function narrowedOf__Run({
+  run,
+  text_Before,
+  text_After
+}: _Api___narrowedOf__Run_): Array<_Run_Comparison_> {
+  if (run.kind === "KEPT") return [run]
+  const before = flatOf__Text(textIn__Range({
+    text_Model: text_Before,
+    range: run.range_Before
+  }))
+  const after = flatOf__Text(textIn__Range({
+    text_Model: text_After,
+    range: run.range_After
+  }))
+  const {
+    count_Head,
+    count_End
+  } = sharedOf__Ends({
+    before,
+    after
+  })
+  if (count_Head + count_End === 0) return [run]
+  const from_Before = indexOf__Position({
+    text_Model: text_Before,
+    position: run.range_Before.from
+  })
+  const from_After = indexOf__Position({
+    text_Model: text_After,
+    position: run.range_After.from
+  })
+  const stretches: Array<_Stretch_Narrowed_> = [
+    {
+      kind: "KEPT",
+      from_Before: 0,
+      to_Before: count_Head,
+      from_After: 0,
+      to_After: count_Head
+    },
+    {
+      kind: "CHANGED",
+      from_Before: count_Head,
+      to_Before: before.length - count_End,
+      from_After: count_Head,
+      to_After: after.length - count_End
+    },
+    {
+      kind: "KEPT",
+      from_Before: before.length - count_End,
+      to_Before: before.length,
+      from_After: after.length - count_End,
+      to_After: after.length
+    }
+  ]
+  return stretches
+    .filter((stretch) => stretch.kind === "CHANGED" || stretch.to_Before > stretch.from_Before)
+    .map((stretch) => ({
+      kind: stretch.kind,
+      range_Before: rangeOf__Indexes({
+        text_Model: text_Before,
+        from: from_Before + stretch.from_Before,
+        to: from_Before + stretch.to_Before
+      }),
+      range_After: rangeOf__Indexes({
+        text_Model: text_After,
+        from: from_After + stretch.from_After,
+        to: from_After + stretch.to_After
+      })
+    }))
+}
+
+function flatOf__Text(
+  text_Model: _Text_Model_
+): Array<string> {
+  return Array.from(text_Model.lines.join("\n"))
+}
+
+interface _Api___sharedOf__Ends_ {
+  before: Array<string>
+  after: Array<string>
+}
+
+interface _Ends_Shared_ {
+  count_Head: number
+  count_End: number
+}
+
+function sharedOf__Ends({
+  before,
+  after
+}: _Api___sharedOf__Ends_): _Ends_Shared_ {
+  const count_Shorter = Math.min(
+    before.length,
+    after.length
+  )
+  let count_Head = 0
+  while (count_Head < count_Shorter && before[count_Head] === after[count_Head]) count_Head = count_Head + 1
+  while (count_Head > 0 && isWord__Character(before[count_Head - 1]) && (isWord__Character(before[count_Head]) || isWord__Character(after[count_Head]))) count_Head = count_Head - 1
+  let count_End = 0
+  while (count_End < count_Shorter - count_Head && before[before.length - 1 - count_End] === after[after.length - 1 - count_End]) count_End = count_End + 1
+  while (count_End > 0 && isWord__Character(before[before.length - count_End]) && (isWord__Character(before[before.length - count_End - 1]) || isWord__Character(after[after.length - count_End - 1]))) count_End = count_End - 1
+  return {
+    count_Head,
+    count_End
+  }
+}
+
+function isWord__Character(
+  character: string | undefined
+): boolean {
+  return character !== undefined && REGEXP_WORD.test(character)
+}
+
+const REGEXP_WORD = /[\p{L}\p{N}_]/u
+
+interface _Stretch_Narrowed_ {
+  kind: _Kind_Run_
+  from_Before: number
+  to_Before: number
+  from_After: number
+  to_After: number
+}
+
+interface _Api___rangeOf__Indexes_ {
+  text_Model: _Text_Model_
+  from: number
+  to: number
+}
+
+function rangeOf__Indexes({
+  text_Model,
+  from,
+  to
+}: _Api___rangeOf__Indexes_): _Range_Text_ {
+  return {
+    from: positionOf__Index({
+      text_Model,
+      index: from
+    }),
+    to: positionOf__Index({
+      text_Model,
+      index: to
+    })
+  }
+}
+
+interface _Api___settledOf__Head_ {
+  document: _Document_Documents_
+  head: _Head_Document_
+  source: string
+  way: _Way_Settle_
+}
+
+type _Way_Settle_ = "KEEP" | "TAKE" | "BOTH"
+
+function settledOf__Head({
+  document,
+  head,
+  source,
+  way
+}: _Api___settledOf__Head_): _Head_Document_ {
+  const head_Carried = carriedOf__Head({
+    document,
+    head
+  })
+  const stale_Source = head_Carried.stale.find((stale_Each) => stale_Each.source === source)
+  if (stale_Source === undefined) return head_Carried
+  return {
+    path: head_Carried.path,
+    version: head_Carried.version,
+    proposed: head_Carried.proposed.flatMap((changes_Source): Array<_Changes_Source_> => {
+      if (changes_Source.source !== source) return [changes_Source]
+      const [
+        change_First,
+        ...changes_Rest
+      ] = changes_Source.changes.flatMap((
+        change,
+        index
+      ) => {
+        const stale_Change = stale_Source.changes_Stale.find((stale_Each) => stale_Each.index === index)
+        return stale_Change === undefined
+          ? [change]
+          : HANDLERMAP__WAY_SETTLE[way]({
+            change,
+            over: stale_Change.over,
+            text_Model: document.text
+          })
+      })
+      return change_First === undefined
+        ? []
+        : [
+          {
+            source,
+            changes: [
+              change_First,
+              ...changes_Rest
+            ]
+          }
+        ]
+    }),
+    stale: head_Carried.stale.filter((stale_Each) => stale_Each !== stale_Source)
+  }
+}
+
+type _HandlerMap__Way_Settle_ = {
+  [Way in _Way_Settle_]: (api_Settle: _Api___changesOf__Settle_) => Array<_Change_>
+}
+
+interface _Api___changesOf__Settle_ {
+  change: _Change_
+  over: _Over_Change_
+  text_Model: _Text_Model_
+}
+
+const HANDLERMAP__WAY_SETTLE: _HandlerMap__Way_Settle_ = {
+  KEEP: KEEP_changesOf__Settle,
+  TAKE: TAKE_changesOf__Settle,
+  BOTH: BOTH_changesOf__Settle
+}
+
+function KEEP_changesOf__Settle({
+  change,
+  over,
+  text_Model
+}: _Api___changesOf__Settle_): Array<_Change_> {
+  const span_Written = linesOf__Span({
+    span: spanOf__Over({
+      kind: "RANGE",
+      change: over.written.change,
+      text_Model: over.written.lines
+    }),
+    text_Model: over.written.lines
+  })
+  const text_Kept = textWith__Sources({
+    model_TextEditor: {
+      document: over.written.lines,
+      proposed: [
+        {
+          source: "",
+          changes: [over.written.change]
+        }
+      ]
+    },
+    sources: [""]
+  })
+  const count_Grown = flatOf__Text(text_Kept).length - flatOf__Text(over.written.lines).length
+  const range = linesOf__Span({
+    span: spanOf__Over({
+      kind: "RANGE",
+      change,
+      text_Model
+    }),
+    text_Model
+  })
+  const next = textIn__Range({
+    text_Model: text_Kept,
+    range: {
+      from: span_Written.from,
+      to: positionOf__Index({
+        text_Model: text_Kept,
+        index: indexOf__Position({
+          text_Model: over.written.lines,
+          position: span_Written.to
+        }) + count_Grown
+      })
+    }
+  })
+  const before = flatOf__Text(textIn__Range({
+    text_Model,
+    range
+  }))
+  const after = flatOf__Text(next)
+  const {
+    count_Head,
+    count_End
+  } = sharedOf__Ends({
+    before,
+    after
+  })
+  if (count_Head + count_End >= before.length && before.length === after.length) return []
+  const from = indexOf__Position({
+    text_Model,
+    position: range.from
+  })
+  return [
+    {
+      kind: "REPLACE",
+      range: rangeOf__Indexes({
+        text_Model,
+        from: from + count_Head,
+        to: from + before.length - count_End
+      }),
+      next: textIn__Range({
+        text_Model: next,
+        range: rangeOf__Indexes({
+          text_Model: next,
+          from: count_Head,
+          to: after.length - count_End
+        })
+      })
+    }
+  ]
+}
+
+interface _Api___linesOf__Span_ {
+  span: _Range_Text_
+  text_Model: _Text_Model_
+}
+
+function linesOf__Span({
+  span,
+  text_Model
+}: _Api___linesOf__Span_): _Range_Text_ {
+  return {
+    from: {
+      line: span.from.line,
+      offset: 0
+    },
+    to: span.to.offset === 0 && span.to.line > span.from.line
+      ? span.to
+      : {
+        line: span.to.line,
+        offset: Array.from(text_Model.lines[span.to.line] ?? "").length
+      }
+  }
+}
+
+function TAKE_changesOf__Settle(): Array<_Change_> {
+  return []
+}
+
+function BOTH_changesOf__Settle({
+  change
+}: _Api___changesOf__Settle_): Array<_Change_> {
+  return [change]
 }

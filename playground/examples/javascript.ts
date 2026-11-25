@@ -415,11 +415,11 @@ const proposals_retry: Array<_Proposal_Host_> = [
 ]
 
 // how rounds landed: the opening comment's last, written before an edit of
-// yours touched what it was on, "further" put in, so its one change's ring's
-// dashed, and Run again's offered, the comment as it was kept with it, so
-// taking "further " back out makes it clean again; and the order's last, a
-// third move dropped, your edits having taken its text, said in its items,
-// Run again offered too
+// yours touched what it was on, "further" put in, so it's out of date, its
+// lines drawn as it was written on them, above the file's, and Run again's
+// offered, the comment as it was kept with it, so taking "further " back out
+// makes it clean again; and the order's last, a third move dropped, your
+// edits having taken its text, said in its items, Run again offered too
 const stale_retry: Array<_Stale_Source_> = [
   {
     source: "header",
@@ -437,6 +437,29 @@ const stale_retry: Array<_Stale_Source_> = [
           text: {
             lines: parseTexts_Line("// Retries a flaky async call, backing off each time, until it\n// succeeds, runs out of attempts, or the caller gives up on it.\n"),
             marks: []
+          },
+          written: {
+            lines: {
+              lines: parseTexts_Line("// Retries a flaky async call, backing off each time, until it\n// succeeds, runs out of attempts, or the caller gives up on it.\n"),
+              marks: []
+            },
+            change: {
+              kind: "REPLACE",
+              range: {
+                from: {
+                  line: 0,
+                  offset: 0
+                },
+                to: {
+                  line: 2,
+                  offset: 0
+                }
+              },
+              next: {
+                lines: parseTexts_Line(""),
+                marks: []
+              }
+            }
           }
         }
       }

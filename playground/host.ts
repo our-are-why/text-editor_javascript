@@ -17,7 +17,8 @@ import {
   type _Document_Documents_,
   type _Head_Document_,
   carriedOf__Head,
-  checkedOf__Head
+  checkedOf__Head,
+  settledOf__Head
 } from "../source/documents/index.ts"
 import {
   _Board_,
@@ -892,6 +893,22 @@ function hostedOf__Editor<State>({
                 source
               }
             )
+          } else if (asked_Host.kind === "SETTLE") {
+            log({
+              settled: asked_Host.source,
+              way: asked_Host.way
+            })
+            if (task === undefined) return
+            restated(
+              task.id,
+              (head) => settledOf__Head({
+                document: documentOf(),
+                head,
+                source: asked_Host.source,
+                way: asked_Host.way
+              })
+            )
+            updated()
           } else if (asked_Host.kind === "REMOVE") {
             log({
               removed: asked_Host.id,

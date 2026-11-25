@@ -7,7 +7,7 @@ import {
   type _Side_Text_,
   MODULE_READING_TEXT
 } from "../../source/editor/index.ts"
-import { type _Change_Host_ } from "../../source/documents/index.ts"
+import { type _Change_Host_, parseTexts_Line } from "../../source/documents/index.ts"
 import { projectedOf } from "../projected.ts"
 import { actions_Review, actions_Reopen } from "../items.ts"
 import { attributesOf__Marks } from "../looks.ts"
@@ -244,11 +244,8 @@ const kinds: _Section_Document_ = {
       title: "Written before your edits",
       status: "normal",
       size: "wide",
-      drawn: "Dashed, in its kind's colour: a change its last round wrote before your edits touched what it was written on, as it may not say what it would now. Here the round took out the unit comment and renamed the attempts, and you'd edited the comment since: the removal's ring is dashed red, the rename's solid yellow, written on what you hadn't touched. Its item says how many, \"1 change written before your edits\", and offers Run again, starting the round's requests over from now, so the agent sees your edits.",
-      open: {
-        question: "A stale ring takes the restyled ring's dash, 3 2, whatever its kind: a stale restyle reads as any restyle, a stale replaced-and-restyled one, losing its dots, as only restyled, and a stale latent one is dashed, where latent rings never are.",
-        recommend: "A dash of its own for stale, one no other ring has, so each dash says one thing."
-      },
+      drawn: "A change its last round wrote before your edits touched what it was written on, drawn as a pair of lines: the line it was written on, numbered, the change ringed whole there in its kind's colour, and under it the line as it is now, unnumbered, hatched forward in light teal, what you did ringed in the change look's colours. Here the round took out the unit comment, \"// in ms\" when it was written, and you'd made it \"// in milliseconds\" since: the removal's red ring is on the line above, and \"milliseconds\" in yellow on the teal line, replacing \"ms\". The rename, written on what you hadn't touched, is ringed as ever. Its item says it's out of date, written before your edits, and offers Run again, starting the round's requests over from now, so the agent sees your edits.",
+      open: null,
       viewModel_TextEditor: projectedOf({
         multilineText: "const ATTEMPTS = 5;\nconst DELAY_MS = 100; // in milliseconds",
         marks: [],
@@ -260,7 +257,7 @@ const kinds: _Section_Document_ = {
         proposals: [
           proposalOf({ source: "names", title: "Say the cap, drop the unit comment", rationale: "MAX_ATTEMPTS says it's a cap, and DELAY_MS says its unit in its name." })
         ],
-        rounds_Landed: [{ source: "names", indexes_Stale: [1], count_Dropped: 0 }],
+        rounds_Landed: [{ source: "names", changes_Stale: [{ index: 1, over: { kind: "RANGE", version: "written", text: { lines: parseTexts_Line(" // in ms"), marks: [] }, written: { lines: { lines: parseTexts_Line("const DELAY_MS = 100; // in ms"), marks: [] }, change: { kind: "REPLACE", range: { from: { line: 0, offset: 21 }, to: { line: 0, offset: 29 } }, next: { lines: parseTexts_Line(""), marks: [] } } } } }], count_Dropped: 0 }],
         ranges_Frame: [{ first: 1, last: 2 }]
       })
     },

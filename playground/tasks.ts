@@ -931,14 +931,14 @@ interface _Api___roundsOf__Stale_ {
 }
 
 // what's stale of a task's changes as the editor marks it, a round's
-// changes written before your edits: by each change's index in its source,
-// and how many were dropped
+// changes written before your edits: each with what it was written on, and
+// how many were dropped
 function roundsOf__Stale({
   stale
 }: _Api___roundsOf__Stale_): Array<_Landed_Round_> {
   return stale.map((stale_Source) => ({
     source: stale_Source.source,
-    indexes_Stale: stale_Source.changes_Stale.map((stale_Change) => stale_Change.index),
+    changes_Stale: stale_Source.changes_Stale,
     count_Dropped: stale_Source.count_Dropped
   }))
 }

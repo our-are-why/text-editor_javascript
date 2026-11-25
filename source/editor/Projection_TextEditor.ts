@@ -16,7 +16,11 @@ import {
   shiftedBy__Position,
   landedOf__Move,
   piecesWith__Sources,
-  parseTexts_Line
+  parseTexts_Line,
+  type _Stale_Change_,
+  pairOf__Stale,
+  type _Pair_Stale_,
+  type _Text_Line_NonTerminated_
 } from "../documents/index.ts"
 import {
   isLines__Part_Frame,
@@ -78,7 +82,9 @@ import {
   type _Reference_Request_,
   type _Selected_Text_,
   type _Piece_Text_,
-  isSame__Id_Text
+  isSame__Id_Text,
+  type _Kind_Stale_,
+  type _Way_Stale_
 } from "./ViewModel_TextEditor.ts"
 
 export {
@@ -178,6 +184,7 @@ function viewModelOf__Model<State>({
     frame_Model,
     changes_Placed,
     lines_Document,
+    rounds_Landed,
     module_Language
   }))
   const blocks: Array<_Block_ViewModel_> = []
@@ -1026,6 +1033,7 @@ function markedOf__Lines({
     return stretches_Mark.length === 0
       ? line
       : {
+        layer: line.layer,
         gutter: line.gutter,
         note: line.note,
         segments: segmentsOf__Stretches({
@@ -1098,7 +1106,7 @@ interface _Request_Task_ {
 
 interface _Landed_Round_ {
   source: string
-  indexes_Stale: Array<number>
+  changes_Stale: Array<_Stale_Change_>
   count_Dropped: number
 }
 
@@ -1203,7 +1211,7 @@ function placedOf__Changes({
         index: change_Model.index,
         change,
         isApplied,
-        isStale: rounds_Landed.some((round_Landed) => round_Landed.source === change_Model.source && round_Landed.indexes_Stale.includes(change_Model.index)),
+        isStale: rounds_Landed.some((round_Landed) => round_Landed.source === change_Model.source && round_Landed.changes_Stale.some((stale_Change) => stale_Change.index === change_Model.index)),
         runs,
         ranges_Kept: runs_Comparison.flatMap((run_Comparison) => run_Comparison.kind === "KEPT"
           ? [
@@ -1704,6 +1712,7 @@ interface _Api___drawnOf__Frame_<State> {
   frame_Model: _Frame_Model_
   changes_Placed: Array<_Placed_Change_>
   lines_Document: Array<_Line_Run_>
+  rounds_Landed: Array<_Landed_Round_>
   module_Language: _Module_Language_<State>
 }
 
@@ -1720,6 +1729,7 @@ function drawnOf__Frame<State>({
   frame_Model,
   changes_Placed,
   lines_Document,
+  rounds_Landed,
   module_Language
 }: _Api___drawnOf__Frame_<State>): _Drawn_Frame_ {
   const isPoint = frame_Model.last < frame_Model.first
@@ -1774,11 +1784,27 @@ function drawnOf__Frame<State>({
     run_Current,
     module_Language
   })
+  const pairs = pairsIn__Frame({
+    model_TextEditor,
+    frame_Model,
+    sources,
+    rounds_Landed
+  })
   return {
     frame_Model,
     sources,
-    run_Current,
-    run_Proposed: proposed.run_Proposed,
+    run_Current: run_Current === null
+      ? null
+      : pairedOf__Run({
+        run_Lines: run_Current,
+        pairs,
+        frame_Model,
+        module_Language
+      }),
+    run_Proposed: filedOf__Run({
+      run_Lines: proposed.run_Proposed,
+      pairs
+    }),
     ranges_Shown: [
       ...ranges_Current,
       ...proposed.ranges_Change
@@ -1955,6 +1981,7 @@ function runOf__Side({
         ranges_Change
       })
       return {
+        layer: "DOCUMENT",
         gutter: {
           label: SIDEMAP__SIDE_RUN[side].labelOf({
             marker,
@@ -3036,6 +3063,573 @@ function isWhole__Lines({
   ).trim() === "" && (texts[underlay.to.line] ?? "").slice(underlay.to.offset).trim() === ""
 }
 
+interface _Api___pairsIn__Frame_ {
+  model_TextEditor: _Model_TextEditor_
+  frame_Model: _Frame_Model_
+  sources: Array<string>
+  rounds_Landed: Array<_Landed_Round_>
+}
+
+interface _Pair_Frame_ {
+  source: string
+  stale_Change: _Stale_Change_
+  change: _Change_
+  pair: _Pair_Stale_
+  lines_Written: _Lines_Pair_
+  lines_Now: _Lines_Pair_
+}
+
+interface _Lines_Pair_ {
+  first: number
+  last: number
+}
+
+function pairsIn__Frame({
+  model_TextEditor,
+  frame_Model,
+  sources,
+  rounds_Landed
+}: _Api___pairsIn__Frame_): Array<_Pair_Frame_> {
+  return rounds_Landed
+    .filter((round_Landed) => sources.includes(round_Landed.source))
+    .flatMap((round_Landed) => round_Landed.changes_Stale.flatMap((stale_Change): Array<_Pair_Frame_> => {
+      const change = model_TextEditor.proposed.find((changes_Source) => changes_Source.source === round_Landed.source)?.changes[stale_Change.index]
+      if (change === undefined) return []
+      const pair = pairOf__Stale({
+        text_Model: model_TextEditor.document,
+        change,
+        over: stale_Change.over
+      })
+      const runs_Changed = pair.runs.filter((run) => run.kind === "CHANGED")
+      if (runs_Changed.length === 0) return []
+      const lines_Now = linesOf__Ranges([
+        ...runs_Changed.map((run) => run.range_After),
+        {
+          from: {
+            line: change.range.from.line - pair.line_First,
+            offset: change.range.from.offset
+          },
+          to: {
+            line: change.range.to.line - pair.line_First,
+            offset: change.range.to.offset
+          }
+        }
+      ])
+      return pair.line_First + lines_Now.first < frame_Model.first || pair.line_First + lines_Now.last > frame_Model.last
+        ? []
+        : [
+          {
+            source: round_Landed.source,
+            stale_Change,
+            change,
+            pair,
+            lines_Written: linesOf__Ranges([
+              ...runs_Changed.map((run) => run.range_Before),
+              stale_Change.over.written.change.range
+            ]),
+            lines_Now
+          }
+        ]
+    }))
+    .reduce(
+      (
+        pairs_Kept: Array<_Pair_Frame_>,
+        pair_Frame
+      ) => pairs_Kept.some((pair_Kept) => pair_Kept.pair.line_First + pair_Kept.lines_Now.first <= pair_Frame.pair.line_First + pair_Frame.lines_Now.last && pair_Frame.pair.line_First + pair_Frame.lines_Now.first <= pair_Kept.pair.line_First + pair_Kept.lines_Now.last)
+        ? pairs_Kept
+        : [
+          ...pairs_Kept,
+          pair_Frame
+        ],
+      []
+    )
+}
+
+function linesOf__Ranges(
+  ranges: Array<_Range_Text_>
+): _Lines_Pair_ {
+  return {
+    first: Math.min(...ranges.map((range) => range.from.line)),
+    last: Math.max(...ranges.map((range) => range.to.offset === 0 && range.to.line > range.from.line ? range.to.line - 1 : range.to.line))
+  }
+}
+
+interface _Api___pairedOf__Run_<State> {
+  run_Lines: _Run_Lines_
+  pairs: Array<_Pair_Frame_>
+  frame_Model: _Frame_Model_
+  module_Language: _Module_Language_<State>
+}
+
+function pairedOf__Run<State>({
+  run_Lines,
+  pairs,
+  frame_Model,
+  module_Language
+}: _Api___pairedOf__Run_<State>): _Run_Lines_ {
+  return pairs
+    .toSorted((
+      pair_One,
+      pair_Other
+    ) => pair_Other.pair.line_First + pair_Other.lines_Now.first - pair_One.pair.line_First - pair_One.lines_Now.first)
+    .reduce(
+      (
+        run_Paired,
+        pair_Frame
+      ) => pairedWith__Pair({
+        run_Lines: run_Paired,
+        pair_Frame,
+        row_First: pair_Frame.pair.line_First + pair_Frame.lines_Now.first - frame_Model.first,
+        module_Language
+      }),
+      run_Lines
+    )
+}
+
+interface _Api___pairedWith__Pair_<State> {
+  run_Lines: _Run_Lines_
+  pair_Frame: _Pair_Frame_
+  row_First: number
+  module_Language: _Module_Language_<State>
+}
+
+function pairedWith__Pair<State>({
+  run_Lines,
+  pair_Frame,
+  row_First,
+  module_Language
+}: _Api___pairedWith__Pair_<State>): _Run_Lines_ {
+  const row_Last = row_First + pair_Frame.lines_Now.last - pair_Frame.lines_Now.first
+  const texts_Written = pair_Frame.stale_Change.over.written.lines.lines.slice(
+    pair_Frame.lines_Written.first,
+    pair_Frame.lines_Written.last + 1
+  )
+  const count_Written = texts_Written.length
+  const lines_Syntax = parseLines_ViewModel({
+    multilineText: texts_Written.join("\n"),
+    module_Language
+  })
+  const lines_Now = run_Lines.lines.slice(
+    row_First,
+    row_Last + 1
+  )
+  const note = lines_Now.find((line_Run) => line_Run.note !== null)?.note ?? null
+  const attributes_Change = lines_Now.flatMap((line_Run) => line_Run.segments).find((segment_Line) => segment_Line.attributes["data-source"] === pair_Frame.source)?.attributes ?? null
+  const range_Written = pair_Frame.stale_Change.over.written.change.range
+  const lines = [
+    ...run_Lines.lines.slice(
+      0,
+      row_First
+    ),
+    ...texts_Written.map((
+      text,
+      index
+    ): _Line_Run_ => ({
+      layer: "WRITTEN_ON",
+      gutter: {
+        label: lines_Now[index]?.gutter.label ?? "",
+        marker: lines_Now[index]?.gutter.marker ?? "none",
+        pointed: "none"
+      },
+      note: index === 0 ? note : null,
+      segments: segmentsOf__Stretches({
+        text,
+        stretches: [
+          ...stretchesOf__Segments(lines_Syntax[index]?.segments ?? []),
+          ...stretchesOf__Written({
+            range: range_Written,
+            line: pair_Frame.lines_Written.first + index,
+            text,
+            attributes: attributes_Change
+          })
+        ]
+      }),
+      origins: []
+    })),
+    ...lines_Now.map((
+      line_Run,
+      index
+    ): _Line_Run_ => ({
+      layer: "MOVED_SINCE",
+      gutter: {
+        ...line_Run.gutter,
+        label: ""
+      },
+      note: null,
+      segments: unmarkedOf__Segments({
+        segments: line_Run.segments,
+        range: pair_Frame.change.range,
+        line: pair_Frame.pair.line_First + pair_Frame.lines_Now.first + index,
+        source: pair_Frame.source
+      }),
+      origins: line_Run.origins
+    })),
+    ...run_Lines.lines.slice(row_Last + 1)
+  ]
+  const texts = lines.map((line_Run) => line_Run.segments.map((segment_Line) => segment_Line.text).join(""))
+  const isRing_Stale = (underlay: _Underlay_Text_): boolean => underlay.kind === "STRETCH" && underlay.attributes["data-source"] === pair_Frame.source && "data-stale" in underlay.attributes && underlay.from.line <= row_Last && underlay.to.line >= row_First
+  const underlay_Stale = run_Lines.groups.flatMap((group_Underlay) => group_Underlay.underlays.filter(isRing_Stale))[0]
+  const underlays_Written: Array<_Underlay_Text_> = underlay_Stale === undefined
+    ? []
+    : [
+      trimmed__Underlay({
+        texts,
+        underlay: {
+          kind: "STRETCH",
+          from: rowOf__Position({
+            position: range_Written.from,
+            line_First: pair_Frame.lines_Written.first,
+            row_First,
+            texts
+          }),
+          to: rowOf__Position({
+            position: range_Written.to,
+            line_First: pair_Frame.lines_Written.first,
+            row_First,
+            texts
+          }),
+          attributes: underlay_Stale.attributes
+        }
+      })
+    ]
+  const underlays_Since = pair_Frame.pair.runs
+    .filter((run) => run.kind === "CHANGED")
+    .map((run): _Underlay_Text_ => {
+      const from = rowOf__Position({
+        position: run.range_After.from,
+        line_First: pair_Frame.lines_Now.first,
+        row_First: row_First + count_Written,
+        texts
+      })
+      return isEmpty__Range(run.range_After)
+        ? {
+          kind: "POINT",
+          at: from,
+          attributes: {
+            "data-change": "removed",
+            "data-since": ""
+          }
+        }
+        : trimmed__Underlay({
+          texts,
+          underlay: {
+            kind: "STRETCH",
+            from,
+            to: rowOf__Position({
+              position: run.range_After.to,
+              line_First: pair_Frame.lines_Now.first,
+              row_First: row_First + count_Written,
+              texts
+            }),
+            attributes: {
+              "data-change": isEmpty__Range(run.range_Before) ? "inserted" : "replaced",
+              "data-since": ""
+            }
+          }
+        })
+    })
+  return {
+    id: run_Lines.id,
+    lines,
+    groups: [
+      ...run_Lines.groups.map((group_Underlay) => ({
+        attributes: group_Underlay.attributes,
+        underlays: [
+          ...group_Underlay.underlays
+            .filter((underlay) => !isRing_Stale(underlay))
+            .map((underlay) => shiftedOf__Underlay({
+              underlay,
+              row_First,
+              count: count_Written
+            })),
+          ...group_Underlay.attributes["data-source"] === pair_Frame.source ? underlays_Written : []
+        ]
+      })),
+      ...underlays_Since.length === 0
+        ? []
+        : [
+          {
+            attributes: {
+              "data-since": ""
+            },
+            underlays: underlays_Since
+          }
+        ]
+    ]
+  }
+}
+
+interface _Api___stretchesOf__Written_ {
+  range: _Range_Text_
+  line: number
+  text: _Text_Line_NonTerminated_
+  attributes: _Attributes_Element_ | null
+}
+
+function stretchesOf__Written({
+  range,
+  line,
+  text,
+  attributes
+}: _Api___stretchesOf__Written_): Array<_Stretch_Line_> {
+  if (attributes === null || line < range.from.line || line > range.to.line) return []
+  const from = unitsOf__CodePoints({
+    text,
+    count: line === range.from.line ? range.from.offset : 0
+  })
+  const to = line === range.to.line
+    ? unitsOf__CodePoints({
+      text,
+      count: range.to.offset
+    })
+    : text.length
+  return from < to
+    ? [
+      {
+        from,
+        to,
+        attributes: Object.fromEntries(Object.entries(attributes).filter(([name]) => NAMES_CHANGE.includes(name)))
+      }
+    ]
+    : []
+}
+
+interface _Api___unmarkedOf__Segments_ {
+  segments: Array<_Segment_Line_>
+  range: _Range_Text_
+  line: number
+  source: string
+}
+
+function unmarkedOf__Segments({
+  segments,
+  range,
+  line,
+  source
+}: _Api___unmarkedOf__Segments_): Array<_Segment_Line_> {
+  if (line < range.from.line || line > range.to.line) return segments
+  const text = segments.map((segment_Line) => segment_Line.text).join("")
+  const from = line === range.from.line
+    ? unitsOf__CodePoints({
+      text,
+      count: range.from.offset
+    })
+    : 0
+  const to = line === range.to.line
+    ? unitsOf__CodePoints({
+      text,
+      count: range.to.offset
+    })
+    : text.length
+  const starts = segments.reduce(
+    (
+      starts_Segment: Array<number>,
+      segment_Line
+    ) => [
+      ...starts_Segment,
+      (starts_Segment.at(-1) ?? 0) + segment_Line.text.length
+    ],
+    [0]
+  )
+  return segments.map((
+    segment_Line,
+    index
+  ) => segment_Line.attributes["data-source"] === source && (starts[index] ?? 0) < to && from < (starts[index + 1] ?? 0)
+    ? {
+      text: segment_Line.text,
+      attributes: Object.fromEntries(Object.entries(segment_Line.attributes).filter(([name]) => !NAMES_CHANGE.includes(name)))
+    }
+    : segment_Line)
+}
+
+const NAMES_CHANGE = [
+  "data-change",
+  "data-side",
+  "data-source"
+]
+
+interface _Api___rowOf__Position_ {
+  position: _Position_Text_
+  line_First: number
+  row_First: number
+  texts: Array<string>
+}
+
+function rowOf__Position({
+  position,
+  line_First,
+  row_First,
+  texts
+}: _Api___rowOf__Position_): _Position_Run_ {
+  const line = row_First + position.line - line_First
+  return {
+    line,
+    offset: unitsOf__CodePoints({
+      text: texts[line] ?? "",
+      count: position.offset
+    })
+  }
+}
+
+interface _Api___shiftedOf__Underlay_ {
+  underlay: _Underlay_Text_
+  row_First: number
+  count: number
+}
+
+function shiftedOf__Underlay({
+  underlay,
+  row_First,
+  count
+}: _Api___shiftedOf__Underlay_): _Underlay_Text_ {
+  const shifted = (position: _Position_Run_): _Position_Run_ => position.line < row_First
+    ? position
+    : {
+      line: position.line + count,
+      offset: position.offset
+    }
+  return underlay.kind === "POINT"
+    ? {
+      ...underlay,
+      at: shifted(underlay.at)
+    }
+    : underlay.kind === "BOUNDARY"
+      ? {
+        ...underlay,
+        line: underlay.line < row_First ? underlay.line : underlay.line + count
+      }
+      : {
+        ...underlay,
+        from: shifted(underlay.from),
+        to: shifted(underlay.to)
+      }
+}
+
+interface _Api___filedOf__Run_ {
+  run_Lines: _Run_Lines_
+  pairs: Array<_Pair_Frame_>
+}
+
+function filedOf__Run({
+  run_Lines,
+  pairs
+}: _Api___filedOf__Run_): _Run_Lines_ {
+  const texts = run_Lines.lines.map((line_Run) => line_Run.segments.map((segment_Line) => segment_Line.text).join(""))
+  const underlays = pairs.flatMap((pair_Frame) => pair_Frame.pair.runs
+    .filter((run) => run.kind === "CHANGED")
+    .flatMap((run) => filedOf__Range({
+      range: {
+        from: {
+          line: run.range_After.from.line + pair_Frame.pair.line_First,
+          offset: run.range_After.from.offset
+        },
+        to: {
+          line: run.range_After.to.line + pair_Frame.pair.line_First,
+          offset: run.range_After.to.offset
+        }
+      },
+      lines: run_Lines.lines,
+      texts
+    })))
+  return underlays.length === 0
+    ? run_Lines
+    : {
+      id: run_Lines.id,
+      lines: run_Lines.lines,
+      groups: [
+        ...run_Lines.groups,
+        {
+          attributes: {
+            "data-file": ""
+          },
+          underlays
+        }
+      ]
+    }
+}
+
+interface _Api___filedOf__Range_ {
+  range: _Range_Text_
+  lines: Array<_Line_Run_>
+  texts: Array<string>
+}
+
+function filedOf__Range({
+  range,
+  lines,
+  texts
+}: _Api___filedOf__Range_): Array<_Underlay_Text_> {
+  const isPoint = isEmpty__Range(range)
+  const underlays = lines.flatMap((
+    line_Run,
+    index
+  ) => line_Run.origins.flatMap((origin_Line): Array<_Underlay_Text_> => {
+    const line = origin_Line.position.line
+    if (origin_Line.id_Text.kind !== "DOCUMENT" || line < range.from.line || line > range.to.line) return []
+    const piece = (texts[index] ?? "").slice(
+      origin_Line.from,
+      origin_Line.to
+    )
+    const start = origin_Line.position.offset
+    const end = start + countOf__CodePoints(piece)
+    const unitsAt = (offset: number): number => origin_Line.from + unitsOf__CodePoints({
+      text: piece,
+      count: offset - start
+    })
+    const from = line === range.from.line ? range.from.offset : 0
+    const to = line === range.to.line ? range.to.offset : end
+    if (isPoint) {
+      return start <= from && from <= end
+        ? [
+          {
+            kind: "POINT",
+            at: {
+              line: index,
+              offset: unitsAt(from)
+            },
+            attributes: {
+              "data-file": ""
+            }
+          }
+        ]
+        : []
+    }
+    const from_Piece = Math.max(
+      from,
+      start
+    )
+    const to_Piece = Math.min(
+      to,
+      end
+    )
+    return from_Piece < to_Piece
+      ? [
+        trimmed__Underlay({
+          texts,
+          underlay: {
+            kind: "STRETCH",
+            from: {
+              line: index,
+              offset: unitsAt(from_Piece)
+            },
+            to: {
+              line: index,
+              offset: unitsAt(to_Piece)
+            },
+            attributes: {
+              "data-file": ""
+            }
+          }
+        })
+      ]
+      : []
+  }))
+  return isPoint ? underlays.slice(
+    0,
+    1
+  ) : underlays
+}
+
 interface _Api___blocksOf__Lines_ {
   lines_Run: Array<_Line_Run_>
   line_First: number
@@ -3132,7 +3726,9 @@ function frameOf__Drawn({
         isStartable: isOpen && !isRunning && isQueued,
         stale: staleOf__Round({
           round_Landed: rounds_Landed.find((round_Landed) => round_Landed.source === proposal_Host.source) ?? null,
-          isRerunnable: isOpen && !isRunning
+          decision: proposal_Host.state,
+          isRunning,
+          model_TextEditor
         }),
         actions: proposal_Host.actions,
         isDrafting: false,
@@ -3207,26 +3803,171 @@ function frameOf__Drawn({
 
 interface _Api___staleOf__Round_ {
   round_Landed: _Landed_Round_ | null
-  isRerunnable: boolean
+  decision: _Decision_Proposal_
+  isRunning: boolean
+  model_TextEditor: _Model_TextEditor_
 }
 
 function staleOf__Round({
   round_Landed,
-  isRerunnable
+  decision,
+  isRunning,
+  model_TextEditor
 }: _Api___staleOf__Round_): _Stale_Item_ | null {
-  if (round_Landed === null) return null
-  const count_Stale = round_Landed.indexes_Stale.length
+  if (round_Landed === null || round_Landed.changes_Stale.length + round_Landed.count_Dropped === 0) return null
+  return STALEMAP__KIND_STALE[decision === "ACCEPTED" ? "CONFLICT" : "OUT_OF_DATE"]({
+    round_Landed,
+    decision,
+    isRunning,
+    model_TextEditor
+  })
+}
+
+type _StaleMap__Kind_Stale_ = {
+  [Kind in _Kind_Stale_]: (api_Stale: _Api___itemOf__Stale_) => _Stale_Item_
+}
+
+interface _Api___itemOf__Stale_ {
+  round_Landed: _Landed_Round_
+  decision: _Decision_Proposal_
+  isRunning: boolean
+  model_TextEditor: _Model_TextEditor_
+}
+
+const STALEMAP__KIND_STALE: _StaleMap__Kind_Stale_ = {
+  OUT_OF_DATE: OUT_OF_DATE_itemOf__Stale,
+  CONFLICT: CONFLICT_itemOf__Stale
+}
+
+function OUT_OF_DATE_itemOf__Stale({
+  round_Landed,
+  decision,
+  isRunning
+}: _Api___itemOf__Stale_): _Stale_Item_ {
+  return {
+    kind: "OUT_OF_DATE",
+    head: "Out of date",
+    label: [
+      ...round_Landed.changes_Stale.length === 0 ? [] : ["written before your edits"],
+      ...droppedOf__Round(round_Landed)
+    ].join(" · "),
+    isRerunnable: decision === "OPEN" && !isRunning,
+    ways: []
+  }
+}
+
+function droppedOf__Round(
+  round_Landed: _Landed_Round_
+): Array<string> {
   const count_Dropped = round_Landed.count_Dropped
-  const parts = [
-    ...count_Stale === 0 ? [] : [`${count_Stale} ${count_Stale === 1 ? "change" : "changes"} written before your edits`],
-    ...count_Dropped === 0 ? [] : [`${count_Dropped} dropped, ${count_Dropped === 1 ? "its" : "their"} text gone`]
-  ]
-  return parts.length === 0
-    ? null
-    : {
-      label: parts.join(" · "),
-      isRerunnable
-    }
+  return count_Dropped === 0 ? [] : [`${count_Dropped} dropped, ${count_Dropped === 1 ? "its" : "their"} text gone`]
+}
+
+function CONFLICT_itemOf__Stale({
+  round_Landed,
+  isRunning,
+  model_TextEditor
+}: _Api___itemOf__Stale_): _Stale_Item_ {
+  const changes = model_TextEditor.proposed.find((changes_Source) => changes_Source.source === round_Landed.source)?.changes ?? []
+  const changes_Stale = round_Landed.changes_Stale.flatMap((stale_Change) => {
+    const change = changes[stale_Change.index]
+    return change === undefined
+      ? []
+      : [
+        {
+          change,
+          stale_Change
+        }
+      ]
+  })
+  const [change_First] = changes_Stale
+  return {
+    kind: "CONFLICT",
+    head: "Conflict",
+    label: [
+      ...change_First === undefined
+        ? []
+        : [
+          reasonOf__Pair({
+            pair: pairOf__Stale({
+              text_Model: model_TextEditor.document,
+              change: change_First.change,
+              over: change_First.stale_Change.over
+            }),
+            text_Written: change_First.stale_Change.over.written.lines
+          })
+        ],
+      ...droppedOf__Round(round_Landed)
+    ].join(" · "),
+    isRerunnable: false,
+    ways: [
+      ...changes_Stale.length > 0 && changes_Stale.every((change_Stale) => change_Stale.change.kind === "REPLACE") ? [WAY_KEEP] : [],
+      WAY_TAKE,
+      ...changes_Stale.length > 0 && changes_Stale.every((change_Stale) => change_Stale.change.kind === "MOVE" || isEmpty__Range(change_Stale.change.range)) ? [WAY_BOTH] : [],
+      ...isRunning ? [] : [WAY_RERUN]
+    ]
+  }
+}
+
+interface _Api___reasonOf__Pair_ {
+  pair: _Pair_Stale_
+  text_Written: _Text_Model_
+}
+
+function reasonOf__Pair({
+  pair,
+  text_Written
+}: _Api___reasonOf__Pair_): string {
+  const runs_Changed = pair.runs.filter((run) => run.kind === "CHANGED")
+  const [
+    run_First,
+    ...runs_Rest
+  ] = runs_Changed
+  if (run_First === undefined) return "the file changed what it was written on"
+  const line = pair.line_First + run_First.range_After.from.line + 1
+  const before = textIn__Range({
+    text_Model: text_Written,
+    range: run_First.range_Before
+  }).lines.join("\n").trim()
+  const after = textIn__Range({
+    text_Model: pair.lines,
+    range: run_First.range_After
+  }).lines.join("\n").trim()
+  if (runs_Rest.length > 0 || !isShort__Words(before) || !isShort__Words(after)) {
+    const line_Last = pair.line_First + linesOf__Ranges(runs_Changed.map((run) => run.range_After)).last + 1
+    return line_Last === line ? `the file changed line ${line}` : `the file changed lines ${line}–${line_Last}`
+  }
+  return before === ""
+    ? `the file put “${after}” in line ${line}`
+    : after === ""
+      ? `the file took “${before}” out of line ${line}`
+      : `the file changed “${before}” to “${after}” in line ${line}`
+}
+
+function isShort__Words(
+  words: string
+): boolean {
+  return !words.includes("\n") && countOf__CodePoints(words) <= 24
+}
+
+const WAY_KEEP: _Way_Stale_ = {
+  kind: "KEEP",
+  label: "Keep yours"
+}
+
+const WAY_TAKE: _Way_Stale_ = {
+  kind: "TAKE",
+  label: "Take the file's"
+}
+
+const WAY_BOTH: _Way_Stale_ = {
+  kind: "BOTH",
+  label: "Both"
+}
+
+const WAY_RERUN: _Way_Stale_ = {
+  kind: "RERUN",
+  label: "Run again"
 }
 
 interface _Api___headOf__Frame_ {

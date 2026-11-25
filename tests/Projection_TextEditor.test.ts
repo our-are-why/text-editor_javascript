@@ -1,5 +1,6 @@
 import { expect, test } from "bun:test"
-import { parseModel_TextEditor, type _Changes_Host_, type _Change_Host_, type _Model_TextEditor_ } from "../source/documents/Model_TextEditor.ts"
+import { parseModel_TextEditor, parseTexts_Line, type _Changes_Host_, type _Change_Host_, type _Model_TextEditor_ } from "../source/documents/Model_TextEditor.ts"
+import { type _Over_Change_ } from "../source/documents/Model_Documents.ts"
 import { viewModelOf__Model, type _Proposal_Host_, type _Task_Host_, type _Mode_Host_, type _Standing_Task_, type _Counts_Proposals_, type _Counts_Requests_ } from "../source/editor/Projection_TextEditor.ts"
 import { MODULE_READING_TEXT } from "../source/editor/readings/text.ts"
 import { MODULE_PLAINTEXT, isLines__Part_Frame, type _State_Task_, type _Header_ViewModel_, type _Decision_Proposal_, type _Status_Request_, type _Piece_Text_, type _Range_Lines_, type _ViewModel_TextEditor_, type _Line_Run_, type _Underlay_Text_, type _Run_Lines_ } from "../source/editor/ViewModel_TextEditor.ts"
@@ -90,7 +91,7 @@ function drawnAs(
   // host writes them in is no part of what it says
   const sortedOf = (item: object) => JSON.stringify(item, (_, value: unknown) => value !== null && typeof value === "object" && !Array.isArray(value) ? Object.fromEntries(Object.entries(value).toSorted(([one], [other]) => one.localeCompare(other))) : value)
   const lineOf = (line: _Line_Run_) => {
-    known(line, ["gutter", "note", "segments", "origins"], "line")
+    known(line, ["layer", "gutter", "note", "segments", "origins"], "line")
     for (const origin of line.origins) known(origin, ["from", "to", "id_Text", "position"], "origin")
     known(line.gutter, ["label", "marker", "pointed"], "gutter")
     if (line.note !== null) known(line.note, ["label", "target"], "note")
@@ -98,7 +99,7 @@ function drawnAs(
     const note = line.note === null ? "" : ` (${line.note.label} → ${line.note.target.source} ${line.note.target.side})`
     const origins = line.origins.map((origin) => `${origin.id_Text.kind === "DOCUMENT" ? "document" : `${origin.id_Text.source}#${origin.id_Text.index}`} ${origin.position.line}:${origin.position.offset} [${origin.from},${origin.to})`).join(" | ")
     return [
-      `    ${JSON.stringify(line.gutter.label)} ${line.gutter.marker} ${line.gutter.pointed}${note}: ${line.segments.map((segment) => `${JSON.stringify(segment.text)}${attributesOf(segment.attributes)}`).join(" ")}`,
+      `    ${JSON.stringify(line.gutter.label)} ${line.gutter.marker} ${line.gutter.pointed}${line.layer === "DOCUMENT" ? "" : ` ${line.layer}`}${note}: ${line.segments.map((segment) => `${JSON.stringify(segment.text)}${attributesOf(segment.attributes)}`).join(" ")}`,
       `      ⟵ ${origins}`
     ]
   }
@@ -435,18 +436,19 @@ test("a task's own actions, at the end of its card's heading, the ways it ends: 
   expect(headOf(taskOf("APPLIED", counts_None, { QUEUED: 0, RUNNING: 0 }), 0)).toEqual([null])
 })
 
-test("a round that landed after your edits: each change of it written before them, its ring marked stale, the others not; its item saying how many, and how many dropped, their text gone, with Run again while it's open and no round of it's under way; none said of a round that landed clean", () => {
+test("a round that landed after your edits: open, it's out of date, said under its title, written before your edits, and how many dropped, their text gone, with Run again while it's open and no round of it's under way; accepted, a conflict, what the file did said, and its ways out, Keep yours, a replacement's, Take the file's, and Run again; its stale change drawn as the line it was written on, numbered, its ring there, whole, and under it the line as it is, unnumbered, ringed for what the file did, the stale proposal's marks off its words, and in the proposed line the file's words ringed teal; the others not; none said of a round that landed clean", () => {
   const parsed = parseModel_TextEditor({
-    multilineText: "one two three",
+    multilineText: "let failures; done",
     marks: [],
-    proposed: [{ source: "digits", changes: [{ kind: "REPLACE", range: { from: { line: 0, offset: 0 }, to: { line: 0, offset: 3 } }, multilineText: "1", marks: [] }, { kind: "REPLACE", range: { from: { line: 0, offset: 4 }, to: { line: 0, offset: 7 } }, multilineText: "2", marks: [] }] }]
+    proposed: [{ source: "errors", changes: [{ kind: "REPLACE", range: { from: { line: 0, offset: 0 }, to: { line: 0, offset: 4 } }, multilineText: "const errors = []", marks: [] }, { kind: "REPLACE", range: { from: { line: 0, offset: 14 }, to: { line: 0, offset: 18 } }, multilineText: "end", marks: [] }] }]
   })
   if (parsed.kind === "REFUSED") throw new Error("refused")
-  const viewModelOf = (indexes_Stale: Array<number>, count_Dropped: number, status: _Status_Request_ | null) => viewModelOf__Model({
+  const over: _Over_Change_ = { kind: "RANGE", version: "written", text: { lines: parseTexts_Line("let lastError"), marks: [] }, written: { lines: { lines: parseTexts_Line("let lastError; done"), marks: [] }, change: { kind: "REPLACE", range: { from: { line: 0, offset: 0 }, to: { line: 0, offset: 13 } }, next: { lines: parseTexts_Line("const errors = []"), marks: [] } } } }
+  const viewModelOf = (indexes_Stale: Array<number>, count_Dropped: number, status: _Status_Request_ | null, state: "OPEN" | "ACCEPTED") => viewModelOf__Model({
     model_TextEditor: parsed.model_TextEditor,
-    name_Document: "notes/digits.txt",
-    proposals: [{ source: "digits", title: "Write them as digits", state: "OPEN", status: "", rationale: "", requests: status === null ? [] : [{ id: "again", notes: "Again.", reference: null, status }], actions: actions_Review, attributes: {} }],
-    rounds_Landed: [{ source: "digits", indexes_Stale, count_Dropped }],
+    name_Document: "retry.js",
+    proposals: [{ source: "errors", title: "Keep every error", state, status: "", rationale: "", requests: status === null ? [] : [{ id: "again", notes: "Again.", reference: null, status }], actions: actions_Review, attributes: {} }],
+    rounds_Landed: [{ source: "errors", changes_Stale: indexes_Stale.map((index) => ({ index, over })), count_Dropped }],
     mode: { kind: "MANUAL" },
     tasks: [],
     files: [],
@@ -455,15 +457,24 @@ test("a round that landed after your edits: each change of it written before the
     module_Reading: MODULE_READING_TEXT
   })
   const staleOf = (viewModel: _ViewModel_TextEditor_) => viewModel.blocks.flatMap((block) => block.kind === "FRAME" ? block.parts : []).flatMap((part) => part.kind === "PROPOSAL_LIST" ? part.items.map((item) => item.stale) : [])
-  const placesStale = (viewModel: _ViewModel_TextEditor_) => [...new Set(viewModel.runs.flatMap((run) => run.groups.flatMap((group) => group.underlays.flatMap((underlay) => "data-stale" in underlay.attributes ? [underlay.attributes["data-place"]] : []))))]
-  const landed = viewModelOf([1], 0, null)
-  expect(staleOf(landed)).toEqual([{ label: "1 change written before your edits", isRerunnable: true }])
-  expect(placesStale(landed)).toEqual(["2"])
-  expect(staleOf(viewModelOf([0, 1], 1, null))).toEqual([{ label: "2 changes written before your edits · 1 dropped, its text gone", isRerunnable: true }])
-  expect(staleOf(viewModelOf([], 2, "QUEUED"))).toEqual([{ label: "2 dropped, their text gone", isRerunnable: true }])
-  expect(staleOf(viewModelOf([1], 0, "RUNNING"))).toEqual([{ label: "1 change written before your edits", isRerunnable: false }])
-  expect(staleOf(viewModelOf([], 0, null))).toEqual([null])
-  expect(placesStale(viewModelOf([], 0, null))).toEqual([])
+  const runOf = (viewModel: _ViewModel_TextEditor_, side: string) => viewModel.runs.find((run) => run.id.endsWith(side))
+  const underlaysOf = (viewModel: _ViewModel_TextEditor_, side: string, name: string) => (runOf(viewModel, side)?.groups ?? []).flatMap((group) => group.underlays.flatMap((underlay) => name in underlay.attributes ? [underlay.kind === "POINT" ? { at: underlay.at, change: underlay.attributes["data-change"] ?? null } : underlay.kind === "STRETCH" ? { from: underlay.from, to: underlay.to, change: underlay.attributes["data-change"] ?? null } : null] : []))
+  const sourcesOf = (viewModel: _ViewModel_TextEditor_, layer: string) => (runOf(viewModel, "-current")?.lines ?? []).filter((line) => line.layer === layer).flatMap((line) => line.segments.flatMap((segment) => segment.attributes["data-source"] === undefined ? [] : [String(segment.text)]))
+  const landed = viewModelOf([0], 0, null, "OPEN")
+  expect(staleOf(landed)).toEqual([{ kind: "OUT_OF_DATE", head: "Out of date", label: "written before your edits", isRerunnable: true, ways: [] }])
+  expect(runOf(landed, "-current")?.lines.map((line) => [line.layer, line.gutter.label, line.segments.map((segment) => segment.text).join("")])).toEqual([["WRITTEN_ON", "1", "let lastError; done"], ["MOVED_SINCE", "", "let failures; done"]])
+  expect(underlaysOf(landed, "-current", "data-stale")).toEqual([{ from: { line: 0, offset: 0 }, to: { line: 0, offset: 13 }, change: "replaced" }])
+  expect(underlaysOf(landed, "-current", "data-source").filter((underlay) => underlay !== null && "from" in underlay && underlay.from.line === 1)).toEqual([{ from: { line: 1, offset: 14 }, to: { line: 1, offset: 18 }, change: "replaced" }])
+  expect(underlaysOf(landed, "-current", "data-since")).toEqual([{ from: { line: 1, offset: 4 }, to: { line: 1, offset: 12 }, change: "replaced" }])
+  expect([sourcesOf(landed, "WRITTEN_ON"), sourcesOf(landed, "MOVED_SINCE")]).toEqual([["let lastError"], ["done"]])
+  expect(underlaysOf(landed, "-proposed", "data-file")).toEqual([{ from: { line: 0, offset: 17 }, to: { line: 0, offset: 25 }, change: null }])
+  expect(staleOf(viewModelOf([0], 1, null, "OPEN"))).toEqual([{ kind: "OUT_OF_DATE", head: "Out of date", label: "written before your edits · 1 dropped, its text gone", isRerunnable: true, ways: [] }])
+  expect(staleOf(viewModelOf([], 2, "QUEUED", "OPEN"))).toEqual([{ kind: "OUT_OF_DATE", head: "Out of date", label: "2 dropped, their text gone", isRerunnable: true, ways: [] }])
+  expect(staleOf(viewModelOf([0], 0, "RUNNING", "OPEN"))).toEqual([{ kind: "OUT_OF_DATE", head: "Out of date", label: "written before your edits", isRerunnable: false, ways: [] }])
+  expect(staleOf(viewModelOf([0], 0, null, "ACCEPTED"))).toEqual([{ kind: "CONFLICT", head: "Conflict", label: "the file changed “lastError” to “failures” in line 1", isRerunnable: false, ways: [{ kind: "KEEP", label: "Keep yours" }, { kind: "TAKE", label: "Take the file's" }, { kind: "RERUN", label: "Run again" }] }])
+  expect(staleOf(viewModelOf([], 0, null, "OPEN"))).toEqual([null])
+  expect(underlaysOf(viewModelOf([], 0, null, "OPEN"), "-current", "data-stale")).toEqual([])
+  expect(runOf(viewModelOf([], 0, null, "OPEN"), "-current")?.lines.map((line) => line.layer)).toEqual(["DOCUMENT"])
 })
 
 test("requests' words underlined with one line however many requests are on them: dotted where one is, dashed where more than one overlap, each stretch as long as the words it's on", () => {

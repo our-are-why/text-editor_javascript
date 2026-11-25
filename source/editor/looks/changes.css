@@ -22,10 +22,20 @@
   stroke-linejoin: round;
 }
 
-/* a change its round wrote before your edits touched what it was written
-   on, its ring dashed, as one that may not say what it would now */
-[data-look~="changes"] .underlay_htmlView[data-change][data-stale] {
-  stroke-dasharray: 3 2;
+/* the file's words, `data-file`, where the proposed lines have them, put in
+   or changed since a change was written before them: ringed in teal, the
+   file's colour, which no change has, and where it took words out, a notch
+   in it; so a line made of a proposal's words and the file's reads as
+   both. A change written before your edits isn't dashed: dashes say only
+   its look changes, and where a ring's cut */
+[data-look~="changes"] :is(.underlay_htmlView, .seam_htmlView)[data-file] {
+  --edge: var(--view-file-edge, light-dark(#0b7a85, #3fc1c9));
+  stroke: var(--edge);
+  stroke-width: 1px;
+  stroke-linejoin: round;
+}
+[data-look~="changes"] .underlay_htmlView[data-notch][data-file] {
+  fill: var(--edge);
 }
 
 /* where a removal took words out of a line, or whole lines, its ring on the
@@ -73,14 +83,13 @@
 /* only its look: dashed; replaced and restyled both: dotted, its dashes
    round dots, none long, so it reads as neither a restyle nor a
    replacement alone, the line heavier, so the dots are seen. Not where
-   it's latent, solid at half strength as every latent ring is, or written
-   before your edits, dashed as every such ring is; its cut sides dashed,
-   as every ring's are */
+   it's latent, solid at half strength as every latent ring is; its cut
+   sides dashed, as every ring's are */
 [data-look~="changes"] :is(.underlay_htmlView, .seam_htmlView)[data-change="restyled"] {
   stroke-dasharray: 3 2;
 }
 
-[data-look~="changes"] .underlay_htmlView[data-change="replacedRestyled"]:not([data-within], [data-stale]) {
+[data-look~="changes"] .underlay_htmlView[data-change="replacedRestyled"]:not([data-within]) {
   stroke-width: 2px;
   stroke-dasharray: 0 4;
   stroke-linecap: round;
@@ -88,12 +97,12 @@
 
 /* pointed at, heavier, as every ring is, from its own heavier start, its
    dots spaced further apart as they grow, so they stay dots */
-[data-look~="changes"] .group_htmlView[data-pointed] > .underlay_htmlView[data-change="replacedRestyled"]:not([data-within], [data-stale]) {
+[data-look~="changes"] .group_htmlView[data-pointed] > .underlay_htmlView[data-change="replacedRestyled"]:not([data-within]) {
   stroke-width: 2.75px;
   stroke-dasharray: 0 5;
 }
 
-[data-look~="changes"] .group_htmlView[data-pointed] > .underlay_htmlView[data-pointed][data-change="replacedRestyled"]:not([data-within], [data-stale]) {
+[data-look~="changes"] .group_htmlView[data-pointed] > .underlay_htmlView[data-pointed][data-change="replacedRestyled"]:not([data-within]) {
   stroke-width: 3.5px;
   stroke-dasharray: 0 6;
 }
@@ -111,7 +120,7 @@
    which aren't its ends: dashed, so its two parts read as one, corner to
    corner, fitted as every dashed path is, each end's half dash the cut
    side's share of its corner's */
-[data-look~="changes"] .seam_htmlView[data-change] {
+[data-look~="changes"] .seam_htmlView:is([data-change], [data-file]) {
   stroke-dasharray: 2 2;
 }
 

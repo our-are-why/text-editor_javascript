@@ -68,7 +68,8 @@ import {
   type _Task_Header_,
   wordsAt__ViewModel,
   editingAt__ViewModel,
-  type _Id_Request_
+  type _Id_Request_,
+  type _Kind_Settle_
 } from "./ViewModel_TextEditor.ts"
 import type {
   _Id_Text_,
@@ -109,6 +110,7 @@ export {
   type _OPEN_FILE__Command_,
   type _SHOW_BOARD__Command_,
   type _RERUN_Command_,
+  type _SETTLE_Command_,
   type _SEND_Command_,
   type _OPEN_MENU__Command_,
   type _STEP_MENU__Command_,
@@ -168,6 +170,7 @@ export {
   type _OPEN_FILE__Asked_Host_,
   type _SHOW_BOARD__Asked_Host_,
   type _RERUN_Asked_Host_,
+  type _SETTLE_Asked_Host_,
   type _EDIT_Asked_Host_,
   type _Answer_Dispatch_,
   type _Unit_Move_,
@@ -516,7 +519,7 @@ interface _Answer_Edit_ {
   selection: _Selection_TextEditor_
 }
 
-type _Asked_Host_ = _ACTION_Asked_Host_ | _REQUEST_Asked_Host_ | _EDIT_Asked_Host_ | _REMOVE_Asked_Host_ | _DISMISS_Asked_Host_ | _START_Asked_Host_ | _STOP_Asked_Host_ | _TASK_Asked_Host_ | _END_Asked_Host_ | _SWITCH_Asked_Host_ | _OPEN_FILE__Asked_Host_ | _SHOW_BOARD__Asked_Host_ | _RERUN_Asked_Host_
+type _Asked_Host_ = _ACTION_Asked_Host_ | _REQUEST_Asked_Host_ | _EDIT_Asked_Host_ | _REMOVE_Asked_Host_ | _DISMISS_Asked_Host_ | _START_Asked_Host_ | _STOP_Asked_Host_ | _TASK_Asked_Host_ | _END_Asked_Host_ | _SWITCH_Asked_Host_ | _OPEN_FILE__Asked_Host_ | _SHOW_BOARD__Asked_Host_ | _RERUN_Asked_Host_ | _SETTLE_Asked_Host_
 
 interface __BASE_Asked_Host_<Kind extends string> {
   kind: Kind
@@ -615,6 +618,11 @@ interface _RERUN_Asked_Host_ extends __BASE_Asked_Host_<"RERUN"> {
   source: string
 }
 
+interface _SETTLE_Asked_Host_ extends __BASE_Asked_Host_<"SETTLE"> {
+  source: string
+  way: _Kind_Settle_
+}
+
 interface _EDIT_Asked_Host_ extends __BASE_Asked_Host_<"EDIT"> {
   source: string | null
   id: string
@@ -644,7 +652,7 @@ interface _Adapter_Event_ {
   commandOf__Event: (event: Event) => _Command_TextEditor_ | null
 }
 
-type _Command_TextEditor_ = _POINT_Command_ | _POINT_WORDS__Command_ | _SHOW_WORDS__Command_ | _JUMP_Command_ | _FOLD_Command_ | _DRAFT_Command_ | _ACT_Command_ | _ACCEPT_ALL__Command_ | _CONFIRM_Command_ | _REMOVE_Command_ | _DISMISS_Command_ | _START_Command_ | _STOP_Command_ | _TASK_Command_ | _END_Command_ | _SWITCH_Command_ | _OPEN_FILE__Command_ | _SHOW_BOARD__Command_ | _RERUN_Command_ | _SEND_Command_ | _OPEN_MENU__Command_ | _STEP_MENU__Command_ | _CHOOSE_MENU__Command_ | _CLOSE_MENU__Command_ | _FOCUS_REQUEST__Command_ | _SCROLL_Command_ | _OPEN_REQUEST__Command_ | _CLOSE_CARD__Command_ | _SEND_REQUEST__Command_ | _CLOSE_REQUEST__Command_ | _DROP_QUOTE__Command_ | _LEAVE_REQUEST__Command_ | _EDIT_Command_ | _SAVE_EDIT__Command_ | _CLOSE_EDIT__Command_ | _DISCARD_Command_ | _VISIT_Command_ | _PLACE_Command_ | _DRAG_Command_ | _RELEASE_Command_ | _MOVE_Command_ | _EXTEND_Command_ | _INSERT_Command_ | _REPLACE_Command_ | _DELETE_Command_ | _UNDO_Command_ | _REDO_Command_ | _COPY_Command_ | _CUT_Command_ | _PASTE_Command_
+type _Command_TextEditor_ = _POINT_Command_ | _POINT_WORDS__Command_ | _SHOW_WORDS__Command_ | _JUMP_Command_ | _FOLD_Command_ | _DRAFT_Command_ | _ACT_Command_ | _ACCEPT_ALL__Command_ | _CONFIRM_Command_ | _REMOVE_Command_ | _DISMISS_Command_ | _START_Command_ | _STOP_Command_ | _TASK_Command_ | _END_Command_ | _SWITCH_Command_ | _OPEN_FILE__Command_ | _SHOW_BOARD__Command_ | _RERUN_Command_ | _SETTLE_Command_ | _SEND_Command_ | _OPEN_MENU__Command_ | _STEP_MENU__Command_ | _CHOOSE_MENU__Command_ | _CLOSE_MENU__Command_ | _FOCUS_REQUEST__Command_ | _SCROLL_Command_ | _OPEN_REQUEST__Command_ | _CLOSE_CARD__Command_ | _SEND_REQUEST__Command_ | _CLOSE_REQUEST__Command_ | _DROP_QUOTE__Command_ | _LEAVE_REQUEST__Command_ | _EDIT_Command_ | _SAVE_EDIT__Command_ | _CLOSE_EDIT__Command_ | _DISCARD_Command_ | _VISIT_Command_ | _PLACE_Command_ | _DRAG_Command_ | _RELEASE_Command_ | _MOVE_Command_ | _EXTEND_Command_ | _INSERT_Command_ | _REPLACE_Command_ | _DELETE_Command_ | _UNDO_Command_ | _REDO_Command_ | _COPY_Command_ | _CUT_Command_ | _PASTE_Command_
 
 interface __BASE_Command_<Kind extends string> {
   kind: Kind
@@ -726,6 +734,11 @@ interface _SHOW_BOARD__Command_ extends __BASE_Command_<"SHOW_BOARD"> {}
 
 interface _RERUN_Command_ extends __BASE_Command_<"RERUN"> {
   id_Item: _Id_Item_
+}
+
+interface _SETTLE_Command_ extends __BASE_Command_<"SETTLE"> {
+  id_Item: _Id_Item_
+  way: _Kind_Settle_
 }
 
 interface _SEND_Command_ extends __BASE_Command_<"SEND"> {
@@ -1309,6 +1322,19 @@ function RERUN_stateAfter__Command({
   ask_View({
     kind: "RERUN",
     source: command.id_Item.source
+  })
+  return state
+}
+
+function SETTLE_stateAfter__Command({
+  state,
+  command,
+  ask_View
+}: _Api___stateAfter__Command_<"SETTLE">): _State__Viewer_TextEditor_ {
+  ask_View({
+    kind: "SETTLE",
+    source: command.id_Item.source,
+    way: command.way
   })
   return state
 }
@@ -3437,6 +3463,7 @@ const HANDLERMAP__TEXTEDITOR: _HandlerMap__TextEditor_ = {
   OPEN_FILE: OPEN_FILE_stateAfter__Command,
   SHOW_BOARD: SHOW_BOARD_stateAfter__Command,
   RERUN: RERUN_stateAfter__Command,
+  SETTLE: SETTLE_stateAfter__Command,
   SEND: SEND_stateAfter__Command,
   OPEN_MENU: OPEN_MENU_stateAfter__Command,
   STEP_MENU: STEP_MENU_stateAfter__Command,

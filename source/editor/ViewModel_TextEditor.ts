@@ -15,6 +15,7 @@ export {
   type _LINES_Block__ViewModel_,
   type _Run_Lines_,
   type _Line_Run_,
+  type _Layer_Line_,
   type _Gutter_Line_,
   type _Marker_Gutter_,
   type _Pointed_Gutter_,
@@ -52,6 +53,10 @@ export {
   type _Decision_Proposal_,
   type _Status_Request_,
   type _Stale_Item_,
+  type _Kind_Stale_,
+  type _Way_Stale_,
+  type _Kind_Way_,
+  type _Kind_Settle_,
   type _Places_Item_,
   type __BASE_Places_Item_,
   type _NONE_Places_Item_,
@@ -384,11 +389,14 @@ interface _Run_Lines_ {
 }
 
 interface _Line_Run_ {
+  layer: _Layer_Line_
   gutter: _Gutter_Line_
   note: _Note_Line_ | null
   segments: Array<_Segment_Line_>
   origins: Array<_Origin_Line_>
 }
+
+type _Layer_Line_ = "DOCUMENT" | "WRITTEN_ON" | "MOVED_SINCE"
 
 interface _Gutter_Line_ {
   label: string
@@ -557,9 +565,23 @@ interface _Reference_Request_ {
 type _Status_Request_ = "QUEUED" | "RUNNING" | "ADDRESSED"
 
 interface _Stale_Item_ {
+  kind: _Kind_Stale_
+  head: string
   label: string
   isRerunnable: boolean
+  ways: Array<_Way_Stale_>
 }
+
+type _Kind_Stale_ = "OUT_OF_DATE" | "CONFLICT"
+
+interface _Way_Stale_ {
+  kind: _Kind_Way_
+  label: string
+}
+
+type _Kind_Way_ = _Kind_Settle_ | "RERUN"
+
+type _Kind_Settle_ = "KEEP" | "TAKE" | "BOTH"
 
 interface _Confirm_Item_ {
   command: string
@@ -2316,6 +2338,7 @@ function lineOf__Text({
   stretches
 }: _Api___lineOf__Text_): _Line_Run_ {
   return {
+    layer: "DOCUMENT",
     gutter: {
       label: String(number),
       marker: "none",

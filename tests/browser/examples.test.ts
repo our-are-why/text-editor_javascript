@@ -437,7 +437,7 @@ test("the JavaScript example opens with a case of each kind of thing asked and d
       "Check the doc comment still says what retry takes. |  |  | done · nothing to change"
     ],
     task: ["Say in the README that onRetry is gone. |  |  | queued"],
-    dropped: ["1 dropped, its text goneRun again"],
+    dropped: ["Out of date · 1 dropped, its text goneRun again"],
     isUrlKept: true
   })
 })
@@ -859,18 +859,19 @@ const header_Done = await headerShown()
 const logged_Header = (await opened_JavaScript.logged()).filter((entry) => "stopped" in entry || "revising" in entry || "revised" in entry)
 const logged_Stopped = logged_Header.slice(logged_Header.findIndex((entry) => "stopped" in entry))
 // then Run again on the opening comment, its last round written before an
-// edit of yours touched what it was on, its ring dashed: asked of the host,
+// edit of yours touched what it was on, its lines drawn as it was written on
+// them above the file's: asked of the host,
 // which starts it again, on the document as it is now, revising, the line
 // still saying so, nothing to run again while it's under way; and, its
 // round back, written on the document as it is, nothing marked
 const staleOf_Header = () => opened_JavaScript.page.evaluate(async () => {
   await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)))
   const item = document.querySelector(".item_htmlView[data-source=\"header\"]")
-  const rings = [...document.querySelectorAll(".underlay_htmlView[data-source=\"header\"][data-stale]")]
+  const lines = [...(item?.closest(".frame_htmlView")?.querySelectorAll(".run_htmlView[data-run$=\"-current\"] > .line_htmlView") ?? [])]
   return {
     state: item?.getAttribute("data-state") ?? null,
     stale: item?.querySelector(".stale_htmlView")?.textContent ?? null,
-    dashes: [...new Set(rings.flatMap((ring) => (ring.getAttribute("d") ?? "").split("M").map((part) => (part.match(/-?[\d.]+(?:e[-+]?\d+)?/gi) ?? []).map(Number)).filter((numbers) => numbers.length === 4).map(([x1 = 0, y1 = 0, x2 = 0, y2 = 0]) => Math.round(Math.hypot(x2 - x1, y2 - y1) * 100) / 100)))]
+    lines: lines.flatMap((line) => line.getAttribute("data-layer") === "DOCUMENT" ? [] : [[line.getAttribute("data-layer"), line.querySelector(".label_htmlView")?.textContent ?? ""]])
   }
 })
 const stale_Landed = await staleOf_Header()
@@ -959,10 +960,11 @@ test("the header over the document stays put as it scrolls, saying the host's ta
   expect(opened_JavaScript.errors).toEqual([])
 })
 
-test("a round that landed after your edits: its changes written before them ringed dashed, its item saying how many, with Run again; pressed, asked of the host, which starts it again, the proposal revising, nothing to run again while it's under way; its round back, written on the document as it is now, nothing marked", () => {
-  expect(stale_Landed).toEqual({ state: "OPEN", stale: "1 change written before your editsRun again", dashes: [3] })
-  expect(stale_Rerunning).toEqual({ state: "REVISING", stale: "1 change written before your edits", dashes: [3] })
-  expect(stale_Again).toEqual({ state: "OPEN", stale: null, dashes: [] })
+test("a round that landed after your edits: out of date, its item says, written before your edits, with Run again, its lines drawn as it was written on them, numbered, above the file's, unnumbered; pressed, asked of the host, which starts it again, the proposal revising, nothing to run again while it's under way; its round back, written on the document as it is now, nothing marked", () => {
+  const lines_Paired = [["WRITTEN_ON", "1"], ["WRITTEN_ON", "2"], ["MOVED_SINCE", ""], ["MOVED_SINCE", ""]]
+  expect(stale_Landed).toEqual({ state: "OPEN", stale: "Out of date · written before your editsRun again", lines: lines_Paired })
+  expect(stale_Rerunning).toEqual({ state: "REVISING", stale: "Out of date · written before your edits", lines: lines_Paired })
+  expect(stale_Again).toEqual({ state: "OPEN", stale: null, lines: [] })
   expect(logged_Rerun).toEqual([{ rerun: "header", requests: 1 }, { revising: "header", requests: 1 }])
   expect(opened_JavaScript.errors).toEqual([])
 })
@@ -3361,7 +3363,7 @@ const standing_Erased = await standingOf_Conflict()
 const line_Erased = await lineWith_Conflict("const status = error?.response?.status")
 await typedAtEnd_Conflict("const status = error?.response?.status", " // why")
 const standing_Retyped = await standingOf_Conflict()
-for (let count = 0; count < 8 && ((await lineWith_Conflict("const status = error?.response?.status")) ?? "").includes("// why"); count = count + 1) await opened_Conflict.page.keyboard.press("Control+z")
+for (let count = 0; count < 20 && (await lineWith_Conflict("const status = error?.response?.status")) !== "38  const status = error?.response?.status ?? 0;"; count = count + 1) await opened_Conflict.page.keyboard.press("Control+z")
 await opened_Conflict.page.waitForTimeout(300)
 const standing_Undone = await standingOf_Conflict()
 const line_Undone_Conflict = await lineWith_Conflict("const status = error?.response?.status")
@@ -3389,4 +3391,85 @@ test("typing in No task over a change of a task's own, one it's accepted, a conf
   expect(line_Comment).toBe("1// Retries a flaky async call, backing off each time, until it")
   expect(written_After).toEqual([])
   expect(opened_Conflict.errors).toEqual([])
+})
+
+// a conflict settled from its item, in the JavaScript example: in No task,
+// " // why" typed at the end of the line the task's accepted move takes up,
+// and the base delay's name, which an accepted replacement writes, changed;
+// in the task, each a conflict, saying what the file did, the move's lines
+// drawn as it was written on them above the file's, the file's words ringed
+// on its line and, teal, in the proposed lines; the move settled with Both,
+// the line moving with the comment in it, and the replacement kept as it
+// was written, over the file's name; no conflict left
+const opened_Settle = await openExample(
+  "javascript",
+  1
+)
+await opened_Settle.page.waitForSelector(".note_htmlView")
+const switchedTo_Settle = async (selector: string) => {
+  await opened_Settle.page.mouse.move(5, 400)
+  await opened_Settle.page.waitForTimeout(300)
+  await opened_Settle.page.hover(".trigger_Switcher_htmlView")
+  await opened_Settle.page.waitForTimeout(300)
+  await opened_Settle.page.click(selector)
+  await opened_Settle.page.mouse.move(5, 400)
+  await opened_Settle.page.waitForTimeout(500)
+}
+const itemOf_Settle = (source: string) => opened_Settle.page.evaluate((source) => {
+  const item = document.querySelector(`.item_htmlView[data-source="${source}"]`)
+  const frame = item?.closest(".frame_htmlView")
+  return {
+    stale: item?.querySelector(".stale_htmlView")?.textContent ?? null,
+    ways: [...(item?.querySelectorAll(".way_htmlView") ?? [])].map((way) => way.textContent),
+    lines: [...(frame?.querySelectorAll(".run_htmlView[data-run$=\"-current\"] > .line_htmlView") ?? [])].flatMap((line) => line.getAttribute("data-layer") === "DOCUMENT" ? [] : [[line.getAttribute("data-layer"), line.querySelector(".label_htmlView")?.textContent ?? "", line.querySelector(".text_htmlView")?.textContent ?? ""]]),
+    rings_Since: [...(frame?.querySelectorAll(".underlay_htmlView[data-since]") ?? [])].map((ring) => ring.getAttribute("data-change")),
+    rings_File: frame?.querySelectorAll(".run_htmlView[data-run$=\"-proposed\"] .underlay_htmlView[data-file]").length ?? 0
+  }
+}, source)
+const proposedWith_Settle = (snippet: string) => opened_Settle.page.evaluate((snippet) => [...document.querySelectorAll(".run_htmlView[data-run$=\"-proposed\"] > .line_htmlView > .text_htmlView")].map((text) => text.textContent ?? "").find((text) => text.includes(snippet)) ?? null, snippet)
+const conflictsOf_Settle = () => opened_Settle.page.evaluate(() => document.querySelector(".tasks_Footer_htmlView")?.getAttribute("title") ?? null)
+await switchedTo_Settle(".choice_Switcher_htmlView[data-switch=\"MANUAL\"]")
+await opened_Settle.page.locator(".line_htmlView", { hasText: "const status = error?.response?.status" }).first().click()
+await opened_Settle.page.keyboard.press("End")
+await opened_Settle.page.keyboard.type(" // why")
+await opened_Settle.page.waitForTimeout(300)
+await opened_Settle.page.locator(".line_htmlView", { hasText: "const delay = DELAY_MS" }).first().click()
+await opened_Settle.page.keyboard.press("End")
+for (let count = 0; count < "  const delay = DELAY_MS * 2 ** (n - 1);".length - "  const delay = DELAY_MS".length; count = count + 1) await opened_Settle.page.keyboard.press("ArrowLeft")
+for (let count = 0; count < "DELAY_MS".length; count = count + 1) await opened_Settle.page.keyboard.press("Shift+ArrowLeft")
+await opened_Settle.page.keyboard.type("BASE_MS")
+await opened_Settle.page.waitForTimeout(300)
+await switchedTo_Settle(".choice_Switcher_htmlView[data-switch=\"TASK\"][data-id=\"T-12\"]")
+const footer_Conflicted = await conflictsOf_Settle()
+const status_Conflicted = await itemOf_Settle("status")
+const base_Conflicted = await itemOf_Settle("base")
+await opened_Settle.page.click(".item_htmlView[data-source=\"status\"] .way_htmlView[data-way=\"BOTH\"]")
+await opened_Settle.page.waitForTimeout(400)
+const status_Both = await itemOf_Settle("status")
+const proposed_Both = await proposedWith_Settle("const status = error?.response?.status")
+await opened_Settle.page.click(".item_htmlView[data-source=\"base\"] .way_htmlView[data-way=\"KEEP\"]")
+await opened_Settle.page.waitForTimeout(400)
+const base_Kept = await itemOf_Settle("base")
+const proposed_Kept = await proposedWith_Settle("const delay = ")
+const footer_Settled = await conflictsOf_Settle()
+const logged_Settle = (await opened_Settle.logged()).filter((entry) => "settled" in entry)
+await opened_Settle.close()
+test("a conflict settled from its item: each says what the file did and offers its ways out, a move Take the file's, Both and Run again, a replacement Keep yours, Take the file's and Run again; the move's lines drawn as it was written on them, numbered, above the file's, unnumbered, what the file put in ringed green on its line and teal in the proposed lines; Both moves the line with the comment in it, Keep yours writes the replacement over the file's name, each asked of the host, and no conflict's left", () => {
+  expect(footer_Conflicted).toBe("6 tasks: 4 need you, 2 conflicts, 2 working, 1 draft")
+  expect(status_Conflicted).toEqual({
+    stale: "Conflict · the file put “// why” in line 38",
+    ways: ["Take the file's", "Both", "Run again"],
+    lines: [["WRITTEN_ON", "38", "  const status = error?.response?.status ?? 0;"], ["MOVED_SINCE", "", "  const status = error?.response?.status ?? 0; // why"]],
+    rings_Since: ["inserted"],
+    rings_File: 1
+  })
+  expect(base_Conflicted.stale).toBe("Conflict · the file changed “DELAY_MS” to “BASE_MS” in line 32")
+  expect(base_Conflicted.ways).toEqual(["Keep yours", "Take the file's", "Run again"])
+  expect(status_Both).toEqual({ stale: null, ways: [], lines: [], rings_Since: [], rings_File: 0 })
+  expect(proposed_Both).toBe("  const status = error?.response?.status ?? 0; // why")
+  expect([base_Kept.stale, base_Kept.lines]).toEqual([null, []])
+  expect(proposed_Kept).toBe("  const delay = DELAY_MS * 2 ** (round - 1);")
+  expect(footer_Settled).toBe("6 tasks: 4 need you, 2 working, 1 draft")
+  expect(logged_Settle).toEqual([{ settled: "status", way: "BOTH" }, { settled: "base", way: "KEEP" }])
+  expect(opened_Settle.errors).toEqual([])
 })

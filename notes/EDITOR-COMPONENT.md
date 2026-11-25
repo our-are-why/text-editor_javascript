@@ -1983,6 +1983,24 @@ and runs again what the round answered, or, a round it didn't start, asks
 again; its JavaScript example starts with the opening comment's last round
 landed after an edit, so its ring's dashed and Run again's offered.
 
+Decided 2026-11-24, as `TASKS.md` says under a conflict, and out of date,
+in the editor: a stale change isn't dashed any more, but drawn in its frame
+as pairs of lines, the line it was written on, the change ringed whole on
+it, and under it the file's line, unnumbered, `data-layer` `MOVED_SINCE`,
+hatched forward in light teal, ringed by what the file did in the "changes"
+look's colours, its put in, replaced and taken out, `data-since`, the
+stale proposal's marks taken off its words; the written-on line
+`data-layer` `WRITTEN_ON`, every other line `DOCUMENT`, the layer a line's,
+`_Layer_Line_`, as the view model decides it. What the file put in, where
+the proposed lines have it, ringed teal, `data-file`, and where it took
+words out, a teal notch. Each stale change comes with what it was written
+on, `_Written_Change_`: its lines then, and the change as it was on them,
+the documents part's, kept as it was found stale. An item's stale note
+says which it is, `OUT_OF_DATE`, an open proposal's, "Out of date" in
+orange, or `CONFLICT`, a decided one's, "Conflict" in red and what the file
+did, with its ways out, `KEEP`, `TAKE`, `BOTH` where both can stand, and
+`RERUN`, each asked of the host.
+
 Deciding is a command, on the current proposal or one named: accept, reject,
 revise, amend; an item's actions are the editor's buttons for them, or,
 where a host wants controls of its own by a change, the editor says where
@@ -2790,7 +2808,8 @@ Decided 2026-11-19: a ring replaced and restyled is dotted, its dashes
 round dots, `0 4` with round caps on a 2px line, heavier pointed at, not
 the longer dashes it had, nor dots at its corners and sides' middles over
 its dashes, which were tried and let go; latent, it's solid at half
-strength, and written before your edits, dashed, as every such ring is.
+strength. Written before your edits, it was dashed, till 2026-11-24, when
+dashes were left to restyled and seams.
 Every dashed path, a ring's or a cut side's, has its dashes fitted by one
 formula, `fit__Dash$`: an element on each corner, bent round it, shared
 by the sides meeting there, and along each side evenly spaced, as near

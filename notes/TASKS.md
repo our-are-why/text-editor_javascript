@@ -263,8 +263,8 @@ What happens to a task when a document it's on moves under it:
 
 | what it holds | untouched by the move | touched by it |
 |---|---|---|
-| its changes, accepted proposals and your edits | carried across, nothing said | conflicted: a frame, the document's lines, the move in them, beside the task's, decided as a proposal is, kept either way or edited |
-| its open proposals | carried across | out of date, dashed as "written before your edits" is: accepted anyway, over what moved, rejected, or sent back, to be written against the text as it is |
+| its changes, accepted proposals and your edits | carried across, nothing said | conflicted: in its frame, the lines it was written on above the file's, decided on its item, yours kept, the file's taken, both, or run again |
+| its open proposals | carried across | out of date, said so on its item, its lines drawn as a conflict's are: accepted anyway, over what moved, rejected, or sent back, to be written against the text as it is |
 | its requests on words | carried across | detached: kept with the words they were on; the agent reads them against the text as it is, and you aim them again or drop them |
 | a round still being written | lands, and is carried across | lands, what the move touched out of date, as when you edit during a run |
 
@@ -285,6 +285,59 @@ edits, before anything leans on it:
   nothing;
 - **the same edit on both sides,** a conflict at first, which could later
   carry across as one.
+
+### a conflict, and out of date, in the editor
+
+Decided 2026-11-24, drawn on the canvas "Conflicts and out of date".
+
+**Where it's written on, and what the file did.** A change the file moved
+under, stale, is drawn in its frame as pairs of lines: the line it was
+written on, numbered, in the frame's back hatch, the change ringed whole
+there, at the extent it was written; and right under it, the line as the
+file has it now, unnumbered, so the pair reads as one line, hatched forward
+in a light teal, the file's colour, at half the strength first drawn, so
+what's on it stays clear. The file's line is ringed for what the file did to
+the line above, in the editor's own colours: put in green, replaced yellow,
+taken out a red notch where it was. Everything on the teal line is the
+file's; the change's own rings are on the line above. Always shown, nothing
+to unfold.
+
+**The file's words in the proposal.** In the proposed lines, words that are
+the file's since the change was written are ringed teal, and where the file
+took words out, a teal notch: teal is the file's, only, so a line made of
+both reads as both, the proposal's yellow beside the file's teal, where
+`const errors = []failures;` would read as broken. The same words can be
+marked twice, green on the file's line, what the file did, and teal in the
+proposal, whose they are.
+
+**Out of date,** an open proposal the file moved under: under its title,
+"Out of date" in orange, "written before your edits" in the muted grey, and
+Run again in the revision's plum. Its rings no longer dashed, as dashes say
+restyled, and a ring's seams.
+
+**A conflict,** a change of the task's own the file moved under, an accepted
+proposal's or yours: "Conflict" in red, what the file did in the muted
+grey, "the file put “// why” in line 38", and on its item the ways out, Keep
+yours and Take the file's in the proposals' indigo, Both, Run again in plum.
+Red in the text is taken out; a conflict's red is only outside it, the
+note, the switcher, the footer, the board.
+
+- **Keep yours:** the change as written, over what the file did there: the
+  lines it was written on, the change made on them, in place of the file's,
+  narrowed to the words that differ, so another proposal's change on those
+  lines isn't covered; nothing left to change, the change let go. Not
+  offered for a move: kept so, it would read as a replacement.
+- **Take the file's:** the change let go, the file's lines kept.
+- **Both:** the change as it's carried, the file's edit in it; offered only
+  where neither took the other's characters, a move, or words put in. A
+  replacement the file edited inside can't be both: its words are the ones
+  the file changed.
+- **Run again:** the proposal sent back, to be written against the text as
+  it is.
+
+The documents part keeps, with each stale change, the lines it was written
+on and the change as it was on them, found as it's found stale, as the
+edits that found it are let go.
 
 ## what a task holds
 

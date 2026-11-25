@@ -32,6 +32,12 @@
      than the indigo, plainly another colour beside it, and bluer than the
      rings' red for removed, so it says nothing bad */
   --accent_revision_htmlView: var(--view-revision-accent, light-dark(#8e3591, #e39be6));
+  /* an orange for out of date, a proposal written before the file moved
+     under it: warm, as it wants a look, never the removed red, which is a
+     conflict's outside the text; and a teal for the file's own words, beside
+     a change written before them, a colour no change has */
+  --accent_stale_htmlView: var(--view-stale-accent, light-dark(#b8460b, #f0883e));
+  --accent_file_htmlView: var(--view-file-accent, light-dark(#0b7a85, #3fc1c9));
 }
 
 /* A run of lines, one after another, and behind them one svg, as big as
@@ -331,6 +337,16 @@
   background: var(--view-current, linear-gradient(45deg, var(--stripe_current_htmlView) 25%, transparent 25% 50%, var(--stripe_current_htmlView) 50% 75%, transparent 75%) 0 0 / 0.5lh 0.5lh);
 }
 
+/* under a line a stale change was written on, the line as the file has it
+   now: hatched the other way, forward, /, in a light teal, the file's
+   colour, at half the strength it was first drawn, so the syntax's colours
+   and the rings on it stay clear, over the ground, so the back hatch isn't
+   seen through it; its gutter too, unnumbered, so the pair reads as one */
+.htmlView_editor .line_htmlView[data-layer="MOVED_SINCE"] {
+  --stripe_file_htmlView: var(--view-file-stripe, color-mix(in srgb, var(--accent_file_htmlView) 8%, transparent));
+  background: linear-gradient(-45deg, var(--stripe_file_htmlView) 25%, transparent 25% 50%, var(--stripe_file_htmlView) 50% 75%, transparent 75%) 0 0 / 0.5lh 0.5lh, var(--view-ground, Canvas);
+}
+
 /* the lines as proposed, beneath those as they are, on a band of grey
    near the document's own ground, but not it: what the document would
    become, set apart from it, from the hatched lines it replaces, and from
@@ -494,17 +510,26 @@
   font-variant-numeric: tabular-nums;
 }
 
-/* how its last round landed, where your edits since had touched what it
-   was written on: how many of its changes were written before them, their
-   rings dashed, and how many dropped, their text gone, in the places'
-   size, in the revision's plum, as it's about a revision; and Run again
-   after it, a quiet word, starting the round's requests again from now,
-   so the agent sees your edits */
+/* how its last round landed, where the file had moved under what it was
+   written on, in the places' size and muted ink: its head, what it is,
+   out of date in orange, still open, or a conflict in the removed red, a
+   change of the task's own; then what's so, written before your edits,
+   what the file did, and how many dropped, their text gone; and, out of
+   date, Run again after it, a quiet word in the revision's plum, starting
+   the round's requests again from now, so the agent sees your edits */
 .htmlView_editor .stale_htmlView {
   grid-column: 1;
   margin: 0;
-  color: var(--accent_revision_htmlView);
+  color: var(--view-places-ink, color-mix(in srgb, CanvasText 60%, transparent));
   font-size: 0.86em;
+}
+
+.htmlView_editor .stale_htmlView[data-kind="OUT_OF_DATE"] > .head_Stale_htmlView {
+  color: var(--accent_stale_htmlView);
+}
+
+.htmlView_editor .stale_htmlView[data-kind="CONFLICT"] > .head_Stale_htmlView {
+  color: color-mix(in srgb, var(--view-removed-edge, light-dark(#e51400, #f14c4c)) 80%, CanvasText);
 }
 
 .htmlView_editor .rerun_htmlView {
@@ -512,7 +537,7 @@
   padding: 0;
   border: none;
   background: none;
-  color: inherit;
+  color: var(--accent_revision_htmlView);
   font: inherit;
   font-weight: 600;
   cursor: pointer;
@@ -1458,6 +1483,17 @@
 .htmlView_editor .item_htmlView:is([data-state="ACCEPTED"], [data-state="REJECTED"], [data-state="WITHDRAWN"]) .action_htmlView,
 .htmlView_editor .actions_htmlView[data-confirming] > .action_htmlView {
   color: var(--view-action-ink, light-dark(#3b3b3b, #cccccc));
+}
+
+/* a conflict's ways out, in place of its actions: keeping yours, taking the
+   file's, or both, in the proposals' indigo, as deciding is; and running it
+   again in the revision's plum */
+.htmlView_editor .actions_htmlView[data-ways] > .way_htmlView {
+  color: var(--accent_proposals_htmlView);
+}
+
+.htmlView_editor .actions_htmlView[data-ways] > .way_htmlView[data-way="RERUN"] {
+  color: var(--accent_revision_htmlView);
 }
 
 .htmlView_editor .action_htmlView:hover:not(:disabled) {

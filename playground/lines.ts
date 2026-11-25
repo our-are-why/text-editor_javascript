@@ -47,6 +47,7 @@ function lineOf(
     return text_line === "" ? [] : [{ text: text_line, attributes }]
   })
   return {
+    layer: "DOCUMENT",
     gutter: { label: "", marker: "none", pointed: "none" },
     note: null,
     segments,

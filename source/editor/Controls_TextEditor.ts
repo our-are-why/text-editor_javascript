@@ -468,7 +468,7 @@ const CONTROLS__TEXTEDITOR: Array<_Adapter_Event_> = [
   {
     event: "click",
     commandOf__Event: (event) => {
-      const element_Rerun = event.target instanceof Element ? event.target.closest(".stale_htmlView > .rerun_htmlView") : null
+      const element_Rerun = event.target instanceof Element ? event.target.closest(".stale_htmlView > .rerun_htmlView, .actions_htmlView[data-ways] > .way_htmlView[data-way=\"RERUN\"]") : null
       const id_Item = element_Rerun === null
         ? null
         : idOf__Item({
@@ -479,6 +479,25 @@ const CONTROLS__TEXTEDITOR: Array<_Adapter_Event_> = [
         : {
           kind: "RERUN",
           id_Item
+        }
+    }
+  },
+  {
+    event: "click",
+    commandOf__Event: (event) => {
+      const element_Way = event.target instanceof Element ? event.target.closest(".actions_htmlView[data-ways] > .way_htmlView") : null
+      const way = element_Way?.getAttribute("data-way")
+      const id_Item = element_Way === null
+        ? null
+        : idOf__Item({
+          element: element_Way
+        })
+      return id_Item === null || (way !== "KEEP" && way !== "TAKE" && way !== "BOTH")
+        ? null
+        : {
+          kind: "SETTLE",
+          id_Item,
+          way
         }
     }
   },

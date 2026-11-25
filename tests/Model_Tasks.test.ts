@@ -141,7 +141,7 @@ const headOf = (proposed: Array<string>, stale: Array<string>): _Head_Document_ 
   path: "retry.js",
   version: "v1",
   proposed: proposed.map((source) => ({ source, changes: [{ kind: "REPLACE", range: { from: { line: 0, offset: 0 }, to: { line: 0, offset: 1 } }, next: { lines: parseTexts_Line("x"), marks: [] } }] })),
-  stale: stale.map((source) => ({ source, changes_Stale: [{ index: 0, over: { kind: "RANGE", version: "v0", text: { lines: parseTexts_Line("t"), marks: [] } } }], count_Dropped: 0 }))
+  stale: stale.map((source) => ({ source, changes_Stale: [{ index: 0, over: { kind: "RANGE", version: "v0", text: { lines: parseTexts_Line("t"), marks: [] }, written: { lines: { lines: parseTexts_Line("t"), marks: [] }, change: { kind: "REPLACE", range: { from: { line: 0, offset: 0 }, to: { line: 0, offset: 1 } }, next: { lines: parseTexts_Line("x"), marks: [] } } } } }], count_Dropped: 0 }))
 })
 
 test("a task's changes on a document, its head there, restated as they now stand: added, replaced, let go once there's nothing in it; the same head, nothing changes; a resolved task's kept as it ended; the documents it touches with it", () => {
