@@ -36,7 +36,7 @@ test("a task's made with its first request, queued, as a draft: open, never star
 
 test("a start, at any scope, sets what's queued there running and the task working, started once, when it was first started; the last run addressed, it's your turn; Stop puts what's running back in the queue, your turn, never a draft again", () => {
   const started = after(drafted, { kind: "START", id_Task: "T-1", scope: { kind: "TASK" }, stamp: stampAt("2") })
-  expect(statusesIn(started, "T-1")).toEqual(["r-1 STARTED"])
+  expect(statusesIn(started, "T-1")).toEqual(["r-1 WITH_AGENT"])
   expect([stateOf__Task({ task: taskIn(started, "T-1") }), taskIn(started, "T-1").start]).toEqual(["WORKING", { kind: "STARTED", stamp: stampAt("2") }])
   const addressed = after(started, { kind: "ADDRESS", id_Task: "T-1", ids_Request: ["r-1"], answer: { kind: "NOTHING", note: "Nothing needed changing." } })
   expect([stateOf__Task({ task: taskIn(addressed, "T-1") }), taskIn(addressed, "T-1").requests[0]?.status]).toEqual(["YOUR_TURN", { kind: "ADDRESSED", answer: { kind: "NOTHING", note: "Nothing needed changing." } }])
@@ -55,18 +55,18 @@ test("each scope starts what's in it: a file's, its own requests and its proposa
     { kind: "REQUEST", id_Task: "T-1", request: { id: "r-3", notes: "Shorter.", aim: aimProposal("p-1") }, stamp: stampAt("3") },
     { kind: "REQUEST", id_Task: "T-1", request: { id: "r-4", notes: "Plainer.", aim: aimProposal("p-2") }, stamp: stampAt("3") }
   )
-  expect(statusesIn(after(model, { kind: "START", id_Task: "T-1", scope: { kind: "DOCUMENT", path: "retry.js" }, stamp: stampAt("4") }), "T-1")).toEqual(["r-1 QUEUED", "r-2 STARTED", "r-3 STARTED", "r-4 QUEUED"])
-  expect(statusesIn(after(model, { kind: "START", id_Task: "T-1", scope: { kind: "PROPOSALS", ids_Proposal: ["p-2"] }, stamp: stampAt("4") }), "T-1")).toEqual(["r-1 QUEUED", "r-2 QUEUED", "r-3 QUEUED", "r-4 STARTED"])
-  expect(statusesIn(after(model, { kind: "START", id_Task: "T-1", scope: { kind: "REQUESTS", ids_Request: ["r-1", "r-2"] }, stamp: stampAt("4") }), "T-1")).toEqual(["r-1 STARTED", "r-2 STARTED", "r-3 QUEUED", "r-4 QUEUED"])
+  expect(statusesIn(after(model, { kind: "START", id_Task: "T-1", scope: { kind: "DOCUMENT", path: "retry.js" }, stamp: stampAt("4") }), "T-1")).toEqual(["r-1 QUEUED", "r-2 WITH_AGENT", "r-3 WITH_AGENT", "r-4 QUEUED"])
+  expect(statusesIn(after(model, { kind: "START", id_Task: "T-1", scope: { kind: "PROPOSALS", ids_Proposal: ["p-2"] }, stamp: stampAt("4") }), "T-1")).toEqual(["r-1 QUEUED", "r-2 QUEUED", "r-3 QUEUED", "r-4 WITH_AGENT"])
+  expect(statusesIn(after(model, { kind: "START", id_Task: "T-1", scope: { kind: "REQUESTS", ids_Request: ["r-1", "r-2"] }, stamp: stampAt("4") }), "T-1")).toEqual(["r-1 WITH_AGENT", "r-2 WITH_AGENT", "r-3 QUEUED", "r-4 QUEUED"])
   const revising = after(model, { kind: "START", id_Task: "T-1", scope: { kind: "PROPOSALS", ids_Proposal: ["p-1"] }, stamp: stampAt("4") }, { kind: "REQUEST", id_Task: "T-1", request: { id: "r-5", notes: "And clearer.", aim: aimProposal("p-1") }, stamp: stampAt("5") })
-  expect(statusesIn(after(revising, { kind: "START", id_Task: "T-1", scope: { kind: "TASK" }, stamp: stampAt("6") }), "T-1")).toEqual(["r-1 STARTED", "r-2 STARTED", "r-3 STARTED", "r-4 STARTED", "r-5 QUEUED"])
+  expect(statusesIn(after(revising, { kind: "START", id_Task: "T-1", scope: { kind: "TASK" }, stamp: stampAt("6") }), "T-1")).toEqual(["r-1 WITH_AGENT", "r-2 WITH_AGENT", "r-3 WITH_AGENT", "r-4 WITH_AGENT", "r-5 QUEUED"])
 })
 
 test("a request's notes edited, or the request removed, only while it's queued; a request added twice by its id, once", () => {
   const model = after(drafted, { kind: "REQUEST", id_Task: "T-1", request: { id: "r-2", notes: "Name the counter.", aim: AIM_TASK }, stamp: stampAt("2") }, { kind: "START", id_Task: "T-1", scope: { kind: "REQUESTS", ids_Request: ["r-2"] }, stamp: stampAt("3") })
   expect(taskIn(after(model, { kind: "EDIT", id_Task: "T-1", id_Request: "r-1", notes: "Keep them all." }), "T-1").requests.map((request) => request.notes)).toEqual(["Keep them all.", "Name the counter."])
   expect(after(model, { kind: "EDIT", id_Task: "T-1", id_Request: "r-2", notes: "Changed." })).toBe(model)
-  expect(statusesIn(after(model, { kind: "REMOVE", id_Task: "T-1", id_Request: "r-1" }), "T-1")).toEqual(["r-2 STARTED"])
+  expect(statusesIn(after(model, { kind: "REMOVE", id_Task: "T-1", id_Request: "r-1" }), "T-1")).toEqual(["r-2 WITH_AGENT"])
   expect(after(model, { kind: "REMOVE", id_Task: "T-1", id_Request: "r-2" })).toBe(model)
   expect(after(model, { kind: "REQUEST", id_Task: "T-1", request: { id: "r-2", notes: "Again.", aim: AIM_TASK }, stamp: stampAt("4") })).toBe(model)
 })
@@ -130,7 +130,7 @@ test("an addressed request dismissed, let go; one not yet addressed, kept; a pro
     { kind: "ADDRESS", id_Task: "T-1", ids_Request: ["r-1"], answer: { kind: "NOTHING", note: "" } },
     { kind: "REQUEST", id_Task: "T-1", request: { id: "r-3", notes: "And clearer.", aim: aimProposal("p-1") }, stamp: stampAt("4") }
   )
-  expect(statusesIn(after(model, { kind: "DISMISS", id_Task: "T-1", id_Request: "r-1" }), "T-1")).toEqual(["r-2 STARTED", "r-3 QUEUED"])
+  expect(statusesIn(after(model, { kind: "DISMISS", id_Task: "T-1", id_Request: "r-1" }), "T-1")).toEqual(["r-2 WITH_AGENT", "r-3 QUEUED"])
   expect(after(model, { kind: "DISMISS", id_Task: "T-1", id_Request: "r-3" })).toBe(model)
   expect(statusesIn(after(model, { kind: "DECIDE", id_Task: "T-1", id_Proposal: "p-1", decision: "REJECTED" }), "T-1")).toEqual(["r-1 ADDRESSED"])
 })

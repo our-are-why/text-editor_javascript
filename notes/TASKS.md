@@ -23,8 +23,9 @@ still to decide is under **open**, at the end, each with a recommendation.
   Never kept as text.
 - **request:** something asked of the agent, aimed at the task, a document,
   some words, or a proposal (a revision).
-- **run:** the agent working on requests. A request is queued, running, or
-  addressed.
+- **run:** the agent working on requests. A request is queued, yours till
+  you start it; with the agent, once you have, an agent on it or not yet;
+  or addressed.
 - **mode:** what an editor's in, always one: manual, or a task, then its
   **active task**. Each editor has its own.
 - **manual:** the mode for editing the trunk itself. A mode in its own
@@ -302,7 +303,7 @@ What happens to a task when a document it's on moves under it:
 | its changes, accepted proposals and your edits | carried across, nothing said | conflicted: in its frame, the lines it was written on above the file's, decided on its item, yours kept, the file's taken, both, or run again |
 | its open proposals | carried across | stale, said so on its item, its lines drawn as a conflict's are: accepted anyway, over what moved, rejected, or sent back, to be written against the text as it is |
 | its requests on words | carried across | detached: kept with the words they were on; the agent reads them against the text as it is, and you aim them again or drop them |
-| a round still being written | lands, and is carried across | lands, what the move touched out of date, as when you edit during a run |
+| a round still being written | lands, and is carried across | lands, what the move touched stale, as when you edit during a run |
 
 In its editor, what moved in comes as the document's own text, unmarked,
 as it's the document's now, but shown coming in, briefly, so text never
@@ -393,8 +394,8 @@ The least it needs, each stated against its layer:
 - **its requests:** each its text; who made it, you or an agent; its aim,
   the task, a document, words of
   a document, or a proposal or words of it, a range in what they're in;
-  whether it's waiting to be started, or started, what's running now being
-  the agent's to say; once addressed, the proposals that answer it, or the
+  whether it's waiting to be started, or with the agent, whether an agent's
+  on it being the agent part's to say; once addressed, the proposals that answer it, or the
   agent's note that nothing needed changing; and, detached, the words it
   was on.
 - **for each document it's on:** the version its positions are stated
@@ -409,10 +410,10 @@ The least it needs, each stated against its layer:
   requests it answers; its last round, its change against the head, why,
   and what the round changed; the round before's text, only to mark what
   the last one changed, no older round kept; what was asked of it when it
-  was sent back; and, out of date, the text it was written against.
+  was sent back; and, stale, the text it was written against.
   Decided ones keep their last round till the task ends, to be reopened.
 
-Out of date, conflicted and detached are found as things are carried
+Stale, conflicted and detached are found as things are carried
 across, and the edits that found them are let go straight after, so each
 is stored as it's found, with the text it needs. Whole text is kept only
 there, where what it would be relative to is gone.
@@ -548,8 +549,8 @@ host, `playground/host.ts`, plays all four for now, faked.
   `source/tasks/`, plain data and functions, no DOM: a task open, never
   started or started, when first, or resolved, how, when and by whom; its
   requests, each with who made it and when, its aim, the task, a file or a
-  proposal, its words all of it or quoted, and its status, queued, started
-  or addressed, with the proposals that answer it or a note that nothing
+  proposal, its words all of it or quoted, and its status, queued, with the
+  agent or addressed, with the proposals that answer it or a note that nothing
   needed changing; its proposals, each its file, title, why and decision;
   the moves as commands, each a pure function, `modelAfter__Command`, by a
   map of them, `HANDLERMAP__TASKS`: draft, with the first request; request,
@@ -563,9 +564,10 @@ host, `playground/host.ts`, plays all four for now, faked.
   draft's; and collect, only what's resolved; a move that changes nothing
   giving back the same model, so nothing's told. Worked out, never stored:
   a task's state, its counts and the files it touches. `_Tasks_` holds
-  them, taking each command, telling its observers what changed. Started
-  stands for running till the agent part says what's running of what's
-  started. A task's changes, its heads, came with the documents part,
+  them, taking each command, telling its observers what changed. With the
+  agent, `WITH_AGENT`, called started till 2026-11-25, which read as an
+  agent at work, is drawn as running till the agent part says which of
+  what's with it an agent has. A task's changes, its heads, came with the documents part,
   below. Not yet: a proposal's rounds' text, each round as it landed; and
   a request's words are kept by their text alone, the editor's own of
   them, where they're drawn, kept by its host. **The playground on it, 2026-11-24:** its host holds
@@ -651,7 +653,8 @@ host, `playground/host.ts`, plays all four for now, faked.
   wrong copy; and storage, the shell's.
 - **the agent:** runs, which requests are running for which task; how the
   agent's given its work, doctor's `doctor wait` or otherwise; whether it's
-  there and working.
+  there and working. Begun 2026-11-25 in `AGENT.md`, as the questions to
+  walk through before it's designed, without coupling to any one harness.
 - **the shell:** puts them together: keeps each editor's document and
   mode, across reloads too; takes each editor's commands to the part
   they're for; tells each open editor what it should now show, and passes
@@ -810,7 +813,8 @@ Settled, of the questions this note began with:
   proposal's next round on its words, a change of yours anywhere else, a
   line shown once too, a frame of yours opening round it (2026-11-25);
 - **tasks are flat:** none stands on or waits on another, so a request's
-  either waiting to be started, or started and running, nothing between
-  (2026-11-22);
+  either waiting to be started, or with the agent, never waiting on another
+  task (2026-11-22); whether an agent's picked it up yet is the agent
+  part's, in `AGENT.md`;
 - **a new task from parts of another** isn't the model's to offer, only
   not ruled out, a canceled task's changes kept as they stood (2026-11-22).

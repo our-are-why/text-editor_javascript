@@ -251,7 +251,7 @@ function hostedOf__Editor<State>({
         id_Task,
         source
       ] = key.split("\n")
-      const isRunning = (taskOf(id_Task ?? "")?.requests ?? []).some((request) => request.status.kind === "STARTED" && request.aim.kind === "PROPOSAL" && request.aim.id_Proposal === source)
+      const isRunning = (taskOf(id_Task ?? "")?.requests ?? []).some((request) => request.status.kind === "WITH_AGENT" && request.aim.kind === "PROPOSAL" && request.aim.id_Proposal === source)
       return isRunning ? [base.version] : []
     })
     documents.handle({
@@ -1093,7 +1093,7 @@ interface _Api___idsOf__Started_ {
 function idsOf__Started({
   task
 }: _Api___idsOf__Started_): Array<string> {
-  return (task?.requests ?? []).flatMap((request) => request.status.kind === "STARTED" ? [request.id] : [])
+  return (task?.requests ?? []).flatMap((request) => request.status.kind === "WITH_AGENT" ? [request.id] : [])
 }
 
 interface _Api___idOf__Task_Next_ {

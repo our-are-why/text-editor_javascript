@@ -367,7 +367,7 @@ function statusOf__Host({
     }
     : request_Host.status === "RUNNING"
       ? {
-        kind: "STARTED",
+        kind: "WITH_AGENT",
         stamp
       }
       : {
@@ -447,7 +447,7 @@ function countedOn__Path({
         },
         status: state === "REVISING"
           ? {
-            kind: "STARTED",
+            kind: "WITH_AGENT",
             stamp
           }
           : {
@@ -460,7 +460,7 @@ function countedOn__Path({
   const count_Running = counts_Requests.RUNNING - counts_Proposals.REVISING
   const requests_Path = [
     ...Array.from({ length: Math.max(count_Queued, 0) }, () => "QUEUED" as const),
-    ...Array.from({ length: Math.max(count_Running, 0) }, () => "STARTED" as const)
+    ...Array.from({ length: Math.max(count_Running, 0) }, () => "WITH_AGENT" as const)
   ].map((
     kind,
     index
@@ -480,7 +480,7 @@ function countedOn__Path({
         kind: "QUEUED"
       }
       : {
-        kind: "STARTED",
+        kind: "WITH_AGENT",
         stamp
       }
   }))
@@ -640,7 +640,7 @@ function proposalsHostOf__Task({
               id: request.id,
               notes: request.notes,
               reference: references.get(request.id) ?? null,
-              status: request.status.kind === "STARTED" ? "RUNNING" : "QUEUED"
+              status: request.status.kind === "WITH_AGENT" ? "RUNNING" : "QUEUED"
             }
           ]
           : []),
@@ -724,7 +724,7 @@ function taskHostOf__Task({
             kind: request.aim.kind,
             reference: references.get(request.id) ?? null
           },
-          status: request.status.kind === "QUEUED" ? "QUEUED" : request.status.kind === "STARTED" ? "RUNNING" : "ADDRESSED",
+          status: request.status.kind === "QUEUED" ? "QUEUED" : request.status.kind === "WITH_AGENT" ? "RUNNING" : "ADDRESSED",
           sources_Answering: request.status.kind === "ADDRESSED" && request.status.answer.kind === "PROPOSALS" ? request.status.answer.ids_Proposal : []
         }
       ]
@@ -796,7 +796,7 @@ function countsOf__Proposals_Path({
     const statuses = task.requests.flatMap((request) => request.aim.kind === "PROPOSAL" && request.aim.id_Proposal === proposal.id ? [request.status.kind] : [])
     return proposal.decision !== "OPEN"
       ? proposal.decision
-      : statuses.includes("STARTED")
+      : statuses.includes("WITH_AGENT")
         ? "REVISING"
         : statuses.includes("QUEUED")
           ? "REQUESTED"
@@ -830,7 +830,7 @@ function countsOf__Requests_Path({
   }) === path)
   return {
     QUEUED: requests_Path.filter((request) => request.status.kind === "QUEUED").length,
-    RUNNING: requests_Path.filter((request) => request.status.kind === "STARTED").length
+    RUNNING: requests_Path.filter((request) => request.status.kind === "WITH_AGENT").length
   }
 }
 

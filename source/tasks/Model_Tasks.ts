@@ -24,7 +24,7 @@ export {
   type _Status_Request_Tasks_,
   type __BASE_Status_Request_Tasks_,
   type _QUEUED_Status_Request_Tasks_,
-  type _STARTED_Status_Request_Tasks_,
+  type _WITH_AGENT__Status_Request_Tasks_,
   type _ADDRESSED_Status_Request_Tasks_,
   type _Answer_Request_,
   type __BASE_Answer_Request_,
@@ -172,7 +172,7 @@ interface _QUOTED_Words_Aim_ extends __BASE_Words_Aim_<"QUOTED"> {
   text: string
 }
 
-type _Status_Request_Tasks_ = _QUEUED_Status_Request_Tasks_ | _STARTED_Status_Request_Tasks_ | _ADDRESSED_Status_Request_Tasks_
+type _Status_Request_Tasks_ = _QUEUED_Status_Request_Tasks_ | _WITH_AGENT__Status_Request_Tasks_ | _ADDRESSED_Status_Request_Tasks_
 
 interface __BASE_Status_Request_Tasks_<Kind extends string> {
   kind: Kind
@@ -180,7 +180,7 @@ interface __BASE_Status_Request_Tasks_<Kind extends string> {
 
 interface _QUEUED_Status_Request_Tasks_ extends __BASE_Status_Request_Tasks_<"QUEUED"> {}
 
-interface _STARTED_Status_Request_Tasks_ extends __BASE_Status_Request_Tasks_<"STARTED"> {
+interface _WITH_AGENT__Status_Request_Tasks_ extends __BASE_Status_Request_Tasks_<"WITH_AGENT"> {
   stamp: _Stamp_Tasks_
 }
 
@@ -578,7 +578,7 @@ function START_modelAfter__Command({
           : {
             ...request,
             status: {
-              kind: "STARTED",
+              kind: "WITH_AGENT",
               stamp: command.stamp
             }
           }
@@ -603,7 +603,7 @@ interface _Api___idsOf__Proposals_Revising_ {
 function idsOf__Proposals_Revising({
   task
 }: _Api___idsOf__Proposals_Revising_): Array<string> {
-  return task.requests.flatMap((request) => request.status.kind === "STARTED" && request.aim.kind === "PROPOSAL" ? [request.aim.id_Proposal] : [])
+  return task.requests.flatMap((request) => request.status.kind === "WITH_AGENT" && request.aim.kind === "PROPOSAL" ? [request.aim.id_Proposal] : [])
 }
 
 interface _Api___isInScope__Request_<Kind extends _Scope_Tasks_["kind"]> {
@@ -677,7 +677,7 @@ function STOP_modelAfter__Command({
     id_Task: command.id_Task,
     change: (task) => requestsChangedIn__Task({
       task,
-      change: (request) => request.status.kind === "STARTED" && isInScope__Request({
+      change: (request) => request.status.kind === "WITH_AGENT" && isInScope__Request({
         task,
         scope: command.scope,
         request
@@ -739,7 +739,7 @@ function ADDRESS_modelAfter__Command({
     id_Task: command.id_Task,
     change: (task) => requestsChangedIn__Task({
       task,
-      change: (request) => request.status.kind === "STARTED" && command.ids_Request.includes(request.id)
+      change: (request) => request.status.kind === "WITH_AGENT" && command.ids_Request.includes(request.id)
         ? {
           ...request,
           status: {
@@ -844,7 +844,7 @@ function APPLY_modelAfter__Command({
   return openChangedIn__Model({
     model_Tasks,
     id_Task: command.id_Task,
-    change: (task) => task.requests.some((request) => request.status.kind === "STARTED") || countsOf__Task({
+    change: (task) => task.requests.some((request) => request.status.kind === "WITH_AGENT") || countsOf__Task({
       task
     }).count_Conflicts > 0
       ? task
@@ -886,7 +886,7 @@ function CANCEL_modelAfter__Command({
       : resolvedOf__Task({
         task: requestsChangedIn__Task({
           task,
-          change: (request) => request.status.kind === "STARTED"
+          change: (request) => request.status.kind === "WITH_AGENT"
             ? {
               ...request,
               status: {
@@ -947,7 +947,7 @@ function stateOf__Task({
     ? task.resolution.how
     : task.start.kind === "UNSTARTED"
       ? "DRAFT"
-      : task.requests.some((request) => request.status.kind === "STARTED")
+      : task.requests.some((request) => request.status.kind === "WITH_AGENT")
         ? "WORKING"
         : "YOUR_TURN"
 }
@@ -976,7 +976,7 @@ function countsOf__Task({
       stale_Source
     ) => sum + stale_Source.changes_Stale.length + stale_Source.count_Dropped, 0),
     count_Queued: task.requests.filter((request) => request.status.kind === "QUEUED").length,
-    count_Running: task.requests.filter((request) => request.status.kind === "STARTED").length
+    count_Running: task.requests.filter((request) => request.status.kind === "WITH_AGENT").length
   }
 }
 
