@@ -1,4 +1,9 @@
-import type { _Module_TextEditor_, _Command_TextEditor_, _Unit_Move_, _Direction_Move_ } from "../Viewer_TextEditor.ts"
+import type {
+  _Module_TextEditor_,
+  _Command_TextEditor_,
+  _Unit_Move_,
+  _Direction_Move_
+} from "../Viewer_TextEditor.ts"
 
 export {
   MODULE_KEYBOARD

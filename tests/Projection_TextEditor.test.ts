@@ -7,7 +7,7 @@ import { MODULE_PLAINTEXT, isLines__Part_Frame, pointedAt__ViewModel, type _Stat
 import { actions_Review } from "../playground/items.ts"
 import { model_retry, proposals_retry, stale_retry, ranges_retry, setup_retry } from "../playground/examples/javascript.ts"
 import { roundsOf__Stale } from "../playground/tasks.ts"
-import { model_readme, proposals_readme, ranges_readme, setup_readme } from "../playground/examples/markdown.ts"
+import { model_readme, proposals_readme, stale_readme, ranges_readme, setup_readme } from "../playground/examples/markdown.ts"
 import { perspective_Markdown } from "../playground/readings.ts"
 import { PERSPECTIVE_CHANGES } from "../source/editor/perspectives/changes.ts"
 import { changes } from "../playground/documents/changes.ts"
@@ -274,8 +274,8 @@ test("a change inside words another restyles is no condition of it either, as th
 // the JavaScript one in its one perspective, the editor's changes; the
 // Markdown one in that, and read as Markdown
 const viewModel_retry = viewModelOf__Model({ model_TextEditor: model_retry, name_Document: "notes/digits.txt", proposals: proposals_retry, source_Yours: "yours", rounds_Landed: roundsOf__Stale({ stale: stale_retry }), mode: { kind: "MANUAL" }, tasks: [], files: [], ranges_Frame: ranges_retry, module_Language: setup_retry.module_Language, module_Reading: setup_retry.perspectives[0].module_Reading })
-const viewModel_readme = viewModelOf__Model({ model_TextEditor: model_readme, name_Document: "notes/digits.txt", proposals: proposals_readme, source_Yours: "yours", rounds_Landed: [], mode: { kind: "MANUAL" }, tasks: [], files: [], ranges_Frame: ranges_readme, module_Language: setup_readme.module_Language, module_Reading: PERSPECTIVE_CHANGES.module_Reading })
-const viewModel_readme_Markdown = viewModelOf__Model({ model_TextEditor: model_readme, name_Document: "notes/digits.txt", proposals: proposals_readme, source_Yours: "yours", rounds_Landed: [], mode: { kind: "MANUAL" }, tasks: [], files: [], ranges_Frame: ranges_readme, module_Language: setup_readme.module_Language, module_Reading: perspective_Markdown.module_Reading })
+const viewModel_readme = viewModelOf__Model({ model_TextEditor: model_readme, name_Document: "notes/digits.txt", proposals: proposals_readme, source_Yours: "yours", rounds_Landed: roundsOf__Stale({ stale: stale_readme }), mode: { kind: "MANUAL" }, tasks: [], files: [], ranges_Frame: ranges_readme, module_Language: setup_readme.module_Language, module_Reading: PERSPECTIVE_CHANGES.module_Reading })
+const viewModel_readme_Markdown = viewModelOf__Model({ model_TextEditor: model_readme, name_Document: "notes/digits.txt", proposals: proposals_readme, source_Yours: "yours", rounds_Landed: roundsOf__Stale({ stale: stale_readme }), mode: { kind: "MANUAL" }, tasks: [], files: [], ranges_Frame: ranges_readme, module_Language: setup_readme.module_Language, module_Reading: perspective_Markdown.module_Reading })
 
 test("the JavaScript example draws as it was drawn by hand", () => {
   expect(viewModel_retry.runs).toEqual(runsIn(viewModel_retry))

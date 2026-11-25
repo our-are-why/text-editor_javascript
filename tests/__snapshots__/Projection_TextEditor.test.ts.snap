@@ -24,12 +24,27 @@ FRAME 1-2
   LINES run 3
     "3" none none: 
       ⟵ document 2:0 [0,0)
-    "4" none none: "const"{data-syntax=keyword} " ATTEMPTS = " "5"{data-syntax=number} ";"
+FRAME 4-5
+  CURRENT_LINES run 4
+    "4" changed none: "const"{data-syntax=keyword} " ATTEMPTS = " "5"{data-change=replaced data-side=before data-source=yours data-state=OPEN data-syntax=number} ";"
       ⟵ document 3:0 [0,19)
-    "5" none none: "const"{data-syntax=keyword} " DELAY_MS = " "100"{data-syntax=number} ";"
+    "5" changed none: "const"{data-syntax=keyword} " DELAY_MS = " "100"{data-change=replaced data-side=before data-source=yours data-state=OPEN data-syntax=number} ";"
       ⟵ document 4:0 [0,21)
+    ring {data-place=1 data-source=yours data-state=OPEN}
+      STRETCH 0:17-0:18 {data-change=replaced data-place=1 data-side=before data-source=yours data-yours=}
+    ring {data-place=2 data-source=yours data-state=OPEN}
+      STRETCH 1:17-1:20 {data-change=replaced data-place=2 data-side=before data-source=yours data-yours=}
+  PROPOSAL_LINES run 5
+    "~" changed none: "const"{data-syntax=keyword} " ATTEMPTS = " "3"{data-change=replaced data-side=after data-source=yours data-state=OPEN data-syntax=number} ";"
+      ⟵ document 3:0 [0,17) | yours#0 0:0 [17,18) | document 3:18 [18,19)
+    "~" changed none: "const"{data-syntax=keyword} " DELAY_MS = " "250"{data-change=replaced data-side=after data-source=yours data-state=OPEN data-syntax=number} ";"
+      ⟵ document 4:0 [0,17) | yours#1 0:0 [17,20) | document 4:20 [20,21)
+    ring {data-place=1 data-source=yours data-state=OPEN}
+      STRETCH 0:17-0:18 {data-change=replaced data-place=1 data-side=after data-source=yours data-yours=}
+    ring {data-place=2 data-source=yours data-state=OPEN}
+      STRETCH 1:17-1:20 {data-change=replaced data-place=2 data-side=after data-source=yours data-yours=}
 FRAME 6-5
-  PROPOSAL_LINES run 4
+  PROPOSAL_LINES run 6
     "→" moved none: 
       ⟵ document 40:0 [0,0)
     "→" moved none (from lines 41–50 → sleep before): "function"{data-change=moved data-side=after data-source=sleep data-state=OPEN data-syntax=keyword} " "{data-change=moved data-side=after data-source=sleep data-state=OPEN} "sleep"{data-change=moved data-side=after data-source=sleep data-state=OPEN data-syntax=function} "("{data-change=moved data-side=after data-source=sleep data-state=OPEN} "delayMs"{data-change=moved data-edit-change=replaced data-edit-source=delay data-side=after data-source=sleep data-state=OPEN} ", signal) {"{data-change=moved data-side=after data-source=sleep data-state=OPEN}
@@ -59,24 +74,32 @@ FRAME 6-5
   PROPOSAL_LIST
     {"actions":[{"command":"accept","label":"Accept","stateAfter":"ACCEPTED"},{"command":"reject","label":"Reject","stateAfter":"REJECTED"},{"command":"revise","label":"Revise","stateAfter":"REQUESTED"}],"attributes":{},"confirming":null,"isDrafting":false,"isRunning":false,"isStartable":false,"neighbors":{"range_Next":{"first":41,"last":50},"range_Previous":null},"places":{"kind":"MOVE","range":{"first":41,"last":50},"way":"UP"},"rationale":"Read from the top, sleep comes before retry, which waits on it, next to the constants it's given.","requests":[],"source":"sleep","stale":null,"state":"OPEN","status":"","title":"Move sleep up, beside the delays it waits out"}
     {"actions":[{"command":"accept","label":"Accept","stateAfter":"ACCEPTED"},{"command":"reject","label":"Reject","stateAfter":"REJECTED"},{"command":"revise","label":"Revise","stateAfter":"REQUESTED"}],"attributes":{},"confirming":null,"isDrafting":false,"isRunning":false,"isStartable":false,"neighbors":{"range_Next":{"first":41,"last":50},"range_Previous":null},"places":{"conditions":[{"count":2,"kind":"CARRIED","source":"sleep","title":"Move sleep up, beside the delays it waits out"}],"count_All":2,"count_Here":2,"kind":"COUNT"},"rationale":"As DELAY_MS is: the unit in the name, where the number's read, wherever sleep ends up.","requests":[],"source":"delay","stale":null,"state":"OPEN","status":"","title":"Call sleep's ms delayMs"}
-  LINES run 5
+  LINES run 7
     "6" none none: 
       ⟵ document 5:0 [0,0)
     "7" none none: "/**"{data-syntax=comment}
       ⟵ document 6:0 [0,3)
+FRAME 8-8
+  CURRENT_LINES run 8
     "8" none none: " * @template T"{data-syntax=comment}
       ⟵ document 7:0 [0,14)
+  PROPOSAL_LINES run 9
+    "~" changed none: " * @template T"{data-syntax=comment} " what attempt resolves to"{data-change=inserted data-side=after data-source=yours data-state=OPEN data-syntax=comment}
+      ⟵ document 7:0 [0,14) | yours#2 0:0 [14,39) | document 7:14 [39,39)
+    ring {data-place=3 data-source=yours data-state=OPEN}
+      STRETCH 0:15-0:39 {data-change=inserted data-place=3 data-side=after data-source=yours data-yours=}
+  LINES run 10
     "9" none none: " * @param {() => Promise<T>} attempt"{data-syntax=comment}
       ⟵ document 8:0 [0,36)
 FRAME 10-10
-  CURRENT_LINES run 6
+  CURRENT_LINES run 11
     "10" changed none: " * @param {{ attempts?: number, signal?: AbortSignal"{data-syntax=comment} ", onRetry?: (error: unknown, "{data-change=removed data-side=before data-source=hook data-state=OPEN data-syntax=comment} "n"{data-change=removed data-nested-change=replaced data-nested-source=round data-side=before data-source=hook data-state=OPEN data-syntax=comment} ": number) => void"{data-change=removed data-side=before data-source=hook data-state=OPEN data-syntax=comment} " }} [options]"{data-syntax=comment}
       ⟵ document 9:0 [0,112)
     ring {data-source=hook data-state=OPEN}
       STRETCH 0:52-0:99 {data-change=removed data-place=1 data-side=before data-source=hook}
     ring {data-source=round data-state=OPEN}
       STRETCH 0:81-0:82 {data-change=replaced data-place=1 data-side=before data-source=round data-within=hook}
-  PROPOSAL_LINES run 7
+  PROPOSAL_LINES run 12
     "" none none: " * @param {{ attempts?: number, signal?: AbortSignal }} [options]"{data-syntax=comment}
       ⟵ document 9:0 [0,52) | hook#0 0:0 [52,52) | document 9:99 [52,65)
     ring {data-source=hook data-state=OPEN}
@@ -85,13 +108,13 @@ FRAME 10-10
   PROPOSAL_LIST
     {"actions":[{"command":"accept","label":"Accept","stateAfter":"ACCEPTED"},{"command":"reject","label":"Reject","stateAfter":"REJECTED"},{"command":"revise","label":"Revise","stateAfter":"REQUESTED"}],"attributes":{},"confirming":null,"isDrafting":false,"isRunning":false,"isStartable":false,"neighbors":{"range_Next":{"first":13,"last":27},"range_Previous":null},"places":{"conditions":[],"count_All":3,"count_Here":1,"kind":"COUNT"},"rationale":"Nothing passes onRetry any more: the callers log their retries in their own catch blocks.","requests":[],"source":"hook","stale":null,"state":"OPEN","status":"","title":"Drop the onRetry hook"}
     {"actions":[{"command":"accept","label":"Accept","stateAfter":"ACCEPTED"},{"command":"reject","label":"Reject","stateAfter":"REJECTED"},{"command":"revise","label":"Revise","stateAfter":"REQUESTED"}],"attributes":{},"confirming":null,"isDrafting":false,"isRunning":false,"isStartable":false,"neighbors":{"range_Next":{"first":13,"last":27},"range_Previous":null},"places":{"conditions":[{"count":1,"kind":"WITHIN","source":"hook","title":"Drop the onRetry hook"}],"count_All":9,"count_Here":1,"kind":"COUNT"},"rationale":"n says nothing; round says what it counts, in retry and in backoff alike, and in the doc comment that names it.","requests":[],"source":"round","stale":null,"state":"OPEN","status":"","title":"Call the attempt counter round"}
-  LINES run 8
+  LINES run 13
     "11" none none: " * @returns {Promise<T>}"{data-syntax=comment}
       ⟵ document 10:0 [0,24)
     "12" none none: " */"{data-syntax=comment}
       ⟵ document 11:0 [0,3)
 FRAME 13-27
-  CURRENT_LINES run 9
+  CURRENT_LINES run 14
     "13" changed none: "export"{data-syntax=keyword} " " "async"{data-syntax=keyword} " " "function"{data-syntax=keyword} " " "retry"{data-syntax=function} "(attempt, { attempts = ATTEMPTS, signal" ", onRetry"{data-change=removed data-side=before data-source=hook data-state=OPEN} " } = {}) {"
       ⟵ document 12:0 [0,85)
     "14" changed none: "  " "let"{data-change=replaced data-side=before data-source=errors data-state=OPEN data-syntax=keyword} " lastError"{data-change=replaced data-side=before data-source=errors data-state=OPEN} ";"
@@ -139,7 +162,7 @@ FRAME 13-27
     ring {data-source=order data-state=OPEN}
       STRETCH 8:10-8:24 {data-change=moved data-place=1 data-side=before data-source=order}
       STRETCH 8:28-8:47 {data-change=moved data-place=2 data-side=before data-source=order}
-  PROPOSAL_LINES run 10
+  PROPOSAL_LINES run 15
     "" none none: "export"{data-syntax=keyword} " " "async"{data-syntax=keyword} " " "function"{data-syntax=keyword} " " "retry"{data-syntax=function} "(attempt, { attempts = ATTEMPTS, signal } = {}) {"
       ⟵ document 12:0 [0,66) | hook#1 0:0 [66,66) | document 12:75 [66,76)
     "~" changed none: "  " "const"{data-change=replaced data-side=after data-source=errors data-state=OPEN data-syntax=keyword} " errors = []"{data-change=replaced data-side=after data-source=errors data-state=OPEN} ";"
@@ -164,8 +187,8 @@ FRAME 13-27
       ⟵ document 23:0 [0,5)
     "" none none: "  }"
       ⟵ document 24:0 [0,3)
-    "~" changed none: "  " "throw"{data-syntax=keyword} " " "new"{data-syntax=keyword} " " "AggregateError"{data-syntax=function} "(" "errors"{data-change=replaced data-side=after data-source=errors data-state=OPEN} ", " "\`gave up after "{data-syntax=string} "\${attempts}" " attempts\`"{data-syntax=string} ");"
-      ⟵ document 25:0 [0,27) | errors#2 0:0 [27,33) | document 25:38 [33,73)
+    "~" changed none: "  " "throw"{data-syntax=keyword} " " "new"{data-syntax=keyword} " " "AggregateError"{data-syntax=function} "(" "errors"{data-change=replaced data-side=after data-source=errors data-state=OPEN} ", " "\`"{data-syntax=string} "retry "{data-change=inserted data-side=after data-source=yours data-state=OPEN data-syntax=string} "gave up after "{data-syntax=string} "\${attempts}" " attempts\`"{data-syntax=string} ");"
+      ⟵ document 25:0 [0,27) | errors#2 0:0 [27,33) | document 25:38 [33,36) | yours#3 0:0 [36,42) | document 25:41 [42,79)
     "" none none: "}"
       ⟵ document 26:0 [0,1)
     ring {data-source=errors data-state=OPEN}
@@ -183,18 +206,21 @@ FRAME 13-27
       STRETCH 8:33-8:51 {data-change=moved data-place=1 data-side=after data-source=order}
     ring {data-source=aborted data-state=OPEN}
       STRETCH 8:52-8:70 {data-change=inserted data-place=1 data-side=after data-source=aborted}
+    ring {data-place=4 data-source=yours data-state=OPEN}
+      STRETCH 12:36-12:41 {data-change=inserted data-place=4 data-side=after data-source=yours data-yours=}
     ring {data-source=hook data-state=OPEN}
       POINT 0:66 {data-change=removed data-place=2 data-side=after data-source=hook}
       BOUNDARY 9 {data-change=removed data-place=3 data-side=after data-source=hook}
   PROPOSAL_HEAD {"accept_All":{"label":"Accept all (5)","title":"Accepts every open proposal listed in lines 13–27, wherever else it's listed; one with requests waiting is left to be decided by itself"},"figure":{"more":"5 to review · 1 withdrawn","value":"1 of 6 decided"},"kind":"PROPOSAL_HEAD","label_Range":"lines 13–27","revisions_Scope":{"actions":[],"figure":null,"start_All":null,"stop_All":null}}
   PROPOSAL_LIST
+    {"actions":[],"attributes":{},"confirming":null,"isDrafting":false,"isRunning":false,"isStartable":false,"neighbors":{"range_Next":null,"range_Previous":null},"places":{"conditions":[],"count_All":4,"count_Here":1,"kind":"COUNT"},"rationale":"","requests":[],"source":"yours","stale":null,"state":"OPEN","status":"","title":"Your edits"}
     {"actions":[{"command":"accept","label":"Accept","stateAfter":"ACCEPTED"},{"command":"reject","label":"Reject","stateAfter":"REJECTED"},{"command":"revise","label":"Revise","stateAfter":"REQUESTED"}],"attributes":{},"confirming":null,"isDrafting":false,"isRunning":false,"isStartable":false,"neighbors":{"range_Next":null,"range_Previous":{"first":10,"last":10}},"places":{"conditions":[],"count_All":3,"count_Here":2,"kind":"COUNT"},"rationale":"Nothing passes onRetry any more: the callers log their retries in their own catch blocks.","requests":[],"source":"hook","stale":null,"state":"OPEN","status":"","title":"Drop the onRetry hook"}
     {"actions":[{"command":"accept","label":"Accept","stateAfter":"ACCEPTED"},{"command":"reject","label":"Reject","stateAfter":"REJECTED"},{"command":"revise","label":"Revise","stateAfter":"REQUESTED"}],"attributes":{},"confirming":null,"isDrafting":false,"isRunning":false,"isStartable":false,"neighbors":{"range_Next":null,"range_Previous":null},"places":{"kind":"NONE"},"rationale":"When every attempt fails, the AggregateError should hold all of them: the first is often the telling one, a timeout before the server's 503s.","requests":[],"source":"errors","stale":null,"state":"OPEN","status":"","title":"Keep every error, not only the last"}
     {"actions":[{"command":"accept","label":"Accept","stateAfter":"ACCEPTED"},{"command":"reject","label":"Reject","stateAfter":"REJECTED"},{"command":"revise","label":"Revise","stateAfter":"REQUESTED"}],"attributes":{},"confirming":null,"isDrafting":false,"isRunning":false,"isStartable":false,"neighbors":{"range_Next":{"first":31,"last":34},"range_Previous":{"first":10,"last":10}},"places":{"conditions":[{"count":1,"kind":"WITHIN","source":"hook","title":"Drop the onRetry hook"},{"count":1,"kind":"CARRIED","source":"order","title":"Ask about the error before the round"}],"count_All":9,"count_Here":6,"kind":"COUNT"},"rationale":"n says nothing; round says what it counts, in retry and in backoff alike, and in the doc comment that names it.","requests":[],"source":"round","stale":null,"state":"OPEN","status":"","title":"Call the attempt counter round"}
     {"actions":[{"command":"accept","label":"Accept","stateAfter":"ACCEPTED"},{"command":"reject","label":"Reject","stateAfter":"REJECTED"},{"command":"revise","label":"Revise","stateAfter":"REQUESTED"}],"attributes":{},"confirming":null,"isDrafting":false,"isRunning":false,"isStartable":false,"neighbors":{"range_Next":null,"range_Previous":null},"places":{"kind":"NONE"},"rationale":"An error that can't be retried ends the loop in any round: asked first, it reads as the reason to stop, and the round as the limit.","requests":[],"source":"order","stale":{"head":"Stale","isRerunnable":true,"kind":"STALE","label":"1 dropped, its text gone","ways":[]},"state":"OPEN","status":"","title":"Ask about the error before the round"}
     {"actions":[{"command":"accept","label":"Accept","stateAfter":"ACCEPTED"},{"command":"reject","label":"Reject","stateAfter":"REJECTED"},{"command":"revise","label":"Revise","stateAfter":"REQUESTED"}],"attributes":{},"confirming":null,"isDrafting":false,"isRunning":false,"isStartable":false,"neighbors":{"range_Next":null,"range_Previous":null},"places":{"kind":"NONE"},"rationale":"An abort during an attempt has already happened by the time sleep listens for it, so sleep waits out the whole delay before throwIfAborted notices.","requests":[],"source":"aborted","stale":null,"state":"OPEN","status":"","title":"Stop retrying once the caller aborts"}
     {"actions":[{"command":"dismiss","label":"Dismiss","stateAfter":null}],"attributes":{},"confirming":null,"isDrafting":false,"isRunning":false,"isStartable":false,"neighbors":{"range_Next":null,"range_Previous":null},"places":{"kind":"NONE"},"rationale":"So a slow call shows in the logs as it happens, not only when it finally fails.","requests":[],"source":"log","stale":null,"state":"WITHDRAWN","status":"Withdrawn","title":"Log each retry"}
-  LINES run 11
+  LINES run 16
     "28" none none: 
       ⟵ document 27:0 [0,0)
     "29" none none: "// 100ms, 200ms, 400ms, ..., and up to half as long again at random, so that"{data-syntax=comment}
@@ -202,26 +228,32 @@ FRAME 13-27
     "30" none none: "// many clients retrying at once don't all come back at the same moment"{data-syntax=comment}
       ⟵ document 29:0 [0,71)
 FRAME 31-34
-  CURRENT_LINES run 12
+  CURRENT_LINES run 17
     "31" changed none: "export"{data-syntax=keyword} " " "function"{data-syntax=keyword} " " "backoff"{data-syntax=function} "(" "n"{data-change=replaced data-side=before data-source=round data-state=OPEN} ") {"
       ⟵ document 30:0 [0,28)
-    "32" changed none: "  " "const"{data-syntax=keyword} " delay = DELAY_MS * " "2"{data-syntax=number} " ** (" "n"{data-change=replaced data-side=before data-source=round data-state=OPEN} " - " "1"{data-syntax=number} ");"
-      ⟵ document 31:0 [0,40)
+    "32" changed none WRITTEN_ON: "  " "const"{data-syntax=keyword} " delay = " "DELAY_MS"{data-change=replaced data-side=before data-source=base data-state=ACCEPTED} " * " "2"{data-syntax=number} " ** (n - " "1"{data-syntax=number} ");"
+      ⟵ 
+    "" changed none MOVED_SINCE: "  " "const"{data-syntax=keyword} " delay = " "BASE_MS" " * " "2"{data-syntax=number} " ** (" "n"{data-change=replaced data-side=before data-source=round data-state=OPEN} " - " "1"{data-syntax=number} ");"
+      ⟵ document 31:0 [0,39)
     "33" changed none: "  " "return"{data-syntax=keyword} " " "delay"{data-change=replaced data-side=before data-source=cap data-state=REQUESTED} " + Math." "random"{data-syntax=function} "() * (" "delay"{data-change=replaced data-side=before data-source=cap data-state=REQUESTED} " / " "2"{data-syntax=number} ");"
       ⟵ document 32:0 [0,45)
     "34" none none: "}"
       ⟵ document 33:0 [0,1)
     ring {data-source=round data-state=OPEN}
       STRETCH 0:24-0:25 {data-change=replaced data-place=8 data-side=before data-source=round}
-      STRETCH 1:33-1:34 {data-change=replaced data-place=9 data-side=before data-source=round}
+      STRETCH 2:32-2:33 {data-change=replaced data-place=9 data-side=before data-source=round}
+    ring {data-source=base data-state=ACCEPTED}
+      STRETCH 1:16-1:24 {data-change=replaced data-place=1 data-side=before data-source=base data-stale=}
     ring {data-source=cap data-state=REQUESTED}
-      STRETCH 2:9-2:14 {data-change=replaced data-place=1 data-side=before data-source=cap}
-      STRETCH 2:34-2:39 {data-change=replaced data-place=2 data-side=before data-source=cap}
-  PROPOSAL_LINES run 13
+      STRETCH 3:9-3:14 {data-change=replaced data-place=1 data-side=before data-source=cap}
+      STRETCH 3:34-3:39 {data-change=replaced data-place=2 data-side=before data-source=cap}
+    ring {data-since=}
+      STRETCH 2:16-2:23 {data-change=replaced data-since=}
+  PROPOSAL_LINES run 18
     "~" changed none: "export"{data-syntax=keyword} " " "function"{data-syntax=keyword} " " "backoff"{data-syntax=function} "(" "round"{data-change=replaced data-side=after data-source=round data-state=OPEN} ") {"
       ⟵ document 30:0 [0,24) | round#5 0:0 [24,29) | document 30:25 [29,32)
-    "~" changed none: "  " "const"{data-syntax=keyword} " delay = DELAY_MS * " "2"{data-syntax=number} " ** (" "round"{data-change=replaced data-side=after data-source=round data-state=OPEN} " - " "1"{data-syntax=number} ");"
-      ⟵ document 31:0 [0,16) | base#0 0:0 [16,24) | document 31:24 [24,33) | round#6 0:0 [33,38) | document 31:34 [38,44)
+    "~" changed none: "  " "const"{data-syntax=keyword} " delay = " "DELAY_MS"{data-change=replaced data-side=after data-source=base data-state=ACCEPTED} " * " "2"{data-syntax=number} " ** (" "round"{data-change=replaced data-side=after data-source=round data-state=OPEN} " - " "1"{data-syntax=number} ");"
+      ⟵ document 31:0 [0,16) | base#0 0:0 [16,24) | document 31:23 [24,33) | round#6 0:0 [33,38) | document 31:33 [38,44)
     "+" inserted none: "  "{data-change=inserted data-side=after data-source=cap data-state=REQUESTED} "const"{data-change=inserted data-side=after data-source=cap data-state=REQUESTED data-syntax=keyword} " capped = Math."{data-change=inserted data-side=after data-source=cap data-state=REQUESTED} "min"{data-change=inserted data-side=after data-source=cap data-state=REQUESTED data-syntax=function} "(delay, "{data-change=inserted data-side=after data-source=cap data-state=REQUESTED} "30_000"{data-change=inserted data-side=after data-source=cap data-state=REQUESTED data-syntax=number} ");"{data-change=inserted data-side=after data-source=cap data-state=REQUESTED}
       ⟵ document 32:0 [0,0) | cap#0 0:0 [0,41)
     "~" changed none: "  " "return"{data-syntax=keyword} " " "capped"{data-change=replaced data-side=after data-source=cap data-state=REQUESTED} " + Math." "random"{data-syntax=function} "() * (" "capped"{data-change=replaced data-side=after data-source=cap data-state=REQUESTED} " / " "2"{data-syntax=number} ");"
@@ -231,6 +263,8 @@ FRAME 31-34
     ring {data-source=round data-state=OPEN}
       STRETCH 0:24-0:29 {data-change=replaced data-place=8 data-side=after data-source=round}
       STRETCH 1:33-1:38 {data-change=replaced data-place=9 data-side=after data-source=round}
+    ring {data-source=base data-state=ACCEPTED}
+      STRETCH 1:16-1:24 {data-change=replaced data-place=1 data-side=after data-source=base data-stale=}
     ring {data-source=cap data-state=REQUESTED}
       STRETCH 2:2-2:41 {data-change=inserted data-place=3 data-side=after data-source=cap}
       STRETCH 3:9-3:15 {data-change=replaced data-place=1 data-side=after data-source=cap}
@@ -241,18 +275,20 @@ FRAME 31-34
   PROPOSAL_LIST
     {"actions":[{"command":"accept","label":"Accept","stateAfter":"ACCEPTED"},{"command":"reject","label":"Reject","stateAfter":"REJECTED"},{"command":"revise","label":"Revise","stateAfter":"REQUESTED"}],"attributes":{},"confirming":null,"isDrafting":false,"isRunning":false,"isStartable":false,"neighbors":{"range_Next":null,"range_Previous":{"first":13,"last":27}},"places":{"conditions":[],"count_All":9,"count_Here":2,"kind":"COUNT"},"rationale":"n says nothing; round says what it counts, in retry and in backoff alike, and in the doc comment that names it.","requests":[],"source":"round","stale":null,"state":"OPEN","status":"","title":"Call the attempt counter round"}
     {"actions":[{"command":"accept","label":"Accept","stateAfter":"ACCEPTED"},{"command":"reject","label":"Reject","stateAfter":"REJECTED"},{"command":"revise","label":"Revise","stateAfter":"REQUESTED"}],"attributes":{},"confirming":null,"isDrafting":false,"isRunning":false,"isStartable":true,"neighbors":{"range_Next":null,"range_Previous":null},"places":{"kind":"NONE"},"rationale":"A caller passing many attempts waits minutes by the tenth; capped, a long outage never goes quiet for longer than half a minute.","requests":[{"detail_Progress":null,"id":"cap-0","isDismissable":false,"isEditing":false,"isRemovable":true,"isRunning":false,"isStartable":true,"isStoppable":false,"notes":"make the cap an option, 30 seconds unless the caller gives another.","progress":"queued","reference":null,"status":"QUEUED"},{"detail_Progress":null,"id":"cap-1","isDismissable":false,"isEditing":false,"isRemovable":true,"isRunning":false,"isStartable":true,"isStoppable":false,"notes":"Name it MAX_DELAY_MS, up with the other constants.","progress":"queued","reference":{"head":"30_000","lines":"line 33","peek":null,"pieces":[{"id_Text":{"index":0,"kind":"CHANGE","source":"cap"},"range":{"from":{"line":0,"offset":33},"to":{"line":0,"offset":39}}}],"side":"PROPOSED","size":null},"status":"QUEUED"}],"source":"cap","stale":null,"state":"REQUESTED","status":"Revision requested","title":"Cap the delay at 30 seconds"}
-    {"actions":[{"command":"reopen","label":"Reopen","stateAfter":"OPEN"}],"attributes":{},"confirming":null,"isDrafting":false,"isRunning":false,"isStartable":false,"neighbors":{"range_Next":null,"range_Previous":null},"places":{"kind":"NONE"},"rationale":"BASE said nothing of what it's the base of, or in what unit.","requests":[],"source":"base","stale":null,"state":"ACCEPTED","status":"Accepted","title":"Name the base delay DELAY_MS"}
-  LINES run 14
+    {"actions":[{"command":"reopen","label":"Reopen","stateAfter":"OPEN"}],"attributes":{},"confirming":null,"isDrafting":false,"isRunning":false,"isStartable":false,"neighbors":{"range_Next":null,"range_Previous":null},"places":{"kind":"NONE"},"rationale":"BASE said nothing of what it's the base of, or in what unit.","requests":[],"source":"base","stale":{"head":"Conflict","isRerunnable":false,"kind":"CONFLICT","label":"the file changed “DELAY_MS” to “BASE_MS” in line 32","ways":[{"kind":"KEEP","label":"Keep yours"},{"kind":"TAKE","label":"Take the file's"},{"kind":"RERUN","label":"Run again"}]},"state":"ACCEPTED","status":"Accepted","title":"Name the base delay DELAY_MS"}
+  LINES run 19
     "35" none none: 
       ⟵ document 34:0 [0,0)
 FRAME 36-40
-  CURRENT_LINES run 15
+  CURRENT_LINES run 20
     "36" none none: "function"{data-syntax=keyword} " " "isRetryable"{data-syntax=function} "(error) {"
       ⟵ document 35:0 [0,29)
     "37" changed none: "  " "if"{data-syntax=keyword} " (error " "instanceof"{data-syntax=keyword} " TypeError) " "return"{data-syntax=keyword} " " "true"{data-syntax=literal} "; " "// the network failed, "{data-syntax=comment} "not the server"{data-change=replaced data-side=before data-source=timeout data-state=REVISING data-syntax=comment}
       ⟵ document 36:0 [0,84)
-    "38" moved none (moved → status after): "  "{data-change=moved data-side=before data-source=status data-state=ACCEPTED} "const"{data-change=moved data-side=before data-source=status data-state=ACCEPTED data-syntax=keyword} " status = error?."{data-change=moved data-side=before data-source=status data-state=ACCEPTED} "response"{data-change=moved data-side=before data-source=status data-state=ACCEPTED data-syntax=property} "?."{data-change=moved data-side=before data-source=status data-state=ACCEPTED} "status"{data-change=moved data-side=before data-source=status data-state=ACCEPTED data-syntax=property} " ?? "{data-change=moved data-side=before data-source=status data-state=ACCEPTED} "0"{data-change=moved data-side=before data-source=status data-state=ACCEPTED data-syntax=number} ";"{data-change=moved data-side=before data-source=status data-state=ACCEPTED}
-      ⟵ document 37:0 [0,46)
+    "38" moved none WRITTEN_ON (moved → status after): "  "{data-change=moved data-side=before data-source=status data-state=ACCEPTED} "const"{data-change=moved data-side=before data-source=status data-state=ACCEPTED data-syntax=keyword} " status = error?."{data-change=moved data-side=before data-source=status data-state=ACCEPTED} "response"{data-change=moved data-side=before data-source=status data-state=ACCEPTED data-syntax=property} "?."{data-change=moved data-side=before data-source=status data-state=ACCEPTED} "status"{data-change=moved data-side=before data-source=status data-state=ACCEPTED data-syntax=property} " ?? "{data-change=moved data-side=before data-source=status data-state=ACCEPTED} "0"{data-change=moved data-side=before data-source=status data-state=ACCEPTED data-syntax=number} ";"{data-change=moved data-side=before data-source=status data-state=ACCEPTED}
+      ⟵ 
+    "" moved none MOVED_SINCE: "  " "const"{data-syntax=keyword} " status = error?." "response"{data-syntax=property} "?." "status"{data-syntax=property} " ?? " "0"{data-syntax=number} "; " "// no response: 0"{data-syntax=comment}
+      ⟵ document 37:0 [0,64)
     "39" none none: "  " "return"{data-syntax=keyword} " status === " "429"{data-syntax=number} " || (status >= " "500"{data-syntax=number} " && status !== " "501"{data-syntax=number} ");"
       ⟵ document 38:0 [0,61)
     "40" none none: "}"
@@ -260,12 +296,14 @@ FRAME 36-40
     ring {data-source=timeout data-state=REVISING}
       STRETCH 1:70-1:84 {data-change=replaced data-place=1 data-side=before data-source=timeout}
     ring {data-source=status data-state=ACCEPTED}
-      STRETCH 2:2-2:46 {data-change=moved data-place=1 data-side=before data-source=status}
-  PROPOSAL_LINES run 16
+      STRETCH 2:2-2:46 {data-change=moved data-place=1 data-side=before data-source=status data-stale=}
+    ring {data-since=}
+      STRETCH 3:47-3:64 {data-change=inserted data-since=}
+  PROPOSAL_LINES run 21
     "" none none: "function"{data-syntax=keyword} " " "isRetryable"{data-syntax=function} "(error) {"
       ⟵ document 35:0 [0,29)
-    "→" moved none (from line 38 → status before): "  "{data-change=moved data-side=after data-source=status data-state=ACCEPTED} "const"{data-change=moved data-side=after data-source=status data-state=ACCEPTED data-syntax=keyword} " status = error?."{data-change=moved data-side=after data-source=status data-state=ACCEPTED} "response"{data-change=moved data-side=after data-source=status data-state=ACCEPTED data-syntax=property} "?."{data-change=moved data-side=after data-source=status data-state=ACCEPTED} "status"{data-change=moved data-side=after data-source=status data-state=ACCEPTED data-syntax=property} " ?? "{data-change=moved data-side=after data-source=status data-state=ACCEPTED} "0"{data-change=moved data-side=after data-source=status data-state=ACCEPTED data-syntax=number} ";"{data-change=moved data-side=after data-source=status data-state=ACCEPTED}
-      ⟵ document 36:0 [0,0) | document 37:0 [0,46)
+    "→" moved none (from line 38 → status before): "  "{data-change=moved data-side=after data-source=status data-state=ACCEPTED} "const"{data-change=moved data-side=after data-source=status data-state=ACCEPTED data-syntax=keyword} " status = error?."{data-change=moved data-side=after data-source=status data-state=ACCEPTED} "response"{data-change=moved data-side=after data-source=status data-state=ACCEPTED data-syntax=property} "?."{data-change=moved data-side=after data-source=status data-state=ACCEPTED} "status"{data-change=moved data-side=after data-source=status data-state=ACCEPTED data-syntax=property} " ?? "{data-change=moved data-side=after data-source=status data-state=ACCEPTED} "0"{data-change=moved data-side=after data-source=status data-state=ACCEPTED data-syntax=number} "; "{data-change=moved data-side=after data-source=status data-state=ACCEPTED} "// no response: 0"{data-change=moved data-side=after data-source=status data-state=ACCEPTED data-syntax=comment}
+      ⟵ document 36:0 [0,0) | document 37:0 [0,64)
     "~" changed none: "  " "if"{data-syntax=keyword} " (error " "instanceof"{data-syntax=keyword} " TypeError) " "return"{data-syntax=keyword} " " "true"{data-syntax=literal} "; " "// the network failed, "{data-syntax=comment} "before any answer"{data-change=replaced data-side=after data-source=timeout data-state=REVISING data-syntax=comment}
       ⟵ document 38:0 [0,0) | document 36:0 [0,70) | timeout#0 0:0 [70,87) | document 36:84 [87,87)
     "~" changed none: "  " "return"{data-syntax=keyword} " " "status === "{data-change=inserted data-side=after data-source=timeout data-state=REVISING} "408"{data-change=inserted data-side=after data-source=timeout data-state=REVISING data-syntax=number} " || "{data-change=inserted data-side=after data-source=timeout data-state=REVISING} "status === " "429"{data-syntax=number} " || (status >= " "500"{data-syntax=number} " && status !== " "501"{data-syntax=number} ");"
@@ -273,19 +311,21 @@ FRAME 36-40
     "" none none: "}"
       ⟵ document 39:0 [0,1)
     ring {data-source=status data-state=ACCEPTED}
-      STRETCH 1:2-1:46 {data-change=moved data-place=1 data-side=after data-source=status}
+      STRETCH 1:2-1:64 {data-change=moved data-place=1 data-side=after data-source=status data-stale=}
     ring {data-source=timeout data-state=REVISING}
       STRETCH 2:70-2:87 {data-change=replaced data-place=1 data-side=after data-source=timeout}
       STRETCH 3:9-3:26 {data-change=inserted data-place=2 data-side=after data-source=timeout}
+    ring {data-file=}
+      STRETCH 1:47-1:64 {data-file=}
     ring {data-requested=}
       UNDERLINE 2:70-2:87 {data-requested=}
   PROPOSAL_HEAD {"accept_All":null,"figure":{"more":"1 revising · 1 accepted · 1 rejected","value":"2 of 3 decided"},"kind":"PROPOSAL_HEAD","label_Range":"lines 36–40","revisions_Scope":{"actions":[],"figure":{"more":"","value":"1 queued · 1 running"},"start_All":null,"stop_All":{"label":"Stop all (1)","title":"Stops all 1 running for the proposals listed in lines 36–40, putting them back in the queue"}}}
   PROPOSAL_LIST
     {"actions":[{"command":"accept","label":"Accept","stateAfter":"ACCEPTED"},{"command":"reject","label":"Reject","stateAfter":"REJECTED"},{"command":"revise","label":"Revise","stateAfter":"REQUESTED"}],"attributes":{},"confirming":null,"isDrafting":false,"isRunning":true,"isStartable":false,"neighbors":{"range_Next":null,"range_Previous":null},"places":{"kind":"NONE"},"rationale":"A 408 means the server stopped waiting for the request, not that the request failed: sent again, it usually goes through.","requests":[{"detail_Progress":null,"id":"timeout-0","isDismissable":false,"isEditing":false,"isRemovable":false,"isRunning":true,"isStartable":false,"isStoppable":false,"notes":"only when the request is safe to send twice, a GET or a PUT.","progress":"running","reference":null,"status":"RUNNING"},{"detail_Progress":null,"id":"timeout-1","isDismissable":false,"isEditing":false,"isRemovable":true,"isRunning":false,"isStartable":false,"isStoppable":false,"notes":"Say timed out, as the status means, not before any answer.","progress":"queued","reference":{"head":"before any answer","lines":"line 37","peek":null,"pieces":[{"id_Text":{"index":0,"kind":"CHANGE","source":"timeout"},"range":{"from":{"line":0,"offset":0},"to":{"line":0,"offset":17}}}],"side":"PROPOSED","size":null},"status":"QUEUED"}],"source":"timeout","stale":null,"state":"REVISING","status":"Revising","title":"Retry a request that timed out"}
-    {"actions":[{"command":"reopen","label":"Reopen","stateAfter":"OPEN"}],"attributes":{},"confirming":null,"isDrafting":false,"isRunning":false,"isStartable":false,"neighbors":{"range_Next":null,"range_Previous":null},"places":{"kind":"MOVE","range":{"first":38,"last":38},"way":"UP"},"rationale":"With the status read before either check, isRetryable reads top to bottom as its answers: the network failing, then the server's codes.","requests":[],"source":"status","stale":null,"state":"ACCEPTED","status":"Accepted","title":"Work out the status first"}
+    {"actions":[{"command":"reopen","label":"Reopen","stateAfter":"OPEN"}],"attributes":{},"confirming":null,"isDrafting":false,"isRunning":false,"isStartable":false,"neighbors":{"range_Next":null,"range_Previous":null},"places":{"kind":"MOVE","range":{"first":38,"last":38},"way":"UP"},"rationale":"With the status read before either check, isRetryable reads top to bottom as its answers: the network failing, then the server's codes.","requests":[],"source":"status","stale":{"head":"Conflict","isRerunnable":false,"kind":"CONFLICT","label":"the file put “// no response: 0” in line 38","ways":[{"kind":"TAKE","label":"Take the file's"},{"kind":"BOTH","label":"Both"},{"kind":"RERUN","label":"Run again"}]},"state":"ACCEPTED","status":"Accepted","title":"Work out the status first"}
     {"actions":[{"command":"reopen","label":"Reopen","stateAfter":"OPEN"}],"attributes":{},"confirming":null,"isDrafting":false,"isRunning":false,"isStartable":false,"neighbors":{"range_Next":null,"range_Previous":null},"places":{"kind":"NONE"},"rationale":"A 501 from a proxy can clear once the server behind it is back; sent again, it sometimes goes through.","requests":[],"source":"retry501","stale":null,"state":"REJECTED","status":"Rejected","title":"Retry a 501 too"}
 FRAME 41-50
-  CURRENT_LINES run 17
+  CURRENT_LINES run 22
     "41" moved none: 
       ⟵ document 40:0 [0,0)
     "42" moved none (moved → sleep after): "function"{data-change=moved data-side=before data-source=sleep data-state=OPEN data-syntax=keyword} " "{data-change=moved data-side=before data-source=sleep data-state=OPEN} "sleep"{data-change=moved data-side=before data-source=sleep data-state=OPEN data-syntax=function} "("{data-change=moved data-side=before data-source=sleep data-state=OPEN} "ms"{data-change=moved data-edit-change=replaced data-edit-source=delay data-side=before data-source=sleep data-state=OPEN} ", signal) {"{data-change=moved data-side=before data-source=sleep data-state=OPEN}
@@ -311,12 +351,12 @@ FRAME 41-50
     ring {data-source=delay data-state=OPEN}
       STRETCH 1:15-1:17 {data-carried=sleep data-change=replaced data-place=1 data-side=before data-source=delay}
       STRETCH 3:38-3:40 {data-carried=sleep data-change=replaced data-place=2 data-side=before data-source=delay}
-  PROPOSAL_LINES run 18
+  PROPOSAL_LINES run 23
   PROPOSAL_HEAD {"accept_All":{"label":"Accept all (2)","title":"Accepts every open proposal listed in lines 41–50, wherever else it's listed; one with requests waiting is left to be decided by itself"},"figure":{"more":"2 to review","value":"0 of 2 decided"},"kind":"PROPOSAL_HEAD","label_Range":"lines 41–50","revisions_Scope":{"actions":[],"figure":null,"start_All":null,"stop_All":null}}
   PROPOSAL_LIST
     {"actions":[{"command":"accept","label":"Accept","stateAfter":"ACCEPTED"},{"command":"reject","label":"Reject","stateAfter":"REJECTED"},{"command":"revise","label":"Revise","stateAfter":"REQUESTED"}],"attributes":{},"confirming":null,"isDrafting":false,"isRunning":false,"isStartable":false,"neighbors":{"range_Next":null,"range_Previous":{"first":6,"last":5}},"places":{"kind":"MOVE","range":{"first":41,"last":50},"way":"UP"},"rationale":"Read from the top, sleep comes before retry, which waits on it, next to the constants it's given.","requests":[],"source":"sleep","stale":null,"state":"OPEN","status":"","title":"Move sleep up, beside the delays it waits out"}
     {"actions":[{"command":"accept","label":"Accept","stateAfter":"ACCEPTED"},{"command":"reject","label":"Reject","stateAfter":"REJECTED"},{"command":"revise","label":"Revise","stateAfter":"REQUESTED"}],"attributes":{},"confirming":null,"isDrafting":false,"isRunning":false,"isStartable":false,"neighbors":{"range_Next":null,"range_Previous":{"first":6,"last":5}},"places":{"conditions":[{"count":2,"kind":"CARRIED","source":"sleep","title":"Move sleep up, beside the delays it waits out"}],"count_All":2,"count_Here":2,"kind":"COUNT"},"rationale":"As DELAY_MS is: the unit in the name, where the number's read, wherever sleep ends up.","requests":[],"source":"delay","stale":null,"state":"OPEN","status":"","title":"Call sleep's ms delayMs"}
-  LINES run 19
+  LINES run 24
     "51" none none: 
       ⟵ document 50:0 [0,0)"
 `;
@@ -331,16 +371,24 @@ header {"document":{"folder":"notes/","label_State":"Working","name":"digits.txt
       ⟵ document 1:0 [0,0)
 FRAME 3-3
   CURRENT_LINES run 2
-    "3" none none: "Retries a flaky async call, backing off further each time, until it succeeds, runs out of attempts, or the caller gives up on it."
-      ⟵ document 2:0 [0,129)
-  PROPOSAL_LINES run 3
-    "~" changed none: "Retries a flaky async call, backing off further each time, until it succeeds, runs out of attempts, or the caller gives up on it" " through its "{data-change=inserted data-side=after data-source=signal data-state=OPEN} "\`"{data-change=inserted data-side=after data-source=signal data-state=OPEN data-syntax=code marker} "signal"{data-change=inserted data-side=after data-source=signal data-state=OPEN data-syntax=code} "\`"{data-change=inserted data-side=after data-source=signal data-state=OPEN data-syntax=code marker} "."
-      ⟵ document 2:0 [0,114) | signal#0 0:0 [114,149) | document 2:128 [149,150)
+    "3" changed none WRITTEN_ON: "Retries a flaky async call, backing off further each time, until it succeeds, runs out of attempts, or the caller " "gives up on it"{data-change=replaced data-side=before data-source=signal data-state=OPEN} "."
+      ⟵ 
+    "" changed none MOVED_SINCE: "Retries a flaky async call, backing off further each time, until it succeeds, runs out of attempts, or the caller " "gives up" "."
+      ⟵ document 2:0 [0,123)
     ring {data-source=signal data-state=OPEN}
-      STRETCH 0:129-0:149 {data-change=inserted data-place=1 data-side=after data-source=signal}
+      STRETCH 0:114-0:128 {data-change=replaced data-place=1 data-side=before data-source=signal data-stale=}
+    ring {data-since=}
+      POINT 1:122 {data-change=removed data-since=}
+  PROPOSAL_LINES run 3
+    "~" changed none: "Retries a flaky async call, backing off further each time, until it succeeds, runs out of attempts, or the caller " "gives up on it through its "{data-change=replaced data-side=after data-source=signal data-state=OPEN} "\`"{data-change=replaced data-side=after data-source=signal data-state=OPEN data-syntax=code marker} "signal"{data-change=replaced data-side=after data-source=signal data-state=OPEN data-syntax=code} "\`"{data-change=replaced data-side=after data-source=signal data-state=OPEN data-syntax=code marker} "."
+      ⟵ document 2:0 [0,114) | signal#0 0:0 [114,149) | document 2:122 [149,150)
+    ring {data-source=signal data-state=OPEN}
+      STRETCH 0:114-0:149 {data-change=replaced data-place=1 data-side=after data-source=signal data-stale=}
+    ring {data-file=}
+      POINT 0:149 {data-file=}
   PROPOSAL_HEAD {"accept_All":{"label":"Accept all (1)","title":"Accepts every open proposal listed in line 3, wherever else it's listed; one with requests waiting is left to be decided by itself"},"figure":{"more":"1 to review","value":"0 of 1 decided"},"kind":"PROPOSAL_HEAD","label_Range":"line 3","revisions_Scope":{"actions":[],"figure":null,"start_All":null,"stop_All":null}}
   PROPOSAL_LIST
-    {"actions":[{"command":"accept","label":"Accept","stateAfter":"ACCEPTED"},{"command":"reject","label":"Reject","stateAfter":"REJECTED"},{"command":"revise","label":"Revise","stateAfter":"REQUESTED"}],"attributes":{},"confirming":null,"isDrafting":false,"isRunning":false,"isStartable":false,"neighbors":{"range_Next":null,"range_Previous":null},"places":{"kind":"NONE"},"rationale":"Giving up is aborting the signal; saying so sends the reader to the option that does it.","requests":[],"source":"signal","stale":null,"state":"OPEN","status":"","title":"Say how a caller gives up"}
+    {"actions":[{"command":"accept","label":"Accept","stateAfter":"ACCEPTED"},{"command":"reject","label":"Reject","stateAfter":"REJECTED"},{"command":"revise","label":"Revise","stateAfter":"REQUESTED"}],"attributes":{},"confirming":null,"isDrafting":false,"isRunning":false,"isStartable":false,"neighbors":{"range_Next":null,"range_Previous":null},"places":{"kind":"NONE"},"rationale":"Giving up is aborting the signal; saying so sends the reader to the option that does it.","requests":[],"source":"signal","stale":{"head":"Stale","isRerunnable":true,"kind":"STALE","label":"written before your edits","ways":[]},"state":"OPEN","status":"","title":"Say how a caller gives up"}
   LINES run 4
     "4" none none: 
       ⟵ document 3:0 [0,0)
@@ -495,7 +543,7 @@ FRAME 27-36
       ⟵ document 37:0 [0,0)
 FRAME 39-43
   CURRENT_LINES run 16
-    "39" none none: "Each wait is twice the one before, starting at " "\`"{data-syntax=code marker} "DELAY_MS"{data-syntax=code} "\`"{data-syntax=code marker} ", 100 ms, with up to half as much again added at random, so callers that failed together don't all retry together."
+    "39" changed none: "Each wait is twice the one before, starting at " "\`"{data-syntax=code marker} "DELAY_MS"{data-syntax=code} "\`"{data-syntax=code marker} ", 100 ms, " "with up to half as much again added at random, so callers that failed together don't all retry together"{data-change=replaced data-side=before data-source=yours data-state=OPEN} "."
       ⟵ document 38:0 [0,171)
     "40" none none: 
       ⟵ document 39:0 [0,0)
@@ -505,11 +553,13 @@ FRAME 39-43
       ⟵ document 41:0 [0,0)
     "43" none none: "See " "["{data-syntax=marker} "why the waits grow"{data-syntax=link} "]("{data-syntax=marker} "https://example.com/backoff"{data-syntax=url} ")"{data-syntax=marker} ", and " "**"{data-syntax=strong marker} "please"{data-syntax=strong} "**"{data-syntax=strong marker} " say if anything's odd."
       ⟵ document 42:0 [0,92)
+    ring {data-place=1 data-source=yours data-state=OPEN}
+      STRETCH 0:67-0:170 {data-change=replaced data-place=1 data-side=before data-source=yours data-yours=}
     ring {data-source=cap data-state=REQUESTED}
       STRETCH 2:53-2:90 {data-change=replaced data-place=1 data-side=before data-source=cap}
   PROPOSAL_LINES run 17
-    "" none none: "Each wait is twice the one before, starting at " "\`"{data-syntax=code marker} "DELAY_MS"{data-syntax=code} "\`"{data-syntax=code marker} ", 100 ms, with up to half as much again added at random, so callers that failed together don't all retry together."
-      ⟵ document 38:0 [0,47) | base#0 0:0 [47,57) | document 38:57 [57,171)
+    "~" changed none: "Each wait is twice the one before, starting at " "\`"{data-syntax=code marker} "DELAY_MS"{data-syntax=code} "\`"{data-syntax=code marker} ", 100 ms, " "and up to half as long again at random, so that many callers retrying at once don't all come back at the same moment"{data-change=replaced data-side=after data-source=yours data-state=OPEN} "."
+      ⟵ document 38:0 [0,47) | base#0 0:0 [47,57) | document 38:57 [57,67) | yours#0 0:0 [67,183) | document 38:170 [183,184)
     "" none none: 
       ⟵ document 39:0 [0,0)
     "~" changed none: ">"{data-syntax=quote marker} " A call that keeps failing waits longer each round: "{data-syntax=quote} "but never longer than 30 seconds"{data-change=replaced data-side=after data-source=cap data-state=REQUESTED data-syntax=quote} "."{data-syntax=quote}
@@ -518,10 +568,13 @@ FRAME 39-43
       ⟵ document 41:0 [0,0)
     "" none none: "See " "["{data-syntax=marker} "why the waits grow"{data-syntax=link} "]("{data-syntax=marker} "https://example.com/backoff"{data-syntax=url} ")"{data-syntax=marker} ", and " "**"{data-syntax=strong marker} "please"{data-syntax=strong} "**"{data-syntax=strong marker} " say if anything's odd."
       ⟵ document 42:0 [0,92)
+    ring {data-place=1 data-source=yours data-state=OPEN}
+      STRETCH 0:67-0:183 {data-change=replaced data-place=1 data-side=after data-source=yours data-yours=}
     ring {data-source=cap data-state=REQUESTED}
       STRETCH 2:53-2:85 {data-change=replaced data-place=1 data-side=after data-source=cap}
   PROPOSAL_HEAD {"accept_All":null,"figure":{"more":"1 revision requested · 1 accepted · 1 withdrawn","value":"2 of 3 decided"},"kind":"PROPOSAL_HEAD","label_Range":"lines 39–43","revisions_Scope":{"actions":[],"figure":{"more":"","value":"1 queued"},"start_All":{"label":"Start all (1)","title":"Starts all 1 request queued for the proposals listed in lines 39–43"},"stop_All":null}}
   PROPOSAL_LIST
+    {"actions":[],"attributes":{},"confirming":null,"isDrafting":false,"isRunning":false,"isStartable":false,"neighbors":{"range_Next":null,"range_Previous":null},"places":{"kind":"NONE"},"rationale":"","requests":[],"source":"yours","stale":null,"state":"OPEN","status":"","title":"Your edits"}
     {"actions":[{"command":"reopen","label":"Reopen","stateAfter":"OPEN"}],"attributes":{},"confirming":null,"isDrafting":false,"isRunning":false,"isStartable":false,"neighbors":{"range_Next":null,"range_Previous":null},"places":{"kind":"NONE"},"rationale":"It's the name a caller finds in the module, and would search for.","requests":[],"source":"base","stale":null,"state":"ACCEPTED","status":"Accepted","title":"Name the base delay DELAY_MS"}
     {"actions":[{"command":"accept","label":"Accept","stateAfter":"ACCEPTED"},{"command":"reject","label":"Reject","stateAfter":"REJECTED"},{"command":"revise","label":"Revise","stateAfter":"REQUESTED"}],"attributes":{},"confirming":null,"isDrafting":false,"isRunning":false,"isStartable":true,"neighbors":{"range_Next":null,"range_Previous":null},"places":{"kind":"NONE"},"rationale":"With the module's cap, a long outage never goes quiet for longer than half a minute; the README should say so.","requests":[{"detail_Progress":null,"id":"cap-0","isDismissable":false,"isEditing":false,"isRemovable":true,"isRunning":false,"isStartable":true,"isStoppable":false,"notes":"make the cap an option, 30 seconds unless the caller gives another.","progress":"queued","reference":null,"status":"QUEUED"}],"source":"cap","stale":null,"state":"REQUESTED","status":"Revision requested","title":"Cap the delay at 30 seconds"}
     {"actions":[{"command":"dismiss","label":"Dismiss","stateAfter":null}],"attributes":{},"confirming":null,"isDrafting":false,"isRunning":false,"isStartable":false,"neighbors":{"range_Next":null,"range_Previous":null},"places":{"kind":"NONE"},"rationale":"The guides moved under /guides.","requests":[],"source":"link","stale":null,"state":"WITHDRAWN","status":"Withdrawn","title":"Link the guide where it's moved"}"
@@ -537,16 +590,24 @@ header {"document":{"folder":"notes/","label_State":"Working","name":"digits.txt
       ⟵ document 1:0 [0,0)
 FRAME 3-3
   CURRENT_LINES run 2
-    "3" none none: "Retries a flaky async call, backing off further each time, until it succeeds, runs out of attempts, or the caller gives up on it."
-      ⟵ document 2:0 [0,129)
-  PROPOSAL_LINES run 3
-    "~" changed none: "Retries a flaky async call, backing off further each time, until it succeeds, runs out of attempts, or the caller gives up on it" " through its "{data-change=inserted data-side=after data-source=signal data-state=OPEN} "\`"{data-change=inserted data-side=after data-source=signal data-state=OPEN data-syntax=code marker} "signal"{data-change=inserted data-side=after data-source=signal data-state=OPEN data-syntax=code} "\`"{data-change=inserted data-side=after data-source=signal data-state=OPEN data-syntax=code marker} "."
-      ⟵ document 2:0 [0,114) | signal#0 0:0 [114,149) | document 2:128 [149,150)
+    "3" changed none WRITTEN_ON: "Retries a flaky async call, backing off further each time, until it succeeds, runs out of attempts, or the caller " "gives up on it"{data-change=replacedRestyled data-side=before data-source=signal data-state=OPEN} "."
+      ⟵ 
+    "" changed none MOVED_SINCE: "Retries a flaky async call, backing off further each time, until it succeeds, runs out of attempts, or the caller " "gives up" "."
+      ⟵ document 2:0 [0,123)
     ring {data-source=signal data-state=OPEN}
-      STRETCH 0:129-0:149 {data-change=inserted data-place=1 data-side=after data-source=signal}
+      STRETCH 0:114-0:128 {data-change=replacedRestyled data-place=1 data-side=before data-source=signal data-stale=}
+    ring {data-since=}
+      POINT 1:122 {data-change=removed data-since=}
+  PROPOSAL_LINES run 3
+    "~" changed none: "Retries a flaky async call, backing off further each time, until it succeeds, runs out of attempts, or the caller " "gives up on it through its "{data-change=replacedRestyled data-side=after data-source=signal data-state=OPEN} "\`"{data-change=replacedRestyled data-side=after data-source=signal data-state=OPEN data-syntax=code marker} "signal"{data-change=replacedRestyled data-side=after data-source=signal data-state=OPEN data-syntax=code} "\`"{data-change=replacedRestyled data-side=after data-source=signal data-state=OPEN data-syntax=code marker} "."
+      ⟵ document 2:0 [0,114) | signal#0 0:0 [114,149) | document 2:122 [149,150)
+    ring {data-source=signal data-state=OPEN}
+      STRETCH 0:114-0:149 {data-change=replacedRestyled data-place=1 data-side=after data-source=signal data-stale=}
+    ring {data-file=}
+      POINT 0:149 {data-file=}
   PROPOSAL_HEAD {"accept_All":{"label":"Accept all (1)","title":"Accepts every open proposal listed in line 3, wherever else it's listed; one with requests waiting is left to be decided by itself"},"figure":{"more":"1 to review","value":"0 of 1 decided"},"kind":"PROPOSAL_HEAD","label_Range":"line 3","revisions_Scope":{"actions":[],"figure":null,"start_All":null,"stop_All":null}}
   PROPOSAL_LIST
-    {"actions":[{"command":"accept","label":"Accept","stateAfter":"ACCEPTED"},{"command":"reject","label":"Reject","stateAfter":"REJECTED"},{"command":"revise","label":"Revise","stateAfter":"REQUESTED"}],"attributes":{},"confirming":null,"isDrafting":false,"isRunning":false,"isStartable":false,"neighbors":{"range_Next":null,"range_Previous":null},"places":{"kind":"NONE"},"rationale":"Giving up is aborting the signal; saying so sends the reader to the option that does it.","requests":[],"source":"signal","stale":null,"state":"OPEN","status":"","title":"Say how a caller gives up"}
+    {"actions":[{"command":"accept","label":"Accept","stateAfter":"ACCEPTED"},{"command":"reject","label":"Reject","stateAfter":"REJECTED"},{"command":"revise","label":"Revise","stateAfter":"REQUESTED"}],"attributes":{},"confirming":null,"isDrafting":false,"isRunning":false,"isStartable":false,"neighbors":{"range_Next":null,"range_Previous":null},"places":{"kind":"NONE"},"rationale":"Giving up is aborting the signal; saying so sends the reader to the option that does it.","requests":[],"source":"signal","stale":{"head":"Stale","isRerunnable":true,"kind":"STALE","label":"written before your edits","ways":[]},"state":"OPEN","status":"","title":"Say how a caller gives up"}
   LINES run 4
     "4" none none: 
       ⟵ document 3:0 [0,0)
@@ -702,7 +763,7 @@ FRAME 27-36
       ⟵ document 37:0 [0,0)
 FRAME 39-43
   CURRENT_LINES run 16
-    "39" none none: "Each wait is twice the one before, starting at " "\`"{data-syntax=code marker} "DELAY_MS"{data-syntax=code} "\`"{data-syntax=code marker} ", 100 ms, with up to half as much again added at random, so callers that failed together don't all retry together."
+    "39" changed none: "Each wait is twice the one before, starting at " "\`"{data-syntax=code marker} "DELAY_MS"{data-syntax=code} "\`"{data-syntax=code marker} ", 100 ms, " "with up to half as much again added at random, so callers that failed together don't all retry together"{data-change=replaced data-side=before data-source=yours data-state=OPEN} "."
       ⟵ document 38:0 [0,171)
     "40" none none: 
       ⟵ document 39:0 [0,0)
@@ -712,11 +773,13 @@ FRAME 39-43
       ⟵ document 41:0 [0,0)
     "43" none none: "See " "["{data-syntax=marker} "why the waits grow"{data-syntax=link} "]("{data-syntax=marker} "https://example.com/backoff"{data-syntax=url} ")"{data-syntax=marker} ", and " "**"{data-syntax=strong marker} "please"{data-syntax=strong} "**"{data-syntax=strong marker} " say if anything's odd."
       ⟵ document 42:0 [0,92)
+    ring {data-place=1 data-source=yours data-state=OPEN}
+      STRETCH 0:67-0:170 {data-change=replaced data-place=1 data-side=before data-source=yours data-yours=}
     ring {data-source=cap data-state=REQUESTED}
       STRETCH 2:53-2:90 {data-change=replaced data-place=1 data-side=before data-source=cap}
   PROPOSAL_LINES run 17
-    "" none none: "Each wait is twice the one before, starting at " "\`"{data-syntax=code marker} "DELAY_MS"{data-syntax=code} "\`"{data-syntax=code marker} ", 100 ms, with up to half as much again added at random, so callers that failed together don't all retry together."
-      ⟵ document 38:0 [0,47) | base#0 0:0 [47,57) | document 38:57 [57,171)
+    "~" changed none: "Each wait is twice the one before, starting at " "\`"{data-syntax=code marker} "DELAY_MS"{data-syntax=code} "\`"{data-syntax=code marker} ", 100 ms, " "and up to half as long again at random, so that many callers retrying at once don't all come back at the same moment"{data-change=replaced data-side=after data-source=yours data-state=OPEN} "."
+      ⟵ document 38:0 [0,47) | base#0 0:0 [47,57) | document 38:57 [57,67) | yours#0 0:0 [67,183) | document 38:170 [183,184)
     "" none none: 
       ⟵ document 39:0 [0,0)
     "~" changed none: ">"{data-syntax=quote marker} " A call that keeps failing waits longer each round: "{data-syntax=quote} "but never longer than 30 seconds"{data-change=replaced data-side=after data-source=cap data-state=REQUESTED data-syntax=quote} "."{data-syntax=quote}
@@ -725,10 +788,13 @@ FRAME 39-43
       ⟵ document 41:0 [0,0)
     "" none none: "See " "["{data-syntax=marker} "why the waits grow"{data-syntax=link} "]("{data-syntax=marker} "https://example.com/backoff"{data-syntax=url} ")"{data-syntax=marker} ", and " "**"{data-syntax=strong marker} "please"{data-syntax=strong} "**"{data-syntax=strong marker} " say if anything's odd."
       ⟵ document 42:0 [0,92)
+    ring {data-place=1 data-source=yours data-state=OPEN}
+      STRETCH 0:67-0:183 {data-change=replaced data-place=1 data-side=after data-source=yours data-yours=}
     ring {data-source=cap data-state=REQUESTED}
       STRETCH 2:53-2:85 {data-change=replaced data-place=1 data-side=after data-source=cap}
   PROPOSAL_HEAD {"accept_All":null,"figure":{"more":"1 revision requested · 1 accepted · 1 withdrawn","value":"2 of 3 decided"},"kind":"PROPOSAL_HEAD","label_Range":"lines 39–43","revisions_Scope":{"actions":[],"figure":{"more":"","value":"1 queued"},"start_All":{"label":"Start all (1)","title":"Starts all 1 request queued for the proposals listed in lines 39–43"},"stop_All":null}}
   PROPOSAL_LIST
+    {"actions":[],"attributes":{},"confirming":null,"isDrafting":false,"isRunning":false,"isStartable":false,"neighbors":{"range_Next":null,"range_Previous":null},"places":{"kind":"NONE"},"rationale":"","requests":[],"source":"yours","stale":null,"state":"OPEN","status":"","title":"Your edits"}
     {"actions":[{"command":"reopen","label":"Reopen","stateAfter":"OPEN"}],"attributes":{},"confirming":null,"isDrafting":false,"isRunning":false,"isStartable":false,"neighbors":{"range_Next":null,"range_Previous":null},"places":{"kind":"NONE"},"rationale":"It's the name a caller finds in the module, and would search for.","requests":[],"source":"base","stale":null,"state":"ACCEPTED","status":"Accepted","title":"Name the base delay DELAY_MS"}
     {"actions":[{"command":"accept","label":"Accept","stateAfter":"ACCEPTED"},{"command":"reject","label":"Reject","stateAfter":"REJECTED"},{"command":"revise","label":"Revise","stateAfter":"REQUESTED"}],"attributes":{},"confirming":null,"isDrafting":false,"isRunning":false,"isStartable":true,"neighbors":{"range_Next":null,"range_Previous":null},"places":{"kind":"NONE"},"rationale":"With the module's cap, a long outage never goes quiet for longer than half a minute; the README should say so.","requests":[{"detail_Progress":null,"id":"cap-0","isDismissable":false,"isEditing":false,"isRemovable":true,"isRunning":false,"isStartable":true,"isStoppable":false,"notes":"make the cap an option, 30 seconds unless the caller gives another.","progress":"queued","reference":null,"status":"QUEUED"}],"source":"cap","stale":null,"state":"REQUESTED","status":"Revision requested","title":"Cap the delay at 30 seconds"}
     {"actions":[{"command":"dismiss","label":"Dismiss","stateAfter":null}],"attributes":{},"confirming":null,"isDrafting":false,"isRunning":false,"isStartable":false,"neighbors":{"range_Next":null,"range_Previous":null},"places":{"kind":"NONE"},"rationale":"The guides moved under /guides.","requests":[],"source":"link","stale":null,"state":"WITHDRAWN","status":"Withdrawn","title":"Link the guide where it's moved"}"
@@ -986,6 +1052,130 @@ FRAME 1-2
   PROPOSAL_HEAD {"accept_All":{"label":"Accept all (1)","title":"Accepts every open proposal listed in lines 1–2, wherever else it's listed; one with requests waiting is left to be decided by itself"},"figure":{"more":"1 to review","value":"0 of 1 decided"},"kind":"PROPOSAL_HEAD","label_Range":"lines 1–2","revisions_Scope":{"actions":[],"figure":null,"start_All":null,"stop_All":null}}
   PROPOSAL_LIST
     {"actions":[{"command":"accept","label":"Accept","stateAfter":"ACCEPTED"},{"command":"reject","label":"Reject","stateAfter":"REJECTED"},{"command":"revise","label":"Revise","stateAfter":"REQUESTED"}],"attributes":{},"confirming":null,"isDrafting":false,"isRunning":false,"isStartable":false,"neighbors":{"range_Next":null,"range_Previous":null},"places":{"kind":"NONE"},"rationale":"MAX_ATTEMPTS says it's a cap, and DELAY_MS says its unit in its name.","requests":[],"source":"names","stale":{"head":"Stale","isRerunnable":true,"kind":"STALE","label":"written before your edits","ways":[]},"state":"OPEN","status":"","title":"Say the cap, drop the unit comment"}"
+`;
+
+exports[`the changes document's kinds-conflict draws as it was drawn by hand 1`] = `
+"label width 1
+header {"document":{"folder":"","label_State":"Done","name":"","proposals":{"actions":[],"documents":[],"figure":{"more":"1 accepted","value":"1 of 1 decided"}},"revisions_Level":{"ask":{"label":"Revise","label_Form":"Revise this file"},"isStartable_Requests":false,"isStoppable_Requests":false,"requests":[]},"revisions_Scope":{"actions":[],"figure":null,"start_All":null,"stop_All":null},"state":"DONE","summary":""},"mode":{"kind":"MANUAL","label":"No task"},"parts":[{"isBusy":false,"text":"1 of 1 decided"}],"picker":{"label":"Open a file","label_Here":"this editor","sections":[]},"switcher":{"label":"Switch task","label_Here":"this editor","options":[]}}
+  LINES run 1
+    "1" none none: "export"{data-syntax=keyword} " " "function"{data-syntax=keyword} " " "backoff"{data-syntax=function} "(n) {"
+      ⟵ document 0:0 [0,28)
+FRAME 2-2
+  CURRENT_LINES run 2
+    "2" changed none WRITTEN_ON: "  " "return"{data-syntax=keyword} " " "BASE_MS"{data-change=replaced data-side=before data-source=base data-state=ACCEPTED} " * " "2"{data-syntax=number} " ** (n - " "1"{data-syntax=number} ");"
+      ⟵ 
+    "" changed none MOVED_SINCE: "  " "return"{data-syntax=keyword} " " "INITIAL_MS" " * " "2"{data-syntax=number} " ** (n - " "1"{data-syntax=number} ");"
+      ⟵ document 1:0 [0,35)
+    ring {data-source=base data-state=ACCEPTED}
+      STRETCH 0:9-0:16 {data-change=replaced data-place=1 data-side=before data-source=base data-stale=}
+    ring {data-since=}
+      STRETCH 1:9-1:19 {data-change=replaced data-since=}
+  PROPOSAL_LINES run 3
+    "~" changed none: "  " "return"{data-syntax=keyword} " " "DELAY_MS"{data-change=replaced data-side=after data-source=base data-state=ACCEPTED} " * " "2"{data-syntax=number} " ** (n - " "1"{data-syntax=number} ");"
+      ⟵ document 1:0 [0,9) | base#0 0:0 [9,17) | document 1:19 [17,33)
+    ring {data-source=base data-state=ACCEPTED}
+      STRETCH 0:9-0:17 {data-change=replaced data-place=1 data-side=after data-source=base data-stale=}
+  PROPOSAL_HEAD {"accept_All":null,"figure":{"more":"1 accepted","value":"1 of 1 decided"},"kind":"PROPOSAL_HEAD","label_Range":"line 2","revisions_Scope":{"actions":[],"figure":null,"start_All":null,"stop_All":null}}
+  PROPOSAL_LIST
+    {"actions":[{"command":"reopen","label":"Reopen","stateAfter":"OPEN"}],"attributes":{},"confirming":null,"isDrafting":false,"isRunning":false,"isStartable":false,"neighbors":{"range_Next":null,"range_Previous":null},"places":{"kind":"NONE"},"rationale":"BASE said nothing of what it's the base of, or in what unit.","requests":[],"source":"base","stale":{"head":"Conflict","isRerunnable":false,"kind":"CONFLICT","label":"the file changed “BASE_MS” to “INITIAL_MS” in line 2","ways":[{"kind":"KEEP","label":"Keep yours"},{"kind":"TAKE","label":"Take the file's"},{"kind":"RERUN","label":"Run again"}]},"state":"ACCEPTED","status":"Accepted","title":"Name the base delay DELAY_MS"}
+  LINES run 4
+    "3" none none: "}"
+      ⟵ document 2:0 [0,1)"
+`;
+
+exports[`the changes document's kinds-conflict-moved draws as it was drawn by hand 1`] = `
+"label width 1
+header {"document":{"folder":"","label_State":"Done","name":"","proposals":{"actions":[],"documents":[],"figure":{"more":"1 accepted","value":"1 of 1 decided"}},"revisions_Level":{"ask":{"label":"Revise","label_Form":"Revise this file"},"isStartable_Requests":false,"isStoppable_Requests":false,"requests":[]},"revisions_Scope":{"actions":[],"figure":null,"start_All":null,"stop_All":null},"state":"DONE","summary":""},"mode":{"kind":"MANUAL","label":"No task"},"parts":[{"isBusy":false,"text":"1 of 1 decided"}],"picker":{"label":"Open a file","label_Here":"this editor","sections":[]},"switcher":{"label":"Switch task","label_Here":"this editor","options":[]}}
+  LINES run 1
+    "1" none none: "function"{data-syntax=keyword} " " "isRetryable"{data-syntax=function} "(error) {"
+      ⟵ document 0:0 [0,29)
+FRAME 2-3
+  CURRENT_LINES run 2
+    "2" none none: "  " "if"{data-syntax=keyword} " (error " "instanceof"{data-syntax=keyword} " TypeError) " "return"{data-syntax=keyword} " " "true"{data-syntax=literal} ";"
+      ⟵ document 1:0 [0,46)
+    "3" moved none WRITTEN_ON (moved → status after): "  "{data-change=moved data-side=before data-source=status data-state=ACCEPTED} "const"{data-change=moved data-side=before data-source=status data-state=ACCEPTED data-syntax=keyword} " status = error?."{data-change=moved data-side=before data-source=status data-state=ACCEPTED} "response"{data-change=moved data-side=before data-source=status data-state=ACCEPTED data-syntax=property} "?."{data-change=moved data-side=before data-source=status data-state=ACCEPTED} "status"{data-change=moved data-side=before data-source=status data-state=ACCEPTED data-syntax=property} " ?? "{data-change=moved data-side=before data-source=status data-state=ACCEPTED} "0"{data-change=moved data-side=before data-source=status data-state=ACCEPTED data-syntax=number} ";"{data-change=moved data-side=before data-source=status data-state=ACCEPTED}
+      ⟵ 
+    "" moved none MOVED_SINCE: "  " "const"{data-syntax=keyword} " status = error?." "response"{data-syntax=property} "?." "status"{data-syntax=property} " ?? " "0"{data-syntax=number} "; " "// no response: 0"{data-syntax=comment}
+      ⟵ document 2:0 [0,64)
+    ring {data-source=status data-state=ACCEPTED}
+      STRETCH 1:2-1:46 {data-change=moved data-place=1 data-side=before data-source=status data-stale=}
+    ring {data-since=}
+      STRETCH 2:47-2:64 {data-change=inserted data-since=}
+  PROPOSAL_LINES run 3
+    "→" moved none (from line 3 → status before): "  "{data-change=moved data-side=after data-source=status data-state=ACCEPTED} "const"{data-change=moved data-side=after data-source=status data-state=ACCEPTED data-syntax=keyword} " status = error?."{data-change=moved data-side=after data-source=status data-state=ACCEPTED} "response"{data-change=moved data-side=after data-source=status data-state=ACCEPTED data-syntax=property} "?."{data-change=moved data-side=after data-source=status data-state=ACCEPTED} "status"{data-change=moved data-side=after data-source=status data-state=ACCEPTED data-syntax=property} " ?? "{data-change=moved data-side=after data-source=status data-state=ACCEPTED} "0"{data-change=moved data-side=after data-source=status data-state=ACCEPTED data-syntax=number} "; "{data-change=moved data-side=after data-source=status data-state=ACCEPTED} "// no response: 0"{data-change=moved data-side=after data-source=status data-state=ACCEPTED data-syntax=comment}
+      ⟵ document 2:0 [0,64)
+    "" none none: "  " "if"{data-syntax=keyword} " (error " "instanceof"{data-syntax=keyword} " TypeError) " "return"{data-syntax=keyword} " " "true"{data-syntax=literal} ";"
+      ⟵ document 3:0 [0,0) | document 1:0 [0,46)
+    ring {data-source=status data-state=ACCEPTED}
+      STRETCH 0:2-0:64 {data-change=moved data-place=1 data-side=after data-source=status data-stale=}
+    ring {data-file=}
+      STRETCH 0:47-0:64 {data-file=}
+  PROPOSAL_HEAD {"accept_All":null,"figure":{"more":"1 accepted","value":"1 of 1 decided"},"kind":"PROPOSAL_HEAD","label_Range":"lines 2–3","revisions_Scope":{"actions":[],"figure":null,"start_All":null,"stop_All":null}}
+  PROPOSAL_LIST
+    {"actions":[{"command":"reopen","label":"Reopen","stateAfter":"OPEN"}],"attributes":{},"confirming":null,"isDrafting":false,"isRunning":false,"isStartable":false,"neighbors":{"range_Next":null,"range_Previous":null},"places":{"kind":"MOVE","range":{"first":3,"last":3},"way":"UP"},"rationale":"Then the function reads as its answers, top to bottom.","requests":[],"source":"status","stale":{"head":"Conflict","isRerunnable":false,"kind":"CONFLICT","label":"the file put “// no response: 0” in line 3","ways":[{"kind":"TAKE","label":"Take the file's"},{"kind":"BOTH","label":"Both"},{"kind":"RERUN","label":"Run again"}]},"state":"ACCEPTED","status":"Accepted","title":"Work out the status first"}
+  LINES run 4
+    "4" none none: "  " "return"{data-syntax=keyword} " status === " "429"{data-syntax=number} " || status >= " "500"{data-syntax=number} ";"
+      ⟵ document 3:0 [0,41)
+    "5" none none: "}"
+      ⟵ document 4:0 [0,1)"
+`;
+
+exports[`the changes document's yours-beside draws as it was drawn by hand 1`] = `
+"label width 1
+header {"document":{"folder":"","label_State":"Your turn","name":"","proposals":{"actions":[],"documents":[],"figure":{"more":"1 to review","value":"0 of 1 decided"}},"revisions_Level":{"ask":{"label":"Revise","label_Form":"Revise this file"},"isStartable_Requests":false,"isStoppable_Requests":false,"requests":[]},"revisions_Scope":{"actions":[],"figure":null,"start_All":null,"stop_All":null},"state":"YOUR_TURN","summary":""},"mode":{"kind":"MANUAL","label":"No task"},"parts":[{"isBusy":false,"text":"0 of 1 decided"}],"picker":{"label":"Open a file","label_Here":"this editor","sections":[]},"switcher":{"label":"Switch task","label_Here":"this editor","options":[]}}
+FRAME 1-1
+  CURRENT_LINES run 1
+    "1" changed none: "const"{data-syntax=keyword} " " "ATTEMPTS"{data-change=replaced data-side=before data-source=cap data-state=OPEN} " = " "5"{data-change=replaced data-side=before data-source=yours data-state=OPEN data-syntax=number} ";"
+      ⟵ document 0:0 [0,19)
+    ring {data-source=cap data-state=OPEN}
+      STRETCH 0:6-0:14 {data-change=replaced data-place=1 data-side=before data-source=cap}
+    ring {data-place=1 data-source=yours data-state=OPEN}
+      STRETCH 0:17-0:18 {data-change=replaced data-place=1 data-side=before data-source=yours data-yours=}
+  PROPOSAL_LINES run 2
+    "~" changed none: "const"{data-syntax=keyword} " " "MAX_ATTEMPTS"{data-change=replaced data-side=after data-source=cap data-state=OPEN} " = " "3"{data-change=replaced data-side=after data-source=yours data-state=OPEN data-syntax=number} ";"
+      ⟵ document 0:0 [0,6) | cap#0 0:0 [6,18) | document 0:14 [18,21) | yours#0 0:0 [21,22) | document 0:18 [22,23)
+    ring {data-source=cap data-state=OPEN}
+      STRETCH 0:6-0:18 {data-change=replaced data-place=1 data-side=after data-source=cap}
+    ring {data-place=1 data-source=yours data-state=OPEN}
+      STRETCH 0:21-0:22 {data-change=replaced data-place=1 data-side=after data-source=yours data-yours=}
+  PROPOSAL_HEAD {"accept_All":{"label":"Accept all (1)","title":"Accepts every open proposal listed in line 1, wherever else it's listed; one with requests waiting is left to be decided by itself"},"figure":{"more":"1 to review","value":"0 of 1 decided"},"kind":"PROPOSAL_HEAD","label_Range":"line 1","revisions_Scope":{"actions":[],"figure":null,"start_All":null,"stop_All":null}}
+  PROPOSAL_LIST
+    {"actions":[],"attributes":{},"confirming":null,"isDrafting":false,"isRunning":false,"isStartable":false,"neighbors":{"range_Next":null,"range_Previous":null},"places":{"conditions":[],"count_All":2,"count_Here":1,"kind":"COUNT"},"rationale":"","requests":[],"source":"yours","stale":null,"state":"OPEN","status":"","title":"Your edits"}
+    {"actions":[{"command":"accept","label":"Accept","stateAfter":"ACCEPTED"},{"command":"reject","label":"Reject","stateAfter":"REJECTED"},{"command":"revise","label":"Revise","stateAfter":"REQUESTED"}],"attributes":{},"confirming":null,"isDrafting":false,"isRunning":false,"isStartable":false,"neighbors":{"range_Next":null,"range_Previous":null},"places":{"kind":"NONE"},"rationale":"MAX_ATTEMPTS says it's a cap.","requests":[],"source":"cap","stale":null,"state":"OPEN","status":"","title":"Say the cap"}
+FRAME 2-2
+  CURRENT_LINES run 3
+    "2" changed none: "const"{data-syntax=keyword} " DELAY_MS = " "100"{data-change=replaced data-side=before data-source=yours data-state=OPEN data-syntax=number} ";"
+      ⟵ document 1:0 [0,21)
+    ring {data-place=2 data-source=yours data-state=OPEN}
+      STRETCH 0:17-0:20 {data-change=replaced data-place=2 data-side=before data-source=yours data-yours=}
+  PROPOSAL_LINES run 4
+    "~" changed none: "const"{data-syntax=keyword} " DELAY_MS = " "250"{data-change=replaced data-side=after data-source=yours data-state=OPEN data-syntax=number} ";"
+      ⟵ document 1:0 [0,17) | yours#1 0:0 [17,20) | document 1:20 [20,21)
+    ring {data-place=2 data-source=yours data-state=OPEN}
+      STRETCH 0:17-0:20 {data-change=replaced data-place=2 data-side=after data-source=yours data-yours=}"
+`;
+
+exports[`the changes document's yours-only draws as it was drawn by hand 1`] = `
+"label width 1
+header {"document":{"folder":"","label_State":"","name":"","proposals":{"actions":[],"documents":[],"figure":null},"revisions_Level":{"ask":{"label":"Add a request","label_Form":"Request a change to this file"},"isStartable_Requests":false,"isStoppable_Requests":false,"requests":[]},"revisions_Scope":{"actions":[],"figure":null,"start_All":null,"stop_All":null},"state":"NONE","summary":""},"mode":{"kind":"MANUAL","label":"No task"},"parts":[],"picker":{"label":"Open a file","label_Here":"this editor","sections":[]},"switcher":{"label":"Switch task","label_Here":"this editor","options":[]}}
+  LINES run 1
+    "1" none none: "const"{data-syntax=keyword} " ATTEMPTS = " "5"{data-syntax=number} ";"
+      ⟵ document 0:0 [0,19)
+FRAME 2-2
+  CURRENT_LINES run 2
+    "2" changed none: "const"{data-syntax=keyword} " DELAY_MS = " "100"{data-change=replaced data-side=before data-source=yours data-syntax=number} ";"
+      ⟵ document 1:0 [0,21)
+    ring {data-place=1 data-source=yours}
+      STRETCH 0:17-0:20 {data-change=replaced data-place=1 data-side=before data-source=yours data-yours=}
+  PROPOSAL_LINES run 3
+    "+" inserted none: "const"{data-change=inserted data-side=after data-source=yours data-syntax=keyword} " MAX_DELAY_MS = "{data-change=inserted data-side=after data-source=yours} "30_000"{data-change=inserted data-side=after data-source=yours data-syntax=number} ";"{data-change=inserted data-side=after data-source=yours}
+      ⟵ yours#0 1:0 [0,28) | document 0:19 [28,28)
+    "~" changed none: "const"{data-syntax=keyword} " DELAY_MS = " "250"{data-change=replaced data-side=after data-source=yours data-syntax=number} ";"
+      ⟵ document 1:0 [0,17) | yours#1 0:0 [17,20) | document 1:20 [20,21)
+    ring {data-place=2 data-source=yours}
+      STRETCH 0:0-0:28 {data-change=inserted data-place=2 data-side=after data-source=yours data-yours=}
+    ring {data-place=1 data-source=yours}
+      STRETCH 1:17-1:20 {data-change=replaced data-place=1 data-side=after data-source=yours data-yours=}"
 `;
 
 exports[`the changes document's shape-free draws as it was drawn by hand 1`] = `
@@ -1898,8 +2088,8 @@ exports[`the scene proposals-thread draws as it was drawn by hand 1`] = `
 "label width 2
 header {"document":{"folder":"","label_State":"Your turn","name":"","proposals":{"actions":[],"documents":[],"figure":{"more":"2 to review","value":"0 of 2 decided"}},"revisions_Level":{"ask":{"label":"Revise","label_Form":"Revise this file"},"isStartable_Requests":false,"isStoppable_Requests":false,"requests":[]},"revisions_Scope":{"actions":[],"figure":null,"start_All":null,"stop_All":null},"state":"YOUR_TURN","summary":""},"mode":{"kind":"MANUAL","label":"No task"},"parts":[{"isBusy":false,"text":"0 of 2 decided"}],"picker":{"label":"Open a file","label_Here":"this editor","sections":[]},"switcher":{"label":"Switch task","label_Here":"this editor","options":[]}}
   LINES run 1
-    "1" none none: "// Retries a flaky async call, backing off further each time, until it"{data-syntax=comment}
-      ⟵ document 0:0 [0,70)
+    "1" none none: "// Retries a flaky async call, backing off each time, until it"{data-syntax=comment}
+      ⟵ document 0:0 [0,62)
     "2" none none: "// succeeds, runs out of attempts, or the caller gives up on it."{data-syntax=comment}
       ⟵ document 1:0 [0,64)
     "3" none none: 

@@ -235,6 +235,7 @@ function viewModelOf__Model<State>({
       model_TextEditor,
       name_Document,
       proposals,
+      source_Yours,
       mode,
       tasks,
       files
@@ -249,6 +250,7 @@ interface _Api___headerOf__Proposals_ {
   model_TextEditor: _Model_TextEditor_
   name_Document: string
   proposals: Array<_Proposal_Host_>
+  source_Yours: string
   mode: _Mode_Host_
   tasks: Array<_Standing_Task_>
   files: Array<string>
@@ -258,13 +260,14 @@ function headerOf__Proposals({
   model_TextEditor,
   name_Document,
   proposals,
+  source_Yours,
   mode,
   tasks,
   files
 }: _Api___headerOf__Proposals_): _Header_ViewModel_ {
   const requests_Task = mode.kind === "TASK" ? mode.task.requests : []
   const requests_Here = requests_Task.filter((request_Task) => request_Task.aim.kind !== "TASK")
-  const proposals_Here = proposals.filter((proposal_Host) => model_TextEditor.proposed.some((changes_Source) => changes_Source.source === proposal_Host.source && changes_Source.changes.length > 0))
+  const proposals_Here = proposals.filter((proposal_Host) => proposal_Host.source !== source_Yours && model_TextEditor.proposed.some((changes_Source) => changes_Source.source === proposal_Host.source && changes_Source.changes.length > 0))
   const count_Decided = proposals_Here.filter((proposal_Host) => proposal_Host.state !== "OPEN").length
   const requests_Counted = [
     ...proposals_Here.flatMap((proposal_Host) => proposal_Host.requests),
@@ -3870,7 +3873,8 @@ function frameOf__Drawn({
           item_First,
           ...items_Rest
         ],
-        proposals_Listed: proposals.filter((proposal_Host) => frame_Drawn.sources.includes(proposal_Host.source))
+        proposals_Listed: proposals.filter((proposal_Host) => frame_Drawn.sources.includes(proposal_Host.source)),
+        source_Yours
       }),
       part_List
     ]
@@ -4073,14 +4077,16 @@ interface _Api___headOf__Frame_ {
   range_Frame: _Range_Lines_
   items: Array<_Item_Proposals_>
   proposals_Listed: Array<_Proposal_Host_>
+  source_Yours: string
 }
 
 function headOf__Frame({
   range_Frame,
   items,
-  proposals_Listed
+  proposals_Listed,
+  source_Yours
 }: _Api___headOf__Frame_): _Part_Frame_ {
-  const counts_Frame = countsOf__States(items.map((item_Proposals) => item_Proposals.state))
+  const counts_Frame = countsOf__States(items.filter((item_Proposals) => item_Proposals.source !== source_Yours).map((item_Proposals) => item_Proposals.state))
   const statuses = proposals_Listed.flatMap((proposal_Host) => proposal_Host.requests.map((request_Host) => request_Host.status))
   const counts_Requests: _Counts_Requests_ = {
     QUEUED: statuses.filter((status) => status === "QUEUED").length,

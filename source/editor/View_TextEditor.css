@@ -1703,7 +1703,7 @@
    always there, at the top as the document scrolls under it, across the
    editor's width, on the proposals' band, a faint edge under it, flat, no
    shadow, in the interface's font. On its left, where the text starts, what
-   the editor's in, the host's task's name in the page's ink, or Manual,
+   the editor's in, the host's task's name in the page's ink, or No task,
    then its switcher, and nothing more, what's decided, what's queued and
    what's under way said by the cards and the task's name; with no task, how the document
    stands, its parts plain words apart by dots, how many of its proposals
@@ -2067,7 +2067,7 @@
 }
 
 /* the switcher, at the header's start, just after what this editor's
-   in, a task's name or Manual, set apart from it by a hairline, as it's
+   in, a task's name or No task, set apart from it by a hairline, as it's
    every task's, not this one's, the hairline 13.2px from the name's ink
    and 13px from the arrows', which read about 13.9px and 14.7px, the
    arrows' side roomier by eye, as at 11.5px, reading even, they looked
@@ -2086,7 +2086,7 @@
    of pixels after it, rounded up, as each is drawn on whole pixels and
    the name isn't, so the gap between them never changes by one as the
    name's length does, the arrows' rounded ends 1.75/16 into their square;
-   the name, or Manual, flush with the text under it and its card's, so
+   the name, or No task, flush with the text under it and its card's, so
    the hairline, on a whole pixel after a name ending on a fraction, is
    within half a pixel of 13.2 by the name, the same for it always;
    two arrows, muted, a
@@ -2095,7 +2095,7 @@
    task's, the one pointed at shown, or, pointing at neither, the one the
    keyboard's in. In it, under its label, every open task, each on a
    line: its mark, its name, where it stands, and a figure of what's
-   waiting, a conflict's in the file's teal; then Manual; the one this
+   waiting, a conflict's in the file's teal; then No task; the one this
    editor's in on a faint band, saying so, not to be pressed, the rest
    pressed to switch this editor to them, the host asked, `SWITCH` */
 .htmlView_editor :is(.switcher_Header_htmlView, .picker_Header_htmlView) {

@@ -12,10 +12,10 @@ renames freely: follow the code as it stands, not an older name.
   constructor options. A function's options object is `_Api___` and the
   function's name: `_Api___draw__View_TextEditor_`.
 - **Values, fields, parameters and functions** have a camelCase head, `_`
-  before a qualifier: `containerElement`, `divElement_line`,
-  `viewModel_TextEditor`, `line_ViewModel`. `__` comes before a compound
+  before a qualifier: `containerElement`, `divElement_text`,
+  `viewModel_TextEditor`, `line_Run`. `__` comes before a compound
   owner, which keeps its capitals when it names a class or type:
-  `draw__View_TextEditor`, `rowsOf__Underlay_Text`, `labelOf__Range_Lines`.
+  `draw__View_TextEditor`, `box$Of__Underlay_Text`, `labelOf__Range_Line$`.
 - **Components**, the drawing's, are named head first, capitalised as JSX
   needs a component to be: what they draw, what that's part of, then
   `__Html`, what it's drawn in: `Block_TextEditor__Html`, a text editor's
@@ -48,19 +48,20 @@ renames freely: follow the code as it stands, not an older name.
   the view's, so `draw(viewModel_TextEditor)`, and it's handed on as
   `viewModel_TextEditor`.
 - **Plurals** end in `$`, not an s, in the names that are ours:
-  `segment$_Line`, `row$Of__Underlay_Text`, `TextUnderlay$_Line__Html`,
-  `_Row$__Underlay_Text_`. Never in names that aren't: the DOM's
+  `segment$_Line`, `box$Of__Underlay_Text`, `Action$_Scope__Html`,
+  `_Placed$_View_`. Never in names that aren't: the DOM's
   (`childNodes`, `getClientRects`), JSX's (`children`), or a CSS class or
   data attribute (`underlays_htmlView`, `data-marks`), where a `$` would
-  need escaping. So far in `source/editor/View_TextEditor.tsx`; elsewhere, for
-  now, an s.
+  need escaping. Most of them in `source/editor/View_TextEditor.tsx`, a few
+  in the editor's other files, the board's and the documents part's;
+  elsewhere, for now, an s.
 - **One concept, one head.** The element a view draws into is a container
   everywhere, never a root.
 - **Proofs**, branded primitives, are named for what they prove, head first:
   `_Text_Line_NonTerminated_`, its phantom symbol
   `proof__Text_Line_NonTerminated`. The field holding one keeps its plain
   name, `text`: the type carries the proof. The one function that makes it
-  is its parser, `parseLines_ViewModel`.
+  is its parser, `parseTexts_Line`, the documents part's.
 - **Constants** in `source/` are all caps: `REGEXP_LINEBREAK`.
 - **Files** are named after the class they hold, or, holding none, after
   what they hold: `source/editor/View_TextEditor.tsx` and `.css`, the

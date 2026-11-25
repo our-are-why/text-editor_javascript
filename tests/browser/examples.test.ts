@@ -400,7 +400,10 @@ const opened_JavaScript = await openExample(
 )
 
 // the JavaScript example as it opens, before anything's pressed: a case of
-// each kind of thing asked and decided, as its host lists them
+// each kind of thing asked and decided, as its host lists them; and what
+// the file did since the task's rounds were written, a round stale and two
+// conflicts, each change's lines drawn as written on, above the file's; and
+// your edits, waved, two frames of only yours and one in retry's frame
 const seeded_JavaScript = await opened_JavaScript.page.evaluate(async () => {
   await document.fonts.ready
   await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)))
@@ -426,11 +429,17 @@ const seeded_JavaScript = await opened_JavaScript.page.evaluate(async () => {
     document: [...document.querySelectorAll(".card_Document_htmlView .said_htmlView")].map(saidOf),
     task: [...document.querySelectorAll(".card_Task_htmlView .said_htmlView")].map(saidOf),
     dropped: [...new Set([...document.querySelectorAll(".item_htmlView[data-source=\"order\"] .stale_htmlView")].map((element) => element.textContent))],
+    stale: ["header", "base", "status"].map((source) => document.querySelector(`.item_htmlView[data-source="${source}"] .stale_htmlView`)?.textContent ?? null),
+    layers: [...document.querySelectorAll(".line_htmlView[data-layer]")].map((line) => line.getAttribute("data-layer")).filter((layer) => layer !== "DOCUMENT"),
+    frames_Yours: [...document.querySelectorAll(".frame_htmlView")].filter((frame) => frame.querySelector(".item_htmlView") === null).map((frame) => frame.getAttribute("aria-label")),
+    isWaved: [...document.querySelectorAll(".underlay_htmlView[data-yours]")].every((ring) => ((ring.getAttribute("d") ?? "").match(/-?[\d.]+/g) ?? []).length > 24),
+    count_Yours: new Set([...document.querySelectorAll(".underlay_htmlView[data-yours]")].map((ring) => ring.getAttribute("data-place"))).size,
+    item_Yours: [...document.querySelectorAll(".item_htmlView[data-source=\"yours\"]")].map((item) => item.closest(".frame_htmlView")?.getAttribute("aria-label") ?? null),
     isUrlKept: rect_Said_Url !== undefined && [...(said_Url?.querySelector(".notes_Said_htmlView")?.getClientRects() ?? [])].every((rect) => rect.right <= rect_Said_Url.right + 1)
   }
 })
 
-test("the JavaScript example opens with a case of each kind of thing asked and decided: an accepted proposal not yet applied, its move's rings filled; a request on a proposal sent with words its change puts in, dotted under them, its chip and its line; a revising one with more queued for its next round; the document's own requests, one cutting through a ring's edge, two overlapping, dashed there, one over two lines in progress, one with a link too long for its line kept inside it, two done with, by a proposal and with nothing to change, each request's words marked only on the side of a frame they were selected on, as they are or as proposed, not mirrored in its other; the task's own; and a round that dropped a move", () => {
+test("the JavaScript example opens with a case of each kind of thing asked and decided: an accepted proposal not yet applied, its move's rings filled; a request on a proposal sent with words its change puts in, dotted under them, its chip and its line; a revising one with more queued for its next round; the document's own requests, one cutting through a ring's edge, two overlapping, dashed there, one over two lines in progress, one with a link too long for its line kept inside it, two done with, by a proposal and with nothing to change, each request's words marked only on the side of a frame they were selected on, as they are or as proposed, not mirrored in its other; the task's own; a round that dropped a move; a round stale and two conflicts, the file having moved under them, each change's lines as written on above the file's; and your edits waved, two frames of only yours and one in retry's frame, listed there", () => {
   expect(seeded_JavaScript).toEqual({
     status: ["filled"],
     cap: [
@@ -456,6 +465,16 @@ test("the JavaScript example opens with a case of each kind of thing asked and d
     ],
     task: ["Say in the README that onRetry is gone. |  |  | queued"],
     dropped: ["Stale · 1 dropped, its text goneRun again"],
+    stale: [
+      "Stale · written before your editsRun again",
+      "Conflict · the file changed “DELAY_MS” to “BASE_MS” in line 32",
+      "Conflict · the file put “// no response: 0” in line 38"
+    ],
+    layers: ["WRITTEN_ON", "WRITTEN_ON", "MOVED_SINCE", "MOVED_SINCE", "WRITTEN_ON", "MOVED_SINCE", "WRITTEN_ON", "MOVED_SINCE"],
+    frames_Yours: ["lines 4 to 5", "line 8"],
+    isWaved: true,
+    count_Yours: 4,
+    item_Yours: ["lines 13 to 27"],
     isUrlKept: true
   })
 })
@@ -969,8 +988,8 @@ test("a proposal's action pressed is asked of the host, which sends back what it
 test("the header over the document stays put as it scrolls, saying the host's task, its mark where it stands, the agent at work or your turn, its state in words for what reads it aloud, and the document, by its file's name, at its end, nothing between them; the task's card hidden until the task's hovered: its id and where it stands, what the agent says of it, how far its proposals have got across the documents it touches, and each document, this one marked, how far its own have got, each figure's breakdown when hovered, Add a request for the task as a whole, and the host's actions for it; the document's card, hovered, what the agent says the task does here, how far its proposals have got, and the host's action for them, how many revisions are queued and in progress, Revise, Start all and Stop all, saying how many when they're hovered; the task's Stop all putting what's in progress back in the queue; the document's Start setting every proposal's queued requests going at once, each proposal's round its own; nothing asked, nothing to start", () => {
   expect(header_Working).toEqual({ task: ["Tidy the retry loop", "WORKING", "Working"], parts: [], spinners: 0, document: ["retry.js", "WORKING", "Working"], card: ["Cancel", "Accept all (10)", "Start all (6)", "Stop all (3)"], card_Document: ["Accept all (7)", "Start all (5)", "Stop all (2)"], isSticky: true })
   expect(card_Resting.isShown).toBe(false)
-  expect(card_Hovered).toEqual({ isShown: true, head: "T-12Working…Cancel", summary: "Keeps every error, names the attempt counter round, caps the delay, and stops once the caller aborts; drops the onRetry hook and the opening comment.", id: "T-12", figures: ["Proposals: 6 of 20 decided (11 to review · 1 revision requested · 2 revising · 5 accepted · 1 rejected)", "Scope Revisions: 7 queued · 3 running", "Level Revisions: "], documents: ["retry.js (this document): 4 of 14 decided (8 to review · 1 revision requested · 1 revising · 3 accepted · 1 rejected)", "README.md: 2 of 6 decided (3 to review · 1 revising · 2 accepted)"], parts: ["head_Card_htmlView", "summary_Card_htmlView", "section_Card_htmlView", "section_Card_htmlView", "section_Card_htmlView"] })
-  expect(card_Document).toEqual({ isShown: true, label: "retry.js", summary: "In retry.js: the loop's errors, its counter's name, its delays and its abort, and two things it no longer needs.", figures: ["Proposals: 4 of 14 decided (8 to review · 1 revision requested · 1 revising · 3 accepted · 1 rejected)", "Scope Revisions: 6 queued · 2 running", "Level Revisions: "], actions: ["Accept all (7)", "Starts all 5 requests queued in this file, its own and its proposals'", "Stops all 2 running in this file, its own and its proposals', putting them back in the queue"] })
+  expect(card_Hovered).toEqual({ isShown: true, head: "T-12Working…Cancel", summary: "Keeps every error, names the attempt counter round, caps the delay, and stops once the caller aborts; drops the onRetry hook and the opening comment.", id: "T-12", figures: ["Proposals: 6 of 19 decided (10 to review · 1 revision requested · 2 revising · 5 accepted · 1 rejected)", "Scope Revisions: 7 queued · 3 running", "Level Revisions: "], documents: ["retry.js (this document): 4 of 13 decided (7 to review · 1 revision requested · 1 revising · 3 accepted · 1 rejected)", "README.md: 2 of 6 decided (3 to review · 1 revising · 2 accepted)"], parts: ["head_Card_htmlView", "summary_Card_htmlView", "section_Card_htmlView", "section_Card_htmlView", "section_Card_htmlView"] })
+  expect(card_Document).toEqual({ isShown: true, label: "retry.js", summary: "In retry.js: the loop's errors, its counter's name, its delays and its abort, and two things it no longer needs.", figures: ["Proposals: 4 of 13 decided (7 to review · 1 revision requested · 1 revising · 3 accepted · 1 rejected)", "Scope Revisions: 6 queued · 2 running", "Level Revisions: "], actions: ["Accept all (7)", "Starts all 5 requests queued in this file, its own and its proposals'", "Stops all 2 running in this file, its own and its proposals', putting them back in the queue"] })
   expect(header_Stopped).toEqual({ task: ["Tidy the retry loop", "YOUR_TURN", "Your turn"], parts: [], spinners: 0, document: ["retry.js", "YOUR_TURN", "Your turn"], card: ["Cancel", "Accept all (10)", "Start all (10)"], card_Document: ["Accept all (7)", "Start all (8)"], isSticky: true })
   expect(header_Started).toEqual({ task: ["Tidy the retry loop", "WORKING", "Working"], parts: [], spinners: 0, document: ["retry.js", "WORKING", "Working"], card: ["Cancel", "Accept all (10)", "Start all (2)", "Stop all (8)"], card_Document: ["Accept all (7)", "Stop all (8)"], isSticky: true })
   expect(header_Done).toEqual({ task: ["Tidy the retry loop", "YOUR_TURN", "Your turn"], parts: [], spinners: 0, document: ["retry.js", "YOUR_TURN", "Your turn"], card: ["Cancel", "Accept all (12)", "Start all (2)"], card_Document: ["Accept all (9)"], isSticky: true })
@@ -2426,11 +2445,11 @@ const back_Switch = await opened_Switch.page.evaluate(() => ({
 }))
 
 test("a chevron after the task's name opens the switcher's card, never with the task's: the project's tasks, the editor's first, then those on its document, then the rest, then No task; the footer counting them; No task pressed, the editor's in manual, the file itself, the keyboard in the text; a line typed, the task pressed, it's back, its proposals carried across the line", () => {
-  expect(footer_Switch).toEqual({ counts: ["YOURS 4", "WORKING 2", "DRAFTS 1"], title: "6 tasks: 4 need you, 2 working, 1 draft" })
+  expect(footer_Switch).toEqual({ counts: ["YOURS 4", "CONFLICTS 2", "WORKING 2", "DRAFTS 1"], title: "6 tasks: 4 need you, 2 conflicts, 2 working, 1 draft" })
   expect(cards_Chevron).toEqual(["hidden", "visible"])
   expect(cards_Name).toEqual(["visible", "hidden"])
   expect(options_Switch).toEqual([
-    "TASK | Tidy the retry loop | 14 to decide · 3 running | here",
+    "TASK | Tidy the retry loop | 2 conflicts · 3 running | here",
     "TASK | Log each retry | 1 running | ",
     "TASK | Rename attempts to tries | 1 queued | ",
     "TASK | Name the retry options | 2 queued | ",
@@ -2439,7 +2458,7 @@ test("a chevron after the task's name opens the switcher's card, never with the 
     "MANUAL | No task |  | "
   ])
   expect(manual_Switch).toEqual({ name: "No task", frames: 0, focus: "input_htmlView", card: "hidden", logged: { switched: "MANUAL" } })
-  expect(back_Switch).toEqual({ name: "Tidy the retry loop", frames: 7, first: "// typed in manual", logged: { switched: "T-12" } })
+  expect(back_Switch).toEqual({ name: "Tidy the retry loop", frames: 9, first: "// typed in manual", logged: { switched: "T-12" } })
   expect(opened_Switch.errors).toEqual([])
 })
 
@@ -2797,7 +2816,7 @@ test("the board, from the footer: a column for each of who a task's waiting on, 
   expect([flush_Wide, flush_Narrow]).toEqual([[0, 0, 0, 0], [0, 0, 0, 0]])
   expect(tile_Resting).toEqual({ ...tile_Pointed, more: "hidden" })
   expect(tile_Pointed).toEqual({ line: "Say what the README promises", height: tile_Resting.height, more: "visible", details: "applicable", next: tile_Resting.next })
-  expect(details_Others).toEqual(["1 queuedin file", "14 to decide3 runningin file", "2 queuedin file", "applicable"])
+  expect(details_Others).toEqual(["1 queuedin file", "2 conflicts3 runningin file", "2 queuedin file", "applicable"])
   expect(board_Switched).toEqual({ hidden: false, columns: ["YOURS: T-12 T-14 T-15 shown T-17", "AGENT: T-13", "DRAFTS: T-16", "RESOLVED: T-9 T-11"], mode: "Rename attempts to tries" })
   expect(board_Canceled).toEqual({ hidden: false, columns: ["YOURS: T-12 T-14 T-17", "AGENT: T-13", "DRAFTS: T-16", "RESOLVED: T-9 T-11 T-15"], mode: "No task" })
   expect(board_Started.columns).toEqual(["YOURS: T-12 T-14 T-17", "AGENT: T-13 T-16", "DRAFTS: ", "RESOLVED: T-9 T-11 T-15"])
@@ -3321,22 +3340,25 @@ await opened_Draft.page.waitForTimeout(1800)
 const draft_Answered = await shownOf_Draft()
 await opened_Draft.close()
 test("a request sent with no task drafts a new one, named for it, the editor in it, its request queued; started, working; answered a moment later with nothing to change, your turn, applicable; the footer counting it each time", () => {
-  expect(draft_Made).toEqual({ name: "Say what the timeout throws.", state: "DRAFT", footer: "7 tasks: 4 need you, 2 working, 2 drafts" })
+  expect(draft_Made).toEqual({ name: "Say what the timeout throws.", state: "DRAFT", footer: "7 tasks: 4 need you, 2 conflicts, 2 working, 2 drafts" })
   expect(queued_Draft).toBe("1 queued")
-  expect(draft_Started).toEqual({ name: "Say what the timeout throws.", state: "WORKING", footer: "7 tasks: 4 need you, 3 working, 1 draft" })
-  expect(draft_Answered).toEqual({ name: "Say what the timeout throws.", state: "YOUR_TURN", footer: "7 tasks: 5 need you, 2 working, 1 draft" })
+  expect(draft_Started).toEqual({ name: "Say what the timeout throws.", state: "WORKING", footer: "7 tasks: 4 need you, 2 conflicts, 3 working, 1 draft" })
+  expect(draft_Answered).toEqual({ name: "Say what the timeout throws.", state: "YOUR_TURN", footer: "7 tasks: 5 need you, 2 conflicts, 2 working, 1 draft" })
   expect(opened_Draft.errors).toEqual([])
 })
 
 // typing in No task over a change of the playground's task's own, the
-// status line its accepted proposal moves: the documents part carries the
-// task across the edit, the change it touched stale, a conflict, said at
-// once in the switcher, the footer and on the board; the words taken back
-// out by hand, or by undo, the text it was written over back, no conflict
-// left, the editor keeping its undo history; typing beside a proposal's
-// change, nothing touched; "further " taken out of the opening comment, the
-// comment as its round was written on it, that round not out of date any
-// more; and in the task, nothing written before your edits
+// status line its accepted proposal moves, a conflict as the example opens,
+// the file having put a comment at its end: the comment taken back out by
+// hand, the text it was written over back, the documents part carrying the
+// task across the edit, that conflict gone, said at once in the switcher,
+// the footer and on the board; typed again, a conflict again, and undone,
+// back to the bare line or, its typing one step with the erasing, to the
+// file's comment, the counts following the text either way, the editor
+// keeping its undo history; typing beside a
+// proposal's change, nothing touched; "further " taken out of the opening
+// comment, the comment as its round was written on it, that round not
+// stale any more; and in the task, nothing written before your edits
 const opened_Conflict = await openExample(
   "javascript",
   1
@@ -3369,10 +3391,9 @@ await switchedTo_Conflict(".choice_Switcher_htmlView[data-switch=\"MANUAL\"]")
 const standing_Manual = await standingOf_Conflict()
 await typedAtEnd_Conflict("let lastError", " // kept")
 const standing_Beside = await standingOf_Conflict()
-await typedAtEnd_Conflict("const status = error?.response?.status", " // why")
-const standing_Typed = await standingOf_Conflict()
 const line_Conflicted = await lineWith_Conflict("const status = error?.response?.status")
-for (let count = 0; count < " // why".length; count = count + 1) {
+await typedAtEnd_Conflict("const status = error?.response?.status", "")
+for (let count = 0; count < " // no response: 0".length; count = count + 1) {
   await opened_Conflict.page.keyboard.press("Backspace")
   await opened_Conflict.page.waitForTimeout(50)
 }
@@ -3381,7 +3402,12 @@ const standing_Erased = await standingOf_Conflict()
 const line_Erased = await lineWith_Conflict("const status = error?.response?.status")
 await typedAtEnd_Conflict("const status = error?.response?.status", " // why")
 const standing_Retyped = await standingOf_Conflict()
-for (let count = 0; count < 20 && (await lineWith_Conflict("const status = error?.response?.status")) !== "38  const status = error?.response?.status ?? 0;"; count = count + 1) await opened_Conflict.page.keyboard.press("Control+z")
+const line_Retyped = await lineWith_Conflict("const status = error?.response?.status")
+const lines_Undone = [
+  "38  const status = error?.response?.status ?? 0;",
+  line_Conflicted
+]
+for (let count = 0; count < 20 && !lines_Undone.includes(await lineWith_Conflict("const status = error?.response?.status")); count = count + 1) await opened_Conflict.page.keyboard.press("Control+z")
 await opened_Conflict.page.waitForTimeout(300)
 const standing_Undone = await standingOf_Conflict()
 const line_Undone_Conflict = await lineWith_Conflict("const status = error?.response?.status")
@@ -3398,23 +3424,24 @@ const line_Comment = await lineWith_Conflict("backing off each time")
 await switchedTo_Conflict(".choice_Switcher_htmlView[data-switch=\"TASK\"][data-id=\"T-12\"]")
 const written_After = await writtenBefore_Conflict()
 await opened_Conflict.close()
-test("typing in No task over a change of a task's own, one it's accepted, a conflict, said at once in the switcher, the footer and on the board; taken back out by hand, or by undo, the conflict gone with it; typing beside a proposal's change, nothing; the opening comment put back as its round was written on it, its round not out of date any more", () => {
+test("the file's words under a change of a task's own, one it's accepted, a conflict, taken back out in No task by hand, the conflict gone, said at once in the switcher, the footer and on the board; typed again, a conflict again, and undone, the counts following the text back; typing beside a proposal's change, nothing; the opening comment put back as its round was written on it, its round not stale any more", () => {
   expect(written_Seeded).toEqual(["Drop the module's opening comment"])
-  expect(standing_Manual).toEqual({ switcher: "14 to decide · 3 running", footer: "6 tasks: 4 need you, 2 working, 1 draft", board: "14 to decide · 3 running" })
+  expect(standing_Manual).toEqual({ switcher: "2 conflicts · 3 running", footer: "6 tasks: 4 need you, 2 conflicts, 2 working, 1 draft", board: "2 conflicts · 3 running" })
   expect(standing_Beside).toEqual(standing_Manual)
-  expect(standing_Typed).toEqual({ switcher: "1 conflict · 3 running", footer: "6 tasks: 4 need you, 1 conflict, 2 working, 1 draft", board: "1 conflict · 3 running" })
-  expect(line_Conflicted).toBe("38  const status = error?.response?.status ?? 0; // why")
-  expect([standing_Erased, line_Erased]).toEqual([standing_Manual, "38  const status = error?.response?.status ?? 0;"])
-  expect([standing_Retyped, standing_Undone, line_Undone_Conflict]).toEqual([standing_Typed, standing_Manual, "38  const status = error?.response?.status ?? 0;"])
+  expect(line_Conflicted).toBe("38  const status = error?.response?.status ?? 0; // no response: 0")
+  expect([standing_Erased, line_Erased]).toEqual([{ switcher: "1 conflict · 3 running", footer: "6 tasks: 4 need you, 1 conflict, 2 working, 1 draft", board: "1 conflict · 3 running" }, "38  const status = error?.response?.status ?? 0;"])
+  expect([standing_Retyped, line_Retyped]).toEqual([standing_Manual, "38  const status = error?.response?.status ?? 0; // why"])
+  expect([[standing_Erased, "38  const status = error?.response?.status ?? 0;"], [standing_Manual, line_Conflicted]]).toContainEqual([standing_Undone, line_Undone_Conflict])
   expect(line_Comment).toBe("1// Retries a flaky async call, backing off each time, until it")
   expect(written_After).toEqual([])
   expect(opened_Conflict.errors).toEqual([])
 })
 
-// a conflict settled from its item, in the JavaScript example: in No task,
-// " // why" typed at the end of the line the task's accepted move takes up,
-// and the base delay's name, which an accepted replacement writes, changed;
-// in the task, each a conflict, saying what the file did, the move's lines
+// a conflict settled from its item, in the JavaScript example, the file
+// moved under the task's accepted changes as it opens: a comment put at the
+// end of the line its accepted move takes up, and the base delay's name,
+// which an accepted replacement writes, changed; each a conflict, saying
+// what the file did, the move's lines
 // drawn as it was written on them above the file's, the file's words ringed
 // on its line and, teal, in the proposed lines; the move settled with Both,
 // the line moving with the comment in it, and the replacement kept as it
@@ -3424,15 +3451,6 @@ const opened_Settle = await openExample(
   1
 )
 await opened_Settle.page.waitForSelector(".note_htmlView")
-const switchedTo_Settle = async (selector: string) => {
-  await opened_Settle.page.mouse.move(5, 400)
-  await opened_Settle.page.waitForTimeout(300)
-  await opened_Settle.page.hover(".trigger_Switcher_htmlView")
-  await opened_Settle.page.waitForTimeout(300)
-  await opened_Settle.page.click(selector)
-  await opened_Settle.page.mouse.move(5, 400)
-  await opened_Settle.page.waitForTimeout(500)
-}
 const itemOf_Settle = (source: string) => opened_Settle.page.evaluate((source) => {
   const item = document.querySelector(`.item_htmlView[data-source="${source}"]`)
   const frame = item?.closest(".frame_htmlView")
@@ -3446,18 +3464,6 @@ const itemOf_Settle = (source: string) => opened_Settle.page.evaluate((source) =
 }, source)
 const proposedWith_Settle = (snippet: string) => opened_Settle.page.evaluate((snippet) => [...document.querySelectorAll(".run_htmlView[data-run$=\"-proposed\"] > .line_htmlView > .text_htmlView")].map((text) => text.textContent ?? "").find((text) => text.includes(snippet)) ?? null, snippet)
 const conflictsOf_Settle = () => opened_Settle.page.evaluate(() => document.querySelector(".tasks_Footer_htmlView")?.getAttribute("title") ?? null)
-await switchedTo_Settle(".choice_Switcher_htmlView[data-switch=\"MANUAL\"]")
-await opened_Settle.page.locator(".line_htmlView", { hasText: "const status = error?.response?.status" }).first().click()
-await opened_Settle.page.keyboard.press("End")
-await opened_Settle.page.keyboard.type(" // why")
-await opened_Settle.page.waitForTimeout(300)
-await opened_Settle.page.locator(".line_htmlView", { hasText: "const delay = DELAY_MS" }).first().click()
-await opened_Settle.page.keyboard.press("End")
-for (let count = 0; count < "  const delay = DELAY_MS * 2 ** (n - 1);".length - "  const delay = DELAY_MS".length; count = count + 1) await opened_Settle.page.keyboard.press("ArrowLeft")
-for (let count = 0; count < "DELAY_MS".length; count = count + 1) await opened_Settle.page.keyboard.press("Shift+ArrowLeft")
-await opened_Settle.page.keyboard.type("BASE_MS")
-await opened_Settle.page.waitForTimeout(300)
-await switchedTo_Settle(".choice_Switcher_htmlView[data-switch=\"TASK\"][data-id=\"T-12\"]")
 const footer_Conflicted = await conflictsOf_Settle()
 const status_Conflicted = await itemOf_Settle("status")
 const base_Conflicted = await itemOf_Settle("base")
@@ -3475,16 +3481,16 @@ await opened_Settle.close()
 test("a conflict settled from its item: each says what the file did and offers its ways out, a move Take the file's, Both and Run again, a replacement Keep yours, Take the file's and Run again; the move's lines drawn as it was written on them, numbered, above the file's, unnumbered, what the file put in ringed green on its line and teal in the proposed lines; Both moves the line with the comment in it, Keep yours writes the replacement over the file's name, each asked of the host, and no conflict's left", () => {
   expect(footer_Conflicted).toBe("6 tasks: 4 need you, 2 conflicts, 2 working, 1 draft")
   expect(status_Conflicted).toEqual({
-    stale: "Conflict · the file put “// why” in line 38",
+    stale: "Conflict · the file put “// no response: 0” in line 38",
     ways: ["Take the file's", "Both", "Run again"],
-    lines: [["WRITTEN_ON", "38", "  const status = error?.response?.status ?? 0;"], ["MOVED_SINCE", "", "  const status = error?.response?.status ?? 0; // why"]],
+    lines: [["WRITTEN_ON", "38", "  const status = error?.response?.status ?? 0;"], ["MOVED_SINCE", "", "  const status = error?.response?.status ?? 0; // no response: 0"]],
     rings_Since: ["inserted"],
     rings_File: 1
   })
   expect(base_Conflicted.stale).toBe("Conflict · the file changed “DELAY_MS” to “BASE_MS” in line 32")
   expect(base_Conflicted.ways).toEqual(["Keep yours", "Take the file's", "Run again"])
   expect(status_Both).toEqual({ stale: null, ways: [], lines: [], rings_Since: [], rings_File: 0 })
-  expect(proposed_Both).toBe("  const status = error?.response?.status ?? 0; // why")
+  expect(proposed_Both).toBe("  const status = error?.response?.status ?? 0; // no response: 0")
   expect([base_Kept.stale, base_Kept.lines]).toEqual([null, []])
   expect(proposed_Kept).toBe("  const delay = DELAY_MS * 2 ** (round - 1);")
   expect(footer_Settled).toBe("6 tasks: 4 need you, 2 working, 1 draft")

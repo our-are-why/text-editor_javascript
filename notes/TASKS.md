@@ -539,9 +539,10 @@ host, `playground/host.ts`, plays all four for now, faked.
 - **the editor:** nothing of tasks but what it's told. It's given the mode:
   in manual, its document's trunk; in a task, the task's head of its
   document, the task, its requests and proposals. It draws them, keeps
-  only its view's state, and sends commands for the rest. Today it's given
-  `task`, `_Task_Host_ | null`, manual told as `null`: that becomes the
-  mode.
+  only its view's state, and sends commands for the rest. It's told the
+  mode, `mode`, `_Mode_Host_`, `MANUAL` or `TASK` with its task, since
+  2026-11-22, where it was given `task`, `_Task_Host_ | null`, manual
+  told as `null`.
 - **tasks:** tasks, their requests, proposals, rounds and decisions; the
   moves between states. **Built 2026-11-24, the first of it,** in
   `source/tasks/`, plain data and functions, no DOM: a task open, never
@@ -564,10 +565,10 @@ host, `playground/host.ts`, plays all four for now, faked.
   a task's state, its counts and the files it touches. `_Tasks_` holds
   them, taking each command, telling its observers what changed. Started
   stands for running till the agent part says what's running of what's
-  started. Not yet: a proposal's rounds' text and a task's changes, which
-  need the documents part's versions; a request's words are kept by their
-  text alone till then, the editor's own of them, where they're drawn,
-  kept by its host. **The playground on it, 2026-11-24:** its host holds
+  started. A task's changes, its heads, came with the documents part,
+  below. Not yet: a proposal's rounds' text, each round as it landed; and
+  a request's words are kept by their text alone, the editor's own of
+  them, where they're drawn, kept by its host. **The playground on it, 2026-11-24:** its host holds
   the project's tasks in a `_Tasks_`, made from what the example says of
   them, `playground/tasks.ts`, the editor and the board told what they
   show from it, every count the tasks part's; the host keeping only what's
@@ -584,8 +585,11 @@ host, `playground/host.ts`, plays all four for now, faked.
   shown, as README.md, still only counted, made into as many proposals and
   requests. The agent still faked, the same for every task: a round on a
   proposal landing a moment later, a request on no proposal answered with
-  nothing to change. No conflicts but those the documents part finds, the
-  example's one dropped, as nothing could show it. README.md's revision,
+  nothing to change. No conflicts but those the documents part finds: the
+  example's two, the file having moved under two of the task's accepted
+  changes since their rounds were written, carried as it opens, from
+  2026-11-25, where its one made by hand had been dropped, as nothing
+  could show it. README.md's revision,
   running, is a request, stopped and started with the rest, its round
   landing; a request sent with no task drafts a new one, named for it, the
   editor in it; your edits aren't a proposal of the task, so never one to
@@ -627,20 +631,24 @@ host, `playground/host.ts`, plays all four for now, faked.
   editor drawing it, its index no longer handing it out. The tasks part
   holds each task's heads, restated with `RESTATE`; a conflict is a stale
   change of the task's own, yours or accepted, counted, Apply held while
-  there's any; a proposal still open that's stale is only out of date, drawn
-  as written before your edits. **The playground on it:** the document kept
+  there's any; a proposal still open that's stale is only stale, not a
+  conflict, drawn as written before your edits. **The playground on it:** the document kept
   by a `_Documents_`, every edit recorded and every other open task's head
   carried across it, a round landing carried from the version it was written
   on, those edits kept till nothing's running on an older one; Apply making
   the task's head the document, every other open task carried across it; a
   conflict typed in No task said at once in the switcher, the footer and on
-  the board, the editor told its tasks keeping its undo history. Not yet:
-  moves found in what's read from outside, a block's hash turning up
-  elsewhere; text repeated exactly, counted, so a change of what's read
-  can't land on the wrong copy; conflicts drawn as frames, to be decided,
-  with the text each was written over; your edits in a task going into its
-  head rather than the document, as they still do in the playground; and
-  storage, the shell's.
+  the board, the editor told its tasks keeping its undo history; and the
+  examples opening with what moved their files since their rounds were
+  written, each edit replayed through the documents part as a host would,
+  `carriedOf__Model`, so their stale rounds and conflicts are found, not
+  written by hand, 2026-11-25. Built since: conflicts drawn, each change in
+  its frame as it was written on, above the file's lines, its ways out on
+  its item, and your edits in a task going into its head, both 2026-11-25,
+  under a conflict, and stale, and under your edits. Not yet: moves found
+  in what's read from outside, a block's hash turning up elsewhere; text
+  repeated exactly, counted, so a change of what's read can't land on the
+  wrong copy; and storage, the shell's.
 - **the agent:** runs, which requests are running for which task; how the
   agent's given its work, doctor's `doctor wait` or otherwise; whether it's
   there and working.
@@ -676,8 +684,8 @@ faking the moves, so it can all be drawn before the parts above are built:
   the pointer's still on it, as a menu shuts on a choice, sorted then,
   shown again only once the pointer's left it and come back, or its
   chevron's focused.
-  Draft task, and All tasks…, which opens the board, come with drafts and
-  the board;
+  Draft task, and All tasks…, which opens the board, still to come here,
+  though drafts and the board are built;
 - **built 2026-11-22: the file, and opening another.** An editor shows a
   file in a mode, so switching one keeps the other. The file's at the
   header's end: its name, with no mark, a hairline, then an icon of files
@@ -754,8 +762,9 @@ faking the moves, so it can all be drawn before the parts above are built:
   ellipsis till it's pointed at, for them all, for good, `COLLECT`, with
   their ids. Draft task, `NEW_TASK`, at its head, named for what it starts,
   drafting one, which stays in Drafts till it's started, where New task said
-  less, which the playground only reports, as a new task's made with its
-  first request, to come with drafts;
+  less, which the playground still only reports: a new task's made with its
+  first request, as a draft is from an editor's request sent with no task,
+  built 2026-11-23, and the board has nowhere yet to write one;
 - **built 2026-11-23: the ways a task ends, in its header,** at the end
   of its card's heading, `T-12 · Working`, folded behind an ellipsis in
   the muted ink its id's in, as a card's line's actions are, and as the
@@ -773,7 +782,8 @@ faking the moves, so it can all be drawn before the parts above are built:
   stops it from its card as from the board;
 - lines changed in the task, marked in the gutter;
 - in manual, the lines open tasks change, marked quietly in the gutter;
-- behind and conflicted, where they apply.
+- **built 2026-11-25: stale and conflicted,** where they apply, as a
+  conflict, and stale, in the editor, above, says.
 
 ## open
 

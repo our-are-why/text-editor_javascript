@@ -158,7 +158,7 @@ test("a task's changes on a document, its head there, restated as they now stand
   expect(taskIn(discarded, "T-1").heads).toEqual([head])
 })
 
-test("a conflict is a change of the task's own the document moved under, yours or a proposal accepted, each stale change one, each dropped one too; a proposal still to decide only out of date, one rejected neither; Apply held while there's any, as it is while anything runs", () => {
+test("a conflict is a change of the task's own the document moved under, yours or a proposal accepted, each stale change one, each dropped one too; a proposal still to decide only stale, one rejected neither; Apply held while there's any, as it is while anything runs", () => {
   const proposed = after(drafted,
     { kind: "PROPOSE", id_Task: "T-1", proposal: { id: "p-1", path: "retry.js", title: "", rationale: "" }, stamp: stampAt("2") },
     { kind: "PROPOSE", id_Task: "T-1", proposal: { id: "p-2", path: "retry.js", title: "", rationale: "" }, stamp: stampAt("2") },

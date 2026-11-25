@@ -8,8 +8,8 @@ import {
   MODULE_READING_TEXT
 } from "../../source/editor/index.ts"
 import { type _Change_Host_, parseTexts_Line } from "../../source/documents/index.ts"
-import { projectedOf } from "../projected.ts"
-import { actions_Review, actions_Reopen } from "../items.ts"
+import { projectedOf, projectedOf__Carried, type _Edit_Example_ } from "../projected.ts"
+import { actions_Review, actions_Reopen, proposal_Yours } from "../items.ts"
 import { attributesOf__Marks } from "../looks.ts"
 import { module_JavaScript } from "../syntax.ts"
 
@@ -23,13 +23,14 @@ export {
 // projection working out the rest, so a case shows one thing
 
 // what a ring says: its colour, what the change does; its dash, whether
-// only the look changes, or it was written before your edits, dotted,
-// whether the words change too; its strength, whether it applies only if
-// another proposal's rejected; filled, that it's accepted, not yet applied
+// only the look changes, dotted, whether the words change too; its
+// strength, whether it applies only if another proposal's rejected; filled,
+// that it's accepted, not yet applied; and over a pair of lines, that it
+// was written before the file moved under it, stale, or a conflict
 const kinds: _Section_Document_ = {
   name: "kinds",
   title: "What a ring says",
-  about: "A ring's colour says what the change does: red taken out, yellow replaced, green put in, brown moved. Its dash says only the look changes, or that its round wrote it before your edits; dotted, that the words change as well as their look; half strength, that it applies only if another proposal's rejected; filled, that it's accepted and waiting to be applied.",
+  about: "A ring's colour says what the change does: red taken out, yellow replaced, green put in, brown moved. Its dash says only the look changes; dotted, that the words change as well as their look; half strength, that it applies only if another proposal's rejected; filled, that it's accepted and waiting to be applied. Over a pair of lines, the line it was written on above the file's, it was written before the file moved under it: stale, or, a change of the task's own, a conflict.",
   cases: [
     {
       name: "kinds-removed",
@@ -244,7 +245,7 @@ const kinds: _Section_Document_ = {
       title: "Written before your edits",
       status: "normal",
       size: "wide",
-      drawn: "A change its last round wrote before your edits touched what it was written on, drawn as a pair of lines: the line it was written on, numbered, the change ringed whole there in its kind's colour, and under it the line as it is now, unnumbered, hatched forward in light teal, what you did ringed in the change look's colours. Here the round took out the unit comment, \"// in ms\" when it was written, and you'd made it \"// in milliseconds\" since: the removal's red ring is on the line above, and \"milliseconds\" in yellow on the teal line, replacing \"ms\". The rename, written on what you hadn't touched, is ringed as ever. Its item says it's out of date, written before your edits, and offers Run again, starting the round's requests over from now, so the agent sees your edits.",
+      drawn: "A change its last round wrote before your edits touched what it was written on, drawn as a pair of lines: the line it was written on, numbered, the change ringed whole there in its kind's colour, and under it the line as it is now, unnumbered, hatched forward in light teal, what you did ringed in the change look's colours. Here the round took out the unit comment, \"// in ms\" when it was written, and you'd made it \"// in milliseconds\" since: the removal's red ring is on the line above, and \"milliseconds\" in yellow on the teal line, replacing \"ms\". The rename, written on what you hadn't touched, is ringed as ever. Its item says it's stale, written before your edits, and offers Run again, starting the round's requests over from now, so the agent sees your edits.",
       open: null,
       viewModel_TextEditor: projectedOf({
         multilineText: "const ATTEMPTS = 5;\nconst DELAY_MS = 100; // in milliseconds",
@@ -259,6 +260,110 @@ const kinds: _Section_Document_ = {
         ],
         rounds_Landed: [{ source: "names", changes_Stale: [{ index: 1, over: { kind: "RANGE", version: "written", text: { lines: parseTexts_Line(" // in ms"), marks: [] }, written: { lines: { lines: parseTexts_Line("const DELAY_MS = 100; // in ms"), marks: [] }, change: { kind: "REPLACE", range: { from: { line: 0, offset: 21 }, to: { line: 0, offset: 29 } }, next: { lines: parseTexts_Line(""), marks: [] } } } } }], count_Dropped: 0 }],
         ranges_Frame: [{ first: 1, last: 2 }]
+      })
+    },
+    {
+      name: "kinds-conflict",
+      title: "A conflict",
+      status: "normal",
+      size: "wide",
+      drawn: "A change of the task's own, here an accepted one, that the file moved under since: drawn as a change written before your edits is, the line it was written on, numbered, the change ringed there, filled, as it's accepted, and under it the line as the file has it, unnumbered, hatched forward in teal, what the file did ringed in the changes look's colours, BASE_MS made INITIAL_MS, in yellow. Its item says it's a conflict, the word in the file's teal, as what it's about is, then what the file did, and offers the ways out where its actions were: Keep yours, the change made as it was written, over what the file did; Take the file's, the change let go; and Run again, its round's requests started over on the file as it is.",
+      open: null,
+      viewModel_TextEditor: projectedOf__Carried({
+        multilineText: "export function backoff(n) {\n  return BASE_MS * 2 ** (n - 1);\n}",
+        marks: [],
+        module_Language: module_JavaScript,
+        module_Reading: MODULE_READING_TEXT,
+        proposed: [
+          { source: "base", changes: [replacing([1, 9], [1, 16], "DELAY_MS")] }
+        ],
+        edits: [
+          editing([1, 9], [1, 16], "INITIAL_MS")
+        ],
+        proposals: [
+          { ...proposalOf({ source: "base", title: "Name the base delay DELAY_MS", rationale: "BASE said nothing of what it's the base of, or in what unit." }), state: "ACCEPTED", status: "Accepted", actions: actions_Reopen }
+        ],
+        ranges_Frame: []
+      })
+    },
+    {
+      name: "kinds-conflict-moved",
+      title: "A conflict on a move",
+      status: "normal",
+      size: "wide",
+      drawn: "An accepted move the file put words into since: the line it was written on, numbered, ringed brown where it leaves, and under it the file's line, the words it put in ringed green. Where the move lands, the file's words go with it, ringed in the file's teal, so what the file did is found where the move takes it. Kept as written, a move would read as a replacement, so Keep yours isn't offered; Both is, the move made with the file's words in it, and Take the file's and Run again.",
+      open: null,
+      viewModel_TextEditor: projectedOf__Carried({
+        multilineText: "function isRetryable(error) {\n  if (error instanceof TypeError) return true;\n  const status = error?.response?.status ?? 0;\n  return status === 429 || status >= 500;\n}",
+        marks: [],
+        module_Language: module_JavaScript,
+        module_Reading: MODULE_READING_TEXT,
+        proposed: [
+          { source: "status", changes: [moving([2, 0], [3, 0], [1, 0])] }
+        ],
+        edits: [
+          editing([2, 46], [2, 46], " // no response: 0")
+        ],
+        proposals: [
+          { ...proposalOf({ source: "status", title: "Work out the status first", rationale: "Then the function reads as its answers, top to bottom." }), state: "ACCEPTED", status: "Accepted", actions: actions_Reopen }
+        ],
+        ranges_Frame: [{ first: 2, last: 3 }]
+      })
+    },
+  ],
+}
+
+// what you type in a task, yours: a change of the task's own, never the
+// file's till the task's applied, ringed as any change is, but waved
+const yours: _Section_Document_ = {
+  name: "yours",
+  title: "Your edits",
+  about: "What you type in a task is a change of the task's own, yours, never the file's till the task's applied: ringed as any change is, in the colour of what it does, but waved, so it's told from a proposal's straight ring at a glance.",
+  cases: [
+    {
+      name: "yours-beside",
+      title: "Beside a proposal's",
+      status: "normal",
+      size: "wide",
+      drawn: "Waved, a gentle wave, 13px long and 1px high, where the proposal's ring beside it is straight, in the same colours. Every corner is at the wave's outermost, bent round and mirrored across its two sides, each side a whole number of half waves, so a single letter's ring, a single dip each side, waves as a word's does. The frame lists your edits first, an item with nothing to decide: point at it to light them all, or at one of them to light it alone, as each is its own, where a proposal's changes are one idea and light together. DELAY_MS's line, with only yours on it, is a small frame of its own: a frame of only yours is never joined to a proposal's beside it.",
+      open: null,
+      viewModel_TextEditor: projectedOf({
+        multilineText: "const ATTEMPTS = 5;\nconst DELAY_MS = 100;",
+        marks: [],
+        module_Language: module_JavaScript,
+        module_Reading: MODULE_READING_TEXT,
+        proposed: [
+          { source: "cap", changes: [replacing([0, 6], [0, 14], "MAX_ATTEMPTS")] },
+          { source: proposal_Yours.source, changes: [replacing([0, 17], [0, 18], "3"), replacing([1, 17], [1, 20], "250")] }
+        ],
+        proposals: [
+          proposal_Yours,
+          proposalOf({ source: "cap", title: "Say the cap", rationale: "MAX_ATTEMPTS says it's a cap." })
+        ],
+        rounds_Landed: [],
+        ranges_Frame: []
+      })
+    },
+    {
+      name: "yours-only",
+      title: "A frame of only yours",
+      status: "normal",
+      size: "wide",
+      drawn: "Where there's nothing but your edits, the frame is small: the lines as the file has them, hatched, then as yours, and nothing else, no head or list, as there's nothing in it to decide. Frames of only yours on lines next to each other are one, a line put in between them too, as a constant put in below ATTEMPTS and DELAY_MS's value changed are here.",
+      open: null,
+      viewModel_TextEditor: projectedOf({
+        multilineText: "const ATTEMPTS = 5;\nconst DELAY_MS = 100;",
+        marks: [],
+        module_Language: module_JavaScript,
+        module_Reading: MODULE_READING_TEXT,
+        proposed: [
+          { source: proposal_Yours.source, changes: [replacing([0, 19], [0, 19], "\nconst MAX_DELAY_MS = 30_000;"), replacing([1, 17], [1, 20], "250")] }
+        ],
+        proposals: [
+          proposal_Yours
+        ],
+        rounds_Landed: [],
+        ranges_Frame: []
       })
     },
   ],
@@ -1098,7 +1203,7 @@ const changes: _Document_ = {
   name: "changes",
   title: "Changes",
   about: "Every case of how the view draws a change, enumerated: the rings round words, the marks planned for where words are taken out, and the lines under words a request's on. Each case is drawn by the editor, in the changes look, from a few lines and the changes proposed for them, as an agent would write them, the editor working out what to draw; under it, what it shows, and what's still to decide. Normal cases are the usual; edge cases, where something presses on the usual; planned ones, settled but not built, drawn as the view draws them now. Point at changes and items, and fold frames, as the cases say.",
-  sections: [kinds, shape, moves, lines, threads, pointing, folding, marks, requests],
+  sections: [kinds, yours, shape, moves, lines, threads, pointing, folding, marks, requests],
 }
 
 // a span of a case's lines, from a line and a character in it to another,
@@ -1120,6 +1225,17 @@ function restyling(
   data: Record<string, string>
 ): _Change_Host_ {
   return { kind: "REPLACE", range: { from: { line: from[0], offset: from[1] }, to: { line: to[0], offset: to[1] } }, multilineText, marks: [{ range: { from: { line: 0, offset: 0 }, to: { line: 0, offset: [...multilineText].length } }, data }] }
+}
+
+// an edit made to a case's lines since its changes were written: a span of
+// them, from a line and a character in it to another, each from 0, and what
+// it becomes
+function editing(
+  from: [number, number],
+  to: [number, number],
+  multilineText: string
+): _Edit_Example_ {
+  return { range: { from: { line: from[0], offset: from[1] }, to: { line: to[0], offset: to[1] } }, multilineText }
 }
 
 // a span of a case's lines taken from where it is and put at another place

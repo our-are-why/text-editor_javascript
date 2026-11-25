@@ -17,7 +17,7 @@ import {
   type _Changes_Host_,
   type _Change_Host_
 } from "../../source/documents/index.ts"
-import { modelOf } from "../projected.ts"
+import { carriedOf__Model, type _Edit_Example_ } from "../projected.ts"
 import { actions_Review, actions_Reopen, actions_Dismiss, proposal_Yours } from "../items.ts"
 import { module_Markdown, type _State_Markdown_ } from "../syntax.ts"
 import { perspective_Markdown } from "../readings.ts"
@@ -28,6 +28,7 @@ export {
   proposed_readme,
   proposals_readme,
   model_readme,
+  stale_readme,
   ranges_readme,
   setup_readme,
   markdown
@@ -36,7 +37,8 @@ export {
 // the JavaScript example's module's README, in Markdown, as one would find
 // it beside the module: headings, a fenced block of shell and one of
 // JavaScript, inline code, emphasis, a list, a table, a quote and a link,
-// its long lines unwrapped, as Markdown's paragraphs are written
+// its long lines unwrapped, as Markdown's paragraphs are written; as the
+// task's rounds were written on it, before the edit made to it since, below
 const readme = `# retry
 
 Retries a flaky async call, backing off further each time, until it succeeds, runs out of attempts, or the caller gives up on it.
@@ -131,7 +133,10 @@ function replacing(
 // put into the table, being revised, and a row taken out, rejected, both in
 // what the move carries; and in how long it waits, the base delay's name,
 // accepted, applied already, its words the README's, the quote's last words
-// changed, a revision of it asked for, and the link's address, withdrawn
+// changed, a revision of it asked for, and the link's address, withdrawn.
+// And your edit, typed in the task, its own: how long it waits said as the
+// module's comment says it, most of a long line, in that frame beside its
+// proposals, cut where the line wraps, as long lines are
 const proposed_readme: Array<_Changes_Host_> = [
   { source: "signal", changes: [replacing(quoteOf(3, "gives up on it"), "gives up on it through its `signal`")] },
   { source: "example", changes: [replacing(quoteOf(18, "fetchUser(id), { attempts: 3 }"), "fetchUser(id, { signal }), { attempts: 3, signal }")] },
@@ -144,6 +149,7 @@ const proposed_readme: Array<_Changes_Host_> = [
   { source: "base", changes: [replacing(quoteOf(39, "`DELAY_MS`"), "`DELAY_MS`")] },
   { source: "cap", changes: [replacing(quoteOf(41, "by the tenth attempt, almost a minute"), "but never longer than 30 seconds")] },
   { source: "link", changes: [replacing(quoteOf(43, "https://example.com/backoff"), "https://example.com/guides/backoff")] },
+  { source: proposal_Yours.source, changes: [replacing(quoteOf(39, "with up to half as much again added at random, so callers that failed together don't all retry together"), "and up to half as long again at random, so that many callers retrying at once don't all come back at the same moment")] },
 ]
 
 // what the playground, as host, says of each proposal, listed in every
@@ -309,12 +315,28 @@ const proposals_readme: Array<_Proposal_Host_> = [
   proposal_Link,
 ]
 
-// the README and the changes proposed for it, as the editor holds them
-const model_readme = modelOf({
+// what moved the README under the task's rounds since they were written:
+// in its opening words, "on it" taken out after "gives up", where an open
+// proposal's last round says how a caller gives up, so it's stale, the long
+// line drawn as it was written on, above the file's, both wrapping, and Run
+// again offered
+const edits_readme: Array<_Edit_Example_> = [
+  { range: quoteOf(3, " on it"), multilineText: "" },
+]
+
+// the README as it now is, and the changes proposed for it, as the editor
+// holds them, carried across the edit made since they were written, by the
+// documents part, as the playground, as host, carries a task's head; what
+// it touched stale
+const carried_readme = carriedOf__Model({
   multilineText: readme,
   marks: [],
-  proposed: proposed_readme
+  proposed: proposed_readme,
+  stale: [],
+  edits: edits_readme
 })
+const model_readme = carried_readme.model_TextEditor
+const stale_readme = carried_readme.stale
 
 // the lines the playground, as host, frames whole, beyond what the changes
 // touch, as a frame each reads: the options' list, and how long it waits,
@@ -357,7 +379,7 @@ const requests_readme: Array<_Request_Task_> = [
 const markdown: _Example_ = {
   name: "markdown",
   title: "Markdown",
-  about: "The JavaScript example's module's README, in Markdown, drawn whole as its source, its syntax worked out by a language module, the playground's Markdown tokenizer, and styled by the playground, as a host's theme: its syntax kept as it's written, faint, and what that marks shown as it marks it, headings and strong words bold, emphasis italic, code and links coloured. Its marks are its syntax, so the document holds none, and a proposal that makes words bold puts in asterisks. Its changes are read two ways, a button over it for each, both in the editor's changes look: as Markdown, the playground's reading, first, what a change means, a word made bold one dashed ring, restyled, round it and its asterisks, as it was and as it becomes; and as text, the editor's reading, every character that changed ringed, the asterisks put in green, as code's are. The fenced JavaScript is the JavaScript module's to colour, the Markdown module handing its lines on. Eleven proposals, keeping the README in step with the module's: in its opening words, how a caller gives up, inline code put in; a signal passed in the example's call, inside the fence; in the options, framed whole, a default made bold, words replaced, and onRetry's line taken out; what it retries, its heading, words and table, moved up before the options, carrying a row put in, being revised, and a row taken out, rejected, so not ringed; and in how long it waits, framed from its words to its link, the base delay's name, accepted and applied, its words the README's already, so nothing to ring, the quote's last words changed, a revision asked for, and the link's address, withdrawn, so not ringed. The README has a request of its own, on the link's words: the link keeps its own underline, the request's dotted line drawn under it. Point at a ring or an item to see a proposal; press a move's note to go to its other end.",
+  about: "The JavaScript example's module's README, in Markdown, drawn whole as its source, its syntax worked out by a language module, the playground's Markdown tokenizer, and styled by the playground, as a host's theme: its syntax kept as it's written, faint, and what that marks shown as it marks it, headings and strong words bold, emphasis italic, code and links coloured. Its marks are its syntax, so the document holds none, and a proposal that makes words bold puts in asterisks. Its changes are read two ways, a button over it for each, both in the editor's changes look: as Markdown, the playground's reading, first, what a change means, a word made bold one dashed ring, restyled, round it and its asterisks, as it was and as it becomes; and as text, the editor's reading, every character that changed ringed, the asterisks put in green, as code's are. The fenced JavaScript is the JavaScript module's to colour, the Markdown module handing its lines on. Eleven proposals, keeping the README in step with the module's: in its opening words, how a caller gives up, inline code put in; a signal passed in the example's call, inside the fence; in the options, framed whole, a default made bold, words replaced, and onRetry's line taken out; what it retries, its heading, words and table, moved up before the options, carrying a row put in, being revised, and a row taken out, rejected, so not ringed; and in how long it waits, framed from its words to its link, the base delay's name, accepted and applied, its words the README's already, so nothing to ring, the quote's last words changed, a revision asked for, and the link's address, withdrawn, so not ringed. The README moved under a round since it was written, \"on it\" taken out after \"gives up\" in its opening words, so how a caller gives up is stale, its long line drawn as the round was written on it and as the file has it, both wrapping, Run again offered. And your edit, the task's own, in how long it waits, says it as the module's comment does: most of a long line, its ring waved, cut where the line wraps. The README has a request of its own, on the link's words: the link keeps its own underline, the request's dotted line drawn under it. Point at a ring or an item to see a proposal; press a move's note to go to its other end.",
   // the editor, put together as above, drawing the README and its
   // proposals into the stage, over it a button for each perspective, the
   // one shown pressed; pressing another shows it, and reports which; and
@@ -377,7 +399,7 @@ const markdown: _Example_ = {
       model_TextEditor: model_readme,
       name_Document: "README.md",
       proposals: proposals_readme,
-      stale: [],
+      stale: stale_readme,
       about_Task: {
         id: "T-7",
         name: "Bring the README up to date",

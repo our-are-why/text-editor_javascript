@@ -671,7 +671,7 @@ none for an open one; what you asked of a requested or revising one,
 under its words as a quote, a rule beside them and "Requests" over them,
 bold, the editor's, in its state's ink, so they're yours, not the agent's,
 first headed "You asked", then "Revision requests", renamed 2026-11-18 as
-they became a list; a list, `Request$_Item__Html`, a bullet in that ink before each and a
+they became a list; a list, `Request$__Html`, a bullet in that ink before each and a
 little room between them, so where one ends and the next begins is seen
 however many lines each wraps to, each with Remove after it while it's
 queued; and its actions, the host's for its
@@ -1582,7 +1582,7 @@ proposals' own colours meaning the same here: the agent at work, the
 revision's plum; your turn, or done, decided, the proposals' indigo; a
 draft, or canceled, nothing under way, the grey a withdrawn proposal's
 in, canceled's cross fainter than its word, as withdrawn's is;
-`--ink_Task_htmlView`, a host's own `--view-state-*` colours taken where
+`--ink_Mark_htmlView`, a host's own `--view-state-*` colours taken where
 it gives them.
 
 **the document's requests in the header, and the task's files in its card,
@@ -1877,7 +1877,7 @@ the ellipsis, unfolded while what it's beside is pointed at or the
 keyboard's on one of them; folded, it's visually hidden and out of the
 layout, `folded_htmlView`, where it had been squeezed to no width, which
 left the lines' gaps behind; still focusable. A line of nothing but its
-actions, Revise alone, stays as it is. The ellipsis, `More_Action$__Html`,
+actions, Revise alone, stays as it is. The ellipsis, `Fold_Action$__Html`,
 `more_htmlView`, one for all of them, takes the ink of what it folds, the
 revision's plum for requests and revisions, the proposals' indigo for
 proposals. Every proportion of proposals, the task's, a document's, the
@@ -3156,7 +3156,7 @@ request, and inline left them mid-paragraph on a long one.
 
 Decided 2026-11-20: a listed request's words, pointed at or the keyboard
 on them, behave as the form's do: lit where they are, `data-lit`, the
-viewer told which request's by `POINT_WORDS`, `litAt__ViewModel`
+viewer told which request's by `POINT_WORDS`, `viewModelOf__State`
 marking them, a proposal's only in its frame's lines as proposed, where
 they're underlined; and peeked at, a moment after, only where some of
 them can't be seen, scrolled away or under the card the list is in, its
@@ -3253,6 +3253,25 @@ request's on, requests overlapping, across a ring's edge and along a
 nested one's. A run's underlays aren't measured while the editor's not
 in the page, as a document's cases are drawn before they're put in it,
 which had drawn rings from nothing, NaN, till they were measured again.
+
+Decided 2026-11-25: the examples caught up again, with what's been built
+since, each case there as the example opens. Each example is its file as
+its rounds were written on it, and the edits made to it since, replayed
+through the documents part as a host would, `carriedOf__Model` in
+`playground/projected.ts`, so what's stale and what's in conflict is found,
+not written by hand. The JavaScript example: "further" put in the opening
+comment, stale, as before; two conflicts, BASE_MS where an accepted
+proposal names DELAY_MS, Keep yours offered, and a comment put on the line
+an accepted move takes up, ringed teal where it lands, Both offered, the
+task's counts saying them in the switcher, the footer and on the board,
+Apply held; and your edits, waved: two on lines next to each other, one
+frame of only yours, one in a frame of its own, and one in retry's frame,
+listed there. The Markdown example: a long line stale, its pair wrapping,
+and your edit cut by a wrap. The Changes document: a conflict, a conflict
+on a move, and a section of your edits, beside a proposal's and in a
+frame of only yours. Your edits aren't counted among a frame's, the
+header's or the card's proposals, having nothing to decide, where they'd
+been counted since typing in a task was built.
 
 Decided 2026-11-20: a request's words carry the side of a frame they were
 selected on, `side`, `CURRENT` as they are or `PROPOSED` as proposed,

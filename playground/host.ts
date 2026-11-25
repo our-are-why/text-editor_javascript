@@ -95,12 +95,12 @@ interface _Base_Run_ {
 // editor's in as the editor leaves it; and every other open task's head on
 // the document carried across the edit by the documents part, a change the
 // edit touched stale, a conflict if it's the task's own, yours or accepted,
-// out of date if it's still a proposal, and clean again once the text it
+// only stale if it's still a proposal, and clean again once the text it
 // was written over is back, the editor's task's checked too; the editor and the board told the
 // tasks as they then stand if that changed them, the editor keeping its
 // model, and its undo history. And of each action asked of a
 // proposal, taking it at once: decided, by the tasks part, what was asked of
-// it and not addressed let go, its being out of date with it; a revision's
+// it and not addressed let go, its being stale with it; a revision's
 // notes queued on it, with the words they're on, if they are, each its own
 // id, one removed when you remove it; dismissed, it's gone, its changes with
 // it; and sending the editor what it now has. Start, at any scope, in any
@@ -650,7 +650,7 @@ function hostedOf__Editor<State>({
     }
   }
   // the proposals of the task the editor's in that wait on nothing but you,
-  // accepted, on a file or on every file it touches, out of date no more
+  // accepted, on a file or on every file it touches, stale no more
   const acceptedIn = (paths: Array<string>) => {
     const task = taskIn()
     if (task === undefined) return
