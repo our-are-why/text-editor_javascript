@@ -210,7 +210,17 @@ moves the caret as it would. Each edit of yours its own, pointed at alone:
 a proposal's changes belong together, one idea of the agent's, so pointing
 at one lights them all; yours share a source only because they're yours,
 so pointing at one lights it, and only your edits' item, where a frame has
-one, lights them all.
+one, lights them all. Your edits' rings waved, decided 2026-11-25, drawn on the
+canvas at three lengths, then in the editor, gentle chosen: a wave 13px long,
+1px high, so a
+frame holding a proposal's changes and yours tells them apart at a glance,
+the proposal's straight; fitted to the ring as dashes are, every corner at
+the wave's outermost, bent round, mirrored across its two sides, each side a
+whole number of half waves as near 13px as fits, a side too short for a wave
+a single dip, so a single letter's ring waves as a line's does; rows on lines
+next to each other one shape only where they share columns, as every ring
+is, and where a line break cuts a ring, its seam straight and dashed, the
+wave meeting it midway.
 
 Still open: **joining and splitting frames by hand,** a frame range of
 yours, stated against the head's version and carried as changes are, over
@@ -219,10 +229,7 @@ extent the floor, never cut, as a ring is one shape, a request's words a
 soft one, kept whole by default but cut by a split you make, as an
 underline drawn in two pieces is still one request. Kept with the task, by
 document, beside its head. Waits on the host's frame ranges being carried
-across versions, which an agent giving them needs anyway. And **a ring of
-its own for your edits,** a gentle wave, say, so a frame holding a
-proposal's changes and yours tells them apart, a squiggle reading as an
-error the risk; to be drawn.
+across versions, which an agent giving them needs anyway.
 
 This keeps the editor's frames decision of 2026-11-18: there's no suggesting
 mode turning every edit into a proposal. In a task, your edits are the task's,

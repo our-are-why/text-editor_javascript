@@ -22,6 +22,19 @@
   stroke-linejoin: round;
 }
 
+/* a change of yours, `data-yours`, its ring waved, so it's told from a
+   proposal's straight one at a glance in a frame holding both, a gentle
+   wave, 13px long, 1px high: every corner at the wave's outermost, bent
+   round and mirrored across its two sides, each side a whole number of
+   half waves as near 13px as fits, one too short for a wave a single dip,
+   so a single letter's ring waves as a line's does; where a wrap or a
+   line break cuts it, its seam left straight and dashed, the wave meeting
+   it midway. The view fits it, `fit__Wave$`, as it fits dashes */
+[data-look~="changes"] .underlay_htmlView[data-yours] {
+  --length_Wave_htmlView: 13;
+  --amplitude_Wave_htmlView: 1;
+}
+
 /* the file's words, `data-file`, where the proposed lines have them, put in
    or changed since a change was written before them: ringed in teal, the
    file's colour, which no change has, and where it took words out, a notch

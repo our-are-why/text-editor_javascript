@@ -1626,6 +1626,73 @@ describe("beside it: what can't live in one document", () => {
     })
   })
 
+  test("in the changes look, a change of yours, data-yours, ringed with a gentle wave, 13px long and 1px high, fitted to its ring: every corner at the wave's outermost, mirrored across its two sides, each side whole waves, so the ring mirrors left to right and top to bottom, a single letter's too, never further from the straight ring than the wave's height; a proposal's ring beside it straight", async () => {
+    const rings = await opened.page.evaluate(async () => {
+      const containerElement = document.createElement("div")
+      containerElement.style.width = "40rem"
+      containerElement.dataset["look"] = "changes"
+      document.body.append(containerElement)
+      const ringOf = (
+        from: number,
+        to: number,
+        source: string,
+        attributes: Record<string, string>
+      ) => ({ kind: "STRETCH" as const, from: { line: 0, offset: from }, to: { line: 0, offset: to }, attributes: { "data-change": "replaced", "data-side": "after", "data-source": source, ...attributes } })
+      new window._View_TextEditor_({
+        containerElement,
+        componentMap: window.COMPONENTMAP__VIEW_TEXTEDITOR
+      }).draw(window.viewModelOf__Blocks([{
+        kind: "LINES",
+        run: {
+          id: "document",
+          lines: window.parseLines_ViewModel({ multilineText: "one two three a four", module_Language: window.MODULE_PLAINTEXT }),
+          groups: [
+            { attributes: { "data-source": "yours", "data-place": "1" }, underlays: [ringOf(4, 7, "yours", { "data-yours": "", "data-place": "1" })] },
+            { attributes: { "data-source": "most" }, underlays: [ringOf(8, 13, "most", {})] },
+            { attributes: { "data-source": "yours", "data-place": "2" }, underlays: [ringOf(14, 15, "yours", { "data-yours": "", "data-place": "2" })] }
+          ]
+        }
+      }]))
+      await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)))
+      const pointsOf = (element: Element) => {
+        const numbers = ((element.getAttribute("d") ?? "").match(/-?[\d.]+(?:e[-+]?\d+)?/gi) ?? []).map(Number)
+        return Array.from({ length: Math.floor(numbers.length / 2) }, (_, index) => ({ x: numbers[2 * index] ?? 0, y: numbers[2 * index + 1] ?? 0 }))
+      }
+      // how far a ring's points, mirrored across its middle, are from its
+      // nearest point; and how far its furthest point is from the straight
+      // ring it waves round, its box less the wave's height
+      const amplitude = 1
+      const measured = [...containerElement.querySelectorAll(".underlay_htmlView")].map((element) => {
+        const points = pointsOf(element)
+        const left = Math.min(...points.map((point) => point.x))
+        const right = Math.max(...points.map((point) => point.x))
+        const top = Math.min(...points.map((point) => point.y))
+        const bottom = Math.max(...points.map((point) => point.y))
+        const nearest = (x: number, y: number) => Math.min(...points.map((point) => Math.hypot(point.x - x, point.y - y)))
+        const mirrored = Math.max(
+          ...points.map((point) => nearest(left + right - point.x, point.y)),
+          ...points.map((point) => nearest(point.x, top + bottom - point.y))
+        )
+        const box = { left: left + amplitude, right: right - amplitude, top: top + amplitude, bottom: bottom - amplitude }
+        const furthest = Math.max(...points.map((point) => {
+          const outside_X = Math.max(box.left - point.x, 0, point.x - box.right)
+          const outside_Y = Math.max(box.top - point.y, 0, point.y - box.bottom)
+          return outside_X > 0 || outside_Y > 0
+            ? Math.hypot(outside_X, outside_Y)
+            : Math.min(point.x - box.left, box.right - point.x, point.y - box.top, box.bottom - point.y)
+        }))
+        return { source: element.getAttribute("data-source"), points: points.length, mirrored: Math.round(mirrored * 100) / 100, furthest: Math.round(furthest * 100) / 100 }
+      })
+      containerElement.remove()
+      return measured
+    })
+    expect(rings.map((ring) => [ring.source, ring.points > 40])).toEqual([["yours", true], ["most", false], ["yours", true]])
+    for (const ring of rings.filter((each) => each.source === "yours")) {
+      expect(ring.mirrored).toBeLessThan(0.05)
+      expect(ring.furthest).toBeLessThan(1.05)
+    }
+  })
+
   test("switching the look on, after drawing, measures the underlays again; with it on, a change pressed on by punctuation has room made, its ring reaching past its word's ink the same on both sides", async () => {
     const widths = await opened.page.evaluate(async () => {
       const containerElement = document.createElement("div")

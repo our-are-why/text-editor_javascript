@@ -2383,6 +2383,22 @@ Then typing, the second of editing:
   `holdCaret`, the view scrolling by what the caret moved, while an edit
   keeps to its line, `isHolding_Caret`; one that breaks or joins lines
   moves the caret as it would.
+- **a change of yours, waved:** decided 2026-11-25, its rings marked
+  `data-yours` by the projection, and waved by the "changes" look, a
+  length and a height, gentle, `--length_Wave_htmlView` 13 and
+  `--amplitude_Wave_htmlView` 1, which the view reads and draws, as it
+  reads a dash and draws its dashes, `fit__Wave$`, after them: each piece
+  of the ring's path redrawn, `dOf__Wave`, every corner at the wave's
+  outermost, out where it turns outward, in where it turns in, bent round
+  with a quarter circle, the half wave either side of it at the length on
+  both its sides, so it mirrors; each side a whole number of half waves,
+  `offsetAt__Wave`, the count the nearest that ends on the extreme, or
+  the crossing, its end needs, `nearestOf__Count`; a side too short for a
+  wave a single dip; a piece's end where a seam, or an open side, cuts it
+  crossing the wave's middle, so it meets the straight seam without a
+  step. Its parts as any ring's: rows joined only where they share columns
+  on lines next to each other. Its light round it, pointed at, still runs
+  round the straight ring, under a wave a pixel high.
 - **what a word is, the host says:** a words module, `_Module_Words_`,
   `wordsOf` a line's words, in the setup beside the language and the
   perspectives, `module_Words`; the editor's own, `MODULE_WORDS_TEXT`, in

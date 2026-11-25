@@ -2862,6 +2862,9 @@ function drawTextUnderlay$__View_TextEditor({
     fit__Dash$({
       svgElement_underlay$
     })
+    fit__Wave$({
+      svgElement_underlay$
+    })
   }
   fit__Lap$({
     containerElement_View
@@ -4631,6 +4634,269 @@ interface _Edge_Dash_ {
 }
 
 const REACH_LEAST__DASH = 0.01
+
+interface _Api___fit__Wave$_ {
+  svgElement_underlay$: Element
+}
+
+function fit__Wave$({
+  svgElement_underlay$
+}: _Api___fit__Wave$_): void {
+  for (const pathElement of svgElement_underlay$.querySelectorAll(".underlay_htmlView:not([data-notch])")) {
+    if (!(pathElement instanceof SVGPathElement)) continue
+    const style = getComputedStyle(pathElement)
+    const length = Number(style.getPropertyValue("--length_Wave_htmlView").trim())
+    const amplitude = Number(style.getPropertyValue("--amplitude_Wave_htmlView").trim())
+    if (!(length > 0) || !(amplitude > 0)) continue
+    pathElement.setAttribute(
+      "d",
+      piece$Of__D(pathElement.getAttribute("d") ?? "")
+        .map((piece) => dOf__Wave({
+          piece,
+          length,
+          amplitude
+        }))
+        .join(" ")
+    )
+  }
+}
+
+interface _Api___dOf__Wave_ {
+  piece: _Piece_Dash_
+  length: number
+  amplitude: number
+}
+
+function dOf__Wave({
+  piece,
+  length,
+  amplitude
+}: _Api___dOf__Wave_): string {
+  const corner$ = piece.point$
+  const count_Edge = piece.isClosed ? corner$.length : corner$.length - 1
+  if (count_Edge < 1) return ""
+  const edge$ = Array.from(
+    {
+      length: count_Edge
+    },
+    (
+      _,
+      index
+    ) => edgeOf__Wave({
+      from: corner$[index] ?? CORNER_ORIGIN,
+      to: corner$[(index + 1) % corner$.length] ?? CORNER_ORIGIN
+    })
+  )
+  const sign$ = corner$.map((
+    _,
+    index
+  ) => {
+    const edge_Before = piece.isClosed ? edge$[(index - 1 + count_Edge) % count_Edge] : edge$[index - 1]
+    const edge_After = edge$[index]
+    return edge_Before === undefined || edge_After === undefined
+      ? 0
+      : edge_Before.x_Unit * edge_After.y_Unit - edge_Before.y_Unit * edge_After.x_Unit > 0
+        ? 1
+        : -1
+  })
+  const point$ = edge$.flatMap((
+    edge,
+    index
+  ) => {
+    const index_End = (index + 1) % corner$.length
+    const sign_Start = sign$[index] ?? 0
+    const sign_End = sign$[index_End] ?? 0
+    const count_Step = Math.max(
+      1,
+      Math.ceil(edge.length / STEP__WAVE)
+    )
+    const point$_Edge = Array.from(
+      {
+        length: count_Step + 1
+      },
+      (
+        _,
+        step
+      ) => {
+        const along = edge.length * step / count_Step
+        const offset = offsetAt__Wave({
+          along,
+          length_Edge: edge.length,
+          sign_Start,
+          sign_End,
+          length,
+          amplitude
+        })
+        return {
+          x: edge.from.x + edge.x_Unit * along + edge.y_Unit * offset,
+          y: edge.from.y + edge.y_Unit * along - edge.x_Unit * offset
+        }
+      }
+    )
+    const edge_Next = edge$[index_End]
+    const corner = corner$[index_End]
+    return sign_End === 0 || edge_Next === undefined || corner === undefined
+      ? point$_Edge
+      : [
+        ...point$_Edge,
+        ...arcOf__Corner({
+          corner,
+          edge,
+          edge_Next,
+          sign: sign_End,
+          amplitude
+        })
+      ]
+  })
+  const d = point$.map((
+    point,
+    index
+  ) => `${index === 0 ? "M" : "L"} ${point.x.toFixed(2)} ${point.y.toFixed(2)}`).join(" ")
+  return piece.isClosed ? `${d} Z` : d
+}
+
+interface _Api___edgeOf__Wave_ {
+  from: _Corner_Path_
+  to: _Corner_Path_
+}
+
+function edgeOf__Wave({
+  from,
+  to
+}: _Api___edgeOf__Wave_): _Edge_Dash_ {
+  const length = Math.hypot(
+    to.x - from.x,
+    to.y - from.y
+  )
+  return {
+    from,
+    length,
+    x_Unit: length === 0 ? 0 : (to.x - from.x) / length,
+    y_Unit: length === 0 ? 0 : (to.y - from.y) / length
+  }
+}
+
+const CORNER_ORIGIN: _Corner_Path_ = {
+  x: 0,
+  y: 0
+}
+
+const STEP__WAVE = 0.5
+
+interface _Api___offsetAt__Wave_ {
+  along: number
+  length_Edge: number
+  sign_Start: number
+  sign_End: number
+  length: number
+  amplitude: number
+}
+
+function offsetAt__Wave({
+  along,
+  length_Edge,
+  sign_Start,
+  sign_End,
+  length,
+  amplitude
+}: _Api___offsetAt__Wave_): number {
+  if (sign_Start === 0 || sign_End === 0) {
+    const phase_Start = sign_Start === 0 ? Math.PI / 2 : sign_Start > 0 ? 0 : Math.PI
+    const count_Quarter = nearestOf__Count({
+      wanted: 4 * length_Edge / length,
+      isValid: (count) => Math.abs(Math.cos(phase_Start + count * Math.PI / 2) - sign_End) < 0.01
+    })
+    return amplitude * Math.cos(phase_Start + count_Quarter * Math.PI / 2 * along / length_Edge)
+  }
+  const half = length / 2
+  const middle = length_Edge - 2 * half
+  if (middle < half) {
+    return sign_Start === sign_End
+      ? along <= length_Edge / 2
+        ? amplitude * sign_Start * Math.cos(2 * Math.PI * along / length_Edge)
+        : amplitude * sign_End * Math.cos(2 * Math.PI * (length_Edge - along) / length_Edge)
+      : amplitude * sign_Start * Math.cos(Math.PI * along / length_Edge)
+  }
+  const count_Half = nearestOf__Count({
+    wanted: middle / half,
+    isValid: (count) => Math.abs(Math.cos(Math.PI * count) - sign_End / sign_Start) < 0.01
+  })
+  return along <= half
+    ? amplitude * sign_Start * Math.cos(Math.PI * along / half)
+    : along >= length_Edge - half
+      ? amplitude * sign_End * Math.cos(Math.PI * (length_Edge - along) / half)
+      : -amplitude * sign_Start * Math.cos(Math.PI * count_Half * (along - half) / middle)
+}
+
+interface _Api___nearestOf__Count_ {
+  wanted: number
+  isValid: (count: number) => boolean
+}
+
+function nearestOf__Count({
+  wanted,
+  isValid
+}: _Api___nearestOf__Count_): number {
+  const count$ = Array.from(
+    {
+      length: Math.ceil(wanted) + 4
+    },
+    (
+      _,
+      index
+    ) => index + 1
+  ).filter(isValid)
+  return count$.reduce(
+    (
+      count_Nearest,
+      count
+    ) => Math.abs(count - wanted) < Math.abs(count_Nearest - wanted) ? count : count_Nearest,
+    count$[0] ?? 1
+  )
+}
+
+interface _Api___arcOf__Corner_ {
+  corner: _Corner_Path_
+  edge: _Edge_Dash_
+  edge_Next: _Edge_Dash_
+  sign: number
+  amplitude: number
+}
+
+function arcOf__Corner({
+  corner,
+  edge,
+  edge_Next,
+  sign,
+  amplitude
+}: _Api___arcOf__Corner_): Array<_Corner_Path_> {
+  const angle_From = Math.atan2(
+    -edge.x_Unit * sign,
+    edge.y_Unit * sign
+  )
+  const angle_Turn = Math.atan2(
+    -edge_Next.x_Unit * sign,
+    edge_Next.y_Unit * sign
+  ) - angle_From
+  const angle_Arc = angle_Turn > Math.PI ? angle_Turn - 2 * Math.PI : angle_Turn < -Math.PI ? angle_Turn + 2 * Math.PI : angle_Turn
+  return Array.from(
+    {
+      length: COUNT_ARC__WAVE - 1
+    },
+    (
+      _,
+      index
+    ) => {
+      const angle = angle_From + angle_Arc * (index + 1) / COUNT_ARC__WAVE
+      return {
+        x: corner.x + Math.cos(angle) * amplitude,
+        y: corner.y + Math.sin(angle) * amplitude
+      }
+    }
+  )
+}
+
+const COUNT_ARC__WAVE = 8
 
 interface _Api___fit__Lap$_ {
   containerElement_View: HTMLElement
