@@ -42,7 +42,7 @@
    both. A change written before your edits isn't dashed: dashes say only
    its look changes, and where a ring's cut */
 [data-look~="changes"] :is(.underlay_htmlView, .seam_htmlView)[data-file] {
-  --edge: var(--view-file-edge, light-dark(#0b7a85, #3fc1c9));
+  --edge: var(--view-file-edge, light-dark(#0e7490, #3eb6dc));
   stroke: var(--edge);
   stroke-width: 1px;
   stroke-linejoin: round;

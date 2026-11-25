@@ -3914,7 +3914,7 @@ function staleOf__Round({
   model_TextEditor
 }: _Api___staleOf__Round_): _Stale_Item_ | null {
   if (round_Landed === null || round_Landed.changes_Stale.length + round_Landed.count_Dropped === 0) return null
-  return STALEMAP__KIND_STALE[decision === "ACCEPTED" ? "CONFLICT" : "OUT_OF_DATE"]({
+  return STALEMAP__KIND_STALE[decision === "ACCEPTED" ? "CONFLICT" : "STALE"]({
     round_Landed,
     decision,
     isRunning,
@@ -3934,18 +3934,18 @@ interface _Api___itemOf__Stale_ {
 }
 
 const STALEMAP__KIND_STALE: _StaleMap__Kind_Stale_ = {
-  OUT_OF_DATE: OUT_OF_DATE_itemOf__Stale,
+  STALE: STALE_itemOf__Stale,
   CONFLICT: CONFLICT_itemOf__Stale
 }
 
-function OUT_OF_DATE_itemOf__Stale({
+function STALE_itemOf__Stale({
   round_Landed,
   decision,
   isRunning
 }: _Api___itemOf__Stale_): _Stale_Item_ {
   return {
-    kind: "OUT_OF_DATE",
-    head: "Out of date",
+    kind: "STALE",
+    head: "Stale",
     label: [
       ...round_Landed.changes_Stale.length === 0 ? [] : ["written before your edits"],
       ...droppedOf__Round(round_Landed)

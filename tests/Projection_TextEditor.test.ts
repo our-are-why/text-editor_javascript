@@ -442,7 +442,7 @@ test("a task's own actions, at the end of its card's heading, the ways it ends: 
   expect(headOf(taskOf("APPLIED", counts_None, { QUEUED: 0, RUNNING: 0 }), 0)).toEqual([null])
 })
 
-test("a round that landed after your edits: open, it's out of date, said under its title, written before your edits, and how many dropped, their text gone, with Run again while it's open and no round of it's under way; accepted, a conflict, what the file did said, and its ways out, Keep yours, a replacement's, Take the file's, and Run again; its stale change drawn as the line it was written on, numbered, its ring there, whole, and under it the line as it is, unnumbered, ringed for what the file did, the stale proposal's marks off its words, and in the proposed line the file's words ringed teal; the others not; none said of a round that landed clean", () => {
+test("a round that landed after your edits: open, it's stale, said under its title, written before your edits, and how many dropped, their text gone, with Run again while it's open and no round of it's under way; accepted, a conflict, what the file did said, and its ways out, Keep yours, a replacement's, Take the file's, and Run again; its stale change drawn as the line it was written on, numbered, its ring there, whole, and under it the line as it is, unnumbered, ringed for what the file did, the stale proposal's marks off its words, and in the proposed line the file's words ringed teal; the others not; none said of a round that landed clean", () => {
   const parsed = parseModel_TextEditor({
     multilineText: "let failures; done",
     marks: [],
@@ -468,16 +468,16 @@ test("a round that landed after your edits: open, it's out of date, said under i
   const underlaysOf = (viewModel: _ViewModel_TextEditor_, side: string, name: string) => (runOf(viewModel, side)?.groups ?? []).flatMap((group) => group.underlays.flatMap((underlay) => name in underlay.attributes ? [underlay.kind === "POINT" ? { at: underlay.at, change: underlay.attributes["data-change"] ?? null } : underlay.kind === "STRETCH" ? { from: underlay.from, to: underlay.to, change: underlay.attributes["data-change"] ?? null } : null] : []))
   const sourcesOf = (viewModel: _ViewModel_TextEditor_, layer: string) => (runOf(viewModel, "-current")?.lines ?? []).filter((line) => line.layer === layer).flatMap((line) => line.segments.flatMap((segment) => segment.attributes["data-source"] === undefined ? [] : [String(segment.text)]))
   const landed = viewModelOf([0], 0, null, "OPEN")
-  expect(staleOf(landed)).toEqual([{ kind: "OUT_OF_DATE", head: "Out of date", label: "written before your edits", isRerunnable: true, ways: [] }])
+  expect(staleOf(landed)).toEqual([{ kind: "STALE", head: "Stale", label: "written before your edits", isRerunnable: true, ways: [] }])
   expect(runOf(landed, "-current")?.lines.map((line) => [line.layer, line.gutter.label, line.segments.map((segment) => segment.text).join("")])).toEqual([["WRITTEN_ON", "1", "let lastError; done"], ["MOVED_SINCE", "", "let failures; done"]])
   expect(underlaysOf(landed, "-current", "data-stale")).toEqual([{ from: { line: 0, offset: 0 }, to: { line: 0, offset: 13 }, change: "replaced" }])
   expect(underlaysOf(landed, "-current", "data-source").filter((underlay) => underlay !== null && "from" in underlay && underlay.from.line === 1)).toEqual([{ from: { line: 1, offset: 14 }, to: { line: 1, offset: 18 }, change: "replaced" }])
   expect(underlaysOf(landed, "-current", "data-since")).toEqual([{ from: { line: 1, offset: 4 }, to: { line: 1, offset: 12 }, change: "replaced" }])
   expect([sourcesOf(landed, "WRITTEN_ON"), sourcesOf(landed, "MOVED_SINCE")]).toEqual([["let lastError"], ["done"]])
   expect(underlaysOf(landed, "-proposed", "data-file")).toEqual([{ from: { line: 0, offset: 17 }, to: { line: 0, offset: 25 }, change: null }])
-  expect(staleOf(viewModelOf([0], 1, null, "OPEN"))).toEqual([{ kind: "OUT_OF_DATE", head: "Out of date", label: "written before your edits · 1 dropped, its text gone", isRerunnable: true, ways: [] }])
-  expect(staleOf(viewModelOf([], 2, "QUEUED", "OPEN"))).toEqual([{ kind: "OUT_OF_DATE", head: "Out of date", label: "2 dropped, their text gone", isRerunnable: true, ways: [] }])
-  expect(staleOf(viewModelOf([0], 0, "RUNNING", "OPEN"))).toEqual([{ kind: "OUT_OF_DATE", head: "Out of date", label: "written before your edits", isRerunnable: false, ways: [] }])
+  expect(staleOf(viewModelOf([0], 1, null, "OPEN"))).toEqual([{ kind: "STALE", head: "Stale", label: "written before your edits · 1 dropped, its text gone", isRerunnable: true, ways: [] }])
+  expect(staleOf(viewModelOf([], 2, "QUEUED", "OPEN"))).toEqual([{ kind: "STALE", head: "Stale", label: "2 dropped, their text gone", isRerunnable: true, ways: [] }])
+  expect(staleOf(viewModelOf([0], 0, "RUNNING", "OPEN"))).toEqual([{ kind: "STALE", head: "Stale", label: "written before your edits", isRerunnable: false, ways: [] }])
   expect(staleOf(viewModelOf([0], 0, null, "ACCEPTED"))).toEqual([{ kind: "CONFLICT", head: "Conflict", label: "the file changed “lastError” to “failures” in line 1", isRerunnable: false, ways: [{ kind: "KEEP", label: "Keep yours" }, { kind: "TAKE", label: "Take the file's" }, { kind: "RERUN", label: "Run again" }] }])
   expect(staleOf(viewModelOf([], 0, null, "OPEN"))).toEqual([null])
   expect(underlaysOf(viewModelOf([], 0, null, "OPEN"), "-current", "data-stale")).toEqual([])

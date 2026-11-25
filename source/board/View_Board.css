@@ -29,7 +29,7 @@
   --ink_Muted_htmlView: var(--view-placeholder-ink, color-mix(in srgb, CanvasText 58%, transparent));
   --edge_Board_htmlView: var(--view-menu-edge, color-mix(in srgb, CanvasText 16%, transparent));
   --ground_Chip_htmlView: color-mix(in srgb, CanvasText 8%, transparent);
-  --removed_Board_htmlView: var(--view-removed-edge, light-dark(#e51400, #f14c4c));
+  --file_Board_htmlView: var(--view-file-accent, light-dark(#0e7490, #3eb6dc));
 }
 
 .htmlView_board :is(h2, h3, p, ul) {
@@ -274,7 +274,7 @@
 /* a task: its name, with no mark, as its column says where it stands, on
    a line of its own, the column's whole width, wrapping as it must; under
    it its parts, yours, what's most pressing of it, in the proposals'
-   indigo, a conflict in the removed red, requests queued, waiting for you
+   indigo, a conflict in the file's teal, requests queued, waiting for you
    to start them, said as the editor says them, in the revision's plum,
    still, as a request's, never shimmering, then the agent's, what's
    running, in the revision's plum, a draft's requests, said queued, in
@@ -387,7 +387,7 @@
 }
 
 .htmlView_board .part_Tile_htmlView[data-kind="CONFLICT"] {
-  color: color-mix(in srgb, var(--removed_Board_htmlView) 80%, CanvasText);
+  color: color-mix(in srgb, var(--file_Board_htmlView) 85%, CanvasText);
 }
 
 .htmlView_board .inView_Tile_htmlView {

@@ -455,7 +455,7 @@ test("the JavaScript example opens with a case of each kind of thing asked and d
       "Check the doc comment still says what retry takes. |  |  | done · nothing to change"
     ],
     task: ["Say in the README that onRetry is gone. |  |  | queued"],
-    dropped: ["Out of date · 1 dropped, its text goneRun again"],
+    dropped: ["Stale · 1 dropped, its text goneRun again"],
     isUrlKept: true
   })
 })
@@ -978,10 +978,10 @@ test("the header over the document stays put as it scrolls, saying the host's ta
   expect(opened_JavaScript.errors).toEqual([])
 })
 
-test("a round that landed after your edits: out of date, its item says, written before your edits, with Run again, its lines drawn as it was written on them, numbered, above the file's, unnumbered; pressed, asked of the host, which starts it again, the proposal revising, nothing to run again while it's under way; its round back, written on the document as it is now, nothing marked", () => {
+test("a round that landed after your edits: stale, its item says, written before your edits, with Run again, its lines drawn as it was written on them, numbered, above the file's, unnumbered; pressed, asked of the host, which starts it again, the proposal revising, nothing to run again while it's under way; its round back, written on the document as it is now, nothing marked", () => {
   const lines_Paired = [["WRITTEN_ON", "1"], ["WRITTEN_ON", "2"], ["MOVED_SINCE", ""], ["MOVED_SINCE", ""]]
-  expect(stale_Landed).toEqual({ state: "OPEN", stale: "Out of date · written before your editsRun again", lines: lines_Paired })
-  expect(stale_Rerunning).toEqual({ state: "REVISING", stale: "Out of date · written before your edits", lines: lines_Paired })
+  expect(stale_Landed).toEqual({ state: "OPEN", stale: "Stale · written before your editsRun again", lines: lines_Paired })
+  expect(stale_Rerunning).toEqual({ state: "REVISING", stale: "Stale · written before your edits", lines: lines_Paired })
   expect(stale_Again).toEqual({ state: "OPEN", stale: null, lines: [] })
   expect(logged_Rerun).toEqual([{ rerun: "header", requests: 1 }, { revising: "header", requests: 1 }])
   expect(opened_JavaScript.errors).toEqual([])

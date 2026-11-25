@@ -572,7 +572,7 @@ interface _Stale_Item_ {
   ways: Array<_Way_Stale_>
 }
 
-type _Kind_Stale_ = "OUT_OF_DATE" | "CONFLICT"
+type _Kind_Stale_ = "STALE" | "CONFLICT"
 
 interface _Way_Stale_ {
   kind: _Kind_Way_

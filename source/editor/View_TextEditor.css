@@ -32,12 +32,11 @@
      than the indigo, plainly another colour beside it, and bluer than the
      rings' red for removed, so it says nothing bad */
   --accent_revision_htmlView: var(--view-revision-accent, light-dark(#8e3591, #e39be6));
-  /* an orange for out of date, a proposal written before the file moved
-     under it: warm, as it wants a look, never the removed red, which is a
-     conflict's outside the text; and a teal for the file's own words, beside
-     a change written before them, a colour no change has */
-  --accent_stale_htmlView: var(--view-stale-accent, light-dark(#b8460b, #f0883e));
-  --accent_file_htmlView: var(--view-file-accent, light-dark(#0b7a85, #3fc1c9));
+  /* and a teal for the file: its own words, beside a change written before
+     them, a colour no change has; and what the file did to a change, said
+     on it, stale or a conflict, the word the colour of what it's about, the
+     file's lines and words in the text, so red is only ever taken out */
+  --accent_file_htmlView: var(--view-file-accent, light-dark(#0e7490, #3eb6dc));
 }
 
 /* A run of lines, one after another, and behind them one svg, as big as
@@ -512,11 +511,12 @@
 
 /* how its last round landed, where the file had moved under what it was
    written on, in the places' size and muted ink: its head, what it is,
-   out of date in orange, still open, or a conflict in the removed red, a
-   change of the task's own; then what's so, written before your edits,
-   what the file did, and how many dropped, their text gone; and, out of
-   date, Run again after it, a quiet word in the revision's plum, starting
-   the round's requests again from now, so the agent sees your edits */
+   stale, still open, or a conflict, a change of the task's own, either in
+   the file's teal, as the file's lines and words it's about are; then
+   what's so, written before your edits, what the file did, and how many
+   dropped, their text gone; and, stale, Run again after it, a quiet word
+   in the revision's plum, starting the round's requests again from now,
+   so the agent sees your edits */
 .htmlView_editor .stale_htmlView {
   grid-column: 1;
   margin: 0;
@@ -524,12 +524,8 @@
   font-size: 0.86em;
 }
 
-.htmlView_editor .stale_htmlView[data-kind="OUT_OF_DATE"] > .head_Stale_htmlView {
-  color: var(--accent_stale_htmlView);
-}
-
-.htmlView_editor .stale_htmlView[data-kind="CONFLICT"] > .head_Stale_htmlView {
-  color: color-mix(in srgb, var(--view-removed-edge, light-dark(#e51400, #f14c4c)) 80%, CanvasText);
+.htmlView_editor .head_Stale_htmlView {
+  color: color-mix(in srgb, var(--accent_file_htmlView) 85%, CanvasText);
 }
 
 .htmlView_editor .rerun_htmlView {
@@ -2008,7 +2004,7 @@
    same band, a faint edge over it; at its right, small, leaving the rest
    for what else a footer holds, the project's open tasks counted by what
    they're waiting on, each count after its mark, in its ink: needing you,
-   the dot of your turn; conflicts, a warning, in the removed red; at
+   the dot of your turn; conflicts, a warning, in the file's teal; at
    work, the spinner, turning as the task's does; drafts, the dotted ring;
    none of them, nothing; the counts in words for what reads the page
    aloud, and as its title */
@@ -2099,7 +2095,7 @@
    task's, the one pointed at shown, or, pointing at neither, the one the
    keyboard's in. In it, under its label, every open task, each on a
    line: its mark, its name, where it stands, and a figure of what's
-   waiting, a conflict's in the removed red; then Manual; the one this
+   waiting, a conflict's in the file's teal; then Manual; the one this
    editor's in on a faint band, saying so, not to be pressed, the rest
    pressed to switch this editor to them, the host asked, `SWITCH` */
 .htmlView_editor :is(.switcher_Header_htmlView, .picker_Header_htmlView) {
@@ -2303,7 +2299,7 @@
 
 /* a task's parts, after its name, in place of one word for where it
    stands, as part of a task can be the agent's while part waits on you:
-   your part, what's to decide, or a conflict, in the removed red, or
+   your part, what's to decide, or a conflict, in the file's teal, or
    requests queued, waiting for you to start them, said as the cards say
    them, in the revision's plum, still, or that it's applicable, in the
    proposals' indigo, then the agent's, what's running, in the revision's
@@ -2333,7 +2329,7 @@
 }
 
 .htmlView_editor .part_Option_htmlView[data-kind="CONFLICT"] {
-  color: color-mix(in srgb, var(--view-removed-edge, light-dark(#e51400, #f14c4c)) 80%, CanvasText);
+  color: color-mix(in srgb, var(--accent_file_htmlView) 85%, CanvasText);
 }
 
 .htmlView_editor .tasks_Footer_htmlView {
@@ -2376,7 +2372,7 @@
 }
 
 .htmlView_editor .count_Footer_htmlView[data-kind="CONFLICTS"] {
-  --ink_Count_htmlView: color-mix(in srgb, var(--view-removed-edge, light-dark(#e51400, #f14c4c)) 85%, CanvasText);
+  --ink_Count_htmlView: color-mix(in srgb, var(--accent_file_htmlView) 85%, CanvasText);
 }
 
 .htmlView_editor .count_Footer_htmlView[data-kind="WORKING"] {

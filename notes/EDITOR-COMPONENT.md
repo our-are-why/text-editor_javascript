@@ -1983,7 +1983,7 @@ and runs again what the round answered, or, a round it didn't start, asks
 again; its JavaScript example starts with the opening comment's last round
 landed after an edit, so its ring's dashed and Run again's offered.
 
-Decided 2026-11-24, as `TASKS.md` says under a conflict, and out of date,
+Decided 2026-11-24, as `TASKS.md` says under a conflict, and stale,
 in the editor: a stale change isn't dashed any more, but drawn in its frame
 as pairs of lines, the line it was written on, the change ringed whole on
 it, and under it the file's line, unnumbered, `data-layer` `MOVED_SINCE`,
@@ -1996,10 +1996,10 @@ the proposed lines have it, ringed teal, `data-file`, and where it took
 words out, a teal notch. Each stale change comes with what it was written
 on, `_Written_Change_`: its lines then, and the change as it was on them,
 the documents part's, kept as it was found stale. An item's stale note
-says which it is, `OUT_OF_DATE`, an open proposal's, "Out of date" in
-orange, or `CONFLICT`, a decided one's, "Conflict" in red and what the file
-did, with its ways out, `KEEP`, `TAKE`, `BOTH` where both can stand, and
-`RERUN`, each asked of the host.
+says which it is, `STALE`, an open proposal's, "Stale", or `CONFLICT`, a
+decided one's, "Conflict" and what the file did, both words in the file's
+teal, with its ways out, `KEEP`, `TAKE`, `BOTH` where both can stand,
+and `RERUN`, each asked of the host.
 
 Deciding is a command, on the current proposal or one named: accept, reject,
 revise, amend; an item's actions are the editor's buttons for them, or,
@@ -3538,7 +3538,7 @@ at shown, or, pointing at neither, the one the keyboard's in: the tasks,
 the editor's first, then those on its document, then the rest, then
 Manual, each drawn by its kind, `componentMap.option`, its mark, its
 name, where it stands, a figure of what's waiting, a conflict's in the
-removed red, the one the editor's in saying so and not to be pressed; one
+file's teal, the one the editor's in saying so and not to be pressed; one
 pressed asks the host to switch, `SWITCH`, with its target, and the
 keyboard goes back to the text, the card closing as it does on Escape.
 Given no tasks, there's no switcher. The footer, at its right, counts

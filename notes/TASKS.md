@@ -120,7 +120,7 @@ stored, shown together wherever a task's standing is: **yours**, a
 conflict, what's to decide, requests queued and not started, or, with
 nothing left on either side, that it's applicable; and **the
 agent's**, what's running. Each says its most pressing, yours in the
-proposals' indigo, a conflict in the removed red, requests queued, as
+proposals' indigo, a conflict in the file's teal, requests queued, as
 the editor says them, "2 queued", in the revision's plum, still, though
 they're yours till you start them, the agent's in the revision's plum.
 A task's menu offers Start all for what's queued, Stop while anything's
@@ -300,7 +300,7 @@ What happens to a task when a document it's on moves under it:
 | what it holds | untouched by the move | touched by it |
 |---|---|---|
 | its changes, accepted proposals and your edits | carried across, nothing said | conflicted: in its frame, the lines it was written on above the file's, decided on its item, yours kept, the file's taken, both, or run again |
-| its open proposals | carried across | out of date, said so on its item, its lines drawn as a conflict's are: accepted anyway, over what moved, rejected, or sent back, to be written against the text as it is |
+| its open proposals | carried across | stale, said so on its item, its lines drawn as a conflict's are: accepted anyway, over what moved, rejected, or sent back, to be written against the text as it is |
 | its requests on words | carried across | detached: kept with the words they were on; the agent reads them against the text as it is, and you aim them again or drop them |
 | a round still being written | lands, and is carried across | lands, what the move touched out of date, as when you edit during a run |
 
@@ -322,7 +322,7 @@ edits, before anything leans on it:
 - **the same edit on both sides,** a conflict at first, which could later
   carry across as one.
 
-### a conflict, and out of date, in the editor
+### a conflict, and stale, in the editor
 
 Decided 2026-11-24, drawn on the canvas "Conflicts and out of date".
 
@@ -346,17 +346,24 @@ both reads as both, the proposal's yellow beside the file's teal, where
 marked twice, green on the file's line, what the file did, and teal in the
 proposal, whose they are.
 
-**Out of date,** an open proposal the file moved under: under its title,
-"Out of date" in orange, "written before your edits" in the muted grey, and
-Run again in the revision's plum. Its rings no longer dashed, as dashes say
-restyled, and a ring's seams.
+**Stale,** an open proposal the file moved under: under its title, "Stale"
+in the file's teal, "written before your edits" in the muted grey, and Run
+again in the revision's plum. Its rings no longer dashed, as dashes say
+restyled, and a ring's seams. Said "out of date", in orange, till
+2026-11-25, when stale and conflict both took the file's teal.
 
 **A conflict,** a change of the task's own the file moved under, an accepted
-proposal's or yours: "Conflict" in red, what the file did in the muted
-grey, "the file put “// why” in line 38", and on its item the ways out, Keep
-yours and Take the file's in the proposals' indigo, Both, Run again in plum.
-Red in the text is taken out; a conflict's red is only outside it, the
-note, the switcher, the footer, the board.
+proposal's or yours: "Conflict" in the file's teal, what the file did in the
+muted grey, "the file put “// why” in line 38", and on its item the ways
+out, Keep yours and Take the file's in the proposals' indigo, Both, Run
+again in plum. Both words the file's teal, decided 2026-11-25: the word the
+colour of what it's about, the file's hatched lines and its words in the
+proposal, so a note's teal is found in the text, and red, overloaded, left
+to taken out alone; a conflict counted in teal too, the switcher, the
+footer, the board, where it was red. The teal made bluer the same day,
+`#0e7490`, `#3eb6dc` in the dark, from `#0b7a85` and `#3fc1c9`, further
+from the green of put in, which it sat beside on the file's line, and no
+further, short of the syntax's blue for numbers and strings.
 
 - **Keep yours:** the change as written, over what the file did there: the
   lines it was written on, the change made on them, in place of the file's,
@@ -706,7 +713,7 @@ faking the moves, so it can all be drawn before the parts above are built:
   it. A tile, as the board's tasks are called in code, apart from the
   header's cards, has no mark, as its column says where it stands: its name,
   on a line of its own, and under it the one figure that puts it in its
-  column, a conflict over the rest, in red, the agent's shimmering while it
+  column, a conflict over the rest, in teal, the agent's shimmering while it
   runs, in step with the editor's, and in file, in words, muted, if it
   touches the file an editor's showing, the only one of its files that
   matters there, never named, tried as its name, as in view, as a page icon,
