@@ -24,7 +24,7 @@ const actions_Review: Array<_Action_Item_> = [
 ]
 
 // what it offers once one's been decided: only to take it back, to open
-// again; while revisions are queued, the same as while it's open, to ask
+// again; while revisions are staged, the same as while it's open, to ask
 // more of it or decide it anyway; and nothing while the agent's revising one
 const actions_Reopen: Array<_Action_Item_> = [
   { command: "reopen", label: "Reopen", stateAfter: "OPEN" }

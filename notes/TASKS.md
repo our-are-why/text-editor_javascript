@@ -27,8 +27,8 @@ still to decide is under **open**, at the end, each with a recommendation.
   you start it; with the agent, once you have, an agent on it or not yet;
   or addressed. Staged where it was queued, decided 2026-11-26, so draft's
   a task's word and queued a job's, waiting in the agent part's mailbox,
-  as `AGENT.md` has it; the code and the editor's words renamed once the
-  agent part's built.
+  as `AGENT.md` has it; the code and the editor's words renamed
+  2026-11-26.
 - **mode:** what an editor's in, always one: manual, or a task, then its
   **active task**. Each editor has its own.
 - **manual:** the mode for editing the trunk itself. A mode in its own
@@ -121,13 +121,13 @@ proposal while others are ready to decide. So a task has one lifecycle,
 draft, open, then applied, canceled or discarded, and, while it's open,
 two parts side by side, worked out from its runs and proposals, never
 stored, shown together wherever a task's standing is: **yours**, a
-conflict, what's to decide, requests queued and not started, or, with
+conflict, what's to decide, requests staged and not started, or, with
 nothing left on either side, that it's applicable; and **the
 agent's**, what's running. Each says its most pressing, yours in the
-proposals' indigo, a conflict in the file's teal, requests queued, as
-the editor says them, "2 queued", in the revision's plum, still, though
+proposals' indigo, a conflict in the file's teal, requests staged, as
+the editor says them, "2 staged", in the revision's plum, still, though
 they're yours till you start them, the agent's in the revision's plum.
-A task's menu offers Start all for what's queued, Stop while anything's
+A task's menu offers Start all for what's staged, Stop while anything's
 running, and Apply only once nothing's left on either side. A task with anything of yours needs you, even while the
 agent works on the rest; it's with the agent only when nothing of it
 waits on you. Counted, a task counts under each part it has. The
@@ -148,7 +148,7 @@ layer over it, never the model's to say:
 - **collection's asked for,** by you, or by an agent judging what's done
   with: under **where it's kept, and collection**.
 
-Starting at any scope is the editor's queue, kept: a request is queued till
+Starting at any scope is the editor's staging, kept: a request is staged till
 something starts it, a single request, a proposal's revision, a frame, a
 document's or the task's. Doctor started a task whole, and gave the agent its
 turn by `doctor wait`; that's how the agent's told, which belongs to the agent
@@ -165,7 +165,7 @@ it active.
 - A draft's made with its first request, as doctor's was, so a task is
   never without one: a request sent from manual, not started, or Draft task,
   which opens the request form, the task made as it's sent.
-- Requests made in an editor go to its active task, queued, so in an editor
+- Requests made in an editor go to its active task, staged, so in an editor
   drafting they go to the draft, in whatever document it shows, marked as
   requests are now.
 - Your edits while a draft is active go into its head, so you can prepare
@@ -178,7 +178,7 @@ it active.
 
 ## making a request
 
-- **In a task:** it goes to the editor's active task, queued, or started at
+- **In a task:** it goes to the editor's active task, staged, or started at
   once. The editor's form already offers both, `isStarting`.
 - **In manual:** it makes a new task with that one request, and makes it
   that editor's mode: a draft if it's only sent, working if it's started.
@@ -561,12 +561,12 @@ host, `playground/host.ts`, plays all four for now, faked.
   `source/tasks/`, plain data and functions, no DOM: a task open, never
   started or started, when first, or resolved, how, when and by whom; its
   requests, each with who made it and when, its aim, the task, a file or a
-  proposal, its words all of it or quoted, and its status, queued, with the
+  proposal, its words all of it or quoted, and its status, staged, with the
   agent or addressed, with the proposals that answer it or a note that nothing
   needed changing; its proposals, each its file, title, why and decision;
   the moves as commands, each a pure function, `modelAfter__Command`, by a
   map of them, `HANDLERMAP__TASKS`: draft, with the first request; request,
-  edit and remove, a request's only while it's queued; start and stop, at
+  edit and remove, a request's only while it's staged; start and stop, at
   any scope, the task, a file, some proposals, some requests, a proposal
   never revised by two rounds at once; propose, a proposal or its next
   round, open again; address; decide, what was asked of a proposal and not
@@ -699,7 +699,7 @@ faking the moves, so it can all be drawn before the parts above are built:
   the task's, never open with it, the one pointed at shown: the tasks, the
   editor's first, then those on its document, then the rest, then No
   task, each its mark, its name, and its parts, yours then the agent's,
-  coloured as the board's columns are, or a draft's requests, said queued,
+  coloured as the board's columns are, or a draft's requests, said staged,
   in plum, as an open task's are, its name leaning, as in the header, its
   dotted mark saying it's a draft, where the word draft was said too; its
   order kept while it's open, a task switched to while it's open, from the
@@ -758,7 +758,7 @@ faking the moves, so it can all be drawn before the parts above are built:
   its column's heading; pressed, it asks the host to switch every editor to
   it, `SWITCH`; its ⋮, three dots standing, as a menu's are, shown while the
   task's pointed at or the keyboard's in it, as a request's ellipsis is, its
-  room kept so nothing moves, holds Start all for what's queued, a
+  room kept so nothing moves, holds Start all for what's staged, a
   draft's too, as starting anything of it starts it, Stop while anything's
   running, Apply once nothing's left on either side, and Cancel, a draft's
   discarding it, where a draft's menu had Start and Discard: the editor's
@@ -797,7 +797,7 @@ faking the moves, so it can all be drawn before the parts above are built:
   the muted ink its id's in, as a card's line's actions are, and as the
   board's ⋮ is, only ever Apply and Cancel: Apply, in the proposals'
   indigo, once nothing's left on either side, nothing to decide, being
-  revised, queued or running, and Cancel, neutral, as every Cancel is, a
+  revised, staged or running, and Cancel, neutral, as every Cancel is, a
   draft's discarding it. A draft's starts are where every task's are, its
   Start all in its card's Scope Revisions, its requests' own Starts, as
   starting anything of it starts it; tried, a draft's Start and Discard in

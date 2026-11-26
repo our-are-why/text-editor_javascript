@@ -23,7 +23,7 @@ export {
   type _QUOTED_Words_Aim_,
   type _Status_Request_Tasks_,
   type __BASE_Status_Request_Tasks_,
-  type _QUEUED_Status_Request_Tasks_,
+  type _STAGED_Status_Request_Tasks_,
   type _WITH_AGENT__Status_Request_Tasks_,
   type _ADDRESSED_Status_Request_Tasks_,
   type _Answer_Request_,
@@ -172,13 +172,13 @@ interface _QUOTED_Words_Aim_ extends __BASE_Words_Aim_<"QUOTED"> {
   text: string
 }
 
-type _Status_Request_Tasks_ = _QUEUED_Status_Request_Tasks_ | _WITH_AGENT__Status_Request_Tasks_ | _ADDRESSED_Status_Request_Tasks_
+type _Status_Request_Tasks_ = _STAGED_Status_Request_Tasks_ | _WITH_AGENT__Status_Request_Tasks_ | _ADDRESSED_Status_Request_Tasks_
 
 interface __BASE_Status_Request_Tasks_<Kind extends string> {
   kind: Kind
 }
 
-interface _QUEUED_Status_Request_Tasks_ extends __BASE_Status_Request_Tasks_<"QUEUED"> {}
+interface _STAGED_Status_Request_Tasks_ extends __BASE_Status_Request_Tasks_<"STAGED"> {}
 
 interface _WITH_AGENT__Status_Request_Tasks_ extends __BASE_Status_Request_Tasks_<"WITH_AGENT"> {
   stamp: _Stamp_Tasks_
@@ -435,7 +435,7 @@ function requestOf__Asked({
     made: stamp,
     aim: asked_Request.aim,
     status: {
-      kind: "QUEUED"
+      kind: "STAGED"
     }
   }
 }
@@ -493,7 +493,7 @@ function EDIT_modelAfter__Command({
     id_Task: command.id_Task,
     change: (task) => requestsChangedIn__Task({
       task,
-      change: (request) => request.id === command.id_Request && request.status.kind === "QUEUED" && request.notes !== command.notes
+      change: (request) => request.id === command.id_Request && request.status.kind === "STAGED" && request.notes !== command.notes
         ? {
           ...request,
           notes: command.notes
@@ -531,7 +531,7 @@ function REMOVE_modelAfter__Command({
   return openChangedIn__Model({
     model_Tasks,
     id_Task: command.id_Task,
-    change: (task) => task.requests.some((request) => request.id === command.id_Request && request.status.kind === "QUEUED")
+    change: (task) => task.requests.some((request) => request.id === command.id_Request && request.status.kind === "STAGED")
       ? {
         ...task,
         requests: task.requests.filter((request) => request.id !== command.id_Request)
@@ -569,7 +569,7 @@ function START_modelAfter__Command({
       })
       const task_Started = requestsChangedIn__Task({
         task,
-        change: (request) => request.status.kind !== "QUEUED" || !isInScope__Request({
+        change: (request) => request.status.kind !== "STAGED" || !isInScope__Request({
           task,
           scope: command.scope,
           request
@@ -685,7 +685,7 @@ function STOP_modelAfter__Command({
         ? {
           ...request,
           status: {
-            kind: "QUEUED"
+            kind: "STAGED"
           }
         }
         : request
@@ -890,7 +890,7 @@ function CANCEL_modelAfter__Command({
             ? {
               ...request,
               status: {
-                kind: "QUEUED"
+                kind: "STAGED"
               }
             }
             : request
@@ -959,7 +959,7 @@ interface _Api___countsOf__Task_ {
 interface _Counts_Task_Tasks_ {
   count_Undecided: number
   count_Conflicts: number
-  count_Queued: number
+  count_Staged: number
   count_Running: number
 }
 
@@ -975,7 +975,7 @@ function countsOf__Task({
       sum,
       stale_Source
     ) => sum + stale_Source.changes_Stale.length + stale_Source.count_Dropped, 0),
-    count_Queued: task.requests.filter((request) => request.status.kind === "QUEUED").length,
+    count_Staged: task.requests.filter((request) => request.status.kind === "STAGED").length,
     count_Running: task.requests.filter((request) => request.status.kind === "WITH_AGENT").length
   }
 }

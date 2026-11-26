@@ -274,10 +274,10 @@
 /* a task: its name, with no mark, as its column says where it stands, on
    a line of its own, the column's whole width, wrapping as it must; under
    it its parts, yours, what's most pressing of it, in the proposals'
-   indigo, a conflict in the file's teal, requests queued, waiting for you
+   indigo, a conflict in the file's teal, requests staged, waiting for you
    to start them, said as the editor says them, in the revision's plum,
    still, as a request's, never shimmering, then the agent's, what's
-   running, in the revision's plum, a draft's requests, said queued, in
+   running, in the revision's plum, a draft's requests, said staged, in
    the revision's plum, as an open task's are, and, if it touches a
    document an editor's showing, in file, in words, muted, as the rest of
    its details are, the file being the one you're looking at, the only one
@@ -382,7 +382,7 @@
   color: color-mix(in srgb, var(--accent_proposals_htmlView) 85%, CanvasText);
 }
 
-.htmlView_board .part_Tile_htmlView:is([data-kind="QUEUED"], [data-kind="AGENT"]) {
+.htmlView_board .part_Tile_htmlView:is([data-kind="STAGED"], [data-kind="AGENT"]) {
   color: color-mix(in srgb, var(--accent_revision_htmlView) 85%, CanvasText);
 }
 
@@ -408,7 +408,7 @@
 /* what a task offers, behind its ⋮, three dots standing, as a menu's are,
    the editor's ellipsis stood up, its disc, its dots and their spacing
    the same, apart from it, lying down, that opens actions in place, at
-   the end of its line: Start all for what's queued, a draft's too, as
+   the end of its line: Start all for what's staged, a draft's too, as
    starting anything of it starts it, Stop while anything's running, Apply
    once nothing's left, and Cancel, a draft's letting it go as discarded. Its menu opened by pointing at the ⋮, and kept open
    while the pointer's on the menu, or on an unseen strip between it and

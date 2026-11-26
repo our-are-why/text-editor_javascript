@@ -145,7 +145,7 @@ interface _Standing_Task_ {
   isOnDocument: boolean
   count_Undecided: number
   count_Conflicts: number
-  count_Queued: number
+  count_Staged: number
   count_Running: number
 }
 
@@ -273,7 +273,7 @@ function headerOf__Proposals({
     ...proposals_Here.flatMap((proposal_Host) => proposal_Host.requests),
     ...requests_Task
   ]
-  const count_Queued = requests_Counted.filter((request_Host) => request_Host.status === "QUEUED").length
+  const count_Staged = requests_Counted.filter((request_Host) => request_Host.status === "STAGED").length
   const count_Running = requests_Counted.filter((request_Host) => request_Host.status === "RUNNING").length
   const parts: Array<_Part_Header_> = mode.kind === "TASK" ? [] : [
     ...proposals_Here.length === 0
@@ -284,11 +284,11 @@ function headerOf__Proposals({
           isBusy: false
         }
       ],
-    ...count_Queued === 0
+    ...count_Staged === 0
       ? []
       : [
         {
-          text: `${count_Queued} ${count_Queued === 1 ? "request" : "requests"} queued`,
+          text: `${count_Staged} ${count_Staged === 1 ? "request" : "requests"} staged`,
           isBusy: false
         }
       ],
@@ -305,7 +305,7 @@ function headerOf__Proposals({
     ? proposal_Host.state
     : proposal_Host.requests.some((request_Host) => request_Host.status === "RUNNING")
       ? "REVISING"
-      : proposal_Host.requests.some((request_Host) => request_Host.status === "QUEUED")
+      : proposal_Host.requests.some((request_Host) => request_Host.status === "STAGED")
         ? "REQUESTED"
         : "OPEN")
   const counts_Here = countsOf__States(states_Here)
@@ -314,7 +314,7 @@ function headerOf__Proposals({
     ...requests_Here
   ]
   const counts_Requests_Here: _Counts_Requests_ = {
-    QUEUED: requests_Counted_Here.filter((request_Host) => request_Host.status === "QUEUED").length,
+    STAGED: requests_Counted_Here.filter((request_Host) => request_Host.status === "STAGED").length,
     RUNNING: requests_Counted_Here.filter((request_Host) => request_Host.status === "RUNNING").length
   }
   const documents_Task = (mode.kind === "TASK" ? mode.task.documents : [])
@@ -331,22 +331,22 @@ function headerOf__Proposals({
     ) => Number(document_Task_Other.isShown) - Number(document_Task.isShown))
   const counts_Task = sumOf__Counts(documents_Task.map((document_Task) => document_Task.counts_Proposals))
   const isPresented = totalOf__Counts(mode.kind === "TASK" ? counts_Task : counts_Here) > 0
-  const count_Startable_Here = requests_Here.filter((request_Task) => request_Task.status === "QUEUED").length + proposals_Here
+  const count_Startable_Here = requests_Here.filter((request_Task) => request_Task.status === "STAGED").length + proposals_Here
     .filter((proposal_Host) => proposal_Host.state === "OPEN" && !proposal_Host.requests.some((request_Host) => request_Host.status === "RUNNING"))
     .flatMap((proposal_Host) => proposal_Host.requests)
-    .filter((request_Host) => request_Host.status === "QUEUED").length
+    .filter((request_Host) => request_Host.status === "STAGED").length
   const state_Document = stateOf__Document({
     counts_Proposals: counts_Here,
     counts_Requests: counts_Requests_Here
   })
   const requests_Whole = requests_Task.filter((request_Task) => request_Task.aim.kind === "TASK")
   const counts_Requests_Task: _Counts_Requests_ = {
-    QUEUED: requests_Whole.filter((request_Task) => request_Task.status === "QUEUED").length + documents_Task.reduce((sum, document_Task) => sum + document_Task.counts_Requests.QUEUED, 0),
+    STAGED: requests_Whole.filter((request_Task) => request_Task.status === "STAGED").length + documents_Task.reduce((sum, document_Task) => sum + document_Task.counts_Requests.STAGED, 0),
     RUNNING: requests_Whole.filter((request_Task) => request_Task.status === "RUNNING").length + documents_Task.reduce((sum, document_Task) => sum + document_Task.counts_Requests.RUNNING, 0)
   }
   const count_Startable_Task = count_Startable_Here
-    + requests_Whole.filter((request_Task) => request_Task.status === "QUEUED").length
-    + documents_Task.filter((document_Task) => !document_Task.isShown).reduce((sum, document_Task) => sum + document_Task.counts_Requests.QUEUED, 0)
+    + requests_Whole.filter((request_Task) => request_Task.status === "STAGED").length
+    + documents_Task.filter((document_Task) => !document_Task.isShown).reduce((sum, document_Task) => sum + document_Task.counts_Requests.STAGED, 0)
   return {
     mode: mode.kind === "MANUAL"
       ? {
@@ -360,7 +360,7 @@ function headerOf__Proposals({
           name: mode.task.name,
           state: mode.task.state,
           label_State: LABELMAP__STATE_TASK[mode.task.state],
-          ends: ENDSMAP__STATE_TASK[mode.task.state](totalOf__Counts(counts_Task) - decidedOf__Counts(counts_Task) + counts_Requests_Task.QUEUED + counts_Requests_Task.RUNNING + (tasks.find((standing_Task) => standing_Task.id === mode.task.id)?.count_Conflicts ?? 0)),
+          ends: ENDSMAP__STATE_TASK[mode.task.state](totalOf__Counts(counts_Task) - decidedOf__Counts(counts_Task) + counts_Requests_Task.STAGED + counts_Requests_Task.RUNNING + (tasks.find((standing_Task) => standing_Task.id === mode.task.id)?.count_Conflicts ?? 0)),
           summary: mode.task.summary,
           reason: mode.task.reason,
           proposals: {
@@ -391,13 +391,13 @@ function headerOf__Proposals({
               ? null
               : {
                 label: `Start all (${count_Startable_Task})`,
-                title: "Starts everything queued in the task, in every file it touches"
+                title: "Starts everything staged in the task, in every file it touches"
               },
             stop_All: counts_Requests_Task.RUNNING === 0
               ? null
               : {
                 label: `Stop all (${counts_Requests_Task.RUNNING})`,
-                title: "Stops everything running in the task, in every file it touches, putting it back in the queue"
+                title: "Stops everything running in the task, in every file it touches, staging it again"
               },
             actions: mode.task.actions.filter((action_Task) => action_Task.section === "REVISIONS")
           },
@@ -406,7 +406,7 @@ function headerOf__Proposals({
               request_Task,
               model_TextEditor
             })),
-            isStartable_Requests: requests_Whole.some((request_Task) => request_Task.status === "QUEUED"),
+            isStartable_Requests: requests_Whole.some((request_Task) => request_Task.status === "STAGED"),
             isStoppable_Requests: requests_Whole.some((request_Task) => request_Task.status === "RUNNING"),
             ask: isPresented
               ? {
@@ -447,13 +447,13 @@ function headerOf__Proposals({
           ? null
           : {
             label: `Start all (${count_Startable_Here})`,
-            title: `Starts all ${count_Startable_Here} ${count_Startable_Here === 1 ? "request" : "requests"} queued in this file, its own and its proposals'`
+            title: `Starts all ${count_Startable_Here} ${count_Startable_Here === 1 ? "request" : "requests"} staged in this file, its own and its proposals'`
           },
         stop_All: counts_Requests_Here.RUNNING === 0
           ? null
           : {
             label: `Stop all (${counts_Requests_Here.RUNNING})`,
-            title: `Stops all ${counts_Requests_Here.RUNNING} running in this file, its own and its proposals', putting them back in the queue`
+            title: `Stops all ${counts_Requests_Here.RUNNING} running in this file, its own and its proposals', staging them again`
           },
         actions: (mode.kind === "TASK" ? mode.task.actions_Document : []).filter((action_Task) => action_Task.section === "REVISIONS")
       },
@@ -462,7 +462,7 @@ function headerOf__Proposals({
           request_Task,
           model_TextEditor
         })),
-        isStartable_Requests: requests_Here.some((request_Task) => request_Task.status === "QUEUED"),
+        isStartable_Requests: requests_Here.some((request_Task) => request_Task.status === "STAGED"),
         isStoppable_Requests: requests_Here.some((request_Task) => request_Task.status === "RUNNING"),
         ask: isPresented
           ? {
@@ -514,8 +514,8 @@ function switcherOf__Tasks({
           parts: standing_Task.state === "DRAFT"
             ? [
               {
-                kind: "QUEUED",
-                text: `${standing_Task.count_Queued} queued`
+                kind: "STAGED",
+                text: `${standing_Task.count_Staged} staged`
               }
             ]
             : partsOf__Counts_Task(standing_Task)
@@ -546,7 +546,7 @@ interface _Counts_Task_ {
   count_Undecided: number
   count_Conflicts: number
   count_Running: number
-  count_Queued: number
+  count_Staged: number
 }
 
 function partsOf__Counts_Task(
@@ -569,12 +569,12 @@ function partsOf__Counts_Task(
           text: `${counts_Task.count_Undecided} to decide`
         }
       ],
-    ...counts_Task.count_Queued === 0
+    ...counts_Task.count_Staged === 0
       ? []
       : [
         {
-          kind: "QUEUED" as const,
-          text: `${counts_Task.count_Queued} queued`
+          kind: "STAGED" as const,
+          text: `${counts_Task.count_Staged} staged`
         }
       ]
   ]
@@ -705,7 +705,7 @@ function figureOf__Counts_Requests(
   counts_Requests: _Counts_Requests_
 ): _Figure_Card_ | null {
   const parts = [
-    ...counts_Requests.QUEUED === 0 ? [] : [`${counts_Requests.QUEUED} queued`],
+    ...counts_Requests.STAGED === 0 ? [] : [`${counts_Requests.STAGED} staged`],
     ...counts_Requests.RUNNING === 0 ? [] : [`${counts_Requests.RUNNING} running`]
   ]
   return parts.length === 0
@@ -727,7 +727,7 @@ function stateOf__Document({
 }: _Api___stateOf__Document_): _State_Document_ {
   return counts_Requests.RUNNING > 0
     ? "WORKING"
-    : counts_Requests.QUEUED > 0 || decidedOf__Counts(counts_Proposals) < totalOf__Counts(counts_Proposals)
+    : counts_Requests.STAGED > 0 || decidedOf__Counts(counts_Proposals) < totalOf__Counts(counts_Proposals)
       ? "YOUR_TURN"
       : totalOf__Counts(counts_Proposals) > 0
         ? "DONE"
@@ -778,8 +778,8 @@ function itemOf__Request_Task({
     progress: PROGRESSMAP__STATUS_REQUEST[request_Task.status],
     detail_Progress: request_Task.status === "ADDRESSED" ? detailOf__Request(request_Task) : null,
     isRunning: request_Task.status === "RUNNING",
-    isStartable: request_Task.status === "QUEUED",
-    isRemovable: request_Task.status === "QUEUED",
+    isStartable: request_Task.status === "STAGED",
+    isRemovable: request_Task.status === "STAGED",
     isEditing: false,
     isStoppable: request_Task.status === "RUNNING",
     isDismissable: request_Task.status === "ADDRESSED"
@@ -984,7 +984,7 @@ type _ProgressMap__Status_Request_ = {
 }
 
 const PROGRESSMAP__STATUS_REQUEST: _ProgressMap__Status_Request_ = {
-  QUEUED: "queued",
+  STAGED: "staged",
   RUNNING: "running",
   ADDRESSED: "done"
 }
@@ -1100,7 +1100,7 @@ type _Counts_Proposals_ = {
 }
 
 interface _Counts_Requests_ {
-  QUEUED: number
+  STAGED: number
   RUNNING: number
 }
 
@@ -3778,12 +3778,12 @@ function frameOf__Drawn({
     .map((proposal_Host): _Item_Proposals_ => {
       const isOpen = proposal_Host.state === "OPEN"
       const isRunning = proposal_Host.requests.some((request_Host) => request_Host.status === "RUNNING")
-      const isQueued = proposal_Host.requests.some((request_Host) => request_Host.status === "QUEUED")
+      const isStaged = proposal_Host.requests.some((request_Host) => request_Host.status === "STAGED")
       const state: _State_Proposal_ = !isOpen
         ? proposal_Host.state
         : isRunning
           ? "REVISING"
-          : isQueued
+          : isStaged
             ? "REQUESTED"
             : "OPEN"
       return {
@@ -3815,14 +3815,14 @@ function frameOf__Drawn({
           progress: PROGRESSMAP__STATUS_REQUEST[request_Host.status],
           detail_Progress: null,
           isRunning: request_Host.status === "RUNNING",
-          isStartable: isOpen && !isRunning && request_Host.status === "QUEUED",
-          isRemovable: request_Host.status === "QUEUED",
+          isStartable: isOpen && !isRunning && request_Host.status === "STAGED",
+          isRemovable: request_Host.status === "STAGED",
           isEditing: false,
           isStoppable: false,
           isDismissable: false
         })),
         isRunning,
-        isStartable: isOpen && !isRunning && isQueued,
+        isStartable: isOpen && !isRunning && isStaged,
         stale: staleOf__Round({
           round_Landed: rounds_Landed.find((round_Landed) => round_Landed.source === proposal_Host.source) ?? null,
           decision: proposal_Host.state,
@@ -4089,13 +4089,13 @@ function headOf__Frame({
   const counts_Frame = countsOf__States(items.filter((item_Proposals) => item_Proposals.source !== source_Yours).map((item_Proposals) => item_Proposals.state))
   const statuses = proposals_Listed.flatMap((proposal_Host) => proposal_Host.requests.map((request_Host) => request_Host.status))
   const counts_Requests: _Counts_Requests_ = {
-    QUEUED: statuses.filter((status) => status === "QUEUED").length,
+    STAGED: statuses.filter((status) => status === "STAGED").length,
     RUNNING: statuses.filter((status) => status === "RUNNING").length
   }
   const count_Startable = proposals_Listed
     .filter((proposal_Host) => proposal_Host.state === "OPEN" && !proposal_Host.requests.some((request_Host) => request_Host.status === "RUNNING"))
     .flatMap((proposal_Host) => proposal_Host.requests)
-    .filter((request_Host) => request_Host.status === "QUEUED").length
+    .filter((request_Host) => request_Host.status === "STAGED").length
   const label_Range = labelOf__Range_Frame(range_Frame)
   const count_Acceptable = items.filter((item_Proposals) => item_Proposals.state === "OPEN" && item_Proposals.actions.some((action_Item) => action_Item.stateAfter === "ACCEPTED")).length
   return {
@@ -4117,13 +4117,13 @@ function headOf__Frame({
         ? null
         : {
           label: `Start all (${count_Startable})`,
-          title: `Starts all ${count_Startable} ${count_Startable === 1 ? "request" : "requests"} queued for the proposals listed in ${label_Range}`
+          title: `Starts all ${count_Startable} ${count_Startable === 1 ? "request" : "requests"} staged for the proposals listed in ${label_Range}`
         },
       stop_All: counts_Requests.RUNNING === 0
         ? null
         : {
           label: `Stop all (${counts_Requests.RUNNING})`,
-          title: `Stops all ${counts_Requests.RUNNING} running for the proposals listed in ${label_Range}, putting them back in the queue`
+          title: `Stops all ${counts_Requests.RUNNING} running for the proposals listed in ${label_Range}, staging them again`
         },
       actions: []
     }

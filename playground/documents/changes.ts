@@ -1284,7 +1284,7 @@ interface _Api___requestOf_ {
   side: _Side_Text_
 }
 
-// a request queued, sent with words: where they are, what they say, and
+// a request staged, sent with words: where they are, what they say, and
 // the side they were selected on, as they are or as proposed
 function requestOf({
   id,
@@ -1293,5 +1293,5 @@ function requestOf({
   text,
   side
 }: _Api___requestOf_): _Request_Host_ {
-  return { id, notes, reference: { pieces, text, side }, status: "QUEUED" }
+  return { id, notes, reference: { pieces, text, side }, status: "STAGED" }
 }

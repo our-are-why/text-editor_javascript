@@ -3273,6 +3273,14 @@ frame of only yours. Your edits aren't counted among a frame's, the
 header's or the card's proposals, having nothing to decide, where they'd
 been counted since typing in a task was built.
 
+Decided 2026-11-26: a request not yet started is staged, `STAGED`, where
+it was queued, in the code and in the editor's words, "2 staged", a
+request's status word staged, the board's draft · 2 staged, Stop staging
+what's running again, as `TASKS.md` and `AGENT.md` have it, so draft
+stays a task's word and queued a job's, waiting in the agent part's
+mailbox; the entries above keep the word of their day, queued meaning
+staged.
+
 Decided 2026-11-20: a request's words carry the side of a frame they were
 selected on, `side`, `CURRENT` as they are or `PROPOSED` as proposed,
 the host keeping it with them: words in a proposal's change only ever

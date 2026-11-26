@@ -54,7 +54,7 @@ function typed(
   return editedOf__Request({ model_TextEditor, proposals: proposalsIn(state), source_Yours: "yours", isHeld_Document: false, module_Words: MODULE_WORDS_TEXT, history, request_Edit: { kind: "TEXT", id_Text, range, multilineText, id_Run: "run", selection_Before: caretAt(id_Text, range.from.line, range.from.offset), isTyping, isProposed: false, places_Caret: null } })
 }
 
-test("the document's text inside what a pending or accepted proposal's span holds is locked, its edges not, nor what a rejected or withdrawn one's would; a proposal's own text, shown, is edited whatever its decision, revisions queued on it or not, but not while a round of it's under way, a request of it running, as the agent's rewriting it", () => {
+test("the document's text inside what a pending or accepted proposal's span holds is locked, its edges not, nor what a rejected or withdrawn one's would; a proposal's own text, shown, is edited whatever its decision, revisions staged on it or not, but not while a round of it's under way, a request of it running, as the agent's rewriting it", () => {
   const model = modelOf()
   expect(typed(model, HISTORY_EMPTY, "OPEN", document_Text, on(0, 5, 5), "x", true)).toBe(null)
   expect(typed(model, HISTORY_EMPTY, "OPEN", document_Text, on(0, 2, 5), "", false)).toBe(null)
@@ -65,7 +65,7 @@ test("the document's text inside what a pending or accepted proposal's span hold
   expect(typed(model, HISTORY_EMPTY, "OPEN", digit_Text, on(0, 1, 1), "!", true)?.model_TextEditor.proposed[0]?.changes[0]).toMatchObject({ next: { lines: ["2!"] } })
   expect(typed(model, HISTORY_EMPTY, "ACCEPTED", digit_Text, on(0, 1, 1), "!", true)?.model_TextEditor.proposed[0]?.changes[0]).toMatchObject({ next: { lines: ["2!"] } })
   const asked = (status: _Status_Request_) => editedOf__Request({ model_TextEditor: model, proposals: proposalsIn("OPEN").map((proposal_Host) => proposal_Host.source === "digit" ? { ...proposal_Host, requests: [{ id: "spell", notes: "Spell it.", reference: null, status }] } : proposal_Host), source_Yours: "yours", isHeld_Document: false, module_Words: MODULE_WORDS_TEXT, history: HISTORY_EMPTY, request_Edit: { kind: "TEXT", id_Text: digit_Text, range: on(0, 1, 1), multilineText: "!", id_Run: "run", selection_Before: caretAt(digit_Text, 0, 1), isTyping: true, isProposed: false, places_Caret: null } })
-  expect(asked("QUEUED")?.model_TextEditor.proposed[0]?.changes[0]).toMatchObject({ next: { lines: ["2!"] } })
+  expect(asked("STAGED")?.model_TextEditor.proposed[0]?.changes[0]).toMatchObject({ next: { lines: ["2!"] } })
   expect(asked("RUNNING")).toBe(null)
   for (const state of ["REJECTED", "WITHDRAWN"] as const) expect(typed(model, HISTORY_EMPTY, state, digit_Text, on(0, 1, 1), "!", true)).toBe(null)
 })

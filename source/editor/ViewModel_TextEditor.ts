@@ -243,7 +243,7 @@ interface _Part_Task_ {
   text: string
 }
 
-type _Kind_Part_ = "CONFLICT" | "YOURS" | "QUEUED" | "AGENT"
+type _Kind_Part_ = "CONFLICT" | "YOURS" | "STAGED" | "AGENT"
 
 interface _Picker_Header_ {
   label: string
@@ -562,7 +562,7 @@ interface _Reference_Request_ {
   pieces: Array<_Piece_Text_> | null
 }
 
-type _Status_Request_ = "QUEUED" | "RUNNING" | "ADDRESSED"
+type _Status_Request_ = "STAGED" | "RUNNING" | "ADDRESSED"
 
 interface _Stale_Item_ {
   kind: _Kind_Stale_
@@ -1671,7 +1671,7 @@ function confirmingAt__ViewModel({
                       command: action_Item.command,
                       label_Question: item_Proposals.isRunning
                         ? `${action_Item.label} and stop its revision, dropping ${label_Requests}?`
-                        : `${action_Item.label} and drop ${count} queued ${count === 1 ? "request" : "requests"}?`,
+                        : `${action_Item.label} and drop ${count} staged ${count === 1 ? "request" : "requests"}?`,
                       label_Action: action_Item.label
                     }
                   }

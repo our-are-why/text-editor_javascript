@@ -266,7 +266,7 @@ const proposal_Base: _Proposal_Host_ = {
   attributes: {},
 }
 
-// a revision asked for, queued, as the module's own proposal is
+// a revision asked for, staged, as the module's own proposal is
 const proposal_Cap: _Proposal_Host_ = {
   source: "cap",
   title: "Cap the delay at 30 seconds",
@@ -278,7 +278,7 @@ const proposal_Cap: _Proposal_Host_ = {
       id: "cap-0",
       notes: "make the cap an option, 30 seconds unless the caller gives another.",
       reference: null,
-      status: "QUEUED"
+      status: "STAGED"
     }
   ],
   actions: actions_Review,
@@ -371,7 +371,7 @@ const requests_readme: Array<_Request_Task_> = [
     id: "asked-1",
     notes: "Link the section on why they grow, not the whole guide.",
     aim: { kind: "DOCUMENT", reference: { pieces: [{ id_Text: { kind: "DOCUMENT" }, range: quoteOf(43, "why the waits grow") }], text: "why the waits grow", side: "CURRENT" } },
-    status: "QUEUED",
+    status: "STAGED",
     sources_Answering: []
   }
 ]
@@ -418,7 +418,7 @@ const markdown: _Example_ = {
             {
               name: "retry.js",
               counts_Proposals: { OPEN: 14, REQUESTED: 0, REVISING: 0, ACCEPTED: 0, REJECTED: 0, WITHDRAWN: 0 },
-              counts_Requests: { QUEUED: 8, RUNNING: 3 }
+              counts_Requests: { STAGED: 8, RUNNING: 3 }
             }
           ]
         }

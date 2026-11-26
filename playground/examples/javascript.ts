@@ -274,7 +274,7 @@ const proposal_Aborted: _Proposal_Host_ = {
   attributes: {},
 }
 
-// open, a revision asked for, queued, what you asked listed under its
+// open, a revision asked for, staged, what you asked listed under its
 // words, the agent not yet at it: to ask more of it, start it, or decide it
 // anyway; the second sent with words its change puts in, dotted under them
 // where it's proposed
@@ -289,13 +289,13 @@ const proposal_Cap: _Proposal_Host_ = {
       id: "cap-0",
       notes: "make the cap an option, 30 seconds unless the caller gives another.",
       reference: null,
-      status: "QUEUED"
+      status: "STAGED"
     },
     {
       id: "cap-1",
       notes: "Name it MAX_DELAY_MS, up with the other constants.",
       reference: wordsIn("cap", "30_000"),
-      status: "QUEUED"
+      status: "STAGED"
     }
   ],
   actions: actions_Review,
@@ -305,7 +305,7 @@ const proposal_Cap: _Proposal_Host_ = {
 // open, the agent at its revision, what you asked under its words, in
 // progress, its rings and the words it proposes faded, breathing, its words
 // not to be typed into till its next round; more asked of it already, for
-// the round after, queued
+// the round after, staged
 const proposal_Timeout: _Proposal_Host_ = {
   source: "timeout",
   title: "Retry a request that timed out",
@@ -323,7 +323,7 @@ const proposal_Timeout: _Proposal_Host_ = {
       id: "timeout-1",
       notes: "Say timed out, as the status means, not before any answer.",
       reference: wordsIn("timeout", "before any answer"),
-      status: "QUEUED"
+      status: "STAGED"
     }
   ],
   actions: actions_Review,
@@ -461,21 +461,21 @@ const requests_retry: Array<_Request_Task_> = [
     id: "asked-1",
     notes: "Count the errors too, for the message.",
     aim: { kind: "DOCUMENT", reference: wordsOf(quoteOf(20, "lastError = error;", 0)) },
-    status: "QUEUED",
+    status: "STAGED",
     sources_Answering: []
   },
   {
     id: "asked-2",
     notes: "Say which round it gives up at.",
     aim: { kind: "DOCUMENT", reference: wordsOf(quoteOf(21, "n === attempts", 0)) },
-    status: "QUEUED",
+    status: "STAGED",
     sources_Answering: []
   },
   {
     id: "asked-3",
     notes: "Give up on an error that can't be retried before the count's checked.",
     aim: { kind: "DOCUMENT", reference: wordsOf(quoteOf(21, "attempts || !isRetryable(error)", 0)) },
-    status: "QUEUED",
+    status: "STAGED",
     sources_Answering: []
   },
   {
@@ -489,7 +489,7 @@ const requests_retry: Array<_Request_Task_> = [
     id: "asked-5",
     notes: "Say what this throws: https://developer.mozilla.org/en-US/docs/Web/API/AbortSignal/throwIfAborted",
     aim: { kind: "DOCUMENT", reference: wordsOf(quoteOf(16, "signal?.throwIfAborted();", 0)) },
-    status: "QUEUED",
+    status: "STAGED",
     sources_Answering: []
   },
   {
@@ -510,7 +510,7 @@ const requests_retry: Array<_Request_Task_> = [
     id: "asked-8",
     notes: "Say in the README that onRetry is gone.",
     aim: { kind: "TASK", reference: null },
-    status: "QUEUED",
+    status: "STAGED",
     sources_Answering: []
   }
 ]
@@ -559,44 +559,44 @@ const task_Promises: _Other_Task_ = {
     {
       name: "README.md",
       counts_Proposals: { OPEN: 0, REQUESTED: 0, REVISING: 0, ACCEPTED: 2, REJECTED: 0, WITHDRAWN: 0 },
-      counts_Requests: { QUEUED: 0, RUNNING: 0 }
+      counts_Requests: { STAGED: 0, RUNNING: 0 }
     }
   ]
 }
 
-// attempts renamed tries, asked of the option and the constant, queued
+// attempts renamed tries, asked of the option and the constant, staged
 const task_Tries: _Other_Task_ = {
   id: "T-15",
   name: "Rename attempts to tries",
   isStarted: true,
   requests: [
-    { id: "T-15 a", notes: "Call attempts tries, the option and the constant both.", aim: { kind: "DOCUMENT", reference: wordsOf(quoteOf(13, "attempts = ATTEMPTS", 0)) }, status: "QUEUED", sources_Answering: [] }
+    { id: "T-15 a", notes: "Call attempts tries, the option and the constant both.", aim: { kind: "DOCUMENT", reference: wordsOf(quoteOf(13, "attempts = ATTEMPTS", 0)) }, status: "STAGED", sources_Answering: [] }
   ],
   documents_Elsewhere: []
 }
 
-// the options named, started before, two requests queued since, on the
+// the options named, started before, two requests staged since, on the
 // options' type and on how they're taken
 const task_Options: _Other_Task_ = {
   id: "T-17",
   name: "Name the retry options",
   isStarted: true,
   requests: [
-    { id: "T-17 a", notes: "Name the options' type RetryOptions, in a typedef of its own.", aim: { kind: "DOCUMENT", reference: wordsOf(quoteOf(10, "{{ attempts?: number, signal?: AbortSignal, onRetry?: (error: unknown, n: number) => void }}", 0)) }, status: "QUEUED", sources_Answering: [] },
-    { id: "T-17 b", notes: "Take the options whole, as options, and take them apart in the body.", aim: { kind: "DOCUMENT", reference: wordsOf(quoteOf(13, "{ attempts = ATTEMPTS, signal, onRetry } = {}", 0)) }, status: "QUEUED", sources_Answering: [] }
+    { id: "T-17 a", notes: "Name the options' type RetryOptions, in a typedef of its own.", aim: { kind: "DOCUMENT", reference: wordsOf(quoteOf(10, "{{ attempts?: number, signal?: AbortSignal, onRetry?: (error: unknown, n: number) => void }}", 0)) }, status: "STAGED", sources_Answering: [] },
+    { id: "T-17 b", notes: "Take the options whole, as options, and take them apart in the body.", aim: { kind: "DOCUMENT", reference: wordsOf(quoteOf(13, "{ attempts = ATTEMPTS, signal, onRetry } = {}", 0)) }, status: "STAGED", sources_Answering: [] }
   ],
   documents_Elsewhere: []
 }
 
-// a timeout, drafted, never started, two requests queued, on the signal
+// a timeout, drafted, never started, two requests staged, on the signal
 // and on the doc comment
 const task_Timeout: _Other_Task_ = {
   id: "T-16",
   name: "Add a timeout option",
   isStarted: false,
   requests: [
-    { id: "T-16 a", notes: "Take a timeout, in milliseconds, and give up once it's passed.", aim: { kind: "DOCUMENT", reference: wordsOf(quoteOf(13, "signal", 0)) }, status: "QUEUED", sources_Answering: [] },
-    { id: "T-16 b", notes: "Say in the doc comment what timeout does.", aim: { kind: "DOCUMENT", reference: wordsOf(quoteOf(10, "signal?: AbortSignal", 0)) }, status: "QUEUED", sources_Answering: [] }
+    { id: "T-16 a", notes: "Take a timeout, in milliseconds, and give up once it's passed.", aim: { kind: "DOCUMENT", reference: wordsOf(quoteOf(13, "signal", 0)) }, status: "STAGED", sources_Answering: [] },
+    { id: "T-16 b", notes: "Say in the doc comment what timeout does.", aim: { kind: "DOCUMENT", reference: wordsOf(quoteOf(10, "signal?: AbortSignal", 0)) }, status: "STAGED", sources_Answering: [] }
   ],
   documents_Elsewhere: []
 }
@@ -621,7 +621,7 @@ const setup_retry: _Setup_TextEditor_<_State_JavaScript_> = {
 const javascript: _Example_ = {
   name: "javascript",
   title: "JavaScript",
-  about: "A JavaScript module, drawn whole by the view on a page of its own, as code is: numbered from 1, its indents kept as they're written, its syntax coloured, a language module's, the playground's JavaScript tokenizer, the colours the playground's, as a host's theme. Nine frames, eleven proposals through them, and your edits, each case so far once. The opening comment, taken out whole, leaves nothing proposed. The doc comment's options lose onRetry, inside the line. In retry: every error kept, three lines far apart changed; words put into a line, so as it is, it shows nowhere; the onRetry call taken out whole; and the loop's condition's operands swapped within its line, the error asked about first: two moves inside a line, each ringed on the line as it is and as proposed, the || between them as it was, the round's rename carried in one. In backoff: a line put in, with replacements under it. Through three frames, a thread: the counter n renamed round, in nine places, each frame listing it with how many are there, its arrows going to its item in the frame before and the frame after; two of them, in the doc comment and the onRetry call, inside the onRetry removal, ringed faint, applying only if it's rejected. In isRetryable, framed whole: a comment's last words and the middle of its return changed; and its status worked out a line earlier, a move with both its ends in the frame. Another move takes sleep from the module's end up beside the constants, the blank line before it going with it, its two ends in two frames; its ms named delayMs is a proposal of its own, ringed inside it at both ends, applying wherever sleep ends up. Each end has a note beside its first line: press it to go to the other end. Where it leaves, the note says only \"moved\", as the line it goes to would mean little, and needn't hold once other proposals are decided; where it lands, where it's from. A move is ringed brown, as doctor's are, numbered brown where it leaves and signed → where it lands, what other proposals change in it ringed inside it. Point at a change, or an item, to see its proposal: its rings heavier, its items lit, in every frame it's in. Press a proposal's Revise to write what should change, under its words: Cancel, or Escape, closes it; Add, or ⌘ or Ctrl with Enter, queues it, and the playground, as host, lists it under the proposal, a revision requested, Start and Remove after each; add as many as you like, to as many proposals; Start, after one request, starts it alone, and under them, or in the form, starts all of that proposal's, one round at a time, its words not to be typed into while it's revised; with no agent here, a moment later they're done with, what's asked meanwhile left for the next round. Accepting or rejecting one with revisions queued asks first. Accept, Reject, Reopen and Dismiss it takes at once, as a host would; each, and each edit, reported beside it. Its proposals are in every state: most open; Cap the delay at 30 seconds has a revision requested, queued, what you asked under it, the second sent with words its change puts in, 30_000, dotted under them where it's proposed; Retry a request that timed out is being revised, its request running, the words it proposes shimmering with Revising and running, its rings dimming as the band passes, all in step, one more queued for its next round; and four decided, each where it's always been in its lists: Name the base delay DELAY_MS and Work out the status first accepted, not yet applied, their rings filled, both in conflict, below; and Retry a 501 too rejected and Log each retry withdrawn, nothing of either in the lines proposed, the withdrawn one's only action to dismiss it. The module moved under the task's rounds since they were written: \"further\" was put into the opening comment, which an open proposal takes out, so it's stale, its lines drawn as its round was written on them, numbered, and under them as the file has them, hatched forward in teal, what the file did ringed; and Ask about the error before the round's last round dropped a move, its text gone, stale too; each offers Run again. Where the file moved under an accepted change, it's a conflict, said in the file's teal, as its lines are, and counted so in the switcher, the footer and the board, Apply held till it's settled: in backoff, DELAY_MS made BASE_MS, Keep yours and Take the file's offered; and in isRetryable, a comment put after the status, which goes up with the move, ringed teal where it lands, Both offered, not Keep yours, as a move kept so would read as a replacement. Your edits are the task's own, typed in it, never the file's, their rings waved: the attempts and the base delay changed on lines next to each other, one small frame of only yours; the template said in the doc comment, a frame of yours alone; and retry named in the message it gives up with, in retry's frame, listed there with its proposals. The module has requests of its own, in its card: on lastError = error;, its dotted line cutting through the ring it crosses; two on the loop's condition, overlapping on attempts, dashed there, through rings nested in rings; one in progress on the two lines of the comment over backoff; one with a link too long for its line, broken where it runs out; and two done with, one by a proposal, one with nothing to change. The task has one of its own. Point at a request's words to light them, or at its lines to go to them; point at a proposal to lift its rings over the requests' lines.",
+  about: "A JavaScript module, drawn whole by the view on a page of its own, as code is: numbered from 1, its indents kept as they're written, its syntax coloured, a language module's, the playground's JavaScript tokenizer, the colours the playground's, as a host's theme. Nine frames, eleven proposals through them, and your edits, each case so far once. The opening comment, taken out whole, leaves nothing proposed. The doc comment's options lose onRetry, inside the line. In retry: every error kept, three lines far apart changed; words put into a line, so as it is, it shows nowhere; the onRetry call taken out whole; and the loop's condition's operands swapped within its line, the error asked about first: two moves inside a line, each ringed on the line as it is and as proposed, the || between them as it was, the round's rename carried in one. In backoff: a line put in, with replacements under it. Through three frames, a thread: the counter n renamed round, in nine places, each frame listing it with how many are there, its arrows going to its item in the frame before and the frame after; two of them, in the doc comment and the onRetry call, inside the onRetry removal, ringed faint, applying only if it's rejected. In isRetryable, framed whole: a comment's last words and the middle of its return changed; and its status worked out a line earlier, a move with both its ends in the frame. Another move takes sleep from the module's end up beside the constants, the blank line before it going with it, its two ends in two frames; its ms named delayMs is a proposal of its own, ringed inside it at both ends, applying wherever sleep ends up. Each end has a note beside its first line: press it to go to the other end. Where it leaves, the note says only \"moved\", as the line it goes to would mean little, and needn't hold once other proposals are decided; where it lands, where it's from. A move is ringed brown, as doctor's are, numbered brown where it leaves and signed → where it lands, what other proposals change in it ringed inside it. Point at a change, or an item, to see its proposal: its rings heavier, its items lit, in every frame it's in. Press a proposal's Revise to write what should change, under its words: Cancel, or Escape, closes it; Add, or ⌘ or Ctrl with Enter, stages it, and the playground, as host, lists it under the proposal, a revision requested, Start and Remove after each; add as many as you like, to as many proposals; Start, after one request, starts it alone, and under them, or in the form, starts all of that proposal's, one round at a time, its words not to be typed into while it's revised; with no agent here, a moment later they're done with, what's asked meanwhile left for the next round. Accepting or rejecting one with revisions staged asks first. Accept, Reject, Reopen and Dismiss it takes at once, as a host would; each, and each edit, reported beside it. Its proposals are in every state: most open; Cap the delay at 30 seconds has a revision requested, staged, what you asked under it, the second sent with words its change puts in, 30_000, dotted under them where it's proposed; Retry a request that timed out is being revised, its request running, the words it proposes shimmering with Revising and running, its rings dimming as the band passes, all in step, one more staged for its next round; and four decided, each where it's always been in its lists: Name the base delay DELAY_MS and Work out the status first accepted, not yet applied, their rings filled, both in conflict, below; and Retry a 501 too rejected and Log each retry withdrawn, nothing of either in the lines proposed, the withdrawn one's only action to dismiss it. The module moved under the task's rounds since they were written: \"further\" was put into the opening comment, which an open proposal takes out, so it's stale, its lines drawn as its round was written on them, numbered, and under them as the file has them, hatched forward in teal, what the file did ringed; and Ask about the error before the round's last round dropped a move, its text gone, stale too; each offers Run again. Where the file moved under an accepted change, it's a conflict, said in the file's teal, as its lines are, and counted so in the switcher, the footer and the board, Apply held till it's settled: in backoff, DELAY_MS made BASE_MS, Keep yours and Take the file's offered; and in isRetryable, a comment put after the status, which goes up with the move, ringed teal where it lands, Both offered, not Keep yours, as a move kept so would read as a replacement. Your edits are the task's own, typed in it, never the file's, their rings waved: the attempts and the base delay changed on lines next to each other, one small frame of only yours; the template said in the doc comment, a frame of yours alone; and retry named in the message it gives up with, in retry's frame, listed there with its proposals. The module has requests of its own, in its card: on lastError = error;, its dotted line cutting through the ring it crosses; two on the loop's condition, overlapping on attempts, dashed there, through rings nested in rings; one in progress on the two lines of the comment over backoff; one with a link too long for its line, broken where it runs out; and two done with, one by a proposal, one with nothing to change. The task has one of its own. Point at a request's words to light them, or at its lines to go to them; point at a proposal to lift its rings over the requests' lines.",
   // the editor, put together as above, drawing the module and its
   // proposals into the stage; each edit reported as it's told
   mount: (root, log) => {
@@ -656,7 +656,7 @@ const javascript: _Example_ = {
               WITHDRAWN: 0
             },
             counts_Requests: {
-              QUEUED: 0,
+              STAGED: 0,
               RUNNING: 1
             }
           }

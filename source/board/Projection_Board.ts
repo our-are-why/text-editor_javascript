@@ -33,7 +33,7 @@ interface _Task_Board_ {
   count_Undecided: number
   count_Conflicts: number
   count_Running: number
-  count_Queued: number
+  count_Staged: number
   count_Editors: number
 }
 
@@ -128,8 +128,8 @@ function tileOf__Task_Board({
     parts: task_Board.state === "DRAFT"
       ? [
         {
-          kind: "QUEUED",
-          text: `${task_Board.count_Queued} queued`
+          kind: "STAGED",
+          text: `${task_Board.count_Staged} staged`
         }
       ]
       : partsOf__Counts_Task(task_Board),
@@ -173,12 +173,12 @@ function actionsOf__Task_Open({
   kind_Cancel
 }: _Api___actionsOf__Task_Open_): Array<_Action_Tile_> {
   return [
-    ...task_Board.count_Queued === 0
+    ...task_Board.count_Staged === 0
       ? []
       : [
         {
           kind: "START" as const,
-          label: `Start all (${task_Board.count_Queued})`
+          label: `Start all (${task_Board.count_Staged})`
         }
       ],
     ...task_Board.count_Running === 0
@@ -189,7 +189,7 @@ function actionsOf__Task_Open({
           label: "Stop"
         }
       ],
-    ...task_Board.count_Conflicts + task_Board.count_Undecided + task_Board.count_Queued + task_Board.count_Running > 0
+    ...task_Board.count_Conflicts + task_Board.count_Undecided + task_Board.count_Staged + task_Board.count_Running > 0
       ? []
       : [
         {

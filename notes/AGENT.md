@@ -155,8 +155,7 @@ From `TASKS.md`, so these aren't walked through again:
   at work; a task's own start, begun rather than a draft, keeps the word.
   Decided 2026-11-26: staged, where it was queued, `QUEUED`, so draft's
   left to a task never started and queued to a job in the mailbox; in
-  the code, `STAGED`, and in the editor's words, once the agent part's
-  built.
+  the code, `STAGED`, and in the editor's words, renamed 2026-11-26.
 - **a round:** what's started on a proposal, its next version, revised
   one round at a time, never two at once; requests asked meanwhile wait for
   the next. Run again starts a round's requests over on the file as it is.

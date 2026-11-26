@@ -101,24 +101,24 @@ interface _Base_Run_ {
 // model, and its undo history. And of each action asked of a
 // proposal, taking it at once: decided, by the tasks part, what was asked of
 // it and not addressed let go, its being stale with it; a revision's
-// notes queued on it, with the words they're on, if they are, each its own
+// notes staged on it, with the words they're on, if they are, each its own
 // id, one removed when you remove it; dismissed, it's gone, its changes with
 // it; and sending the editor what it now has. Start, at any scope, in any
-// task, sets what's queued there going, a proposal never revised by two
+// task, sets what's staged there going, a proposal never revised by two
 // rounds at once, and, with no agent to revise them, a moment later they're
-// done with, as a new round would answer them, what's queued since left for
+// done with, as a new round would answer them, what's staged since left for
 // the next. A round's written on the document as it was when it started,
 // its base, here the proposal's changes as they were then, as there's no
 // agent to write others, and lands on the document as it is, carried
 // across every edit since by the documents part, which keeps those edits
 // till nothing's written on an older version, so changes written before
-// your edits are marked; Run again puts that round's requests back in the
-// queue and starts them, or, for a round it didn't start, asks again, on
+// your edits are marked; Run again stages that round's requests again
+// and starts them, or, for a round it didn't start, asks again, on
 // the document as it is now. A request on no proposal, the document's own
 // or the task's, in any task, answered with nothing to change, as there's
-// no agent to propose one. Stop puts what's running back in the queue.
+// no agent to propose one. Stop stages what's running again.
 // A request for a change on no proposal, with the words it was sent with,
-// or none, queued in the task the editor's in, started with the rest, or at
+// or none, staged in the task the editor's in, started with the rest, or at
 // once when asked to; one sent with no task drafting a new one, named for
 // it, the editor in it from then on. Each reported as it's told.
 // The editor's mode, its task at first: switched, to manual or to another
@@ -505,7 +505,7 @@ function hostedOf__Editor<State>({
                 id: request.id,
                 notes: request.notes,
                 reference: references.get(request.id) ?? null,
-                status: "QUEUED" as const
+                status: "STAGED" as const
               }
             ]
             : [])
@@ -563,7 +563,7 @@ function hostedOf__Editor<State>({
       isOwn ? 1600 : 1500
     )
   }
-  // a Stop in a task: what's running within its scope back in the queue,
+  // a Stop in a task: what's running within its scope staged again,
   // its round no longer its own, so the round's end leaves it as it is; the
   // task the playground's on reporting how much
   const stopped = (
@@ -593,7 +593,7 @@ function hostedOf__Editor<State>({
       ))
     }
   }
-  // a request made in the task the editor's in, queued, its words kept for
+  // a request made in the task the editor's in, staged, its words kept for
   // the editor; or, with no task, a new one drafted with it, named for it,
   // the editor in it from then on; started at once when asked to
   const requested = (

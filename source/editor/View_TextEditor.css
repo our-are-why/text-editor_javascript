@@ -380,7 +380,7 @@
    behind an ellipsis in the proposals' indigo, Accept all for its open
    proposals, one with requests waiting left to be decided by itself; no
    Reject all, as accepting a frame's proposals together makes sense where
-   rejecting them all at once doesn't; on the right, while anything's queued or in
+   rejecting them all at once doesn't; on the right, while anything's staged or in
    progress for its proposals, how many, and their actions behind the
    revision's plum ellipsis, Start all and Stop all. Nothing asked of the
    frame itself: its proposals' requests are theirs. None when it's
@@ -639,10 +639,10 @@
    heading; a list of them, a bullet in that ink before each, a little room
    between them, so where one ends and the next begins is seen, however
    many lines each wraps to; each the words it's on quoted first, and, while
-   it's queued, Start and Remove after it, quiet link-like words, not
+   it's staged, Start and Remove after it, quiet link-like words, not
    buttons that compete with the item's actions, Start in the revision's
    plum, starting it alone; while it's worked on, "in progress" in its
-   place; and under them, while some are queued and none's under way,
+   place; and under them, while some are staged and none's under way,
    Start, set apart, below, starting all of them, without a form */
 .htmlView_editor .request_htmlView {
   grid-column: 1;
@@ -668,8 +668,8 @@
 /* the group's own actions, after its heading, folded behind a plum
    ellipsis, unfolding, nothing between them and it, their ink and weight
    setting them apart from it: Start, starting every request in it, a proposal's all of that proposal's, the document's or the task's
-   its own; Stop, while any of them is in progress, putting it back in
-   the queue; and Add, a chevron after it as Revise has, a new request
+   its own; Stop, while any of them is in progress, staging it
+   again; and Add, a chevron after it as Revise has, a new request
    the list's last, in its box. In the plum, the heading's size, Start
    bold, as every Start is, the rest not; links, no ground of their own */
 .htmlView_editor .actions_Request_htmlView {
@@ -990,7 +990,7 @@
 
 /* under what a request says, which leads, alone, one quiet line for the
    rest, smaller, all of it in the muted ink, nothing in the item plum but
-   what can be done with it: where it stands first, in every row, queued
+   what can be done with it: where it stands first, in every row, staged
    too, so a list reads down without reading the rows, running leaning,
    done with what it came to after it; then, a dot between, the words it was
    sent with, the chip the form quotes them in, a little smaller, and
@@ -1128,7 +1128,7 @@
 
 /* a request's own actions, quiet, links in the revision's plum, as its
    ellipsis and its group's actions are, underlined when hovered: Stop,
-   Edit, Start, and Remove, for a queued request, done without, and
+   Edit, Start, and Remove, for a staged request, done without, and
    Dismiss, for one addressed, done with */
 .htmlView_editor :is(.stop_Said_htmlView, .edit_Said_htmlView, .start_Said_htmlView, .dismiss_Said_htmlView, .remove_htmlView) {
   margin-left: 0.5em;
@@ -1452,12 +1452,12 @@
    it now, reopening it, isn't what it's waiting for */
 
 /* its actions in colour too while it's still to be decided, open, its
-   revisions queued, or one being revised, as more can be asked of it
+   revisions staged, or one being revised, as more can be asked of it
    then too: an open one's main one filled in the proposals' indigo, its
    words white, a deeper indigo in the dark, so they still read; the
    others on their grey, their words the colour of the state each leads
    to, rejecting indigo, revising plum, Start too, so they're still
-   plainly buttons; one with revisions queued or under way has no main
+   plainly buttons; one with revisions staged or under way has no main
    one, as what's next is yours to choose, adding, starting or deciding;
    once it's decided, its actions neutral, there but not asked for, the
    colour on its row its state's alone, and a confirmation's too, as it
@@ -1515,9 +1515,9 @@
    item's whole width, three lines tall whatever's in it, scrolling past
    them, so the item doesn't grow as it's written in, never resized by hand,
    its edge plain enough to find; and under the box, on the right, where
-   its actions end, Add, filled in the revision's plum, as adding queues
+   its actions end, Add, filled in the revision's plum, as adding stages
    it, a revision requested, then Start, its words plum, which adds it and
-   starts everything queued, every proposal's, being revised, and Cancel,
+   starts everything staged, every proposal's, being revised, and Cancel,
    neutral */
 .htmlView_editor .draft_htmlView {
   grid-column: 1 / -1;
@@ -1613,7 +1613,7 @@
   background: var(--view-action-start-hover-ground, color-mix(in srgb, var(--ink_state_htmlView) 26%, var(--view-action-ground, light-dark(#e5e5e5, #313131))));
 }
 
-/* an action that would drop what's queued, asked first, in its place: the
+/* an action that would drop what's staged, asked first, in its place: the
    question over the action and Cancel, which the keyboard lands on, so a
    second Enter doesn't decide */
 .htmlView_editor .actions_htmlView[data-confirming] {
@@ -1704,10 +1704,10 @@
    editor's width, on the proposals' band, a faint edge under it, flat, no
    shadow, in the interface's font. On its left, where the text starts, what
    the editor's in, the host's task's name in the page's ink, or No task,
-   then its switcher, and nothing more, what's decided, what's queued and
+   then its switcher, and nothing more, what's decided, what's staged and
    what's under way said by the cards and the task's name; with no task, how the document
    stands, its parts plain words apart by dots, how many of its proposals
-   are decided, how many requests are queued, how many are in progress, a
+   are decided, how many requests are staged, how many are in progress, a
    spinner turning in the revision's plum, still where motion's asked to be
    reduced, in as few words as say it, the last cut short where there's no
    room, never wrapping. On its right, the document, by its file's name,
@@ -2300,11 +2300,11 @@
 /* a task's parts, after its name, in place of one word for where it
    stands, as part of a task can be the agent's while part waits on you:
    your part, what's to decide, or a conflict, in the file's teal, or
-   requests queued, waiting for you to start them, said as the cards say
+   requests staged, waiting for you to start them, said as the cards say
    them, in the revision's plum, still, or that it's applicable, in the
    proposals' indigo, then the agent's, what's running, in the revision's
    plum, the colours of the board's Needs you and With agent; a draft's
-   only what it has queued, its name leaning */
+   only what it has staged, its name leaning */
 .htmlView_editor .parts_Option_htmlView {
   display: flex;
   flex: none;
@@ -2324,7 +2324,7 @@
   color: color-mix(in srgb, var(--accent_proposals_htmlView) 85%, CanvasText);
 }
 
-.htmlView_editor .part_Option_htmlView:is([data-kind="QUEUED"], [data-kind="AGENT"]) {
+.htmlView_editor .part_Option_htmlView:is([data-kind="STAGED"], [data-kind="AGENT"]) {
   color: color-mix(in srgb, var(--accent_revision_htmlView) 85%, CanvasText);
 }
 
@@ -2738,7 +2738,7 @@
 /* a card in sections, each holding what's its own: Proposals, how far
    they've got and what's to be done with them, the host's actions for
    them, as Accept all, and, in the task's, its documents; Scope
-   Revisions, everything queued or in progress within the card's scope,
+   Revisions, everything staged or in progress within the card's scope,
    nested however deep, Start all and Stop all; Level Revisions, the
    card's own level, its group of requests, or Revise while there's none.
    Each its muted label over a line, its figure in the text's own ink, how
@@ -2806,7 +2806,7 @@
    what asks for a change, Revise once the task's proposals are in front of
    you, Add a request till then, in the revision's plum, as a proposal's
    Revise is; Start all, plum too, and bold, as every Start is, no ground
-   of its own here, for everything queued in its scope, and Stop all,
+   of its own here, for everything staged in its scope, and Stop all,
    plum, for everything in progress there, how many said when either's
    hovered */
 .htmlView_editor .actions_Card_htmlView {

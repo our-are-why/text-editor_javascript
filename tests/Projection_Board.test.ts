@@ -9,20 +9,20 @@ function taskOf(
   state: _State_Task_,
   more: Partial<_Task_Board_>
 ): _Task_Board_ {
-  return { id, name: `Task ${id}`, state, paths: [], count_Undecided: 0, count_Conflicts: 0, count_Running: 0, count_Queued: 0, count_Editors: 0, ...more }
+  return { id, name: `Task ${id}`, state, paths: [], count_Undecided: 0, count_Conflicts: 0, count_Running: 0, count_Staged: 0, count_Editors: 0, ...more }
 }
 
 // the project's tasks, one in every state, and open ones with every mix of
 // parts: yours alone, a conflict, nothing left, yours and the agent's,
-// requests queued and nothing else, and the agent's alone
+// requests staged and nothing else, and the agent's alone
 const tasks = [
   taskOf("T-1", "YOUR_TURN", { name: "Say what the README promises", paths: ["README.md"], count_Undecided: 3 }),
   taskOf("T-2", "YOUR_TURN", { paths: ["retry.js"], count_Undecided: 2, count_Conflicts: 1, count_Editors: 1 }),
   taskOf("T-3", "YOUR_TURN", { paths: ["retry.js"] }),
-  taskOf("T-4", "WORKING", { paths: ["retry.js", "README.md"], count_Running: 2, count_Undecided: 14, count_Queued: 8, count_Editors: 2 }),
-  taskOf("T-11", "YOUR_TURN", { paths: ["retry.js"], count_Queued: 2 }),
+  taskOf("T-4", "WORKING", { paths: ["retry.js", "README.md"], count_Running: 2, count_Undecided: 14, count_Staged: 8, count_Editors: 2 }),
+  taskOf("T-11", "YOUR_TURN", { paths: ["retry.js"], count_Staged: 2 }),
   taskOf("T-10", "WORKING", { paths: ["retry.js"], count_Running: 1 }),
-  taskOf("T-5", "DRAFT", { paths: ["retry.js"], count_Queued: 1 }),
+  taskOf("T-5", "DRAFT", { paths: ["retry.js"], count_Staged: 1 }),
   taskOf("T-6", "APPLIED", {}),
   taskOf("T-7", "CANCELED", {}),
   taskOf("T-8", "DISCARDED", {})
@@ -39,16 +39,16 @@ test("the board: how many are open, and a column for each of who they're waiting
   ])
 })
 
-test("a tile: its parts, the most pressing of yours, a conflict over the rest, applicable when nothing's left, requests queued, said so, as the editor says them, yours till started, then the agent's, or a draft's requests, queued; in file, if it touches the file an editor's showing, not named; whether an editor shows it; and what it offers behind its ···: Apply only once nothing's running or left to decide", () => {
+test("a tile: its parts, the most pressing of yours, a conflict over the rest, applicable when nothing's left, requests staged, said so, as the editor says them, yours till started, then the agent's, or a draft's requests, staged; in file, if it touches the file an editor's showing, not named; whether an editor shows it; and what it offers behind its ···: Apply only once nothing's running or left to decide", () => {
   const tiles = viewModel_Board.columns.flatMap((column) => column.kind === "RESOLVED" ? [] : column.tiles)
   expect(tiles.map((tile) => [tile.id, tile.isInView, tile.label_InView, tile.parts.map((part) => `${part.kind} ${part.text}`).join(", "), tile.isShown, tile.actions_More.map((action) => action.label).join(" ")])).toEqual([
     ["T-1", false, "in file", "YOURS 3 to decide", false, "Cancel"],
     ["T-2", true, "in file", "CONFLICT 1 conflict", true, "Cancel"],
     ["T-3", true, "in file", "YOURS applicable", false, "Apply Cancel"],
     ["T-4", true, "in file", "YOURS 14 to decide, AGENT 2 running", true, "Start all (8) Stop Cancel"],
-    ["T-11", true, "in file", "QUEUED 2 queued", false, "Start all (2) Cancel"],
+    ["T-11", true, "in file", "STAGED 2 staged", false, "Start all (2) Cancel"],
     ["T-10", true, "in file", "AGENT 1 running", false, "Stop Cancel"],
-    ["T-5", true, "in file", "QUEUED 1 queued", false, "Start all (1) Cancel"]
+    ["T-5", true, "in file", "STAGED 1 staged", false, "Start all (1) Cancel"]
   ])
 })
 

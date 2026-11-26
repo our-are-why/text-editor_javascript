@@ -361,9 +361,9 @@ function statusOf__Host({
   sources_Answering,
   stamp
 }: _Api___statusOf__Host_): _Status_Request_Tasks_ {
-  return request_Host.status === "QUEUED"
+  return request_Host.status === "STAGED"
     ? {
-      kind: "QUEUED"
+      kind: "STAGED"
     }
     : request_Host.status === "RUNNING"
       ? {
@@ -398,7 +398,7 @@ interface _Counted_Path_ {
 
 // as many proposals and requests on a document not shown here as the
 // example counts there, as it says nothing more of them: each proposal in
-// its state, one with revisions asked of it a request queued on it, one
+// its state, one with revisions asked of it a request staged on it, one
 // being revised a request running on it, and the requests counted beyond
 // those, the document's own
 function countedOn__Path({
@@ -451,15 +451,15 @@ function countedOn__Path({
             stamp
           }
           : {
-            kind: "QUEUED"
+            kind: "STAGED"
           }
       }
     ]
     : [])
-  const count_Queued = counts_Requests.QUEUED - counts_Proposals.REQUESTED
+  const count_Staged = counts_Requests.STAGED - counts_Proposals.REQUESTED
   const count_Running = counts_Requests.RUNNING - counts_Proposals.REVISING
   const requests_Path = [
-    ...Array.from({ length: Math.max(count_Queued, 0) }, () => "QUEUED" as const),
+    ...Array.from({ length: Math.max(count_Staged, 0) }, () => "STAGED" as const),
     ...Array.from({ length: Math.max(count_Running, 0) }, () => "WITH_AGENT" as const)
   ].map((
     kind,
@@ -475,9 +475,9 @@ function countedOn__Path({
         kind: "ALL"
       }
     },
-    status: kind === "QUEUED"
+    status: kind === "STAGED"
       ? {
-        kind: "QUEUED"
+        kind: "STAGED"
       }
       : {
         kind: "WITH_AGENT",
@@ -569,7 +569,7 @@ function standingOf__Tasks({
     }).includes(name_Document),
     count_Undecided: counts.count_Undecided,
     count_Conflicts: counts.count_Conflicts,
-    count_Queued: counts.count_Queued,
+    count_Staged: counts.count_Staged,
     count_Running: counts.count_Running
   }
 }
@@ -603,7 +603,7 @@ function boardedOf__Tasks({
     count_Undecided: isOpen ? counts.count_Undecided : 0,
     count_Conflicts: isOpen ? counts.count_Conflicts : 0,
     count_Running: isOpen ? counts.count_Running : 0,
-    count_Queued: isOpen ? counts.count_Queued : 0,
+    count_Staged: isOpen ? counts.count_Staged : 0,
     count_Editors
   }
 }
@@ -640,7 +640,7 @@ function proposalsHostOf__Task({
               id: request.id,
               notes: request.notes,
               reference: references.get(request.id) ?? null,
-              status: request.status.kind === "WITH_AGENT" ? "RUNNING" : "QUEUED"
+              status: request.status.kind === "WITH_AGENT" ? "RUNNING" : "STAGED"
             }
           ]
           : []),
@@ -724,7 +724,7 @@ function taskHostOf__Task({
             kind: request.aim.kind,
             reference: references.get(request.id) ?? null
           },
-          status: request.status.kind === "QUEUED" ? "QUEUED" : request.status.kind === "WITH_AGENT" ? "RUNNING" : "ADDRESSED",
+          status: request.status.kind === "STAGED" ? "STAGED" : request.status.kind === "WITH_AGENT" ? "RUNNING" : "ADDRESSED",
           sources_Answering: request.status.kind === "ADDRESSED" && request.status.answer.kind === "PROPOSALS" ? request.status.answer.ids_Proposal : []
         }
       ]
@@ -786,7 +786,7 @@ interface _Api___countsOf__Proposals_Path_ {
 
 // a task's proposals on a file counted by where each stands: decided, by
 // its decision; open, being revised while something asked of it runs,
-// revision requested while something's queued on it, and to review
+// revision requested while something's staged on it, and to review
 // otherwise
 function countsOf__Proposals_Path({
   task,
@@ -798,7 +798,7 @@ function countsOf__Proposals_Path({
       ? proposal.decision
       : statuses.includes("WITH_AGENT")
         ? "REVISING"
-        : statuses.includes("QUEUED")
+        : statuses.includes("STAGED")
           ? "REQUESTED"
           : "OPEN"
   })
@@ -829,7 +829,7 @@ function countsOf__Requests_Path({
     request
   }) === path)
   return {
-    QUEUED: requests_Path.filter((request) => request.status.kind === "QUEUED").length,
+    STAGED: requests_Path.filter((request) => request.status.kind === "STAGED").length,
     RUNNING: requests_Path.filter((request) => request.status.kind === "WITH_AGENT").length
   }
 }

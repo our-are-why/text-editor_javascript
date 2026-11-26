@@ -1032,7 +1032,7 @@ function Revisions_Scope__Html({
     >
       <p class="label_Card_htmlView">Scope Revisions</p>
       <div class="line_Card_htmlView">
-        <span class="value_Card_htmlView">{revisions_Scope.figure === null ? "Nothing queued" : revisions_Scope.figure.value}</span>
+        <span class="value_Card_htmlView">{revisions_Scope.figure === null ? "Nothing staged" : revisions_Scope.figure.value}</span>
         <Action$_Scope__Html
           revisions_Scope={revisions_Scope}
           scope_Work={scope_Work}
@@ -2520,7 +2520,7 @@ function Action$_Said__Html({
               type="button"
               class="stop_Said_htmlView"
               data-stop={request_Item.id}
-              aria-label={`Stop “${request_Item.notes}”, putting it back in the queue`}
+              aria-label={`Stop “${request_Item.notes}”, staging it again`}
             >
               Stop
             </button>
