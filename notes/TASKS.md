@@ -23,9 +23,12 @@ still to decide is under **open**, at the end, each with a recommendation.
   Never kept as text.
 - **request:** something asked of the agent, aimed at the task, a document,
   some words, or a proposal (a revision).
-- **run:** the agent working on requests. A request is queued, yours till
+- **run:** the agent working on requests. A request is staged, yours till
   you start it; with the agent, once you have, an agent on it or not yet;
-  or addressed.
+  or addressed. Staged where it was queued, decided 2026-11-26, so draft's
+  a task's word and queued a job's, waiting in the agent part's mailbox,
+  as `AGENT.md` has it; the code and the editor's words renamed once the
+  agent part's built.
 - **mode:** what an editor's in, always one: manual, or a task, then its
   **active task**. Each editor has its own.
 - **manual:** the mode for editing the trunk itself. A mode in its own
@@ -655,7 +658,10 @@ host, `playground/host.ts`, plays all four for now, faked.
   under a conflict, and stale, and under your edits. Not yet: moves found
   in what's read from outside, a block's hash turning up elsewhere; text
   repeated exactly, counted, so a change of what's read can't land on the
-  wrong copy; and storage, the shell's. Later, noted 2026-11-26 and kept
+  wrong copy; for each open task, the version its last start was taken
+  on and the edits since, kept so its agent's told what's changed since
+  it last looked, as `AGENT.md` asks under what an agent reads; and
+  storage, the shell's. Later, noted 2026-11-26 and kept
   out of the first version's way: a file edited as something other than
   how it's stored, as doctor's `.doctor.json` was edited in its own
   syntax of lines, by a converter a host or a module gives, never the

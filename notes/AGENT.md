@@ -76,14 +76,15 @@ doesn't ask who started one, but only as a choice per harness, its
 provider's terms permitting, never something the design leans on.
 
 What it asks of the protocol, since an open session waiting on its own
-leans on its harness more than one launched for a single start: every
+leans on its harness more than one launched for a single job: every
 wait answered well inside a harness's command timeout, as doctor's were
 within 50 seconds, two minutes being Claude Code's default; an answer of
 nothing yet as short as it can be, so waiting costs an agent little of
 its context; and every answer saying the next step, waiting again among
 them, so an agent never falls out of the loop. And of the agent part:
-an agent dropping out loses nothing, its start back to waiting for an
-agent, so robustness never rests on an agent behaving.
+an agent dropping out loses nothing of yours, its job shown gone quiet,
+for you to stop and start again, so robustness never rests on an agent
+behaving.
 
 Not yet known, and to be found before the rest is built on it: how each
 harness bears a session waiting for hours, whether it keeps on, or ends
@@ -94,6 +95,16 @@ And an open session looping on its own for hours is nearer human-driven
 than anything headless, as doctor's was, but not the same; its terms
 watched.
 
+## a principle: up-to-date awareness
+
+Decided 2026-11-26: what an agent's fed is guided by its being in sync,
+up to date, with all it works in: the project, its files, the task, and
+the job in hand. Every job tells it how things stand now and what's
+changed since the task last looked, as data and in more than one view,
+what this system knows told outright, and where it can find out the
+rest, pointed to. Never other tasks: tasks are flat, and no task sees
+another.
+
 ## what's settled here already
 
 From `TASKS.md`, so these aren't walked through again:
@@ -102,19 +113,24 @@ From `TASKS.md`, so these aren't walked through again:
   task that's started, by as many agents as that takes, and no task sees
   it. There's no turn: a task that isn't the one shown goes on as it was.
 - **starting is explicit, at any scope:** a request, a proposal's revision,
-  a frame, a document's requests, or the task's. A request is queued,
+  a frame, a document's requests, or the task's. A request is staged,
   yours till you start it; with the agent, `WITH_AGENT`, once you have,
   whether or not an agent's picked it up; or addressed, by proposals that
   answer it or a note that nothing needed changing. Decided 2026-11-25:
   with the agent, where it was started, `STARTED`, which read as an agent
   at work; a task's own start, begun rather than a draft, keeps the word.
+  Decided 2026-11-26: staged, where it was queued, `QUEUED`, so draft's
+  left to a task never started and queued to a job in the mailbox; in
+  the code, `STAGED`, and in the editor's words, once the agent part's
+  built.
 - **a round:** what's started on a proposal, its next version, revised
   one round at a time, never two at once; requests asked meanwhile wait for
   the next. Run again starts a round's requests over on the file as it is.
 - **versions and carrying:** a round's written on the document as it was
-  when it started, and lands on the document as it is, carried across
-  every edit since by the documents part, what an edit touched stale, a
-  conflict if it's the task's own.
+  when an agent took its job, decided under 5, where it was when it
+  started, and lands on the document as it is, carried across every edit
+  since by the documents part, what an edit touched stale, a conflict if
+  it's the task's own.
 - **anyone makes requests,** a person or an agent, each recording who;
   whether an agent's goes straight in is a layer above the model. A task's
   applied only when someone says, never on its own; collection's asked for.
@@ -135,45 +151,45 @@ pieces smaller, one after another. Decided 2026-11-26: both by what you
 already do, pressing Start where you choose. Waits on nothing; everything
 below waits on it.
 
-1. **What's handed out: a start, as you made it.** Doctor gave the whole
+1. **What's handed out: a job, as you made it.** Doctor gave the whole
    task, every time. **Decided 2026-11-26:** the piece of work an agent's
-   given is a start, the batch you made by pressing Start where you did,
+   given is a job, the batch you made by pressing Start where you did,
    on a request, a proposal's revision, a frame, a document's requests or
    the task: the task, the scope and level it was pressed at, and the
-   requests it started. Each start is its own, never merged with the one
+   requests it started. Each job is its own, never merged with the one
    after it, nor split, and worked as its own, so a batch and another made
-   quickly after are two. The agent's given a start whole, every request
+   quickly after are two. The agent's given a job whole, every request
    in it at once, so it can answer them together, holistically; when what
    it proposes lands, as it writes each proposal or all of it together,
-   is the agent's to decide. A start's not a round: a round is still a
-   proposal's next version, and a start may make several, and new
+   is the agent's to decide. A job's not a round: a round is still a
+   proposal's next version, and a job may make several, and new
    proposals. Only what was started is in it: a proposal being revised by
-   a round already with an agent is left out of a later start, as the
+   a round already with an agent is left out of a later job, as the
    task model never revises a proposal twice at once.
 
 2. **Who drives: agents pull, always.** Doctor's agent pulled, `doctor
    wait`; the other way would have been the host starting an agent for
    each piece of work itself, through whichever harness can run without a
    person. **Decided 2026-11-26:** agents pull, always, from a mailbox the
-   system puts each start into as you make it, in the order you make them;
+   system puts each job into as you make it, in the order you make them;
    the system never reaches into an agent, so it needn't know what one is.
    An agent started in the background, by something that launches one, is
-   a puller like any other, told to take a start, do it, and stop; how an
+   a puller like any other, told to take a job, do it, and stop; how an
    agent comes to be there, you opening one or something launching it, is
-   question 8's. Waiting for an agent, question 9's fourth status, is a
-   start in the mailbox that no agent's taken; Stop on one no agent's
-   taken, question 10's, only takes it back out.
+   question 8's. A job in the mailbox no agent's taken is queued, its
+   requests drawn as waiting for an agent, question 9's; Stop on one,
+   question 10's, cancels it.
 
 ### what an agent writes
 
 Two questions, found 2026-11-26 to be two: the text an agent writes, on
-its own, as soon as a start's settled; and how what it writes is grouped,
+its own, as soon as a job's settled; and how what it writes is grouped,
 into proposals and into frames, which leans on what it reads, 5, and on
 `TASKS.md`'s joining and splitting frames by hand. Waits on 1.
 
 3. **The text an agent writes: a working copy.** Our changes are ranges
    and moves on a version; agents write best by editing files with their
-   own tools. **Decided 2026-11-26:** taking a start, the agent's given a
+   own tools. **Decided 2026-11-26:** taking a job, the agent's given a
    working copy of the files in its scope, as the task has them, the file
    with the task's accepted changes and your edits applied, and, revising
    a proposal, that proposal's text in place; it edits the copy as it
@@ -189,7 +205,7 @@ into proposals and into frames, which leans on what it reads, 5, and on
    never writes this system's structures, nor quotes what it means to
    replace. Still to design: a revision's next version compared with the
    file without the proposal, and what this round changed compared with
-   its last; where the copy lives, a folder per start or something like
+   its last; where the copy lives, a folder per job or something like
    a worktree per task, for the spike to try. Later, with a file edited as
    something other than how it's stored, as `TASKS.md` notes under the
    documents part: the copy in the form edited, by default, a module free
@@ -215,7 +231,7 @@ into proposals and into frames, which leans on what it reads, 5, and on
    text staying changes of their own, grouped with the move or apart, and
    apart carried wherever it lands; and, rarely, **what came between,**
    for one stretch two ideas changed. So it groups seeing all it did,
-   holistically, as a start's given whole. Edits apart from each other
+   holistically, as a job's given whole. Edits apart from each other
    are changes apart, whatever they're for: a rename of `DELAY_MS` and
    one of `n` in `DELAY_MS * 2 ** (n - 1)` two changes; `retry` made
    `**retries**` in Markdown three, the `**` before, `retry` made
@@ -238,18 +254,23 @@ into proposals and into frames, which leans on what it reads, 5, and on
    built. **The checker:** deterministic feedback the agent asks for
    whenever it likes, not only at the end, as a list of what's wrong: a
    change in no proposal, or in two; a proposal without its title or why,
-   or answering a request not in its start; a move whose two sides don't
-   match, apart from the edits inside it; a text between that isn't
-   between; a file edited outside the start's scope; and, where the
-   file's kind's module offers one, a file no longer valid of its kind,
-   JSON that doesn't parse. Handing back runs it, and is refused with the
-   same list, as doctor's refusals were, `{ "issues": [...] }`; and a
-   preview shows how the proposals will be drawn before they're handed
-   back. So what's meant is the agent's, every rule the agent's held to is
-   deterministic, and it never guesses at them. **Moves, no hints:** the
-   agent made its moves, so it knows them, and says them all, edited or
-   not, every answer of what it changed reminding it to. Found and let go
-   2026-11-26: the diff marking moves found whole, which the documents
+   or answering a request the task hasn't got; a move whose two sides
+   don't match, apart from the edits inside it; a text between that isn't
+   between; and, where the file's kind's module offers one, a file no
+   longer valid of its kind, JSON that doesn't parse. Handing back runs
+   it, and is refused with the same list, as doctor's refusals were,
+   `{ "issues": [...] }`; and a preview shows how the proposals will be
+   drawn before they're handed back. **Reported, never refused,** decided
+   2026-11-26 under 5: what reaches beyond the job, a change on lines
+   another proposal changes, a file no request in the job is on, a
+   request outside it answered, so the agent knows it's gone further, and
+   goes on if it means to; what you review decides it, as every change
+   becomes a proposal, so reaching further is never fenced off, only
+   seen. So what's meant is the agent's, every rule the agent's held to
+   is deterministic, and it never guesses at them. **Moves, no hints:**
+   the agent made its moves, so it knows them, and says them all, edited
+   or not, every answer of what it changed reminding it to. Found and let
+   go 2026-11-26: the diff marking moves found whole, which the documents
    part will find for reading a file changed outside anyway, as it would
    say some moves and not others, and an agent, shown the whole ones,
    would read no mark as no move and miss those with edits inside. If
@@ -272,7 +293,7 @@ into proposals and into frames, which leans on what it reads, 5, and on
    shaping this task's frames and no other's. The next task begins
    afresh; its agent framing as an earlier one did is its own memory of
    earlier work, a good thing, nothing of this system's. **The agent
-   frames what's new:** at a task's first start, and whenever a start
+   frames what's new:** at a task's first job, and whenever a job
    brings requests or changes to lines no frame holds, it proposes their
    frames, in the copy's lines as it was given, which are the head's,
    from the file's kind's defaults where a module has them, a function, a
@@ -294,7 +315,7 @@ into proposals and into frames, which leans on what it reads, 5, and on
    what it proposes. A frame of only your edits takes the same defaults.
    **Built in this order:** frames kept with the task and carried across
    edits, the agent framing what's new, with the agent part, as it needs
-   them from its first start, replacing the frame ranges the playground's
+   them from its first job, replacing the frame ranges the playground's
    host writes out by hand; then joining and splitting by hand; then the
    file's kinds' defaults, as the agent's starting point, JavaScript's
    blocks needing more than the playground's tokenizer has, nesting at
@@ -302,30 +323,56 @@ into proposals and into frames, which leans on what it reads, 5, and on
 
 ### what an agent reads, and what it remembers
 
-Settled together: if a task's rounds go on one conversation, a round can
-give less, the agent remembering the rest; if each starts fresh, a round
-has to give all it needs. Which is the default decides how much a round
-gives. Waits on 1 and 2.
+Thought to be settled together, as what a session remembers would decide
+how much a job gives; found 2026-11-26 to be one question, what it
+remembers being the harness's and yours, not this system's. Decided
+2026-11-26. Waits on 1 and 2.
 
-5. **What an agent reads.** The task, its summary and requests; the
-   documents, whole or in part, at the round's version; the proposals in
-   scope and what was asked of them; your edits, its own earlier rounds,
-   other proposals in flight on the same lines, and what the file did since
-   a stale round was written. How much is given at once, and how much is
-   there to ask for, as doctor's `document` was. *Leaning:* the start
-   given whole but lean, the rest asked for by name, so its cost follows
-   what it touches. And which version it's written on: `TASKS.md` has a
-   round written on the document as it was when it started, but a start
-   can wait in the mailbox a while; *leaning* to the version when an agent
-   takes it, so it never begins stale, which changes what `TASKS.md`
-   says.
+5. **What an agent reads: the whole task, its job foremost.** Models
+   thrive on context, and harnesses keep improving at managing it, so it's
+   given generously, never kept lean, and nothing here stands in its way.
+   **Decided 2026-11-26:** taking a job, an agent's given its working
+   copy, made then, when it takes it, not when you pressed Start, as a
+   job can wait a while and should never begin stale; and the whole task
+   model: the task, its name and summary; every request, the job's marked
+   as its, each one's words found in the copy; every proposal, in every
+   file, its title, state, rationale, what you asked of it, your notes on
+   its words, and why a decided one was decided; the frames, yours marked;
+   what the file did since a stale round was written; **what's changed
+   since the task last looked,** for each file in it, the edits since the
+   version its last job was taken on, as a diff, each where it came from
+   when that's known, you in No task, another task applied, read from
+   outside, marked as the file's, as the editor marks the file's in teal,
+   so a name renamed elsewhere in a file isn't news to it; and the next
+   step. Beyond the task's files, the project as it's changed the agent
+   finds out for itself, by git or as it likes, the manifest saying so.
+   Asks of the documents part: keeping, for each open task, the version its
+   last job was taken on and the edits since, let go when it takes its
+   next job, or ends. And the same model shown more than one way, as it
+   digests best, redundant on purpose: as data, as a digest to read, and
+   each file with its requests and proposals marked, every view asked for
+   again whenever it likes. **Focused by framing, not fenced:** the
+   manifest and the next step say plainly which requests are its job, the
+   rest there to inform it, as you'd brief someone; what's truly in scope
+   is hard to say from here, so when it reaches further, into other
+   proposals, other requests, or files no request names, the checker
+   reports it, never refuses it, and you decide it in review, as every
+   change becomes a proposal; perhaps it's for the best. The rest of the
+   project it reads as it likes, from disk, as it is; a file it means to
+   edit that isn't in its copy is added on asking, as the task has it,
+   never refused. For the spike to try too: the copy a whole copy of the
+   project as the task has it, something like a worktree, so the agent can
+   run its tests and builds, not only the files its job names.
 
-6. **A harness's own session.** Whether a task's rounds go on one
-   conversation, the agent keeping what it learned of the task, or each
-   starts fresh from what the protocol gives it. A harness keeps sessions
-   its own way, if at all. *Leaning:* fresh by default, the protocol
-   giving whatever a round needs, so nothing depends on a harness
-   remembering; a session kept where a harness can, as a nicety.
+6. **A harness's own session: not this system's.** Whether a task's
+   jobs go on one conversation or each begins fresh. **Decided
+   2026-11-26, out of scope:** sessions are the harness's to manage, its
+   compacting of context, and yours to drive, opening, clearing and
+   ending one, apart from anything here; the more an agent knows the
+   better, its memory of earlier jobs and tasks a gain. All this system
+   owes it already holds: each job complete in itself, and an agent
+   stopping whenever, losing nothing. Whether one session should take a
+   task's next job, to use what it remembers, is 11's.
 
 ### how it's carried, and how an agent learns it
 
@@ -351,7 +398,7 @@ by the principle above. Waits on 2.
    file in the project's own folder, which the command reads, so an agent
    opened in any terminal in the project reaches it; the token saying an
    agent's calling, which 14 builds on. And Claude Code's channels, an MCP
-   server pushing into an open session so it's told of a start rather
+   server pushing into an open session so it's told of a job rather
    than waiting, at most a nicety for one harness later, as they're MCP
    and a preview.
 
@@ -360,60 +407,88 @@ by the principle above. Waits on 2.
    harness reads, `AGENTS.md`, `CLAUDE.md`; tool descriptions, MCP's; a
    `help`. And how an agent's there to pull, as every agent pulls: you
    opening one and pointing it at the mailbox, once, as doctor's person
-   did, or something launching one in the background when a start's
+   did, or something launching one in the background when a job's
    waiting, told to take it, do it, and stop. **Decided 2026-11-26:** you
    open it, by the principle above; launching one is a choice per harness,
    never the design's. *Leaning:* the protocol says the next step in
    every answer, as doctor's did, so no harness needs teaching beyond
    being pointed at it, once.
 
-### claims: liveness, stopping, and many agents
+### a job's lifecycle
 
-Settled together: all three are who holds a round, how that's known, and
-how it's let go, by an agent going quiet, by Stop, or by another agent
-wanting it; apart, claims would be decided three times. Waits on 1 and 2.
+What pressing Start makes is a job, named so 2026-11-26, where it had been
+called a start, as Start's the button; and this group is its lifecycle,
+from the mailbox to done, and what ends it early. Thought first to be
+about who owns a job; found 2026-11-26 not to need an owner kept, only
+that a job's being worked on, and when it was last heard of. Settled
+together. Decided 2026-11-26. Waits on 1 and 2.
 
-9. **Liveness.** With the agent isn't an agent at work: a round can wait,
-   no agent pulling, none free, none yet launched, and the editor draws
-   every request with the agent as running now, shimmering, which a real
-   agent part makes untrue till one has it. Who's taken a round; whether
-   it's working, quiet, or gone; what happens to a round whose agent
-   vanishes, back to queued or kept with what it had proposed; how long's
-   too long. Doctor's presence was one agent's; here it's each round's, and
-   each agent's across them. *Leaning:* the tasks part keeps with the
-   agent, and the agent part says which rounds an agent has: claimed, and
-   held while it's heard from, its presence read from what its agent does,
-   as doctor's was; let go when it isn't, back to waiting for an agent, or
-   to queued, what it proposed meanwhile kept. The editor draws a fourth
-   status between queued and running, waiting for an agent, still, not
-   shimmering.
+9. **A job's states.** With the agent isn't an agent at work: a job can
+   wait, no agent pulling, none free, and the editor draws every request
+   with the agent as running now, shimmering, which a real agent part
+   makes untrue till one has it. **Decided 2026-11-26:** a job is
+   **queued,** in the mailbox; **being worked on,** an agent having
+   picked it up from there, the only place an agent looks for work;
+   **done,** handed back, the checker holding it to its rules; or
+   **cancelled,** stopped, at either stage. No paused: a job can't be
+   continued, which no harness offers and nothing here builds, so a job
+   stopped and started again is a new one, done from scratch. No owner
+   kept: every call an agent makes about its job carries the job's id,
+   so the job knows it's being worked on, and when it was last heard of,
+   taking it, asking what it changed, checking, asking for a view, adding
+   a file; who did it is authorship, 14, kept with what it hands back. A
+   wait isn't blind polling: held open, it's answered the moment a job
+   lands in the mailbox, or, nothing in time, with nothing yet, and the
+   agent waits again, so it's told work's come as it comes. The tasks
+   part keeps a request with the agent; the agent part keeps the job; and
+   the editor draws a request whose job's queued as waiting for an agent,
+   still, not shimmering, a fourth status between staged and running, and
+   one whose job's being worked on as running. **A job gone quiet,** its
+   agent slow, or gone, a session closed, which nothing tells this system:
+   heard of by nothing for a while, its requests stop shimmering and say
+   so, muted, "quiet · 14 min", counted in the footer and on the board,
+   for you to stop if you think it's gone, never stopped on its own, as an
+   agent deep in a run of its tests is quiet too. Its agent coming back to
+   it after all carries on, if it hasn't been stopped; if it has, its
+   calls are answered that it's stopped, and what it hands back refused,
+   so there's never work landed for a job no longer wanted. Tried and let
+   go: putting a quiet job back in the mailbox for another agent, its
+   batch kept, too much for now, as Stop and Start again do it. Later, if
+   wanted: an agent reporting how it's getting on, a call to the same
+   endpoint, "running the tests", shown as the job's latest line; asking
+   an agent how it's going stays where you'd ask it now, its terminal.
 
-10. **Stop, and what's asked mid-round.** Stop puts what's running back in
-   the queue: how's an agent told, pulling, or started by the host, which
-   can end it. A request on a proposal being revised waits for its next
-   round, as now; a request elsewhere in the task, while a round runs, is
-   another round's. Your edits under a running round land it stale, as now.
-   *Leaning:* an agent learns it's stopped the next time it speaks, its
-   next message refused with why, and the host ends the ones it started.
+10. **Stop, and what comes in while a job's being worked on.** **Decided
+    2026-11-26:** Stop cancels a job, queued or being worked on; its
+    agent learns it the next time it calls about it, told to drop it and
+    go back to the mailbox; what it handed back already stays, in front of
+    you as proposals; and its other requests are staged again, yours, to
+    edit, remove or start again as a new job. New requests started while
+    a job's being worked on are a new job, queued behind it, never added
+    to it, a request on a proposal it's revising waiting for the next, as
+    a proposal's revised one round at a time. The file changing under a
+    job being worked on, by you or another task applied, is told its agent
+    the next time it calls, as up-to-date awareness asks, its work landing
+    carried across as any round's, stale where it was touched. Removing a
+    staged request is built already: Remove among its actions, the tasks
+    part's `REMOVE`; one with the agent is stopped first.
 
-11. **Many agents, and the order of starts.** Starts of one task by
-    different agents at once, starts of many tasks by one, two agents on
-    the same lines; their proposals meeting, which the documents part
-    already carries; and which agent gets which start, any free one, one
-    chosen, or one kept for a task. And the order: a task's starts one
-    after another, the next not taken till the one before's handed back,
-    as a later one may build on what an earlier one changes, or taken at
-    once by different agents, kept apart; and an agent holding a task's
-    start shown what you start on it meanwhile, as doctor's steering was,
-    or leaving it for the next. *Leaning:* one after another within a
-    task, at once across tasks; any agent that asks, or the one a start
-    names, the model not caring which.
+11. **Many agents, and the order of jobs.** **Decided 2026-11-26:** one
+    job at a time within a task, in the order you made them, the next not
+    taken till the one before's done or cancelled, as a later one may
+    build on what an earlier one changes; at once across tasks, as tasks
+    are flat, by as many agents as are waiting; an agent taking the
+    oldest queued job of any task, or, pointed at one, `wait --task`,
+    only that task's; and told what's queued behind it in its task, to
+    know, never to take on, its job its own. Two agents on the same lines,
+    of different tasks, their proposals meet as the documents part already
+    carries them.
 
 ### the agent talking back, and where its work shows
 
 In order: what an agent can say back first, then where that and its
-presence are drawn. Waits on 1 for the first, and on the claims for the
-second.
+presence are drawn. Waits on 1 for the first, and on a job's lifecycle
+for the second.
 
 12. **The agent talking back.** Doctor asked, and never settled, whether an
     agent can make requests, "I found two more places"; here anyone can,
@@ -428,7 +503,7 @@ second.
 13. **Where the agent's work shows.** Running's drawn already, its
     shimmer, the board's With agent; what's added: who's on it, whether
     it's heard from or quiet, waiting for an agent, a question waiting, a
-    round let go; perhaps what it's doing as it does it, if a harness says.
+    job gone quiet; perhaps what it's doing as it does it, if a harness says.
     *Leaning:* presence per round in what already shows a round running,
     and per agent in the footer, as doctor's footer said where its agent
     was.
@@ -448,7 +523,7 @@ an adapter, so it waits on the adapters' shape, after 2 and 7.
     it, the token saying it, and the layer of permissions designed with
     the shell.
 
-15. **What's kept, and where.** Rounds, claims and questions across a
+15. **What's kept, and where.** Jobs and questions across a
     reload or a restart: the shell's storage, as the tasks part's is.
 
 16. **Faking it, and testing it.** The playground's host fakes the agent
