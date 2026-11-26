@@ -552,8 +552,8 @@ telling what happened. Each is a folder of `source/`, its `index.ts` its
 public API, nothing else of it imported from outside, as
 `.claude/rules/typescript-style.md` says under **Parts**: `editor/`,
 `board/` and `jsx/`, the runtime they draw with; `tasks/` and
-`documents/`, built 2026-11-24, the first of each; `agent/` and `shell/`
-to come, in that order.
+`documents/`, built 2026-11-24, the first of each; `agent/`, begun
+2026-11-26; and `shell/` to come.
 The prototype had all four, in its extension and its webviews; the
 playground's host, `playground/host.ts`, plays all four for now, faked.
 
@@ -686,7 +686,23 @@ playground's host, `playground/host.ts`, plays all four for now, faked.
 - **the agent:** runs, which requests are running for which task; how the
   agent's given its work, the prototype's `doctor wait` or otherwise; whether
   it's there and working. Begun 2026-11-25 in `AGENT.md`, as the questions to
-  walk through before it's designed, without coupling to any one harness.
+  walk through before it's designed, without coupling to any one harness;
+  designed there, and tried in a spike, 2026-11-26. **Built 2026-11-26, the
+  first of it,** in `source/agent/`, plain data and functions, no DOM: each
+  job, what pressing Start makes, its task, the scope it was started at,
+  the requests it started and when it was queued; its state, queued,
+  offered, being worked on, with when it was taken, last heard of and its
+  latest note, done or cancelled; the moves as commands, by a map of them,
+  `HANDLERMAP__AGENT`: queue, a start made; offer, a wait answered; check,
+  the first taking an offer, the rest keeping it heard of; hand back;
+  cancel, Stop; and lapse, an offer not taken within a minute queued again,
+  keeping its place; worked out, never stored: the next job a wait's given,
+  `nextOf__Mailbox`, the oldest queued of any task or of one, one job at a
+  time within a task, in the order they were made, at once across tasks,
+  and the latest job a request's in, `jobOf__Request`; `_Agent_` holding
+  them; tested by examples, and by a property over any sequence of moves.
+  Not yet: the endpoint and the command, working copies, the checker,
+  questions, and the editor drawing what's waiting for an agent.
 - **the shell:** puts them together: keeps each editor's document and
   mode, across reloads too; takes each editor's commands to the part
   they're for; tells each open editor what it should now show, and passes

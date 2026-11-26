@@ -27,15 +27,16 @@ scene's template literal, is content: leave it as written.
   own: `jsx/`, the JSX runtime; `editor/`, the text editor; `board/`, every
   task of the project; `tasks/`, the tasks, their requests and proposals;
   `documents/`, each document's versions and the changes stated against
-  them, the editor's model among them, which the editor draws; and, to
-  come, `agent/` and `shell/`. A part's `index.ts` is its public API:
+  them, the editor's model among them, which the editor draws; `agent/`,
+  the jobs agents are given and where each stands; and, to come, `shell/`.
+  A part's `index.ts` is its public API:
   another part, or a host, the playground included, imports only from it,
   never from a file inside; the tests may reach in, as they test what's
   inside. A name another part or a host needs is added to the index,
   imported from its file and exported again. Each part has its own
   `tsconfig.json`, giving it only what it may use: the DOM for the editor,
-  the board and the runtime; none for a part that isn't drawn, as `tasks/`
-  and `documents/` aren't, so they run anywhere.
+  the board and the runtime; none for a part that isn't drawn, as `tasks/`,
+  `documents/` and `agent/` aren't, so they run anywhere.
 
 - **Interfaces for object types.** `interface X { … }`, never
   `type X = { … }`, index signatures and options objects included. A union,
