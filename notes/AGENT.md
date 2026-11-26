@@ -4,9 +4,10 @@ The agent part, the third behind the task UI, after the tasks and documents
 parts: how what's asked of a task reaches an agent, how what the agent
 answers comes back, and how working beside one feels, ergonomic and
 seamless, without the system coupled to any one harness, Claude Code or
-another. A draft, begun 2026-11-25, of the questions to walk through before
-it's designed: each with what doctor did, what the task model here already
-settles, and a leaning, which is only where the walk starts, not a decision.
+another. Begun 2026-11-25 as the questions to walk through before it's
+built, each with what doctor did, what the task model here already
+settles, and a leaning; walked through 2026-11-26, each now decided, with
+what's left open, and what's noted for later, under **open**, at the end.
 
 It starts from doctor, https://github.com/our-are-why/doctor, its
 `source/cli/main.ts`, `source/extension/agent.ts`, `notes/tasks.md` and
@@ -563,29 +564,72 @@ kinds of it, most else answered already by what's decided above.
 
 ### identity, what's kept, and faking it
 
-Last, each leaning partly elsewhere: identity's token travels as the
-protocol does, after 7, and what an agent may do is a layer of
-permissions nearer the shell; what's kept is the shell's; and the fake's
-an adapter, so it waits on the adapters' shape, after 2 and 7.
+Last, each leaning partly elsewhere, and smaller for all that's settled
+before them. Decided 2026-11-26.
 
-14. **Identity and trust.** Which agent, harness, model and session did
-    what, for authorship and for presence; how an agent proves it, a token
-    as doctor's was; and what an agent may do beyond proposing, make
-    requests that go straight in, apply, collect, which the model allows
-    and a layer above decides. *Leaning:* every message carries who sent
-    it, the token saying it, and the layer of permissions designed with
-    the shell.
+14. **Identity and trust.** **Decided 2026-11-26:** **content over
+    author:** nothing shows which agent, harness, model or session did
+    the work, so whoever reads it judges the work, not who did it, and
+    nothing here depends on knowing, a job's id carrying all its calls
+    need. **A token,** as a localhost endpoint can be reached by any page
+    in a browser, which a token kept in a file of the project, read by no
+    page, shuts out: one an agent's calls need, written to the project's
+    folder, another for the editor and the board once they call it, kept
+    out of git. Local first, never assumed: the editor, the agent and its
+    working copy may be remote from each other one day, so the endpoint's
+    plain HTTP with tokens from the start, and its address never more
+    than where to find it. **What an agent may do:** an agent does what
+    it does; nothing's enforced beyond the protocol's own rules, the
+    checker's among them, and the command, a face over the endpoint, the
+    endpoint the protocol, says how it's meant to be used, its `help` and
+    the next step in every answer, applying, deciding and collecting left
+    yours, as nothing in it offers them.
 
-15. **What's kept, and where.** Jobs and questions across a
-    reload or a restart: the shell's storage, as the tasks part's is.
+15. **What's kept, and where: who holds what.** Where each thing lives,
+    and which is the truth of it. **Decided 2026-11-26:** **the project's
+    folder,** the dot folder `TASKS.md` keeps tasks and documents in,
+    the truth of everything that's a task's: its requests and where they
+    stand, the questions asked of them and your answers, its proposals
+    and rounds, its heads, its frames, and, the documents part's, the
+    version its last job was taken on; **the agent server,** ephemeral,
+    the agent part's own: the mailbox and its jobs, queued, being worked
+    on, waiting on you, the waits open, when each job was last heard of,
+    the address and its tokens, and the working copies; **the editor's
+    host,** its setup, the modules for language, reading and framing,
+    and the view's own state; and **the agent,** its session, the
+    harness's. The agent server holds nothing of a task's, naming
+    requests and proposals by their ids, the task's file holding them, so
+    a restart of it loses only its jobs and copies: starting, it finds
+    requests the task says are with the agent with no job, and stages
+    them again, saying why, for you to start again, their batches gone.
+    **Later, noted as wanted: jobs surviving a restart,** queued jobs and
+    their batches written to the project's folder, so a restart loses
+    none, and, if it can be had, one being worked on picked up again.
 
 16. **Faking it, and testing it.** The playground's host fakes the agent
-    now, a round landing a moment later as its proposal's own changes.
-    *Leaning:* the fake an adapter of the protocol like any other, so the
-    playground and the tests drive the real agent part, and a harness's
-    adapter is tested against the same contract.
+    now, inside itself, a round landing a moment later as its proposal's
+    own changes, nothing of a real agent's way through it tried.
+    **Decided 2026-11-26:** the fake an agent like any other, a client of
+    the protocol, a small script taking a job from the mailbox, writing
+    its changes into its copy, grouping them through the checker, asking
+    and answering as a test needs, and handing back, the playground's
+    host no longer faking rounds itself; so the playground and the tests
+    run the real agent part, the mailbox, jobs, copies, the diff, the
+    checker, questions, with no model in it, every time the tests run.
+    Real harnesses, Claude Code, `agy` and Codex, tried by hand in the
+    spike, against the same protocol.
 
 ## open
 
-Everything above, walked through group by group, each settled here as it's
-decided, as `TASKS.md`'s were, before `source/agent/` is begun.
+Walked through 2026-11-26, all sixteen. What's next: **the spike,** a
+mailbox, a wait and a take, tried in real sessions of Claude Code, `agy`
+and Codex, how each bears a session waiting for hours; then
+`source/agent/`. Details still open inside what's decided: how a
+revision's compared, 3; where a working copy lives, a folder per job or
+a whole worktree-like copy, 3 and 5, for the spike; frames' joining and
+splitting by hand, and the file's kinds' defaults, after frames kept with
+the task, 4; the folder's name, `TASKS.md`'s. Later, noted as wanted or
+possible: progress reports, 9; an agent's own requests, 12; jobs
+surviving a restart, 15; Claude Code's channels, 7; moves asked about,
+never hinted, 4; and a file edited as something other than how it's
+stored, under the documents part in `TASKS.md`.

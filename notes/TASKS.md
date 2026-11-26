@@ -454,7 +454,11 @@ Settled 2026-11-22. All the system keeps of tasks and documents, apart from
 the documents' own content, is kept in a folder of its own at the project's
 root, a dot folder, as doctor's `.doctor/` was, its name to be chosen:
 
-- **one file per task,** open or resolved, as doctor's were;
+- **one file per task,** open or resolved, as doctor's were, holding all
+  of it, the questions asked of its requests and your answers and its
+  frames among it, and the version its last job was taken on, as
+  `AGENT.md` has it under what's kept; never jobs, the agent server's,
+  ephemeral, which surviving a restart is a later want;
 - **documents' copies,** each by its hash, as doctor's `objects/` were;
 - **each document's current version,** its hash.
 
