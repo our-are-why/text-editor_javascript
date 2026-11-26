@@ -425,38 +425,41 @@ together. Decided 2026-11-26. Waits on 1 and 2.
 
 9. **A job's states.** With the agent isn't an agent at work: a job can
    wait, no agent pulling, none free, and the editor draws every request
-   with the agent as running now, shimmering, which a real agent part
-   makes untrue till one has it. **Decided 2026-11-26:** a job is
-   **queued,** in the mailbox; **being worked on,** an agent having
-   picked it up from there, the only place an agent looks for work;
-   **done,** handed back, the checker holding it to its rules; or
-   **cancelled,** stopped, at either stage. No paused: a job can't be
-   continued, which no harness offers and nothing here builds, so a job
-   stopped and started again is a new one, done from scratch. No owner
-   kept: every call an agent makes about its job carries the job's id,
-   so the job knows it's being worked on, and when it was last heard of,
-   taking it, asking what it changed, checking, asking for a view, adding
-   a file; who did it is authorship, 14, kept with what it hands back. A
-   wait isn't blind polling: held open, it's answered the moment a job
-   lands in the mailbox, or, nothing in time, with nothing yet, and the
-   agent waits again, so it's told work's come as it comes. The tasks
-   part keeps a request with the agent; the agent part keeps the job; and
-   the editor draws a request whose job's queued as waiting for an agent,
-   still, not shimmering, a fourth status between staged and running, and
-   one whose job's being worked on as running. **A job gone quiet,** its
-   agent slow, or gone, a session closed, which nothing tells this system:
-   heard of by nothing for a while, its requests stop shimmering and say
-   so, muted, "quiet · 14 min", counted in the footer and on the board,
-   for you to stop if you think it's gone, never stopped on its own, as an
-   agent deep in a run of its tests is quiet too. Its agent coming back to
-   it after all carries on, if it hasn't been stopped; if it has, its
-   calls are answered that it's stopped, and what it hands back refused,
-   so there's never work landed for a job no longer wanted. Tried and let
-   go: putting a quiet job back in the mailbox for another agent, its
-   batch kept, too much for now, as Stop and Start again do it. Later, if
-   wanted: an agent reporting how it's getting on, a call to the same
-   endpoint, "running the tests", shown as the job's latest line; asking
-   an agent how it's going stays where you'd ask it now, its terminal.
+   with the agent as running now, shimmering, which a real agent part makes
+   untrue till one has it. **Decided 2026-11-26:** a job is **queued,** in
+   the mailbox; **being worked on,** an agent having picked it up from
+   there, the only place an agent looks for work; **done,** handed back,
+   the checker holding it to its rules; or **cancelled,** stopped, at
+   either stage. Being worked on, a job may be **waiting on you,** its
+   agent having asked a question it can't go on without, 12, its session
+   alive and its context kept, waiting for your answer, which isn't paused,
+   nothing saved to be taken up later. No paused: a job can't be continued,
+   which no harness offers and nothing here builds, so a job stopped and
+   started again is a new one, done from scratch. No owner kept: every call
+   an agent makes about its job carries the job's id, so the job knows it's
+   being worked on, and when it was last heard of, taking it, asking what
+   it changed, checking, asking for a view, adding a file; who did it is
+   authorship, 14, kept with what it hands back. A wait isn't blind
+   polling: held open, it's answered the moment a job lands in the mailbox,
+   or, nothing in time, with nothing yet, and the agent waits again, so
+   it's told work's come as it comes. The tasks part keeps a request with
+   the agent; the agent part keeps the job; and the editor draws a request
+   whose job's queued as waiting for an agent, still, not shimmering, a
+   fourth status between staged and running, and one whose job's being
+   worked on as running. **A job gone quiet,** its agent slow, or gone, a
+   session closed, which nothing tells this system: heard of by nothing for
+   a while, its requests stop shimmering and say so, muted, "quiet · 14
+   min", counted in the footer and on the board, for you to stop if you
+   think it's gone, never stopped on its own, as an agent deep in a run of
+   its tests is quiet too. Its agent coming back to it after all carries
+   on, if it hasn't been stopped; if it has, its calls are answered that
+   it's stopped, and what it hands back refused, so there's never work
+   landed for a job no longer wanted. Tried and let go: putting a quiet job
+   back in the mailbox for another agent, its batch kept, too much for now,
+   as Stop and Start again do it. Later, if wanted: an agent reporting how
+   it's getting on, a call to the same endpoint, "running the tests", shown
+   as the job's latest line; asking an agent how it's going stays where
+   you'd ask it now, its terminal.
 
 10. **Stop, and what comes in while a job's being worked on.** **Decided
     2026-11-26:** Stop cancels a job, queued or being worked on; its
@@ -486,27 +489,77 @@ together. Decided 2026-11-26. Waits on 1 and 2.
 
 ### the agent talking back, and where its work shows
 
-In order: what an agent can say back first, then where that and its
-presence are drawn. Waits on 1 for the first, and on a job's lifecycle
-for the second.
+In order: what an agent can say back first, then where that and its work
+are drawn. Decided 2026-11-26, the question the one thing new here, two
+kinds of it, most else answered already by what's decided above.
 
-12. **The agent talking back.** Doctor asked, and never settled, whether an
-    agent can make requests, "I found two more places"; here anyone can,
-    with the policy above. Not yet asked: an agent asking you something
-    mid-round, which hands that part of the task to you till you answer;
-    an agent declining a request, saying why; an agent proposing past
-    where it was asked, which doctor called going further. *Leaning:* a
-    question as its own kind, shown where the round's shown, your answer
-    resuming it; this may be what makes working beside an agent feel like
-    working with one.
+12. **The agent talking back.** **Decided 2026-11-26:** two kinds of
+    question. **Mid-job, urgent:** an agent needing your word to go on asks
+    within its job, keeping what it's built up of it, what it's read, what
+    it's half edited in its copy, how it's understood the batch, all lost
+    were it to end the job to ask. Asking returns at once, so it goes on
+    with what doesn't wait on the answer; your answer comes with whatever
+    the endpoint next tells it; and when it can't go further without it, it
+    waits for it as it waits on the mailbox, held open, answered in time
+    with no answer yet, and waiting again, at little cost to its context.
+    Its job's being worked on, waiting on you, 9, the question on its
+    request, counted as needing you. Unanswered a long while, nothing times
+    out here; but an agent may not last as long, its session closed,
+    compacted, timed out, which shows, as it's known whether a wait for
+    that job's open, a job no longer waited on and not heard of shown quiet
+    as any; and answering one no agent's waiting on any more, you're told,
+    and offered to stop it and start it again, the question and your answer
+    kept with the request for the new job, its context lost but not your
+    answer. **Post-job, curious:** asked as it hands back, nothing waiting:
+    a request it couldn't do without your word, staged again with the
+    question, for you to answer, **Answer** keeping it staged, **Answer and
+    start** sending it straight back, as a form's Add and Start do, a new
+    job given the question and your answer; or a question on work it did,
+    "I capped it at 30 seconds; should it be an option?", on the proposal
+    or request, answered by a request of yours, revising the proposal, or
+    left be. An agent may choose post-job over mid-job, handing a request
+    back with its question rather than waiting, where the answer can wait,
+    or its harness can't. **What a question's on:** one or more of the
+    job's requests, sharing one asked of them all, and, if it says, words
+    of the file, underlined where they are, as a request's are. **Shown**
+    on its request, under your notes, in the agent's voice, apart from
+    yours, its status word question; **kept** on the request, every
+    question and answer in order, all given to each later job with it, the
+    latest shown and the rest folded, as long as the request's kept. **Not
+    blocking other work:** within a task a job queued behind a question
+    waits, as jobs run in order, and says so, "1 queued behind a question";
+    across tasks, other agents take other jobs, while an agent waiting on
+    you takes none, its session given to its job. What helps from here: an
+    agent waiting is told what's queued meanwhile, to judge whether to hand
+    back its question post-job and be free; and you're told, the footer
+    counting agents waiting for work apart from agents waiting on you, so
+    jobs queued with no agent free say to answer, or open another.
+    **Declining** needs nothing new: a request addressed with a note that
+    nothing needed changing, the note saying why, I don't think this should
+    be done, because; or, needing your word, a question. **Summaries,** as
+    doctor's: the task's and each file's, updated by the agent as it hands
+    back, its voice in the header and the cards. **Going further,**
+    proposing past what it was asked, is decided under 5, reported and
+    never refused. **Not yet, noted as possible: an agent's own requests,**
+    "I found two more places", the model allowing them, anyone making
+    requests. Not supported for now: an agent should do what it finds,
+    beyond its job if it must, reported so, and you answer with a request
+    of your own, as a request of its own would let it put off doing what it
+    ought to; the one case it might serve, work in the task's scope but
+    apart from what's asked, waits till it's needed.
 
-13. **Where the agent's work shows.** Running's drawn already, its
-    shimmer, the board's With agent; what's added: who's on it, whether
-    it's heard from or quiet, waiting for an agent, a question waiting, a
-    job gone quiet; perhaps what it's doing as it does it, if a harness says.
-    *Leaning:* presence per round in what already shows a round running,
-    and per agent in the footer, as doctor's footer said where its agent
-    was.
+13. **Where the agent's work shows.** **Decided 2026-11-26:** beside what's
+    drawn already, a request staged, running, shimmering, and addressed,
+    the board's columns and the footer's counts: a request whose job's
+    queued, waiting for an agent, still, not shimmering; a job gone quiet,
+    marked, "quiet · 14 min", counted in the footer and on the board; a
+    question waiting, on its request, counted as needing you; and whether
+    any agent's listening, the footer counting the waits open, agents
+    waiting for work apart from agents waiting on you, "2 agents waiting",
+    and saying none's free while jobs are queued, so a Start pressed with
+    no agent open, or every one waiting on you, says why nothing's
+    happening: answer, or open one. Who's on a job isn't shown, as no
+    owner's kept; what it's doing, later, with progress reports.
 
 ### identity, what's kept, and faking it
 
