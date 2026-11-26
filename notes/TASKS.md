@@ -223,14 +223,19 @@ next to each other one shape only where they share columns, as every ring
 is, and where a line break cuts a ring, its seam straight and dashed, the
 wave meeting it midway.
 
-Still open: **joining and splitting frames by hand,** a frame range of
-yours, stated against the head's version and carried as changes are, over
-the agent's or the host's, which shape the frames you're given; a change's
-extent the floor, never cut, as a ring is one shape, a request's words a
-soft one, kept whole by default but cut by a split you make, as an
-underline drawn in two pieces is still one request. Kept with the task, by
-document, beside its head. Waits on the host's frame ranges being carried
-across versions, which an agent giving them needs anyway.
+Designed 2026-11-26, in `AGENT.md` under how it's grouped, and still to
+build: **frames, a task's, and joining and splitting them by hand.** A
+file's lines divided into frames, never overlapping, a change never
+divided between them, as a ring is one shape, a request's words a soft
+edge, kept whole by default but cut by a split you make. Kept with the
+task, by document, beside its head, carried across edits as changes are,
+and gone with it, so your joins and cuts shape this task's frames and no
+other's. The agent frames what's new, at a task's first start and
+wherever a start reaches lines no frame holds; what's established
+carries on; and yours are established, with the most weight, not final,
+the agent able to reshape one where its changes give it reason, saying
+why, and you shown it. Built after frames kept with the task and the
+agent framing what's new, which come with the agent part.
 
 This keeps the editor's frames decision of 2026-11-18: there's no suggesting
 mode turning every edit into a proposal. In a task, your edits are the task's,
@@ -650,7 +655,16 @@ host, `playground/host.ts`, plays all four for now, faked.
   under a conflict, and stale, and under your edits. Not yet: moves found
   in what's read from outside, a block's hash turning up elsewhere; text
   repeated exactly, counted, so a change of what's read can't land on the
-  wrong copy; and storage, the shell's.
+  wrong copy; and storage, the shell's. Later, noted 2026-11-26 and kept
+  out of the first version's way: a file edited as something other than
+  how it's stored, as doctor's `.doctor.json` was edited in its own
+  syntax of lines, by a converter a host or a module gives, never the
+  editor's own, at the edge where files are read and written, the stored
+  form made into the text edited and back, keeping what identity the
+  format has, as doctor's reconcile kept each node's id; everything
+  between, versions, heads, changes, proposals, frames, the editor and an
+  agent's working copy, working on the text edited; the stored form seen
+  by the same file opened through the converter that changes nothing.
 - **the agent:** runs, which requests are running for which task; how the
   agent's given its work, doctor's `doctor wait` or otherwise; whether it's
   there and working. Begun 2026-11-25 in `AGENT.md`, as the questions to
