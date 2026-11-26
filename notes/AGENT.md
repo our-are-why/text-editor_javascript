@@ -87,14 +87,47 @@ an agent dropping out loses nothing of yours, its job shown gone quiet,
 for you to stop and start again, so robustness never rests on an agent
 behaving.
 
-Not yet known, and to be found before the rest is built on it: how each
-harness bears a session waiting for hours, whether it keeps on, or ends
-its turn and stops, how long its commands may run, how fast its context
-fills. **A spike,** as soon as the first commands exist, a mailbox, a
-wait and a take, tried in real sessions of Claude Code, `agy` and Codex.
-And an open session looping on its own for hours is nearer human-driven
-than anything headless, as doctor's was, but not the same; its terms
-watched.
+**Found by the spike,** 2026-11-26, `spikes/mailbox/`, a mailbox, a wait,
+a take, a hand back and a stop, each call logged, tried in real sessions
+of Claude Code, 28 minutes, and `agy`, 6, Codex having no subscription
+here. Both keep to the loop: waiting, woken mid-wait as a job lands,
+taking it in seconds, doing it, handing it back, waiting again, and, a
+job stopped, dropping it as told, `agy` leaving nothing half written; no
+wait of 50 seconds cut off in either; a nothing-yet answer 90 bytes.
+What a harness does round a long command differs, and shaped the
+protocol: **`agy` runs a command synchronously for 10 seconds at most,**
+then backgrounds it, ends its turn with a word to you, and is woken when
+it ends, so every 50-second wait cost a turn and a message, some 70 an
+hour, hence a wait held as long as the agent asks, 7; and **an agent
+working a long job had no way to learn it was stopped,** `agy` finding
+out only by reading the spike's own log, hence the check-in, 9. And
+confirmed: **an agent keeps no process running past its command,**
+`agy`'s `nohup … &` gone with the call, so all that lives long, the
+mailbox and what feeds it, is the host's. Tried then with a wait held a
+quarter of an hour, `--for 900`, `agy`'s notification timeout set to
+cover it: two turns spent waiting where 50 seconds at a time would have
+spent nine, a turn only as a job lands or the wait's up; and found by it,
+**a wait cut short by the command's own HTTP timeout,** Bun's `fetch`
+letting a connection idle five minutes at most unless told otherwise, so
+the command waits as long as it asked, `timeout: false`, and anything
+between it and the endpoint, remote one day, must too; and **a job given
+to a wait whose caller had gone,** the server answering a connection
+already closed with the job, which it then counted taken, no agent having
+it: so a wait whose caller's gone is let go, never given a job, which the
+spike now does, and a job given out acknowledged before it's counted
+taken, 9. Tried a third time with both fixed, and a job offered till its
+first check-in took it, `agy` for 22 minutes: four waits, each answered
+by a job landing, held 61, 400, 224 and 533 seconds, none cut off, where
+50 seconds at a time would have taken 27; every job offered, taken with a
+check-in of "starting" within seconds, which `agy` found very clear; the
+slow job checked in on after each file it read, its stop found at the
+next check-in, 15 seconds on, nothing left half done; four jobs, three
+handed back, one cancelled, as scheduled. So the spike's done: the loop
+holds in the harness where waiting was hardest. Not yet known: a session left
+waiting for hours, how its context holds through hundreds of waits; to
+watch in use, as a session dropping out loses nothing. And an open
+session looping on its own for hours is nearer human-driven than
+anything headless, as doctor's was, but not the same; its terms watched.
 
 ## a principle: up-to-date awareness
 
@@ -385,23 +418,28 @@ by the principle above. Waits on 2.
 7. **How it's carried: a command.** A command over a local endpoint, as
    doctor's; MCP's tools; plain HTTP; files in a folder an agent watches.
    **Decided 2026-11-26:** an agent runs a command in its own shell, and
-   that's all it's given, no MCP; the messages stated apart from how
-   they travel, so the command's one carrier among any to come. **Decided
-   2026-11-26,** what it talks to: a local endpoint, HTTP on 127.0.0.1,
-   as doctor's, the command a thin interface over it, each subcommand a
+   that's all it's given, no MCP; the messages stated apart from how they
+   travel, so the command's one carrier among any to come. **Decided
+   2026-11-26,** what it talks to: a local endpoint, HTTP on 127.0.0.1, as
+   doctor's, the command a thin interface over it, each subcommand a
    request and its answer printed as JSON, all of the protocol behind the
-   endpoint; a wait held open and answered well inside a harness's
-   command timeout; the endpoint the shell's to host, the playground's
-   server for the spike, and able to serve the editor and the board too,
-   as doctor's served its webviews. Where doctor's command found it by
-   what VS Code put in the terminals it opened, so an agent in any other
-   couldn't, *leaning:* the endpoint writes its address and a token to a
-   file in the project's own folder, which the command reads, so an agent
-   opened in any terminal in the project reaches it; the token saying an
-   agent's calling, which 14 builds on. And Claude Code's channels, an MCP
-   server pushing into an open session so it's told of a job rather
-   than waiting, at most a nicety for one harness later, as they're MCP
-   and a preview.
+   endpoint; a wait held open as long as the agent asks, `wait --for
+   <seconds>`, as doctor's took, 50 seconds unless it says, inside any
+   harness's command timeout, and far longer, a quarter of an hour or more,
+   in a harness that backgrounds a long command and wakes the agent as it
+   ends, `agy`, or Claude Code's commands run in the background, so a
+   turn's spent only that often, or as a job lands, which answers it at
+   once, found by the spike; a wait answered closed when the endpoint
+   stops, so none hangs; the endpoint the shell's to host, the playground's
+   server for the spike, and able to serve the editor and the board too, as
+   doctor's served its webviews. Where doctor's command found it by what VS
+   Code put in the terminals it opened, so an agent in any other couldn't,
+   *leaning:* the endpoint writes its address and a token to a file in the
+   project's own folder, which the command reads, so an agent opened in any
+   terminal in the project reaches it; the token saying an agent's calling,
+   which 14 builds on. And Claude Code's channels, an MCP server pushing
+   into an open session so it's told of a job rather than waiting, at most
+   a nicety for one harness later, as they're MCP and a preview.
 
 8. **How an agent learns the protocol, and comes to be there.** Doctor's
    prose `next`, written for whoever reads it; an instructions file each
@@ -457,25 +495,42 @@ together. Decided 2026-11-26. Waits on 1 and 2.
    it's stopped, and what it hands back refused, so there's never work
    landed for a job no longer wanted. Tried and let go: putting a quiet job
    back in the mailbox for another agent, its batch kept, too much for now,
-   as Stop and Start again do it. Later, if wanted: an agent reporting how
-   it's getting on, a call to the same endpoint, "running the tests", shown
-   as the job's latest line; asking an agent how it's going stays where
-   you'd ask it now, its terminal.
+   as Stop and Start again do it. **A check-in,** decided 2026-11-26, as
+   the spike found an agent deep in a long job can't otherwise learn it's
+   been stopped: `check <job>`, with a line on what it's doing if it likes,
+   "reading the editor's files", answered with the job's state, stopped or
+   not, any answer to a question it asked, and what's changed in its files
+   since; so it learns it's stopped between steps, not at the end, the
+   job's heard of, never quiet while it checks in, and its line shown as
+   the job's latest, what an agent's doing; the answer to a job taken
+   suggesting it check in between big steps. **A job given out is
+   acknowledged,** found by the spike, a job answered to a wait whose
+   caller had gone counted taken with no agent on it: **decided
+   2026-11-26:** a job a wait answers with is offered, not yet taken, till
+   the agent's first check-in, "starting", which the answer asks for first;
+   one not acknowledged within a minute queued again, at the front, so a
+   job's never lost between the endpoint and an agent that's gone, and a
+   wait whose caller's gone is never given one at all. Asking an agent how
+   it's going stays where you'd ask it now, its terminal.
 
 10. **Stop, and what comes in while a job's being worked on.** **Decided
-    2026-11-26:** Stop cancels a job, queued or being worked on; its
-    agent learns it the next time it calls about it, told to drop it and
-    go back to the mailbox; what it handed back already stays, in front of
-    you as proposals; and its other requests are staged again, yours, to
-    edit, remove or start again as a new job. New requests started while
-    a job's being worked on are a new job, queued behind it, never added
-    to it, a request on a proposal it's revising waiting for the next, as
-    a proposal's revised one round at a time. The file changing under a
-    job being worked on, by you or another task applied, is told its agent
-    the next time it calls, as up-to-date awareness asks, its work landing
+    2026-11-26:** Stop cancels a job, queued or being worked on; its agent
+    learns it the next time it calls about it, told to drop it and go back
+    to the mailbox; what it handed back already stays, in front of you as
+    proposals; and its other requests are staged again, yours, to edit,
+    remove or start again as a new job. New requests started while a job's
+    being worked on are a new job, queued behind it, never added to it, a
+    request on a proposal it's revising waiting for the next, as a
+    proposal's revised one round at a time. The file changing under a job
+    being worked on, by you or another task applied, is told its agent the
+    next time it calls, as up-to-date awareness asks, its work landing
     carried across as any round's, stale where it was touched. Removing a
     staged request is built already: Remove among its actions, the tasks
-    part's `REMOVE`; one with the agent is stopped first.
+    part's `REMOVE`; one with the agent is stopped first. **A stopped job
+    needs no cleaning up,** an agent's asked in the spike what leaving
+    nothing half done meant: it works in its copy, 3, and a stopped job's
+    copy is let go, nothing reaching a file but what's handed back and
+    checked, so stopping's never the agent's to undo.
 
 11. **Many agents, and the order of jobs.** **Decided 2026-11-26:** one
     job at a time within a task, in the order you made them, the next not
@@ -621,15 +676,18 @@ before them. Decided 2026-11-26.
 
 ## open
 
-Walked through 2026-11-26, all sixteen. What's next: **the spike,** a
-mailbox, a wait and a take, tried in real sessions of Claude Code, `agy`
-and Codex, how each bears a session waiting for hours; then
-`source/agent/`. Details still open inside what's decided: how a
-revision's compared, 3; where a working copy lives, a folder per job or
-a whole worktree-like copy, 3 and 5, for the spike; frames' joining and
-splitting by hand, and the file's kinds' defaults, after frames kept with
-the task, 4; the folder's name, `TASKS.md`'s. Later, noted as wanted or
-possible: progress reports, 9; an agent's own requests, 12; jobs
-surviving a restart, 15; Claude Code's channels, 7; moves asked about,
-never hinted, 4; and a file edited as something other than how it's
-stored, under the documents part in `TASKS.md`.
+Walked through 2026-11-26, all sixteen, and the spike run three times,
+its findings under the first principle: both harnesses keep to the loop;
+a wait's held as long as the agent asks, `wait --for`; a job's offered
+till a first check-in takes it, and checked in on between steps, which
+finds a stop. What's next: `source/agent/`, from this note, the spike in
+`spikes/mailbox/` thrown away once it's built. Details still open inside
+what's decided: how a revision's compared, 3; where a working copy lives,
+a folder per job or a whole worktree-like copy, 3 and 5; frames' joining
+and splitting by hand, and the file's kinds' defaults, after frames kept
+with the task, 4; the folder's name, `TASKS.md`'s; a session left waiting
+for hours, to watch in use. Later, noted as wanted or possible: an
+agent's own requests, 12; jobs surviving a restart, 15; Claude Code's
+channels, 7; moves asked about, never hinted, 4; and a file edited as
+something other than how it's stored, under the documents part in
+`TASKS.md`.
