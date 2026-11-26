@@ -7,10 +7,13 @@ draft, begun 2026-11-21, to settle before the task UI is drawn, so the UI draws
 a model that won't shift under it, and the subsystems built after it have it
 as their spec.
 
-It starts from doctor's design, `notes/tasks.md` in
+It starts from the doctor prototype's design, `notes/tasks.md` in
 https://github.com/our-are-why/doctor, and from what the editor already does.
-Where it keeps doctor's, it says so; where it departs, it says why. What's
-still to decide is under **open**, at the end, each with a recommendation.
+This project is doctor, named so 2026-11-26, the editor and the system round
+it that the prototype was reaching for; the earlier one's called the
+prototype throughout. Where it keeps the prototype's, it says so; where it
+departs, it says why. What's still to decide is under **open**, at the end,
+each with a recommendation.
 
 ## words
 
@@ -48,12 +51,13 @@ manual, as they keep document where what's shown says file.
 
 ## a task is a branch
 
-Kept from doctor. The file holds the trunk until a task's applied; a task's
-head is kept apart from it, so anything reading the files, git included, only
-ever sees finished work. Accepting a proposal applies it to the head, not the
-file, which is what the editor's "accepted, not yet applied" already draws;
-applying the task merges the head into the trunk. Git is the history: only
-what open work needs is kept, under **what's kept, and for how long**.
+Kept from the prototype. The file holds the trunk until a task's applied; a
+task's head is kept apart from it, so anything reading the files, git
+included, only ever sees finished work. Accepting a proposal applies it to the
+head, not the file, which is what the editor's "accepted, not yet applied"
+already draws; applying the task merges the head into the trunk. Git is the
+history: only what open work needs is kept, under **what's kept, and for how
+long**.
 
 ## the mode: manual, or a task
 
@@ -63,17 +67,17 @@ Manual is named as a mode, `MANUAL`, beside `TASK` with its task's id, never
 stood for by a task left out, `null` or none. The mode says two things only:
 
 - **what you see:** in manual, each document's trunk; in a task, its head,
-  with the lines the task has changed marked, as doctor's design had it, a
-  neutral mark in the gutter, the file's once the task's applied;
+  with the lines the task has changed marked, as the prototype's design had
+  it, a neutral mark in the gutter, the file's once the task's applied;
 - **where your edits go:** in manual, to the trunk, written to the file as
   now; in a task, into its head.
 
-It doesn't say whether work happens. **A departure from doctor:** there,
-making another task active parked the one before, `parked`, and only the
-active task got the agent's turn. Here, a task that isn't active goes on as it
-was: what's running keeps running, and its proposals wait for you. Switching
-is only changing what you're looking at and editing. So there's no parked
-state: the mode is where you are, not a state of any task.
+It doesn't say whether work happens. **A departure from the prototype:**
+there, making another task active parked the one before, `parked`, and only
+the active task got the agent's turn. Here, a task that isn't active goes on
+as it was: what's running keeps running, and its proposals wait for you.
+Switching is only changing what you're looking at and editing. So there's no
+parked state: the mode is where you are, not a state of any task.
 
 **Tasks are flat,** settled 2026-11-22: each stands on the documents
 alone, never on another task, and none waits on another. A task started
@@ -150,26 +154,27 @@ layer over it, never the model's to say:
 
 Starting at any scope is the editor's staging, kept: a request is staged till
 something starts it, a single request, a proposal's revision, a frame, a
-document's or the task's. Doctor started a task whole, and gave the agent its
-turn by `doctor wait`; that's how the agent's told, which belongs to the agent
-subsystem, below, not to the task's states. Doctor's `submitted`, the agent
-handing the task over, is a request addressed here, one by one, with what it
-came to.
+document's or the task's. The prototype started a task whole, and gave the
+agent its turn by `doctor wait`; that's how the agent's told, which belongs to
+the agent subsystem, below, not to the task's states. The prototype's
+`submitted`, the agent handing the task over, is a request addressed here, one
+by one, with what it came to.
 
 ## drafting
 
 Drafting is composing a task before starting it. It isn't a mode of its own,
-as it was in doctor: a draft is a task in `DRAFT`, and you draft it by making
-it active.
+as it was in the prototype: a draft is a task in `DRAFT`, and you draft it by
+making it active.
 
-- A draft's made with its first request, as doctor's was, so a task is
+- A draft's made with its first request, as the prototype's was, so a task is
   never without one: a request sent from manual, not started, or Draft task,
   which opens the request form, the task made as it's sent.
 - Requests made in an editor go to its active task, staged, so in an editor
   drafting they go to the draft, in whatever document it shows, marked as
   requests are now.
 - Your edits while a draft is active go into its head, so you can prepare
-  changes before starting it. That answers one of doctor's open questions.
+  changes before starting it. That answers one of the prototype's open
+  questions.
 - To compose the next task while the agent works on this one, draft it in
   another editor, or in this one, the one being worked on going on as it
   was. That answers another.
@@ -182,13 +187,13 @@ it active.
   once. The editor's form already offers both, `isStarting`.
 - **In manual:** it makes a new task with that one request, and makes it
   that editor's mode: a draft if it's only sent, working if it's started.
-  Doctor's quick task is this, started. The editor's in the new task from
-  then on, its head the trunk until something's accepted or edited.
+  The prototype's quick task is this, started. The editor's in the new task
+  from then on, its head the trunk until something's accepted or edited.
 - **Aims** are the editor's, `_Aim_Request_`: the task, a document, some
-  words, or a proposal, which is a revision. Doctor's node target, a block, is
-  some words of it here. A request with the task as its aim reaches every
-  document the task's in, or the project, narrowed by its own words, as
-  doctor's untargeted ones did.
+  words, or a proposal, which is a revision. The prototype's node target, a
+  block, is some words of it here. A request with the task as its aim reaches
+  every document the task's in, or the project, narrowed by its own words, as
+  the prototype's untargeted ones did.
 
 ## your edits
 
@@ -242,7 +247,7 @@ agent framing what's new, which come with the agent part.
 
 This keeps the editor's frames decision of 2026-11-18: there's no suggesting
 mode turning every edit into a proposal. In a task, your edits are the task's,
-as doctor decided, as plain edits to its head.
+as the prototype decided, as plain edits to its head.
 
 ## versions, and conflicts
 
@@ -301,8 +306,8 @@ every other open task on that document is carried across it at once. So
 every task always stands on the document as it is now, and applying one
 never meets a conflict: its conflicts were shown and settled while it was
 open, and applying just makes its head the document's. That also answers
-doctor's question, replaying whenever the trunk moves or only when a task's
-next active: whenever, so doctor's **behind** never arises.
+the prototype's question, replaying whenever the trunk moves or only when a
+task's next active: whenever, so the prototype's **behind** never arises.
 
 What happens to a task when a document it's on moves under it:
 
@@ -452,17 +457,19 @@ replaced, under **finishing**.
 
 Settled 2026-11-22. All the system keeps of tasks and documents, apart from
 the documents' own content, is kept in a folder of its own at the project's
-root, a dot folder, as doctor's `.doctor/` was, its name to be chosen:
+root, `.doctor/`, as the prototype's was, named so 2026-11-26, this project
+being doctor:
 
-- **one file per task,** open or resolved, as doctor's were, holding all
-  of it, the questions asked of its requests and your answers and its
+- **one file per task,** open or resolved, as the prototype's were, holding
+  all of it, the questions asked of its requests and your answers and its
   frames among it, and the version its last job was taken on, as
   `AGENT.md` has it under what's kept; never jobs, the agent server's,
   ephemeral, which surviving a restart is a later want;
-- **documents' copies,** each by its hash, as doctor's `objects/` were;
+- **documents' copies,** each by its hash, as the prototype's `objects/` were;
 - **each document's current version,** its hash.
 
-Doctor's `history/`, a log of every change, isn't kept: git is the history.
+The prototype's `history/`, a log of every change, isn't kept: git is the
+history.
 
 Nothing's removed from it but by **collection**, asked for by you or by an
 agent judging what's done with, as a command: the resolved tasks it's told
@@ -526,7 +533,8 @@ of it: the trunk, in manual, or a task's head. Walked through, two editors:
    as an editor shared by several people does: never, in one editor, what
    was typed in the other. One history per version would undo there what
    you can't see being undone.
-10. **Reloads.** Each editor comes back in its mode, as doctor's focus did.
+10. **Reloads.** Each editor comes back in its mode, as the prototype's focus
+    did.
 
 What it asks of the editor:
 
@@ -546,8 +554,8 @@ public API, nothing else of it imported from outside, as
 `board/` and `jsx/`, the runtime they draw with; `tasks/` and
 `documents/`, built 2026-11-24, the first of each; `agent/` and `shell/`
 to come, in that order.
-Doctor had all four, in its extension and its webviews; the playground's
-host, `playground/host.ts`, plays all four for now, faked.
+The prototype had all four, in its extension and its webviews; the
+playground's host, `playground/host.ts`, plays all four for now, faked.
 
 - **the editor:** nothing of tasks but what it's told. It's given the mode:
   in manual, its document's trunk; in a task, the task's head of its
@@ -667,17 +675,17 @@ host, `playground/host.ts`, plays all four for now, faked.
   it last looked, as `AGENT.md` asks under what an agent reads; and
   storage, the shell's. Later, noted 2026-11-26 and kept
   out of the first version's way: a file edited as something other than
-  how it's stored, as doctor's `.doctor.json` was edited in its own
+  how it's stored, as the prototype's `.doctor.json` was edited in its own
   syntax of lines, by a converter a host or a module gives, never the
   editor's own, at the edge where files are read and written, the stored
   form made into the text edited and back, keeping what identity the
-  format has, as doctor's reconcile kept each node's id; everything
+  format has, as the prototype's reconcile kept each node's id; everything
   between, versions, heads, changes, proposals, frames, the editor and an
   agent's working copy, working on the text edited; the stored form seen
   by the same file opened through the converter that changes nothing.
 - **the agent:** runs, which requests are running for which task; how the
-  agent's given its work, doctor's `doctor wait` or otherwise; whether it's
-  there and working. Begun 2026-11-25 in `AGENT.md`, as the questions to
+  agent's given its work, the prototype's `doctor wait` or otherwise; whether
+  it's there and working. Begun 2026-11-25 in `AGENT.md`, as the questions to
   walk through before it's designed, without coupling to any one harness.
 - **the shell:** puts them together: keeps each editor's document and
   mode, across reloads too; takes each editor's commands to the part
@@ -814,14 +822,16 @@ faking the moves, so it can all be drawn before the parts above are built:
 
 ## open
 
-1. **The folder's name.**
+Nothing open for now.
 
 Settled, of the questions this note began with:
 
+- **the folder's name,** `.doctor/`, this project being doctor
+  (2026-11-26);
 - **work goes on in a task that isn't active,** its conflicts met anyway,
   by switching and manual (2026-11-21);
-- **a mode per editor,** where doctor had one for everything, so editors
-  side by side can each be in their own task (2026-11-21);
+- **a mode per editor,** where the prototype had one for everything, so
+  editors side by side can each be in their own task (2026-11-21);
 - **Apply when someone says,** never on its own; applying on its own,
   under conditions, a layer to build over it (2026-11-22);
 - **Cancel lets your edits in the task go** with the rest of its head, its

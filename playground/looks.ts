@@ -33,7 +33,7 @@ function attributesOf__Link(
 // becomes, put in
 type _Side_Change_ = "before" | "after"
 
-// what happened to a stretch, as doctor's comparison names it; or moved,
+// what happened to a stretch, as the doctor prototype's comparison names it; or moved,
 // taken from where it is and put somewhere else, by a move
 type _Kind_Change_ = "inserted" | "removed" | "replaced" | "replacedRestyled" | "restyled" | "moved"
 

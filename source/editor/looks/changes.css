@@ -1,6 +1,6 @@
 /* The "changes" look: how the proposals' changes look while it's on,
    `data-look~="changes"` on the view's container, as the editor sets it
-   from the perspective shown, as doctor shows them. Never with the text's
+   from the perspective shown, as the doctor prototype shows them. Never with the text's
    own colour, a strike or an underline, which are the text's, its marks'
    and its syntax's: a change is a ring round its words, red where they go,
    yellow where they're replaced, green where they're new, brown where
@@ -74,7 +74,7 @@
 }
 
 /* moved: neither lost nor new, so neither red nor green, but both, as
-   doctor's moves are: brown; in the dark, doctor's own, the red where it
+   the doctor prototype's moves are: brown; in the dark, the doctor prototype's own, the red where it
    leaves and the green where it lands mixed, and darkened from the tan
    that makes; in the light, a lighter tan, as that's too dark there, near
    the text's ink and syntax's browns; at both its ends; what it changes on

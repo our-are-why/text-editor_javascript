@@ -3,7 +3,7 @@
   "configVersion": 1,
   "workspaces": {
     "": {
-      "name": "text-editor_javascript",
+      "name": "doctor",
       "devDependencies": {
         "@types/bun": "1.4.4",
         "fast-check": "4.10.2",

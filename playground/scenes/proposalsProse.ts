@@ -16,7 +16,7 @@ export {
 // a long line of prose framed in place, four proposals changing words of it
 // at once, each a source of its own, to be decided apart: the line as it
 // is, what's changed in it marked, then the line as the proposals would
-// leave it, then their list, as doctor lays them out
+// leave it, then their list, as the doctor prototype lays them out
 // the line the proposals change, line 22, as they quote it
 const line_Changed = movingTheWorkshop.split("\n")[21] ?? ""
 
@@ -32,7 +32,7 @@ function quoted(
 const proposalsProse: _Scene_ = {
   name: "proposals-prose",
   title: "Proposals in a line of prose",
-  look: "The whole workshop note, with a frame in place of line 22, four proposals changing it at once, each on words of its own: one makes words bold, one takes a clause out, one replaces a word and another further on, leaving the words between them as they are, one replaces words and makes them bold. As doctor lays proposals out: line 22 as it is, with what the proposals change in it marked, then line 22 as they'd leave it, unnumbered but for the ~ of a line changed in place, then the frame's list of its proposals. Each proposal's target on each line, from its first change there to its last, is boxed behind it. Point at a change to outline all of its proposal's changes, in both.",
+  look: "The whole workshop note, with a frame in place of line 22, four proposals changing it at once, each on words of its own: one makes words bold, one takes a clause out, one replaces a word and another further on, leaving the words between them as they are, one replaces words and makes them bold. As the doctor prototype lays proposals out: line 22 as it is, with what the proposals change in it marked, then line 22 as they'd leave it, unnumbered but for the ~ of a line changed in place, then the frame's list of its proposals. Each proposal's target on each line, from its first change there to its last, is boxed behind it. Point at a change to outline all of its proposal's changes, in both.",
   size: "wide",
   variables: {},
   labels: [],

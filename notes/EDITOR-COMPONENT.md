@@ -1,28 +1,31 @@
 # an editor with proposals built in
 
 The idea for an editor component with proposals built in, worked out on
-2026-11-04 while building doctor, which needs it. It's an outline, not a
-design to build from line by line: the problem it solves, what it's for,
-the model it's built on, how it's put together, its input, commands and
-modules, and the first thing it has to do. It stands on its own; doctor's
-repository, for reference, is https://github.com/our-are-why/doctor, and its
-`STATUS.md` says where doctor stands.
+2026-11-04 while building the doctor prototype, which needed it. It's an
+outline, not a design to build from line by line: the problem it solves, what
+it's for, the model it's built on, how it's put together, its input, commands
+and modules, and the first thing it has to do. It stands on its own; the
+prototype's repository, for reference, is
+https://github.com/our-are-why/doctor, and its `STATUS.md` says where it
+stood. This project is doctor now, named so 2026-11-26, the editor and the
+system round it that the prototype was reaching for; the earlier one's called
+the prototype throughout.
 
 ## the problem it solves
 
-**doctor** is a VS Code extension for writing and revising documents beside
-an AI agent, such as Claude Code. You ask for changes; the agent answers with
-**proposals**, each one change to a document, and you review them: accept,
-reject, ask for it to be changed, or change it yourself. A document can have
-many proposals at once, one after another or side by side, each with its
-rounds as it's asked for changes and revised.
+**the prototype** is a VS Code extension for writing and revising documents
+beside an AI agent, such as Claude Code. You ask for changes; the agent
+answers with **proposals**, each one change to a document, and you review
+them: accept, reject, ask for it to be changed, or change it yourself. A
+document can have many proposals at once, one after another or side by side,
+each with its rounds as it's asked for changes and revised.
 
-doctor's editor is **Monaco**, VS Code's own, editing a document as lines of
-text in a small syntax: `#1` for a heading, `-` for a list item, fences for
-code and quotes. A proposal is drawn the way VS Code draws an inline diff or
-a peek view: in the gaps Monaco leaves between its lines, the document's
-line marked, and the proposal's version beneath it in green. For reading
-proposals and deciding them, that works.
+the prototype's editor is **Monaco**, VS Code's own, editing a document as
+lines of text in a small syntax: `#1` for a heading, `-` for a list item,
+fences for code and quotes. A proposal is drawn the way VS Code draws an
+inline diff or a peek view: in the gaps Monaco leaves between its lines, the
+document's line marked, and the proposal's version beneath it in green. For
+reading proposals and deciding them, that works.
 
 For editing one, it doesn't. What's drawn in those gaps isn't text Monaco
 edits; only its own lines are. Three ways round that were tried:
@@ -49,7 +52,7 @@ That's this component.
 
 ## what a host needs from it
 
-What doctor needs, and what any host would:
+What the prototype needs, and what any host would:
 
 - any text-based document: code, Markdown, an essay, a report, a note;
 - extended where it's needed: a part of a document, or the whole of one,
@@ -77,8 +80,8 @@ What doctor needs, and what any host would:
   drawn by the host where the component leaves room for them;
 - running in a VS Code webview, a sandboxed page with no Node, in Chromium:
   so plain web code, for Chromium alone, TypeScript for the browser, with no
-  framework, so a host built with one, as doctor is with Preact, places it as
-  it would any element.
+  framework, so a host built with one, as the prototype is with Preact, places
+  it as it would any element.
 
 ## what it's for
 
@@ -86,9 +89,9 @@ An editor of any text, code, Markdown, prose, in which a **proposal**, a
 change someone offers to the document, is part of what's edited, not drawn
 beside it. You read the
 document with its proposals in it, decide them, and edit inside them as
-freely as anywhere else. It knows nothing of doctor: not its documents, its
-tasks, or its agent. Doctor is one host of it; any web page in Chromium
-could be.
+freely as anywhere else. It knows nothing of the prototype: not its documents,
+its tasks, or its agent. The prototype is one host of it; any web page in
+Chromium could be.
 
 ## the model
 
@@ -97,8 +100,8 @@ code, Markdown, an essay, a report.
 
 - **a document:** its text, as lines of characters, each proven to hold no
   line break; and over each line's text an overlay, marks over ranges of it,
-  how it looks and what it links to, as doctor's text has, a dimension of
-  its own, usually empty for code and Markdown, whose look comes from their
+  how it looks and what it links to, as the prototype's text has, a dimension
+  of its own, usually empty for code and Markdown, whose look comes from their
   syntax. What kind of text it is, code in some language, Markdown, prose,
   isn't the model's to say; to the model, it's text.
 - **regions:** parts of the text given a kind by a module, and with it how
@@ -117,17 +120,17 @@ code, Markdown, an essay, a report.
 - **one history:** every edit, to the document or inside a change, is a
   transaction, undone and redone as one, mapped through the anchors.
 
-Positions count code points, as doctor's do, so a host and its agent, in
-any language, agree on them; UTF-16, which the DOM counts, is the view's
+Positions count code points, as the prototype's do, so a host and its agent,
+in any language, agree on them; UTF-16, which the DOM counts, is the view's
 alone.
 
 **marks** are the host's, or a module's: of kinds they name, with the data
-each kind needs, never a set the editor fixes, as doctor's five contrasts
-would be. They come two ways: stored, in the overlay, as doctor's are, for
-rich text, made by commands, never typed, and carried across when the
-characters under them are edited; or derived, read from the text's syntax by
-a region's module, as Markdown's `**bold**` is, or a code tokenizer's
-keywords, worked out each time and stored nowhere. Either way, the
+each kind needs, never a set the editor fixes, as the prototype's five
+contrasts would be. They come two ways: stored, in the overlay, as the
+prototype's are, for rich text, made by commands, never typed, and carried
+across when the characters under them are edited; or derived, read from the
+text's syntax by a region's module, as Markdown's `**bold**` is, or a code
+tokenizer's keywords, worked out each time and stored nowhere. Either way, the
 projection turns them into **segments**: a line's text, flat, in order, cut
 wherever anything over it begins or ends, each segment its text and the data
 of everything over it, from what the host or module says each kind of mark
@@ -137,7 +140,8 @@ nests, so nothing's ranked and nothing's chosen, every mark cut at every
 edge alike, as Monaco draws its decorations. What a mark looks like is a
 stylesheet's, from the data; what one does, a link followed, is a command,
 with the mark's data, which the host acts on: a page opened, a node gone to.
-Doctor's links were marks too, never syntax: its lines hold only characters.
+The prototype's links were marks too, never syntax: its lines hold only
+characters.
 
 Both are built. A text's stored marks, `marks`, lie beside its lines, each a
 range and its data, `_Mark_Text_`, the data the host's, names and values the
@@ -155,12 +159,12 @@ language module's, as syntax is: the playground's Markdown module,
 span's backticks are markers, inside the heading, the emphasis or the code
 they mark, every kind a segment's inside its `data-syntax`, and the
 playground's stylesheet shows what they mark as they mark it, the markers
-faint and kept as they're written, doctor's hybrid; a Markdown document
+faint and kept as they're written, the prototype's hybrid; a Markdown document
 holds no stored marks, and a proposal making words bold puts in asterisks.
 So which marks a text has, and how they look, is the host's and its
 modules', the context's: rich text stored, Markdown read, and a host like
-doctor, whose source is JSON projected as Markdown-like lines, free to do
-either or both.
+the prototype, whose source is JSON projected as Markdown-like lines, free to
+do either or both.
 
 Still open: whether regions are only read from the text, as Markdown's are
 by parsing it, or can also be held by the model, as a host marking a part of
@@ -177,14 +181,14 @@ they were the round before, what a round changed since.
 Two layers, kept apart, so the editor's model isn't tangled with any host's:
 
 - **the host's proposals:** what they mean, how they're grouped, their
-  rounds, states and authors, and what accepting one does. Doctor has its
-  own, `_Proposal_Task_`, its text changed by `WRITE` and styled by `STYLE`,
-  each a dimension of its own; another host would have others.
+  rounds, states and authors, and what accepting one does. The prototype has
+  its own, `_Proposal_Task_`, its text changed by `WRITE` and styled by
+  `STYLE`, each a dimension of its own; another host would have others.
 - **an adapter,** the host's code: its proposals turned into the editor's
   changes, each tagged with the proposal it's from, and the editor's events,
   a change edited, a decision asked for, turned back into its proposals'.
-  Doctor's would apply a proposal's `WRITE` and `STYLE` to what they hold,
-  and send each span's next state, text and overlay together.
+  The prototype's would apply a proposal's `WRITE` and `STYLE` to what they
+  hold, and send each span's next state, text and overlay together.
 - **the editor's changes:** what it shows, edits inside, and reports on, per
   source. It decides nothing of what a proposal means: asked to accept, it
   tells the host, which sends the document as it now is.
@@ -315,8 +319,8 @@ another's removal, one carried in a move, three sources on one line.
 - **a change is the host's, kept as it's given:** a span and the whole of
   what it becomes, as the agent quoted it and wrote it, a word to a
   function. What changed within it is never written down: it's derived,
-  by `comparisonOf__Texts`, doctor's `compareTexts` brought over, the text
-  cut into words, runs of spaces and other characters, the two compared
+  by `comparisonOf__Texts`, the prototype's `compareTexts` brought over, the
+  text cut into words, runs of spaces and other characters, the two compared
   word by word: which are kept and which changed, no more. What a change
   means, words removed, inserted, replaced or restyled, is a reading's,
   the host's to choose, below. How fine is a region's kind's, once there
@@ -333,14 +337,14 @@ another's removal, one carried in a move, three sources on one line.
   narrowed or refused, as editing decides, not the selection. On a frame's lines as proposed, a character's in the
   innermost change whose text holds it, or, where none does, the document's,
   shown there as it is. Typing in a change's text edits the proposal, kept
-  inside it, its next round written by you, as doctor's edited round is.
-  What a pending or accepted proposal's span holds on the lines as they are,
-  what it takes out, replaces or moves, at both ends of a move, is locked,
-  as doctor locks it: you edit its text instead, or decide it, or reopen it,
-  first. So an edit to the document only ever moves a span along, never cuts
-  into one, and a change loses what it hung on only by what the host sends.
-  The lock's the pipeline's, as it goes by the proposals' states, which are
-  the host's; the model's spans are what it's drawn from.
+  inside it, its next round written by you, as the prototype's edited round
+  is. What a pending or accepted proposal's span holds on the lines as they
+  are, what it takes out, replaces or moves, at both ends of a move, is
+  locked, as the prototype locks it: you edit its text instead, or decide it,
+  or reopen it, first. So an edit to the document only ever moves a span
+  along, never cuts into one, and a change loses what it hung on only by what
+  the host sends. The lock's the pipeline's, as it goes by the proposals'
+  states, which are the host's; the model's spans are what it's drawn from.
 - **you edit what you see, one rule, no mode:** where a line's shown once,
   it's the document's, and an edit changes the document; where it's shown
   twice, as it is and as proposed, in a frame, you're editing what's
@@ -348,8 +352,8 @@ another's removal, one carried in a move, three sources on one line.
   words edited in it, never the lines as they are. A frame's no border
   drawn at random: it's where a line's shown twice. Decided on 2026-11-18,
   as a first pass, over a suggesting mode, a host's switch making every
-  edit a proposal, as doctor's `experiment/manual-proposals` designed it,
-  everything edited while a task's active the task's: modes are what a
+  edit a proposal, as the prototype's `experiment/manual-proposals` designed
+  it, everything edited while a task's active the task's: modes are what a
   model not yet found leaves to a switch. Why this one holds: that design's
   worry, an edit breaking a proposal made against an older version, can't
   happen here, as all a proposal touches is in a frame, and its spans move
@@ -362,11 +366,11 @@ another's removal, one carried in a move, three sources on one line.
   agent's proposals; if that turns out to matter, it's looked at again.
 - **spans, not lines:** a span is any range, a phrase in a long line of
   prose, a sentence, lines. A line is a granularity a host can choose:
-  doctor's adapter would send a span for each line it changes, as its holders
-  are lines; another host, a sentence. The editor assumes nothing.
+  the prototype's adapter would send a span for each line it changes, as its
+  holders are lines; another host, a sentence. The editor assumes nothing.
 - **one source, many changes:** what's decided together is one source;
   what's decided apart, two. The editor needs no groups of its own.
-- **moves:** a change of their own, as doctor's `MOVE` is, never only a
+- **moves:** a change of their own, as the prototype's `MOVE` is, never only a
   removal and an insertion, which loses what moved, and shows what another
   source changes in it as all new. What a move is, within a line, from line
   to line within what's shown together, or out to somewhere else in the
@@ -408,9 +412,9 @@ another's removal, one carried in a move, three sources on one line.
 - **positions are numbers, not proofs:** a line's index and a code point's
   offset, checked when the model's parsed and kept good by carrying them
   through every step, as a proof can't say which text, or which version of
-  it, a position's good in. Positions count code points, as doctor's do, so
-  a host and its agent, in any language, agree on them; UTF-16, which the
-  DOM counts, is the view's alone. Anchors aren't things of their own:
+  it, a position's good in. Positions count code points, as the prototype's
+  do, so a host and its agent, in any language, agree on them; UTF-16, which
+  the DOM counts, is the view's alone. Anchors aren't things of their own:
   they're positions, a change's span, where a move goes, the caret, carried
   through each step.
 - **one history, of the edits you make:** each a transaction, undone and
@@ -455,7 +459,7 @@ Its functions, each tested without a screen:
   first, then words: lines kept as they are kept; in what changed between
   them, each line paired with the line it became most alike, by the words
   they share, spaces aside, if they share half their words or more, and the
-  pair's words compared, doctor's way, the text cut into words, runs of
+  pair's words compared, the prototype's way, the text cut into words, runs of
   spaces and other characters, compared by Myers' algorithm; a line
   nothing's alike enough to, taken out or put in whole. Words alone,
   compared across lines, an agent's function sent whole came out wrong, a
@@ -466,7 +470,7 @@ Its functions, each tested without a screen:
   be carried through it exactly, a kept word carrying what's inside it
   whatever its marks; marks aren't compared, as what a difference in them
   means is a reading's. What's drawn leaves out spaces at a change's ends,
-  as doctor does, which is the projection's.
+  as the prototype does, which is the projection's.
 - `piecesWith__Sources`: the document, or a range of it, as it would be with
   some sources' changes applied, as pieces, each the document's text, saying
   where in the document it's from, wherever a move puts it, or a change's,
@@ -583,7 +587,7 @@ now, given the model, as the examples give it; the changes document's cases
 and the gallery's scenes, which show what's drawn, are view models, made
 with `playground/projected.ts`, drawn by the viewer as they're given.
 
-Where an agent writes the changes, as doctor's does, it writes them as
+Where an agent writes the changes, as the prototype's does, it writes them as
 agents write edits reliably: the text as it is, quoted exactly, and what it
 becomes, in full, small, a sentence to a function; never a line number or an
 offset, which they get wrong. The quote is found where it matches once, or
@@ -630,10 +634,11 @@ latest round changed since the one before.
 Decisions are a proposal's, never part of one: what can be decided apart
 already is apart, as a move and the rename it carries are; decisions meet
 only through what they touch, a removal accepted mooting what's nested in
-it, rejected letting it apply. The states are the host's, as doctor's are,
-`proposed`, `revising`, `accepted`, `rejected` and `withdrawn`, doctor's
-`revising` the two waiting ones here; the editor shows each and asks for its
-transitions, an item's actions as the host gives them for its state.
+it, rejected letting it apply. The states are the host's, as the prototype's
+are, `proposed`, `revising`, `accepted`, `rejected` and `withdrawn`, the
+prototype's `revising` the two waiting ones here; the editor shows each and
+asks for its transitions, an item's actions as the host gives them for its
+state.
 
 The six are the editor's, built in, for every host: one lifecycle, which
 looks, components and hosts can rely on, a host's own workflow mapped onto
@@ -723,8 +728,8 @@ a look to show, and keeps each item where the host lists it, whatever
 its state, so deciding one never moves it, as moving it once did, decided
 ones after the rest; their titles and words the same as any other's,
 whatever their state, told apart by their icons and their status words. The "changes" look fades a revising one's rings and the
-words it proposes, breathing, as doctor's revised lines pulsed, still where
-motion's asked to be reduced. An accepted one the host's applied has its
+words it proposes, breathing, as the prototype's revised lines pulsed, still
+where motion's asked to be reduced. An accepted one the host's applied has its
 words the document's, so there's nothing left to ring, and nothing marks the lines they're on: a
 check by their numbers was tried, and dropped, the gutter left to its
 numbers and its signs. A rejected or withdrawn one's change is gone from the
@@ -755,19 +760,19 @@ beside them, read-only. So:
 - what's moved shows at both its ends: within a line, both in it; within
   what's shown together, linked in the margin; out to somewhere else, a mark
   where it leaves, "moved", and where it lands, "from line 12", each going
-  to the other, as doctor's do. Drawn: a change of its own kind,
+  to the other, as the prototype's do. Drawn: a change of its own kind,
   `moved`, its two ends its two sides, "before" where it leaves, "after"
-  where it lands, ringed brown, as doctor's moves are, neither lost nor new
-  but both, in the dark doctor's own, its red and green mixed, darkened, in
-  the light a lighter tan, as that's too dark there, near the text's ink and
-  the syntax's browns; its lines numbered brown where it leaves, signed →
-  where it lands; each end's first line with words has a note, a line's
-  `note`, its label and its target, a change's side by its proposal, which
-  the view draws after its text as a button holding no text, its label its
-  `aria-label`, drawn by CSS, so nothing that reads or measures the text
-  meets it; pointed at, it marks the other end's rings, heavier, so either
-  end shows its counterpart; pressed, it goes there. Where it leaves, it
-  says only "moved", as VS Code says "Code moved to", without the line: the
+  where it lands, ringed brown, as the prototype's moves are, neither lost nor
+  new but both, in the dark the prototype's own, its red and green mixed,
+  darkened, in the light a lighter tan, as that's too dark there, near the
+  text's ink and the syntax's browns; its lines numbered brown where it
+  leaves, signed → where it lands; each end's first line with words has a
+  note, a line's `note`, its label and its target, a change's side by its
+  proposal, which the view draws after its text as a button holding no text,
+  its label its `aria-label`, drawn by CSS, so nothing that reads or measures
+  the text meets it; pointed at, it marks the other end's rings, heavier, so
+  either end shows its counterpart; pressed, it goes there. Where it leaves,
+  it says only "moved", as VS Code says "Code moved to", without the line: the
   line it goes to means little to a reader, and needn't hold once other
   proposals are decided; where it lands, only where it's from, "from lines
   41–50", the document's lines as they are, numbered in the frame it leaves;
@@ -850,7 +855,7 @@ the document or its changes changing:
     position to another, with data as a segment has, drawn behind the text
     it covers. It never moves the text, and nothing in it depends on how
     the text's cut into segments or drawn in spans: text underlays overlap
-    freely, and draw what a span can't, as doctor's change boxes in the
+    freely, and draw what a span can't, as the prototype's change boxes in the
     document were Monaco's decorations behind the text. Events pass through
     them, but what's pointed at is the ring: anywhere in its area, closed
     whatever sides the ring leaves open, a path of its own drawn under it,
@@ -920,11 +925,11 @@ the document or its changes changing:
     room the view works out, so a pressed end is as any other. Fixed room,
     4px everywhere, put the rings 2.8px from some neighbours and 5.8px from
     others, by what their glyphs already left; none put some 0.8px past
-    their words and left others' sides open. Doctor reached 3px past every
-    end, which in code ran into the next character, and made no room. Room
-    moves the text after it, 2px to 5px in code at 13px, so where it's made,
-    a line's columns no longer line up with the lines round it. More room
-    above and below takes a taller line, `--view-line-height`.
+    their words and left others' sides open. The prototype reached 3px past
+    every end, which in code ran into the next character, and made no room.
+    Room moves the text after it, 2px to 5px in code at 13px, so where it's
+    made, a line's columns no longer line up with the lines round it. More
+    room above and below takes a taller line, `--view-line-height`.
   - **across runs:** what's in more than one run, a proposal, before in
     `CURRENT_LINES` and after in `PROPOSAL_LINES`, or the selection, which
     follows the document's order, through a frame's `CURRENT_LINES` and
@@ -937,7 +942,7 @@ the document or its changes changing:
     changes, `data-change`, its kind, without the spaces at its ends, so
     its ring is round its words alone: flat, granular changes, each still
     its proposal's. A change is drawn there, a ring round its words in the
-    "changes" look, as doctor's are, never on the spans: a span keeps
+    "changes" look, as the prototype's are, never on the spans: a span keeps
     only what's the text's own, its marks and its syntax. No path is drawn
     for all a proposal covers, from its first change to its last, or over
     the whole of what an agent sent, a function whole, say, of which a
@@ -1016,21 +1021,21 @@ the document or its changes changing:
   colours. Setting the attribute restyles all of it, the browser's doing,
   the text underlays measured again, as a look can move the text, making
   room: the view watches its container's attributes, as it watches its
-  size. The editor offers one, "changes", `LOOK_CHANGES`, doctor's look,
-  in `source/editor/looks/changes.css`, which a perspective names or names its
-  own in its place: a ring round a change's words, red
+  size. The editor offers one, "changes", `LOOK_CHANGES`, the prototype's
+  look, in `source/editor/looks/changes.css`, which a perspective names or
+  names its own in its place: a ring round a change's words, red
   where they go, yellow where they're replaced, green where they're new,
   dashed where only their look changes; a line in a frame saying what it
   becomes in its gutter, its label in the same colours, a number red taken
   out, yellow changed in place, a sign green put in, yellow changed, never
-  with a band across its text, which doctor has, so the code stays even, and
-  the gutter's where to look for which lines change. Never the text's own
-  colour, a strike or an underline: those are the text's, its marks' and its
-  syntax's, which show through every change. One could mute every change but
-  replacements and split those by what kind of replacement each is, from a
-  `data-detail`; which is on, and how it's turned on, is the host's. A
-  look needing other elements, not only other styles, is drawn again from
-  the overlays by another mapping: rarer, and later.
+  with a band across its text, which the prototype has, so the code stays
+  even, and the gutter's where to look for which lines change. Never the
+  text's own colour, a strike or an underline: those are the text's, its
+  marks' and its syntax's, which show through every change. One could mute
+  every change but replacements and split those by what kind of replacement
+  each is, from a `data-detail`; which is on, and how it's turned on, is the
+  host's. A look needing other elements, not only other styles, is drawn again
+  from the overlays by another mapping: rarer, and later.
 - **a reading** is what a change means, the host's to choose, as a
   look is how it looks: no kind of change is the editor's own. The
   model's comparison says only which characters are kept and which
@@ -1042,10 +1047,10 @@ the document or its changes changing:
   regroup them: where one box goes round `*5*` and `**5**` and another
   reading's two go round the asterisks put in, the boxes differ, not the
   look. The editor ships one, `MODULE_READING_TEXT`, in
-  `source/editor/readings/text.ts`, reading a change as text, as doctor does: a
-  box for each run that changed, removed, inserted or replaced, replaced
-  and restyled where the words put in are marked otherwise, and for words
-  kept whose marks differ, restyled; a move, moved. A host passes it, or
+  `source/editor/readings/text.ts`, reading a change as text, as the prototype
+  does: a box for each run that changed, removed, inserted or replaced,
+  replaced and restyled where the words put in are marked otherwise, and for
+  words kept whose marks differ, restyled; a move, moved. A host passes it, or
   its own, as it passes a language module, nothing falling back to it.
   The projection keeps only a box's shape, worked out from what it covers,
   taken out, put in or both, for what's structural: which side has a ring,
@@ -1085,7 +1090,7 @@ a frame, and the lines after a frame are numbered as the document numbers
 them, what's proposed not the document's till it's accepted. A frame's text
 sits where the document's would, every line in it, as they are or as
 proposed, at the same left and the same width as every line around it, in
-the rhythm of the lines, as doctor's proposals' lines sit where the
+the rhythm of the lines, as the prototype's proposals' lines sit where the
 document's words are: its rows' bands run from edge to edge, over the view's
 padding. Every frame is set apart from what follows it by half a line of the
 document's ground, below its last part, so its bar ends with it, and a frame
@@ -1104,17 +1109,17 @@ of parts, in order:
   says in the view model: its title, where it is, why it's proposed, and its
   actions, each a label and a command.
 
-There's one layout, doctor's: `CURRENT_LINES`, its lines with what's changed
-in them marked, then `PROPOSAL_LINES`, then `PROPOSAL_LIST`. Proposed words
-are never drawn inside a document line, as an inline diff would: a current
-line holds only the document's text, a proposed line only the proposals', so
-no line mixes the two, and a line's offsets are its own text's positions. A
-frame is the view model's, not the model's: proposals don't belong to one,
-so it can be loose, and change, and nothing be anchored again. Which lines a
-frame takes is how the changes are shown, not what they are, and can differ
-with the context and the use, over the same proposals. By default it's the
-lines a change touches, run together where they share a line; frames back to
-back, one ending on the line before the other starts, stay two. A host
+There's one layout, the prototype's: `CURRENT_LINES`, its lines with what's
+changed in them marked, then `PROPOSAL_LINES`, then `PROPOSAL_LIST`. Proposed
+words are never drawn inside a document line, as an inline diff would: a
+current line holds only the document's text, a proposed line only the
+proposals', so no line mixes the two, and a line's offsets are its own text's
+positions. A frame is the view model's, not the model's: proposals don't
+belong to one, so it can be loose, and change, and nothing be anchored again.
+Which lines a frame takes is how the changes are shown, not what they are, and
+can differ with the context and the use, over the same proposals. By default
+it's the lines a change touches, run together where they share a line; frames
+back to back, one ending on the line before the other starts, stay two. A host
 widens them by giving ranges to frame, a function's lines for what's in the
 function, or none, for frames as tight as the changes; and later the user,
 as editor state, as folding is: more lines shown above, the whole function
@@ -1122,7 +1127,7 @@ taken in. A range joins the frames it shares a line with, never one it's
 only back to back with. A frame never cuts through a change's lines: asked
 for less, it's the change's lines. Frames never overlap, and never hold
 frames: that's the invariant every framing keeps. With one proposal one
-reads as doctor's does now: its lines, its version under them, its bar.
+reads as the prototype's does now: its lines, its version under them, its bar.
 
 **folding:** a frame unfolded is for reviewing: its lines as they are, as
 proposed, and its list. Folded, it's a preview: its lines as proposed alone,
@@ -1159,9 +1164,9 @@ frame it goes to; keys to fold and unfold, and to fold every decided frame.
 **a frame's header, tried and set aside, 2026-11-18:** a line of its own
 above a frame's lines, how far its proposals had got, decided of all, a
 fraction and a segment each, hollow till decided, filled after, in its
-state's ink, as doctor's status says a proposal's in a word and a mark; the
-revising arc turning while one was revised; and a toggle each for its lines
-as they are and as proposed, which made folding a frame's showing one of
+state's ink, as the prototype's status says a proposal's in a word and a mark;
+the revising arc turning while one was revised; and a toggle each for its
+lines as they are and as proposed, which made folding a frame's showing one of
 them, the list only with both, and none while it showed one, as it read
 then as the document does. It said again what the list says, a line
 sooner, for a line, and the toggles were a state per frame to keep, near
@@ -1280,22 +1285,22 @@ number for the line, or, for a line proposed, none, but a sign: `+` where
 it's put in, `~` where it's changed in place; as wide as the longest label,
 which the view model says, `charCount_Max__Label_Gutter`, worked out when
 it's built, by `viewModelOf__Blocks`, so every row's text starts at the same
-left. Then a lane, where folding goes, later. A frame, as doctor draws a
-proposal, but neutral: a bar down it, grey, in the lane, at the gutter's
+left. Then a lane, where folding goes, later. A frame, as the prototype draws
+a proposal, but neutral: a bar down it, grey, in the lane, at the gutter's
 right, between the numbers and the text, beside everything in it, its list
-too; its lines as they are hatched, as doctor hatches a line it changes, in
-the grey of its lines as proposed, backwards, \, what was, stripes two to a
-line running on from line to line, every one, changed or not, so they read
-as one, what's being replaced, set apart from the document around them and
-never taken for a band, each saying what it becomes in its gutter, as a
+too; its lines as they are hatched, as the prototype hatches a line it
+changes, in the grey of its lines as proposed, backwards, \, what was, stripes
+two to a line running on from line to line, every one, changed or not, so they
+read as one, what's being replaced, set apart from the document around them
+and never taken for a band, each saying what it becomes in its gutter, as a
 look says; its lines as proposed beneath them on a band of grey near
 the document's own ground, but not it; its list on the same band a shade
-darker, as doctor's actions are, so the three read apart, what was, what
-would be, and what to decide; each item's title and why on the left, its
+darker, as the prototype's actions are, so the three read apart, what was,
+what would be, and what to decide; each item's title and why on the left, its
 actions on the right, the first the main one; the list's items starting
-where the lines' text does. Neutral, as doctor's are not, coloured by what
-they do, as a frame holds proposals of every kind, moves and removals too:
-colour is the rings', each meaning one thing, and purple stays yours. The
+where the lines' text does. Neutral, as the prototype's are not, coloured by
+what they do, as a frame holds proposals of every kind, moves and removals
+too: colour is the rings', each meaning one thing, and purple stays yours. The
 view model says each line's label, as the text it shows, and whether it's
 pointed at, its `pointed`, by its proposal or its place, `"12"`, `"+"`,
 `"~"`, `""`, already decided, and what the line becomes; the view only draws
@@ -1340,9 +1345,9 @@ scrolling past them, so the item doesn't grow as it's written in, never
 resized by hand, and under the box, on the right, Add, filled in the
 revision's plum, the form's own word, not Revise again, which opens it, then
 Start, its words plum, as it leads to revising, and Cancel, neutral, as
-doctor's form has its buttons under its box. Revise is a
-disclosure, as doctor's Amend is, a chevron after its words, pressed and
-pointing up while the form's open under it, `aria-expanded`. It's in that
+the prototype's form has its buttons under its box. Revise is a
+disclosure, as the prototype's Amend is, a chevron after its words, pressed
+and pointing up while the form's open under it, `aria-expanded`. It's in that
 item alone, its proposal in its frame, `_Id_Item_`, among the editor's
 `items_Drafted`, though the proposal has items in other frames too, and an
 item says it's the one, `isDrafting`, a host giving `false`, as a gutter
@@ -1352,19 +1357,19 @@ throwing away what's in it, or Revise pressed again, close it, the keyboard
 back on Revise, the editor asking for that once it's drawn, `focus_Draft`,
 as it asks for a note's target to be revealed; Revise pressed again is the
 form's Cancel, what's written in it or not, decided 2026-11-19, where it
-had put the keyboard back in a form with something written, as doctor's
+had put the keyboard back in a form with something written, as the prototype's
 Amend does, so the button that opened it never threw it away; a card's
 Revise and Add the same, `CLOSE_REQUEST` while their form's open; all three the editor's own controls', which work with no
 module in. Revise on another item opens its form too, as many open as you're
 writing, each in its own item, kept as it is, what's written in it with it,
-as GitHub's inline comments are, where doctor kept to one open at a time, a
-written one kept and gone to instead of another opening. What's written is
-the box's own, kept as what's around it's drawn again, not yet the state's,
-and gone once it's closed; and Add sends Revise's command, the host's for
-revising, with what was written, to the host, as the observers' `asked`;
+as GitHub's inline comments are, where the prototype kept to one open at a
+time, a written one kept and gone to instead of another opening. What's
+written is the box's own, kept as what's around it's drawn again, not yet the
+state's, and gone once it's closed; and Add sends Revise's command, the host's
+for revising, with what was written, to the host, as the observers' `asked`;
 Add with nothing written does nothing, the form kept open. Later, as
-doctor's do, Accept and Reject off while something's written in the form,
-so it's sent or cleared before deciding, never thrown away by it, once
+the prototype's do, Accept and Reject off while something's written in the
+form, so it's sent or cleared before deciding, never thrown away by it, once
 what's written is the state's.
 
 **revisions queued, decided 2026-11-18:** asking for a revision adds to it,
@@ -1385,19 +1390,20 @@ Enter doesn't decide, Escape taking it back: no dialog over the text, and
 one extra press only where something would be lost; the host drops what was
 queued. The words a queued or revising request is on are underlined, dotted,
 in the revision's plum, where they're proposed, `data-requested` on their
-segments, as doctor marked them, whatever the look, as what you asked is
-yours. Start is also under a proposal's queued requests, below them,
+segments, as the prototype marked them, whatever the look, as what you asked
+is yours. Start is also under a proposal's queued requests, below them,
 so starting needs no form, `START` the command and what's asked. Every
 Start is set apart from every other action, as nothing's revised till one's
 pressed, though it's not the main one, Add is, in a form: its words bold,
 in the revision's plum, on a ground tinted with that plum,
 `--view-action-start-ground`, a play mark before them tried and dropped; a host
 can place one in its own interface too, as the queue can span documents,
-doctor's in its task bar. The menu's requests aimed at a selection or the document still go at
-once, Send, as only the host has a place to show requests on no proposal;
-queuing them comes with drafts. The playground's host queues, removes, drops
-on a decision, and, Start pressed, sets what's queued in its scope going,
-then, with no agent, a moment later, has them done with, as a round would.
+the prototype's in its task bar. The menu's requests aimed at a selection or
+the document still go at once, Send, as only the host has a place to show
+requests on no proposal; queuing them comes with drafts. The playground's host
+queues, removes, drops on a decision, and, Start pressed, sets what's queued
+in its scope going, then, with no agent, a moment later, has them done with,
+as a round would.
 
 **revisions as work, decided 2026-11-18:** a request is a piece of work, a
 proposal a decision; the two kept apart, as a statechart's orthogonal
@@ -1428,9 +1434,9 @@ revision, dropping 2 requests?". A revising one's actions are in colour, as
 more can be asked of it; only a decided one's are neutral.
 
 **the header, decided 2026-11-18:** a line over the document, for the
-whole of it, as doctor's bar is, `Header_TextEditor__Html`, the component
-map's `header`, a host's own drawn in its place; named the header, as a
-frame's fold control's already its bar. It stays put as the document
+whole of it, as the prototype's bar is, `Header_TextEditor__Html`, the
+component map's `header`, a host's own drawn in its place; named the header,
+as a frame's fold control's already its bar. It stays put as the document
 scrolls under it, sticky, across the editor's width, on the proposals'
 band, flat, a faint edge under it, in the interface's font; what's
 scrolled to, the caret, or a control the keyboard lands on, kept clear of
@@ -1461,17 +1467,17 @@ lets it grow, it's as tall as the document, the page scrolling, the header
 and footer kept in sight, sticky, as it does. The footer's an empty bar for
 now, `Footer_TextEditor__Html`, the component map's `footer`, there before
 what goes in it so nothing's undone to fit it in later: where the agent is,
-as doctor's footer says, kept apart from the task. A host that draws cases,
-not documents being worked on, as the playground's gallery and documents
-do, composes a map with neither, its own components for them giving
+as the prototype's footer says, kept apart from the task. A host that draws
+cases, not documents being worked on, as the playground's gallery and
+documents do, composes a map with neither, its own components for them giving
 nothing. The playground's examples are apps: the editor the window's
 height, beside what each is about and what it's reported; the browser
 tests open them in a laptop's window, 1440 by 900, the size they're laid
 out for.
 
-**the task, decided 2026-11-18:** doctor's model, as a start: every request
-lives within a task, and a task can cut across documents; the host drives
-it, as it does its proposals, and tells the editor of it, `task`,
+**the task, decided 2026-11-18:** the prototype's model, as a start: every
+request lives within a task, and a task can cut across documents; the host
+drives it, as it does its proposals, and tells the editor of it, `task`,
 `_Task_Host_`, or `null`: its id, its name, where it stands,
 `_State_Task_`, a draft, the agent working on it, your turn, done, or
 canceled, what the agent says of it, its summary, its requests aimed at
@@ -1480,12 +1486,12 @@ task's own requests, on no proposal, about what's selected or the whole
 document, `_Request_Task_`, each its status, queued, running or
 addressed, and the proposals that answer it, `sources_Answering`: once
 addressed it's still listed, "addressed · 2 proposals", or "addressed ·
-nothing to change", as doctor's were, so what got answered, and what the
-agent missed, is seen request by request; a proposal's own requests, for
+nothing to change", as the prototype's were, so what got answered, and what
+the agent missed, is seen request by request; a proposal's own requests, for
 its revision, still go once answered. A request's line says how it's
 going, the view model's words, `progress`, and offers Start and Remove
 only where they do something. The header draws the task's mark before its
-name, by where it stands, as doctor's did, a dotted ring, a spinner
+name, by where it stands, as the prototype's did, a dotted ring, a spinner
 turning, a dot in the revision's plum, a check, a cross; its state in
 words there for what reads the page aloud, not shown beside it, so the
 mark's not said twice; nothing spins beside the count of what's in
@@ -1494,8 +1500,8 @@ names a task per example and what it's about; the agent's at work on it
 while a round's under way, Stop offered then, and otherwise it's your turn.
 
 **the task's card, decided 2026-11-18:** the task's mark and name, at the
-header's start, a button, open its card under it, as doctor's did, while
-the pointer's on them or the keyboard's on them or in the card, by the
+header's start, a button, open its card under it, as the prototype's did,
+while the pointer's on them or the keyboard's on them or in the card, by the
 stylesheet alone, no state to keep: hidden, not gone, so the keyboard goes
 on into it, and lingering a moment once the pointer's left, so it can
 cross to the card and keep it; Escape in it sends the keyboard back to the
@@ -1507,13 +1513,13 @@ proposal's are, each with its own Start and Remove, the band under the
 header gone; and the host's actions for the task, Stop among them, moved
 there from the header, which keeps Request a change and Start. Request a
 change docks its form under the header, flush with it, the editor's
-width, as doctor's did, a form with no point, `point_Screen: null`, a
+width, as the prototype's did, a form with no point, `point_Screen: null`, a
 right-click's still floating where it was asked.
 
-**the card in doctor's two parts, decided 2026-11-18:** the card's a task's,
-then a document's, as doctor's was, a faint rule between, as a task cuts
-across documents. The task's part: its name, then its id, `id`, in the
-editor's font, then where it stands, a floating dot after each but the
+**the card in the prototype's two parts, decided 2026-11-18:** the card's a
+task's, then a document's, as the prototype's was, a faint rule between, as a
+task cuts across documents. The task's part: its name, then its id, `id`, in
+the editor's font, then where it stands, a floating dot after each but the
 last, so a heading that wraps never starts a line with one; what the agent says of it; why it was canceled,
 if it was, `reason`; its proposals across every document it touches, how
 far they've got and how many stand where, the host's counting,
@@ -1522,21 +1528,21 @@ aimed at it as a whole; and Add a request, for the task, and the host's
 actions for it. The document's part: its proposals, the editor's counting;
 what the agent says of this document, `summary_Document`; the requests
 aimed here; and the host's actions for it, `actions_Document`, as
-doctor's "accept proposals (3)". A figure under a small label, as doctor's
-were; no times yet, a clock to keep them true left for later. A request's
-aim's a kind, `_Aim_Request_`: the task, this document, or some words of
-it, a task's request listed in its part, the others in the document's; the
-two ways to ask kept apart, as they're different things: Request a change,
-in the header, aimed at this document, and Add a request, in the card,
-aimed at the task, each docking its form under the header, `OPEN_REQUEST`
-with its target, the card hidden while one's there. Our requests keep
-their Start and Remove, as ours is a queue started at any scope, where
-doctor's was a task started whole, from drafting, a mode we do without.
-Not yet: requests folded under their count, which needs the view to keep
-whether they're open, as it draws its markup afresh.
+the prototype's "accept proposals (3)". A figure under a small label, as the
+prototype's were; no times yet, a clock to keep them true left for later. A
+request's aim's a kind, `_Aim_Request_`: the task, this document, or some
+words of it, a task's request listed in its part, the others in the
+document's; the two ways to ask kept apart, as they're different things:
+Request a change, in the header, aimed at this document, and Add a request, in
+the card, aimed at the task, each docking its form under the header,
+`OPEN_REQUEST` with its target, the card hidden while one's there. Our
+requests keep their Start and Remove, as ours is a queue started at any scope,
+where the prototype's was a task started whole, from drafting, a mode we do
+without. Not yet: requests folded under their count, which needs the view to
+keep whether they're open, as it draws its markup afresh.
 
 **the card, calmer, and the task's figures against the document's, decided
-2026-11-18:** the card took doctor's look: tighter, its figures side by
+2026-11-18:** the card took the prototype's look: tighter, its figures side by
 side, each under a small muted label, in the text's own ink, not bold, how
 many stand where only when one's hovered; what the agent says cut at three
 lines, the whole when hovered; its actions links, in the proposals'
@@ -1568,8 +1574,8 @@ at the task as a whole started from their own Start in the card, and
 what's under way by the mark; with no task, the document's counts stand
 where its name would. The card's heading, under the name, is the task's
 id and where it stands, its name not said again. A task's id's the
-host's, and best mechanical, a counter, as doctor's `T-12` was, not a slug
-of its name: the name says what it's about, and can change as its scope
+host's, and best mechanical, a counter, as the prototype's `T-12` was, not a
+slug of its name: the name says what it's about, and can change as its scope
 does; the id stays put, short, unique, in order, to say or paste anywhere.
 The playground's are `T-12` and `T-7`. Where a task stands is said in a word, as its
 kind is, and capitalized, as a proposal's status is, "Draft", "Working",
@@ -1608,26 +1614,26 @@ which is the host's to do, an action on the row.
 
 **each request said by what it's for, files at tens, and the task's form in
 its card, decided 2026-11-18:** the document's requests, under the header,
-under the task's name, read as the task's; in doctor's model, and ours,
+under the task's name, read as the task's; in the prototype's model, and ours,
 every request is the task's, and they differ only in what they're aimed
 at, so each list and each form says it: "Requests for this document" under
 the header, "Requests for the whole task" in the card, each list's label
 given it, `label`; and each form, where there's a task, saying where
-what's written goes, beside its actions, as doctor's did, "Added to T-12,
-for this document", "for these words", "for the whole task", `hint`, by
+what's written goes, beside its actions, as the prototype's did, "Added to
+T-12, for this document", "for these words", "for the whole task", `hint`, by
 its target's aim, `AIMMAP__KIND_TARGET`, a proposal's own revisions saying
 nothing, theirs being the proposal's. Each form opens where what it adds
 is listed, `_Place_Form_`: at the pointer, from the menu, `POINT`; docked
 under the header, Request a change's, `HEADER`; and in the card, Add a
 request's, `CARD`, at the foot of the task's part, under its requests, a
-band out to the card's edges, the plum bar beside it, as doctor's composer
-was at the foot of its, the card held open while it's there, whatever the
-pointer does, `:has(.asking_htmlView)`, its link saying it's open,
+band out to the card's edges, the plum bar beside it, as the prototype's
+composer was at the foot of its, the card held open while it's there, whatever
+the pointer does, `:has(.asking_htmlView)`, its link saying it's open,
 `aria-expanded`. Sent or put away, Add a request's form gives the keyboard
 back to the link, the card still open, what was added in sight, where the
 others give it back to the text, `FOCUSMAP__KIND_PLACE`; left empty, the
 focus gone elsewhere in the editor, it's put away where the focus went,
-`LEAVE_REQUEST`, as doctor's was by a click outside it, and kept, the
+`LEAVE_REQUEST`, as the prototype's was by a click outside it, and kept, the
 card with it, while something's written in it. The card's files, at tens:
 the one shown first, the rest in the host's order, so none moves as
 proposals are decided; past six or so, the list scrolls in itself, the
@@ -1945,10 +1951,10 @@ is drawn, outside frames, and in a frame's lines as they are and as
 proposed. The header counts them with the rest, and its Start starts them
 with the rest; a request's Start, or Remove, names no proposal,
 `source: null`. The header's Request a change opens the form for the whole
-document under it, as doctor's Quick task does, `OPEN_REQUEST`. What one
-gets back is the host's: new proposals, answering it, as doctor's tasks'
-are; the playground's host, no agent, has it done with a moment after it's
-started. When the header's too narrow, its last part's cut short; its
+document under it, as the prototype's Quick task does, `OPEN_REQUEST`. What
+one gets back is the host's: new proposals, answering it, as the prototype's
+tasks' are; the playground's host, no agent, has it done with a moment after
+it's started. When the header's too narrow, its last part's cut short; its
 other parts keep their words.
 
 **a round landing on what's changed since, decided 2026-11-18:** a round's
@@ -2487,15 +2493,15 @@ proposal, selected, a note on them, or on the whole proposal, its title
 saying which; on anything else selected, a request for a change, aimed at
 it; with nothing selected, a request for a change to the document, and,
 pointing at an open proposal, a note on it. One request, never a choice of
-scope: doctor's notes have it that what a request's aimed at says where,
-not how far, and the words written say the rest, or the agent infers it, a
-name's every use, a sentence itself; what it made of it is seen in the
+scope: the prototype's notes have it that what a request's aimed at says
+where, not how far, and the words written say the rest, or the agent infers
+it, a name's every use, a sentence itself; what it made of it is seen in the
 proposal that answers it, before it's taken, and a note sends it back if
 it read it wrong. Decided on 2026-11-18, over a rename of its own beside a
-change here, as doctor's requests, bound in practice to what was selected,
-read a rename as one place. Choosing one, a click, or Enter on it, the
-arrows moving through them, `CHOOSE_MENU`, opens a form where the menu was,
-`asking_htmlView`, what it is, what it's aimed at quoted, a box to write
+change here, as the prototype's requests, bound in practice to what was
+selected, read a rename as one place. Choosing one, a click, or Enter on it,
+the arrows moving through them, `CHOOSE_MENU`, opens a form where the menu
+was, `asking_htmlView`, what it is, what it's aimed at quoted, a box to write
 in, Send and Cancel, ⌘ or Ctrl with Enter and Escape; Escape, or the focus
 leaving it, closes the menu, the caret back where it was. Sent, it's asked
 of the host, `SEND_REQUEST`, never empty: a note on a proposal its Revise
@@ -2505,11 +2511,11 @@ at once, what's written and what it's aimed at, each piece of it a text's
 range and what it reads. Each the editor's own control, as a revision's
 draft is, working with no module in; menu and form both the component
 map's, `menu` and `request`, a host's own drawn in their place; the view
-keeps them in the window, as doctor's menu kept itself. The playground's
-host queues a note on words as a revision of its proposal, the words quoted,
-and reports a request, as it's no agent to answer it. Not yet: requests on
-no proposal drafted, kept and sent together, as notes on a proposal now
-are, next; a button by a
+keeps them in the window, as the prototype's menu kept itself. The
+playground's host queues a note on words as a revision of its proposal, the
+words quoted, and reports a request, as it's no agent to answer it. Not yet:
+requests on no proposal drafted, kept and sent together, as notes on a
+proposal now are, next; a button by a
 selection, as a document editor's comment button is; cut, copy and paste
 in the menu, the browser's own out of reach of the text; a host's own
 choices in it.
@@ -2545,7 +2551,7 @@ keystroke run into the one before it only its own, and its inverse, the
 model before and after, and, worked out from the transaction, whose
 changes it changed, `sources_Changed`, each a proposal's next round, yours
 among them, and whether it changed the document, `isChanged_Document`. A
-host keeps what it's told as it likes: doctor, a proposal edited as its
+host keeps what it's told as it likes: the prototype, a proposal edited as its
 next round, once the caret leaves it, say; the document's edits written to
 the file, or kept with a task till it's applied. And told `asked`, an
 `_Asked_Host_`: an `ACTION` once a proposal's action's pressed, `ACT`, or
@@ -2708,7 +2714,7 @@ them; it can't make them:
   binding, unless the person bound it so; `navigator.keyboard.getLayoutMap()`
   says which keys type what.
 
-In doctor, VS Code has a keybinding system of its own, with people's
+In the prototype, VS Code has a keybinding system of its own, with people's
 bindings, `when`, and its conflicts shown; a keyboard module handing keys to
 it would let people manage them where they already do.
 
@@ -2727,7 +2733,7 @@ Three ways in:
   understood, tidied, "scratch that", "make that a heading", as commands; as
   commands are data, a model can write them. Its adapter takes text, what's
   still being heard and what's final, not sound, so it's written down
-  wherever the microphone is: in the page, or, in doctor, perhaps the
+  wherever the microphone is: in the page, or, in the prototype, perhaps the
   extension, passed through the host. What's still being heard shows as
   composition, the session an input method uses, and what's final is
   committed; what's understood late has its positions carried forward by
@@ -2759,8 +2765,8 @@ browser:
 
 A page can't find out what assistive technology is in use: browsers keep it
 from them. So it's configured, by the person or by the host; VS Code knows
-when a screen reader's on (`editor.accessibilitySupport`), so doctor can
-say.
+when a screen reader's on (`editor.accessibilitySupport`), so the prototype
+can say.
 
 ## why its own engine
 
@@ -2768,17 +2774,17 @@ CodeMirror 6 and ProseMirror were the candidates, and both are built on a
 document being one sequence of content, every position on one line through
 it. This editor interleaves chunks of content, the document's and its
 proposals' among it, side by side, which breaks that model. Built over
-either, it would be working round its engine again, as doctor works round
-Monaco. The browser's own editing is passed over for the same reason: its
-selection is one range, in the DOM's order.
+either, it would be working round its engine again, as the prototype works
+round Monaco. The browser's own editing is passed over for the same reason:
+its selection is one range, in the DOM's order.
 
 How a part of a document looks, as its source or formatted, Markdown's
 headings as `#` lines or as headings, isn't the core's to decide: it's the
 module's that gives that part its kind.
 
-## carried over from doctor
+## carried over from the prototype
 
-What doctor worked out holds for the component:
+What the prototype worked out holds for the component:
 
 - each colour means one thing: green added, red removed, yellow changed in
   place, brown moved, purple yours; and within one, the line's style says
@@ -2795,15 +2801,15 @@ What doctor worked out holds for the component:
 
 ## the first thing it has to do
 
-Doctor's roadblock, and nothing more: a document with proposals in it, the
-proposals edited in place, a selection across a proposal's lines, Enter,
+The prototype's roadblock, and nothing more: a document with proposals in it,
+the proposals edited in place, a selection across a proposal's lines, Enter,
 Backspace, paste and undo working there as in the document, edits kept
 inside the proposal they're in, and each proposal accepted or rejected.
 Then, in order: the host told of edits, by observers, so an edit to a
 proposal is its source's next round, and one to the document the host's to
-keep; what a round changed since the one before; amendments; and doctor's editor replaced by
-it, through an adapter from doctor's documents and proposals to its
-document and changes.
+keep; what a round changed since the one before; amendments; and the
+prototype's editor replaced by it, through an adapter from the prototype's
+documents and proposals to its document and changes.
 
 ## still to find out
 
@@ -2824,10 +2830,10 @@ Before anything's built on them:
 ## not to begin with
 
 Editing by several people at once; proposals of proposals; a proposal across
-documents; anything doctor's tasks say, which stay doctor's; changes from
-different sources crossing over the same text, beyond one inside another's
-removal, and proposals competing for the same words; moves within a line,
-and moves that split, after moves of whole lines.
+documents; anything the prototype's tasks say, which stay the prototype's;
+changes from different sources crossing over the same text, beyond one inside
+another's removal, and proposals competing for the same words; moves within a
+line, and moves that split, after moves of whole lines.
 
 Editing text written right to left, or both ways in one line: it's shown as
 the browser lays it out, but edited in the order it's written, which isn't
@@ -3101,7 +3107,7 @@ covering as little of them as it may; across, where the menu was. One
 quoting nothing opens where the menu was.
 
 Decided 2026-11-19: the forms say nothing under their box of where what's
-written goes, "Added to T-12, for this document", as doctor's form did:
+written goes, "Added to T-12, for this document", as the prototype's form did:
 the menu's is headed by what it's on, "Document retry.js", and a card's
 sits in the card it's for, the task's card naming the task. Its actions alone under the box, on the right.
 
@@ -3646,8 +3652,8 @@ editor's task, how far each has got, the one shown saying so, then the
 others, or, in manual, the project's files; one pressed, or a task's
 file pressed in its card, its path a button, asks the host to open it,
 `OPEN_FILE`, and the keyboard's put back in the text. Tried before it:
-the task first, its mark in the gutter, as doctor's was; the file first,
-its mark in the gutter, the task at the end; the task's mark before its
+the task first, its mark in the gutter, as the prototype's was; the file
+first, its mark in the gutter, the task at the end; the task's mark before its
 name, and Manual's pencil; the arrows as a word, Switch; the arrows
 before the task's name, its mark at the edge; a breadcrumb, Tasks › the
 task › the file; one search across tasks and files; and both pickers in

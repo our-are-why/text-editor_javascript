@@ -5,20 +5,21 @@ parts: how what's asked of a task reaches an agent, how what the agent
 answers comes back, and how working beside one feels, ergonomic and
 seamless, without the system coupled to any one harness, Claude Code or
 another. Begun 2026-11-25 as the questions to walk through before it's
-built, each with what doctor did, what the task model here already
+built, each with what the prototype did, what the task model here already
 settles, and a leaning; walked through 2026-11-26, each now decided, with
 what's left open, and what's noted for later, under **open**, at the end.
 
-It starts from doctor, https://github.com/our-are-why/doctor, its
-`source/cli/main.ts`, `source/extension/agent.ts`, `notes/tasks.md` and
+It starts from the doctor prototype, https://github.com/our-are-why/doctor,
+its `source/cli/main.ts`, `source/extension/agent.ts`, `notes/tasks.md` and
 `notes/experiments/`, and from `TASKS.md`, whose **who holds what** gives
 the agent part its job: what's running, for which task; how an agent's
-given its work; whether it's there and working.
+given its work; whether it's there and working. This project is doctor,
+named so 2026-11-26; the earlier one's called the prototype throughout.
 
-## what doctor did
+## what the prototype did
 
 - **the agent pulls.** The agent ran in the person's own harness, in
-  VS Code's terminal, and doctor never typed into it. Told once to run
+  VS Code's terminal, and the prototype never typed into it. Told once to run
   `doctor wait`, it waited for its turn, a long poll answered within 50
   seconds, the command asking again, and was given the task as JSON with
   `next`, the step to take, in prose: "revise proposal p3 as its feedback
@@ -46,16 +47,16 @@ given its work; whether it's there and working.
   decided.
 - **presence from what the agent did, never guessed:** waiting, with a
   `wait` open; working, handed its turn and heard from lately; quiet, its
-  turn but nothing heard for five minutes, thinking or gone, which doctor
-  couldn't tell; away, nothing open and not its turn.
-- **tried and set aside:** doctor hosting the agent's terminal itself, a
-  pty through Bun, the agent a TUI in doctor's page, before VS Code's own
-  terminal made it unnecessary.
+  turn but nothing heard for five minutes, thinking or gone, which the
+  prototype couldn't tell; away, nothing open and not its turn.
+- **tried and set aside:** the prototype hosting the agent's terminal itself,
+  a pty through Bun, the agent a TUI in the prototype's page, before VS Code's
+  own terminal made it unnecessary.
 
 What generalises: pulling through a command; JSON in and out; the next step
 said in words; proposals stated against a version; presence read from
 behaviour. What was coupled: one agent and one turn; VS Code's terminals
-carrying the address and token; operations made for doctor's document
+carrying the address and token; operations made for the prototype's document
 tree; the person telling the agent once to start, and the agent keeping to
 the loop by its own discipline, each wait's answer costing it context.
 
@@ -78,7 +79,7 @@ provider's terms permitting, never something the design leans on.
 
 What it asks of the protocol, since an open session waiting on its own
 leans on its harness more than one launched for a single job: every
-wait answered well inside a harness's command timeout, as doctor's were
+wait answered well inside a harness's command timeout, as the prototype's were
 within 50 seconds, two minutes being Claude Code's default; an answer of
 nothing yet as short as it can be, so waiting costs an agent little of
 its context; and every answer saying the next step, waiting again among
@@ -127,7 +128,8 @@ holds in the harness where waiting was hardest. Not yet known: a session left
 waiting for hours, how its context holds through hundreds of waits; to
 watch in use, as a session dropping out loses nothing. And an open
 session looping on its own for hours is nearer human-driven than
-anything headless, as doctor's was, but not the same; its terms watched.
+anything headless, as the prototype's was, but not the same; its terms
+watched.
 
 ## a principle: up-to-date awareness
 
@@ -184,7 +186,7 @@ pieces smaller, one after another. Decided 2026-11-26: both by what you
 already do, pressing Start where you choose. Waits on nothing; everything
 below waits on it.
 
-1. **What's handed out: a job, as you made it.** Doctor gave the whole
+1. **What's handed out: a job, as you made it.** The prototype gave the whole
    task, every time. **Decided 2026-11-26:** the piece of work an agent's
    given is a job, the batch you made by pressing Start where you did,
    on a request, a proposal's revision, a frame, a document's requests or
@@ -200,9 +202,9 @@ below waits on it.
    a round already with an agent is left out of a later job, as the
    task model never revises a proposal twice at once.
 
-2. **Who drives: agents pull, always.** Doctor's agent pulled, `doctor
-   wait`; the other way would have been the host starting an agent for
-   each piece of work itself, through whichever harness can run without a
+2. **Who drives: agents pull, always.** The prototype's agent pulled, `the
+   prototype wait`; the other way would have been the host starting an agent
+   for each piece of work itself, through whichever harness can run without a
    person. **Decided 2026-11-26:** agents pull, always, from a mailbox the
    system puts each job into as you make it, in the order you make them;
    the system never reaches into an agent, so it needn't know what one is.
@@ -244,7 +246,7 @@ into proposals and into frames, which leans on what it reads, 5, and on
    documents part: the copy in the form edited, by default, a module free
    to offer the stored form where agents handle it better. A request
    answered with nothing to change says why. Summaries of the task and of
-   each document, as doctor's, the agent's voice in the header and the
+   each document, as the prototype's, the agent's voice in the header and the
    cards.
 
 4. **How it's grouped: proposals, and frames.** Two groupings, kept apart.
@@ -291,7 +293,7 @@ into proposals and into frames, which leans on what it reads, 5, and on
    don't match, apart from the edits inside it; a text between that isn't
    between; and, where the file's kind's module offers one, a file no
    longer valid of its kind, JSON that doesn't parse. Handing back runs
-   it, and is refused with the same list, as doctor's refusals were,
+   it, and is refused with the same list, as the prototype's refusals were,
    `{ "issues": [...] }`; and a preview shows how the proposals will be
    drawn before they're handed back. **Reported, never refused,** decided
    2026-11-26 under 5: what reaches beyond the job, a change on lines
@@ -415,15 +417,16 @@ carried mostly chose how an agent learns it. Decided in part 2026-11-26,
 by the principle above. Waits on 2.
 
 7. **How it's carried: a command.** A command over a local endpoint, as
-   doctor's; MCP's tools; plain HTTP; files in a folder an agent watches.
-   **Decided 2026-11-26:** an agent runs a command in its own shell, and
-   that's all it's given, no MCP; the messages stated apart from how they
+   the prototype's; MCP's tools; plain HTTP; files in a folder an agent
+   watches. **Decided 2026-11-26:** an agent runs a command in its own shell,
+   and that's all it's given, no MCP; the messages stated apart from how they
    travel, so the command's one carrier among any to come. **Decided
    2026-11-26,** what it talks to: a local endpoint, HTTP on 127.0.0.1, as
-   doctor's, the command a thin interface over it, each subcommand a
+   the prototype's, the command a thin interface over it, named `doctor`, as
+   the prototype's was, this project being doctor, each subcommand a
    request and its answer printed as JSON, all of the protocol behind the
    endpoint; a wait held open as long as the agent asks, `wait --for
-   <seconds>`, as doctor's took, 50 seconds unless it says, inside any
+   <seconds>`, as the prototype's took, 50 seconds unless it says, inside any
    harness's command timeout, and far longer, a quarter of an hour or more,
    in a harness that backgrounds a long command and wakes the agent as it
    ends, `agy`, or Claude Code's commands run in the background, so a
@@ -431,25 +434,26 @@ by the principle above. Waits on 2.
    once, found by the spike; a wait answered closed when the endpoint
    stops, so none hangs; the endpoint the shell's to host, the playground's
    server for the spike, and able to serve the editor and the board too, as
-   doctor's served its webviews. Where doctor's command found it by what VS
-   Code put in the terminals it opened, so an agent in any other couldn't,
-   *leaning:* the endpoint writes its address and a token to a file in the
-   project's own folder, which the command reads, so an agent opened in any
-   terminal in the project reaches it; the token saying an agent's calling,
-   which 14 builds on. And Claude Code's channels, an MCP server pushing
-   into an open session so it's told of a job rather than waiting, at most
-   a nicety for one harness later, as they're MCP and a preview.
+   the prototype's served its webviews. Where the prototype's command found it
+   by what VS Code put in the terminals it opened, so an agent in any other
+   couldn't, *leaning:* the endpoint writes its address and a token to a file
+   in `.doctor/`, the project's folder, which the command reads, so an agent
+   opened in any terminal in the project reaches it; the token saying an
+   agent's calling, which 14 builds on. And Claude Code's channels, an MCP
+   server pushing into an open session so it's told of a job rather than
+   waiting, at most a nicety for one harness later, as they're MCP and a
+   preview.
 
-8. **How an agent learns the protocol, and comes to be there.** Doctor's
-   prose `next`, written for whoever reads it; an instructions file each
-   harness reads, `AGENTS.md`, `CLAUDE.md`; tool descriptions, MCP's; a
-   `help`. And how an agent's there to pull, as every agent pulls: you
-   opening one and pointing it at the mailbox, once, as doctor's person
-   did, or something launching one in the background when a job's
+8. **How an agent learns the protocol, and comes to be there.** The
+   prototype's prose `next`, written for whoever reads it; an instructions
+   file each harness reads, `AGENTS.md`, `CLAUDE.md`; tool descriptions,
+   MCP's; a `help`. And how an agent's there to pull, as every agent pulls:
+   you opening one and pointing it at the mailbox, once, as the prototype's
+   person did, or something launching one in the background when a job's
    waiting, told to take it, do it, and stop. **Decided 2026-11-26:** you
    open it, by the principle above; launching one is a choice per harness,
    never the design's. *Leaning:* the protocol says the next step in
-   every answer, as doctor's did, so no harness needs teaching beyond
+   every answer, as the prototype's did, so no harness needs teaching beyond
    being pointed at it, once.
 
 ### a job's lifecycle
@@ -592,8 +596,8 @@ kinds of it, most else answered already by what's decided above.
     **Declining** needs nothing new: a request addressed with a note that
     nothing needed changing, the note saying why, I don't think this should
     be done, because; or, needing your word, a question. **Summaries,** as
-    doctor's: the task's and each file's, updated by the agent as it hands
-    back, its voice in the header and the cards. **Going further,**
+    the prototype's: the task's and each file's, updated by the agent as it
+    hands back, its voice in the header and the cards. **Going further,**
     proposing past what it was asked, is decided under 5, reported and
     never refused. **Not yet, noted as possible: an agent's own requests,**
     "I found two more places", the model allowing them, anyone making
@@ -627,8 +631,8 @@ before them. Decided 2026-11-26.
     nothing here depends on knowing, a job's id carrying all its calls
     need. **A token,** as a localhost endpoint can be reached by any page
     in a browser, which a token kept in a file of the project, read by no
-    page, shuts out: one an agent's calls need, written to the project's
-    folder, another for the editor and the board once they call it, kept
+    page, shuts out: one an agent's calls need, written to `.doctor/`,
+    another for the editor and the board once they call it, kept
     out of git. Local first, never assumed: the editor, the agent and its
     working copy may be remote from each other one day, so the endpoint's
     plain HTTP with tokens from the start, and its address never more
@@ -641,7 +645,7 @@ before them. Decided 2026-11-26.
 
 15. **What's kept, and where: who holds what.** Where each thing lives,
     and which is the truth of it. **Decided 2026-11-26:** **the project's
-    folder,** the dot folder `TASKS.md` keeps tasks and documents in,
+    folder,** `.doctor/`, which `TASKS.md` keeps tasks and documents in,
     the truth of everything that's a task's: its requests and where they
     stand, the questions asked of them and your answers, its proposals
     and rounds, its heads, its frames, and, the documents part's, the
@@ -684,7 +688,7 @@ finds a stop. What's next: `source/agent/`, from this note, the spike in
 what's decided: how a revision's compared, 3; where a working copy lives,
 a folder per job or a whole worktree-like copy, 3 and 5; frames' joining
 and splitting by hand, and the file's kinds' defaults, after frames kept
-with the task, 4; the folder's name, `TASKS.md`'s; a session left waiting
+with the task, 4; a session left waiting
 for hours, to watch in use. Later, noted as wanted or possible: an
 agent's own requests, 12; jobs surviving a restart, 15; Claude Code's
 channels, 7; moves asked about, never hinted, 4; and a file edited as

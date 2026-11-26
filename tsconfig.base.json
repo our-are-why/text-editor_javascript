@@ -1,5 +1,5 @@
 {
-  // The rules every part of the component is checked with, as doctor's are.
+  // The rules every part of the component is checked with, as the doctor prototype's are.
   // Each part's own tsconfig.json adds only what that part may use: Bun and
   // the DOM for scripts/ and tests/, the DOM alone for the editor, the board
   // and the JSX runtime, source/editor/, source/board/ and source/jsx/, and

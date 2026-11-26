@@ -1,8 +1,8 @@
 # type construction
 
-how types are built in doctor, as I've understood it from working through
-`source/shared/domain.ts` with the user (2026-10-30 to 31). it's my
-interpretation, to be corrected. naming, of types and of fields, is
+how types are built in the doctor prototype, as I've understood it from
+working through `source/shared/domain.ts` with the user (2026-10-30 to 31).
+it's my interpretation, to be corrected. naming, of types and of fields, is
 deliberately left out: it has rules of its own.
 
 each rule is stated from the positive side, what to do, and where it helps,
@@ -253,7 +253,8 @@ which moves between them are legal, and what each move gives back.
   empty".
 - **proofs originate in one place.** only the parser declares a proof; a cast
   anywhere else could forge one. a role is declared where a value takes it
-  on: by the parser, or where doctor makes a new one, like a fresh id.
+  on: by the parser, or where the doctor prototype makes a new one, like a
+  fresh id.
 - **how it works in typescript.** data not yet parsed is typed `unknown`.
   roles and proofs are both brands, compile-time only: an intersection with
   a phantom property keyed by a unique symbol that's declared, never

@@ -231,7 +231,7 @@
 }
 
 /* A frame: a range of the document's lines, in place of themselves, with
-   their possible future, as doctor shows a proposal. Its text sits where
+   their possible future, as the doctor prototype shows a proposal. Its text sits where
    theirs would, at the same left and the same width as every line around
    it, in the rhythm of the lines: it reaches out over the view's padding,
    each part's background running from edge to edge. A bar down it, in the
@@ -323,7 +323,7 @@
   margin-block-end: var(--view-frame-gap, 0.5lh);
 }
 
-/* the lines as they are, every one, changed or not, hatched, as doctor
+/* the lines as they are, every one, changed or not, hatched, as the doctor prototype
    hatches a line it changes, in the proposed lines' grey, a host's too,
    unless it gives the stripes their own: stripes backwards, \, what was, as
    wide as the gaps between them, two to a line, from its height, so a
@@ -355,7 +355,7 @@
 }
 
 /* The proposals in a frame, one item each, closing it, on the proposed
-   lines' band a shade darker, as doctor's actions are: their items across
+   lines' band a shade darker, as the doctor prototype's actions are: their items across
    it, edge to edge, their words where the lines' text is; a strip of the
    band above the first and below the last, so a lit first one doesn't run
    on into the lines as proposed, nor a lit last one into the document
@@ -1164,7 +1164,7 @@
 
 /* the words a request waiting its turn or under way was sent with,
    wherever they're shown: a dotted line under them, in the revision's
-   plum, as doctor marked them, whatever the look, as what you asked is
+   plum, as the doctor prototype marked them, whatever the look, as what you asked is
    yours, not a look's; drawn behind the text, as a ring is, never the
    text's own underline, which a link's or a struck word's would have
    given way to, and a little below where that is, so both show */
@@ -1699,7 +1699,7 @@
   }
 }
 
-/* the header over the document, for the whole of it, as doctor's is:
+/* the header over the document, for the whole of it, as the doctor prototype's is:
    always there, at the top as the document scrolls under it, across the
    editor's width, on the proposals' band, a faint edge under it, flat, no
    shadow, in the interface's font. On its left, where the text starts, what
@@ -2436,7 +2436,7 @@
 
 /* the task, at the header's start, where the text starts: its name,
    which opens its card under it while the pointer's on it, or the
-   keyboard's on it or in the card, as doctor's did, its switcher after
+   keyboard's on it or in the card, as the doctor prototype's did, its switcher after
    it, then a dot before what's counted; the
    card hidden, not gone, so the keyboard can go on into it, lingering a
    moment once the pointer's left, so it can cross to the card and keep it.
@@ -2541,7 +2541,7 @@
 }
 
 /* shown while its trigger's hovered, or the focus is in it, and held open
-   while Add a request's form is in it, as doctor's was, whatever the
+   while Add a request's form is in it, as the doctor prototype's was, whatever the
    pointer does, till it's put away; the one pointed at over the other */
 .htmlView_editor :is(.task_Header_htmlView, .switcher_Header_htmlView, .document_Header_htmlView, .picker_Header_htmlView):is(:hover, :focus-within, :has(.asking_htmlView)) > .card_htmlView {
   visibility: visible;
@@ -2799,7 +2799,7 @@
   margin-top: 0.2rem;
 }
 
-/* a card's actions as links, side by side, as doctor's were, in the
+/* a card's actions as links, side by side, as the doctor prototype's were, in the
    proposals' indigo, wrapping as the card narrows; underlined when
    hovered, the line drawn under the whole link, unbroken, Revise's chevron
    and all, where the text's own underline would skip what isn't text;

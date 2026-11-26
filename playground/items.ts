@@ -13,7 +13,7 @@ export {
 }
 
 // what the playground, as host, offers to do with each of its proposals, in
-// doctor's order: take it, turn it down, or send it back to be revised; the
+// the doctor prototype's order: take it, turn it down, or send it back to be revised; the
 // editor draws each as a button carrying its command, the first the main
 // one, its words the colour of the state it leads to, and what it does is
 // the host's
