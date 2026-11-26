@@ -9,7 +9,8 @@
   "scripts": {
     "check": "tsc -p tsconfig.json && tsc -p playground && tsc -p source/jsx && tsc -p source/editor && tsc -p source/board && tsc -p source/tasks && tsc -p source/documents && tsc -p source/agent",
     "test": "bun test",
-    "playground": "bun scripts/servePlayground.ts"
+    "playground": "bun scripts/servePlayground.ts",
+    "demo": "bun scripts/demo.ts"
   },
   "devDependencies": {
     "@types/bun": "1.4.4",

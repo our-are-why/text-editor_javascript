@@ -553,7 +553,8 @@ public API, nothing else of it imported from outside, as
 `.claude/rules/typescript-style.md` says under **Parts**: `editor/`,
 `board/` and `jsx/`, the runtime they draw with; `tasks/` and
 `documents/`, built 2026-11-24, the first of each; `agent/`, begun
-2026-11-26; and `shell/` to come.
+2026-11-26; and `shell/`, begun the same day in `SHELL.md`, as the agent
+part's endpoint needs it.
 The prototype had all four, in its extension and its webviews; the
 playground's host, `playground/host.ts`, plays all four for now, faked.
 
@@ -706,7 +707,11 @@ playground's host, `playground/host.ts`, plays all four for now, faked.
 - **the shell:** puts them together: keeps each editor's document and
   mode, across reloads too; takes each editor's commands to the part
   they're for; tells each open editor what it should now show, and passes
-  an edit made in one editor to the others showing the same version.
+  an edit made in one editor to the others showing the same version. Begun
+  2026-11-26 in `SHELL.md`, early, as the agent part's endpoint needs a
+  real project and a real host beside it: the program that opens a
+  project, its `.doctor/`, serving the editor and answering agents; end to
+  end tried on sample projects, `samples/`, copied into demos to work in.
 
 ## what the editor draws for it
 

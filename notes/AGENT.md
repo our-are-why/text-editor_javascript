@@ -685,14 +685,16 @@ wait's held as long as the agent asks, `wait --for`; a job's offered till a
 first check-in takes it, and checked in on between steps, which finds a
 stop. Begun 2026-11-26, `source/agent/`, its model first, jobs and their
 states, the mailbox's order, as `TASKS.md` says under who holds what; next,
-the endpoint and the command, then working copies and the checker, then the
-editor drawing it, questions, and frames kept with the task; the spike in
-`spikes/mailbox/` thrown away once the endpoint's built. Details still open
-inside what's decided: how a revision's compared, 3; where a working copy
-lives, a folder per job or a whole worktree-like copy, 3 and 5; frames'
-joining and splitting by hand, and the file's kinds' defaults, after frames
-kept with the task, 4; a session left waiting for hours, to watch in use.
-Later, noted as wanted or possible: an agent's own requests, 12; jobs
-surviving a restart, 15; Claude Code's channels, 7; moves asked about,
-never hinted, 4; and a file edited as something other than how it's stored,
-under the documents part in `TASKS.md`.
+the endpoint and the command, built with the shell's core, `SHELL.md`, as
+they need a real project and a real host beside them, not the playground;
+then working copies and the checker, the editor drawing it, questions, and
+frames kept with the task; the spike in `spikes/mailbox/` thrown away once
+the endpoint's built. Details still open inside what's decided: how a
+revision's compared, 3; where a working copy lives, a folder per job or a
+whole worktree-like copy, 3 and 5; frames' joining and splitting by hand,
+and the file's kinds' defaults, after frames kept with the task, 4; a
+session left waiting for hours, to watch in use. Later, noted as wanted or
+possible: an agent's own requests, 12; jobs surviving a restart, 15; Claude
+Code's channels, 7; moves asked about, never hinted, 4; and a file edited
+as something other than how it's stored, under the documents part in
+`TASKS.md`.
