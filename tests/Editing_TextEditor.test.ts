@@ -3,7 +3,7 @@ import { parseModel_TextEditor, textWith__Sources, applied__Transaction, type _M
 import type { _Proposal_Host_ } from "../source/editor/Projection_TextEditor.ts"
 import { editedOf__Request, HISTORY_EMPTY, type _History_TextEditor_, type _Edited_Model_ } from "../source/editor/Editing_TextEditor.ts"
 import type { _Selection_TextEditor_, _Decision_Proposal_, _Status_Request_ } from "../source/editor/ViewModel_TextEditor.ts"
-import { actions_Review } from "../playground/items.ts"
+import { ACTIONS_REVIEW } from "../source/shell/index.ts"
 import { MODULE_WORDS_TEXT } from "../source/editor/words/text.ts"
 
 // a range on one line, from a character to another
@@ -27,7 +27,7 @@ function proposalsIn(
   state: _Decision_Proposal_
 ): Array<_Proposal_Host_> {
   return [
-    { source: "digit", title: "Write two as a digit", state, status: "", rationale: "", requests: [], actions: actions_Review, attributes: {} },
+    { source: "digit", title: "Write two as a digit", state, status: "", rationale: "", requests: [], actions: ACTIONS_REVIEW, attributes: {} },
     { source: "yours", title: "Your edits", state: "OPEN", status: "", rationale: "", requests: [], actions: [], attributes: {} },
   ]
 }

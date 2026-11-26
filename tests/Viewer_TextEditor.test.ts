@@ -6,7 +6,7 @@ import { MODULE_PLAINTEXT, confirmingAt__ViewModel, editingAt__ViewModel, asking
 import { HANDLERMAP__TEXTEDITOR, type _State__Viewer_TextEditor_, type _Command_TextEditor_ } from "../source/editor/Viewer_TextEditor.ts"
 import type { _Request_Edit_ } from "../source/editor/Editing_TextEditor.ts"
 import type { _Layout_View_ } from "../source/editor/View_TextEditor.tsx"
-import { actions_Review } from "../playground/items.ts"
+import { ACTIONS_REVIEW } from "../source/shell/index.ts"
 import { MODULE_WORDS_TEXT } from "../source/editor/words/text.ts"
 
 // a document of four lines, the first framed, a proposal replacing its "two"
@@ -24,7 +24,7 @@ if (result.kind === "REFUSED") throw new Error("refused")
 const viewModel = viewModelOf__Model({
   model_TextEditor: result.model_TextEditor,
   name_Document: "notes/digits.txt",
-  proposals: [{ source: "digit", title: "Write two as a digit", state: "OPEN", status: "", rationale: "", requests: [], actions: actions_Review, attributes: {} }],
+  proposals: [{ source: "digit", title: "Write two as a digit", state: "OPEN", status: "", rationale: "", requests: [], actions: ACTIONS_REVIEW, attributes: {} }],
   source_Yours: "yours",
   rounds_Landed: [],
   mode: { kind: "MANUAL" },
@@ -229,7 +229,7 @@ test("a selection all in one text, but not running on in it, as across a move's 
   const viewModel_Move = viewModelOf__Model({
     model_TextEditor: result_Move.model_TextEditor,
     name_Document: "notes/digits.txt",
-    proposals: [{ source: "swap", title: "Beta first", state: "OPEN", status: "", rationale: "", requests: [], actions: actions_Review, attributes: {} }],
+    proposals: [{ source: "swap", title: "Beta first", state: "OPEN", status: "", rationale: "", requests: [], actions: ACTIONS_REVIEW, attributes: {} }],
     source_Yours: "yours",
     rounds_Landed: [],
     mode: { kind: "MANUAL" },
@@ -511,7 +511,7 @@ test("a listed request's words pointed at, by the pointer or the keyboard, lit w
   const viewModel_Referring = viewModelOf__Model({
     model_TextEditor: result.model_TextEditor,
     name_Document: "notes/digits.txt",
-    proposals: [{ source: "digit", title: "Write two as a digit", state: "OPEN", status: "", rationale: "", requests: [{ id: "spell", notes: "Spell it.", reference: reference_Digit, status: "STAGED" }], actions: actions_Review, attributes: {} }],
+    proposals: [{ source: "digit", title: "Write two as a digit", state: "OPEN", status: "", rationale: "", requests: [{ id: "spell", notes: "Spell it.", reference: reference_Digit, status: "STAGED" }], actions: ACTIONS_REVIEW, attributes: {} }],
     source_Yours: "yours",
     rounds_Landed: [],
     mode: { kind: "TASK", task: { id: "T-3", name: "Tidy", state: "WORKING", summary: "", requests: [{ id: "count", notes: "Count them.", aim: { kind: "DOCUMENT", reference: reference_One }, status: "STAGED", sources_Answering: [] }, { id: "done", notes: "Say it.", aim: { kind: "DOCUMENT", reference: reference_Four }, status: "ADDRESSED", sources_Answering: [] }], reason: "", documents: [], summary_Document: "", actions: [], actions_Document: [] } },
@@ -590,7 +590,7 @@ test("an action that would drop revisions staged is asked first: pressed, nothin
   const viewModel_Staged = viewModelOf__Model({
     model_TextEditor: result.model_TextEditor,
     name_Document: "notes/digits.txt",
-    proposals: [{ source: "digit", title: "Write two as a digit", state: "OPEN", status: "", rationale: "", requests: [{ id: "say", notes: "Say it.", reference: null, status: "STAGED" }, { id: "spell", notes: "Spell it.", reference: null, status: "STAGED" }], actions: actions_Review, attributes: {} }],
+    proposals: [{ source: "digit", title: "Write two as a digit", state: "OPEN", status: "", rationale: "", requests: [{ id: "say", notes: "Say it.", reference: null, status: "STAGED" }, { id: "spell", notes: "Spell it.", reference: null, status: "STAGED" }], actions: ACTIONS_REVIEW, attributes: {} }],
     source_Yours: "yours",
     rounds_Landed: [],
     mode: { kind: "MANUAL" },
@@ -700,7 +700,7 @@ test("an action that would drop revisions staged is asked first: pressed, nothin
   const viewModel_Running = viewModelOf__Model({
     model_TextEditor: result.model_TextEditor,
     name_Document: "notes/digits.txt",
-    proposals: [{ source: "digit", title: "Write two as a digit", state: "OPEN", status: "", rationale: "", requests: [{ id: "say", notes: "Say it.", reference: null, status: "RUNNING" }, { id: "spell", notes: "Spell it.", reference: null, status: "STAGED" }], actions: actions_Review, attributes: {} }],
+    proposals: [{ source: "digit", title: "Write two as a digit", state: "OPEN", status: "", rationale: "", requests: [{ id: "say", notes: "Say it.", reference: null, status: "RUNNING" }, { id: "spell", notes: "Spell it.", reference: null, status: "STAGED" }], actions: ACTIONS_REVIEW, attributes: {} }],
     source_Yours: "yours",
     rounds_Landed: [],
     mode: { kind: "MANUAL" },

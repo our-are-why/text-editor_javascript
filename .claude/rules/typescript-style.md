@@ -23,20 +23,23 @@ scene's template literal, is content: leave it as written.
   }
   ```
 
-- **Parts.** `source/` holds one folder per part, each a module of its
-  own: `jsx/`, the JSX runtime; `editor/`, the text editor; `board/`, every
-  task of the project; `tasks/`, the tasks, their requests and proposals;
+- **Parts.** `source/` holds one folder per part, each a module of its own:
+  `jsx/`, the JSX runtime; `editor/`, the text editor; `board/`, every task
+  of the project; `tasks/`, the tasks, their requests and proposals;
   `documents/`, each document's versions and the changes stated against
-  them, the editor's model among them, which the editor draws; `agent/`,
-  the jobs agents are given and where each stands; and, to come, `shell/`.
-  A part's `index.ts` is its public API:
-  another part, or a host, the playground included, imports only from it,
-  never from a file inside; the tests may reach in, as they test what's
-  inside. A name another part or a host needs is added to the index,
-  imported from its file and exported again. Each part has its own
-  `tsconfig.json`, giving it only what it may use: the DOM for the editor,
-  the board and the runtime; none for a part that isn't drawn, as `tasks/`,
-  `documents/` and `agent/` aren't, so they run anywhere.
+  them, the editor's model among them, which the editor draws; `agent/`, the
+  jobs agents are given and where each stands; and `shell/`, what puts the
+  parts together and tells the editor and the board what to show. A part's
+  `index.ts` is its public API: another part, or a host, the playground
+  included, imports only from it, never from a file inside; the tests may
+  reach in, as they test what's inside. A name another part or a host needs
+  is added to the index, imported from its file and exported again. Each
+  part has its own `tsconfig.json`, giving it only what it may use: the DOM
+  for the editor, the board and the runtime; none for a part that isn't
+  drawn, as `tasks/`, `documents/` and `agent/` aren't, so they run
+  anywhere. `shell/` draws nothing either, and runs in a page or in Bun, but
+  reads the editor's and the board's types through their indexes, so it's
+  given the DOM's types, as the board is, and uses nothing of it.
 
 - **Interfaces for object types.** `interface X { … }`, never
   `type X = { … }`, index signatures and options objects included. A union,

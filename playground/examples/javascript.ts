@@ -18,7 +18,7 @@ import {
   type _Change_Host_
 } from "../../source/documents/index.ts"
 import { carriedOf__Model, type _Edit_Example_ } from "../projected.ts"
-import { actions_Review, actions_Reopen, actions_Dismiss, proposal_Yours } from "../items.ts"
+import { ACTIONS_REVIEW, ACTIONS_REOPEN, ACTIONS_DISMISS, PROPOSAL_YOURS } from "../../source/shell/index.ts"
 import { module_JavaScript, type _State_JavaScript_ } from "../syntax.ts"
 import { hostedOf__Editor, type _Other_Task_ } from "../host.ts"
 
@@ -209,7 +209,7 @@ const proposed_retry: Array<_Changes_Host_> = [
   { source: "timeout", changes: [replacing(quoteOf(37, "not the server", 0), "before any answer"), replacing(pointOf(39, "status === 429"), "status === 408 || ")] },
   { source: "status", changes: [{ kind: "MOVE", range: linesOf(38, 38), at: { line: 36, offset: 0 } }] },
   { source: "retry501", changes: [replacing(quoteOf(39, " && status !== 501", 0), "")] },
-  { source: proposal_Yours.source, changes: [
+  { source: PROPOSAL_YOURS.source, changes: [
     replacing(quoteOf(4, "5", 0), "3"),
     replacing(quoteOf(5, "100", 0), "250"),
     replacing(endOf(8), " what attempt resolves to"),
@@ -226,7 +226,7 @@ const proposal_Header: _Proposal_Host_ = {
   status: "",
   rationale: "retry's doc comment says what it does, where it's read; the comment at the top only says it again.",
   requests: [],
-  actions: actions_Review,
+  actions: ACTIONS_REVIEW,
   attributes: {},
 }
 
@@ -237,7 +237,7 @@ const proposal_Hook: _Proposal_Host_ = {
   status: "",
   rationale: "Nothing passes onRetry any more: the callers log their retries in their own catch blocks.",
   requests: [],
-  actions: actions_Review,
+  actions: ACTIONS_REVIEW,
   attributes: {},
 }
 
@@ -248,7 +248,7 @@ const proposal_Errors: _Proposal_Host_ = {
   status: "",
   rationale: "When every attempt fails, the AggregateError should hold all of them: the first is often the telling one, a timeout before the server's 503s.",
   requests: [],
-  actions: actions_Review,
+  actions: ACTIONS_REVIEW,
   attributes: {},
 }
 
@@ -259,7 +259,7 @@ const proposal_Round: _Proposal_Host_ = {
   status: "",
   rationale: "n says nothing; round says what it counts, in retry and in backoff alike, and in the doc comment that names it.",
   requests: [],
-  actions: actions_Review,
+  actions: ACTIONS_REVIEW,
   attributes: {},
 }
 
@@ -270,7 +270,7 @@ const proposal_Aborted: _Proposal_Host_ = {
   status: "",
   rationale: "An abort during an attempt has already happened by the time sleep listens for it, so sleep waits out the whole delay before throwIfAborted notices.",
   requests: [],
-  actions: actions_Review,
+  actions: ACTIONS_REVIEW,
   attributes: {},
 }
 
@@ -298,7 +298,7 @@ const proposal_Cap: _Proposal_Host_ = {
       status: "STAGED"
     }
   ],
-  actions: actions_Review,
+  actions: ACTIONS_REVIEW,
   attributes: {},
 }
 
@@ -326,7 +326,7 @@ const proposal_Timeout: _Proposal_Host_ = {
       status: "STAGED"
     }
   ],
-  actions: actions_Review,
+  actions: ACTIONS_REVIEW,
   attributes: {},
 }
 
@@ -339,7 +339,7 @@ const proposal_Base: _Proposal_Host_ = {
   status: "Accepted",
   rationale: "BASE said nothing of what it's the base of, or in what unit.",
   requests: [],
-  actions: actions_Reopen,
+  actions: ACTIONS_REOPEN,
   attributes: {},
 }
 
@@ -351,7 +351,7 @@ const proposal_Retry501: _Proposal_Host_ = {
   status: "Rejected",
   rationale: "A 501 from a proxy can clear once the server behind it is back; sent again, it sometimes goes through.",
   requests: [],
-  actions: actions_Reopen,
+  actions: ACTIONS_REOPEN,
   attributes: {},
 }
 
@@ -364,7 +364,7 @@ const proposal_Log: _Proposal_Host_ = {
   status: "Withdrawn",
   rationale: "So a slow call shows in the logs as it happens, not only when it finally fails.",
   requests: [],
-  actions: actions_Dismiss,
+  actions: ACTIONS_DISMISS,
   attributes: {},
 }
 
@@ -375,7 +375,7 @@ const proposal_Sleep: _Proposal_Host_ = {
   status: "",
   rationale: "Read from the top, sleep comes before retry, which waits on it, next to the constants it's given.",
   requests: [],
-  actions: actions_Review,
+  actions: ACTIONS_REVIEW,
   attributes: {},
 }
 
@@ -386,7 +386,7 @@ const proposal_Delay: _Proposal_Host_ = {
   status: "",
   rationale: "As DELAY_MS is: the unit in the name, where the number's read, wherever sleep ends up.",
   requests: [],
-  actions: actions_Review,
+  actions: ACTIONS_REVIEW,
   attributes: {},
 }
 
@@ -397,7 +397,7 @@ const proposal_Order: _Proposal_Host_ = {
   status: "",
   rationale: "An error that can't be retried ends the loop in any round: asked first, it reads as the reason to stop, and the round as the limit.",
   requests: [],
-  actions: actions_Review,
+  actions: ACTIONS_REVIEW,
   attributes: {},
 }
 
@@ -410,13 +410,13 @@ const proposal_Status: _Proposal_Host_ = {
   status: "Accepted",
   rationale: "With the status read before either check, isRetryable reads top to bottom as its answers: the network failing, then the server's codes.",
   requests: [],
-  actions: actions_Reopen,
+  actions: ACTIONS_REOPEN,
   attributes: {},
 }
 
 // the proposals, in the order a frame lists them
 const proposals_retry: Array<_Proposal_Host_> = [
-  proposal_Yours,
+  PROPOSAL_YOURS,
   proposal_Header,
   proposal_Sleep,
   proposal_Delay,

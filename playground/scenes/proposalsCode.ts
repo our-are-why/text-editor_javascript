@@ -4,7 +4,7 @@ import {
   MODULE_READING_TEXT
 } from "../../source/editor/index.ts"
 import { parseTexts_Line } from "../../source/documents/index.ts"
-import { actions_Review } from "../items.ts"
+import { ACTIONS_REVIEW } from "../../source/shell/index.ts"
 import { projectedOf } from "../projected.ts"
 import { readingTime } from "./code.ts"
 
@@ -40,9 +40,9 @@ const proposalsCode: _Scene_ = {
       { source: "minutes", changes: [{ kind: "REPLACE", range: { from: { line: 15, offset: 0 }, to: { line: 15, offset: (texts_readingTime[15] ?? "").length } }, multilineText: "  const minutes = countWords(text) / wordsPerMinute;\n  return Math.max(1, Math.round(minutes));", marks: [] }] }
     ],
     proposals: [
-      { source: "faster", title: "A faster reader: 250 words a minute", state: "OPEN", status: "", rationale: "Adults read prose at about 250 words a minute; 230 makes every estimate a little long.", requests: [], actions: actions_Review, attributes: {} },
-      { source: "check", title: "Drop the check on wordsPerMinute", state: "OPEN", status: "", rationale: "Every caller passes a positive whole number, so the check only ever throws in tests.", requests: [], actions: actions_Review, attributes: {} },
-      { source: "minutes", title: "Name the minutes before rounding them", state: "OPEN", status: "", rationale: "With a name, the rounding reads as one step on a value you already understand.", requests: [], actions: actions_Review, attributes: {} }
+      { source: "faster", title: "A faster reader: 250 words a minute", state: "OPEN", status: "", rationale: "Adults read prose at about 250 words a minute; 230 makes every estimate a little long.", requests: [], actions: ACTIONS_REVIEW, attributes: {} },
+      { source: "check", title: "Drop the check on wordsPerMinute", state: "OPEN", status: "", rationale: "Every caller passes a positive whole number, so the check only ever throws in tests.", requests: [], actions: ACTIONS_REVIEW, attributes: {} },
+      { source: "minutes", title: "Name the minutes before rounding them", state: "OPEN", status: "", rationale: "With a name, the rounding reads as one step on a value you already understand.", requests: [], actions: ACTIONS_REVIEW, attributes: {} }
     ],
     rounds_Landed: [],
     ranges_Frame: [{ first: 11, last: 17 }]

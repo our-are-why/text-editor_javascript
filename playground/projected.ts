@@ -19,7 +19,7 @@ import {
   parseTexts_Line,
   carriedOf__Head
 } from "../source/documents/index.ts"
-import { proposal_Yours } from "./items.ts"
+import { PROPOSAL_YOURS } from "../source/shell/index.ts"
 
 export {
   modelOf,
@@ -175,7 +175,7 @@ function projectedOf<State>({
   rounds_Landed,
   ranges_Frame
 }: _Api___projectedOf_<State>): _ViewModel_TextEditor_ {
-  return viewModelOf__Model({ model_TextEditor: modelOf({ multilineText, marks, proposed }), name_Document: "", proposals, rounds_Landed, source_Yours: proposal_Yours.source, mode: { kind: "MANUAL" }, tasks: [], files: [], ranges_Frame, module_Language, module_Reading })
+  return viewModelOf__Model({ model_TextEditor: modelOf({ multilineText, marks, proposed }), name_Document: "", proposals, rounds_Landed, source_Yours: PROPOSAL_YOURS.source, mode: { kind: "MANUAL" }, tasks: [], files: [], ranges_Frame, module_Language, module_Reading })
 }
 
 interface _Api___projectedOf__Carried_<State> {
@@ -215,7 +215,7 @@ function projectedOf__Carried<State>({
     name_Document: "",
     proposals,
     rounds_Landed: carried.stale,
-    source_Yours: proposal_Yours.source,
+    source_Yours: PROPOSAL_YOURS.source,
     mode: {
       kind: "MANUAL"
     },

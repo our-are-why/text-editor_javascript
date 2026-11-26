@@ -4,9 +4,8 @@ import { type _Over_Change_ } from "../source/documents/Model_Documents.ts"
 import { viewModelOf__Model, type _Proposal_Host_, type _Task_Host_, type _Mode_Host_, type _Standing_Task_, type _Counts_Proposals_, type _Counts_Requests_ } from "../source/editor/Projection_TextEditor.ts"
 import { MODULE_READING_TEXT } from "../source/editor/readings/text.ts"
 import { MODULE_PLAINTEXT, isLines__Part_Frame, pointedAt__ViewModel, type _State_Task_, type _Header_ViewModel_, type _Decision_Proposal_, type _Status_Request_, type _Piece_Text_, type _Range_Lines_, type _ViewModel_TextEditor_, type _Line_Run_, type _Underlay_Text_, type _Run_Lines_ } from "../source/editor/ViewModel_TextEditor.ts"
-import { actions_Review } from "../playground/items.ts"
+import { ACTIONS_REVIEW, roundsOf__Stale } from "../source/shell/index.ts"
 import { model_retry, proposals_retry, stale_retry, ranges_retry, setup_retry } from "../playground/examples/javascript.ts"
-import { roundsOf__Stale } from "../playground/tasks.ts"
 import { model_readme, proposals_readme, stale_readme, ranges_readme, setup_readme } from "../playground/examples/markdown.ts"
 import { perspective_Markdown } from "../playground/readings.ts"
 import { PERSPECTIVE_CHANGES } from "../source/editor/perspectives/changes.ts"
@@ -44,7 +43,7 @@ function proposalOf(
   title: string,
   rationale: string
 ): _Proposal_Host_ {
-  return { source, title, state: "OPEN", status: "", rationale, requests: [], actions: actions_Review, attributes: {} }
+  return { source, title, state: "OPEN", status: "", rationale, requests: [], actions: ACTIONS_REVIEW, attributes: {} }
 }
 
 const round = proposalOf("round", "Call the attempt counter round", "n says nothing; round says what it counts.")
@@ -323,7 +322,7 @@ test("what's asked of a proposal: each request listed on its item, the words it 
   const viewModelIn = (state: _Decision_Proposal_, status: string, statuses: [_Status_Request_, _Status_Request_]) => viewModelOf__Model({
     model_TextEditor: parsed.model_TextEditor,
     name_Document: "notes/digits.txt",
-    proposals: [{ source: "digit", title: "Write two as a digit", state, status, rationale: "", requests: [{ id: "both", notes: "Both.", reference, status: statuses[0] }, { id: "this", notes: "And this.", reference: null, status: statuses[1] }], actions: actions_Review, attributes: {} }],
+    proposals: [{ source: "digit", title: "Write two as a digit", state, status, rationale: "", requests: [{ id: "both", notes: "Both.", reference, status: statuses[0] }, { id: "this", notes: "And this.", reference: null, status: statuses[1] }], actions: ACTIONS_REVIEW, attributes: {} }],
     source_Yours: "yours",
     rounds_Landed: [],
     mode: { kind: "MANUAL" },
@@ -372,9 +371,9 @@ test("the header over the document: how many of its proposals are decided, how m
     model_TextEditor: parsed.model_TextEditor,
     name_Document: "notes/digits.txt",
     proposals: [
-      { source: "digit", title: "Write two as a digit", state: "OPEN", status: "", rationale: "", requests: statuses_Digit.map((status, index) => ({ id: `digit-${index}`, notes: "Say it.", reference: null, status })), actions: actions_Review, attributes: {} },
-      { source: "first", title: "Write one as a digit", state: decision_First, status: "", rationale: "", requests: [], actions: actions_Review, attributes: {} },
-      { source: "unseen", title: "Nothing here", state: "OPEN", status: "", rationale: "", requests: [{ id: "unseen-0", notes: "Never drawn.", reference: null, status: "STAGED" }], actions: actions_Review, attributes: {} }
+      { source: "digit", title: "Write two as a digit", state: "OPEN", status: "", rationale: "", requests: statuses_Digit.map((status, index) => ({ id: `digit-${index}`, notes: "Say it.", reference: null, status })), actions: ACTIONS_REVIEW, attributes: {} },
+      { source: "first", title: "Write one as a digit", state: decision_First, status: "", rationale: "", requests: [], actions: ACTIONS_REVIEW, attributes: {} },
+      { source: "unseen", title: "Nothing here", state: "OPEN", status: "", rationale: "", requests: [{ id: "unseen-0", notes: "Never drawn.", reference: null, status: "STAGED" }], actions: ACTIONS_REVIEW, attributes: {} }
     ],
     mode: mode_Host,
     tasks: [],
@@ -453,7 +452,7 @@ test("a round that landed after your edits: open, it's stale, said under its tit
   const viewModelOf = (indexes_Stale: Array<number>, count_Dropped: number, status: _Status_Request_ | null, state: "OPEN" | "ACCEPTED") => viewModelOf__Model({
     model_TextEditor: parsed.model_TextEditor,
     name_Document: "retry.js",
-    proposals: [{ source: "errors", title: "Keep every error", state, status: "", rationale: "", requests: status === null ? [] : [{ id: "again", notes: "Again.", reference: null, status }], actions: actions_Review, attributes: {} }],
+    proposals: [{ source: "errors", title: "Keep every error", state, status: "", rationale: "", requests: status === null ? [] : [{ id: "again", notes: "Again.", reference: null, status }], actions: ACTIONS_REVIEW, attributes: {} }],
     source_Yours: "yours",
     rounds_Landed: [{ source: "errors", changes_Stale: indexes_Stale.map((index) => ({ index, over })), count_Dropped }],
     mode: { kind: "MANUAL" },
@@ -499,7 +498,7 @@ test("your edits in a task: frames of only yours on lines next to each other, a 
     name_Document: "notes/digits.txt",
     proposals: [
       { source: "yours", title: "Your edits", state: "OPEN", status: "", rationale: "", requests: [], actions: [], attributes: {} },
-      { source: "digits", title: "Write them as digits", state: "OPEN", status: "", rationale: "", requests: [], actions: actions_Review, attributes: {} }
+      { source: "digits", title: "Write them as digits", state: "OPEN", status: "", rationale: "", requests: [], actions: ACTIONS_REVIEW, attributes: {} }
     ],
     rounds_Landed: [],
     source_Yours: "yours",
@@ -559,7 +558,7 @@ test("a task's own requests, on no proposal, aimed at the whole document or the 
   const viewModel = viewModelOf__Model({
     model_TextEditor: parsed.model_TextEditor,
     name_Document: "notes/digits.txt",
-    proposals: [{ source: "digit", title: "Write two as a digit", state: "OPEN", status: "", rationale: "", requests: [], actions: actions_Review, attributes: {} }],
+    proposals: [{ source: "digit", title: "Write two as a digit", state: "OPEN", status: "", rationale: "", requests: [], actions: ACTIONS_REVIEW, attributes: {} }],
     mode: {
       kind: "TASK",
       task: {

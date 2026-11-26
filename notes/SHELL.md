@@ -69,26 +69,32 @@ picker needs anyway.
 
 ## what's to decide
 
-1. **What runs, and where.** *Leaning:* one Bun program, `doctor`, run in
-   a project's folder, `doctor open`, holding the three parts, serving the
+1. **What runs, and where.** **Decided 2026-11-26,** as leaned, VS Code's
+   adapter asking no more of it than starting it on a folder and a free
+   port, and finding it by `.doctor/`: one Bun program, `doctor`, run in a
+   project's folder, `doctor open`, holding the three parts, serving the
    editor's page and the agent endpoint on 127.0.0.1, and writing
    `.doctor/`'s address and tokens as it starts; the same command, given
    `wait`, `take`, `check`, `done`, an agent's face over the endpoint.
-2. **How the page talks to it.** *Leaning:* a WebSocket the page opens
-   when it loads, with the page's own token: up it, the editor's and the
-   board's commands, as hosts are asked today, `SWITCH`, `START`, an edit
-   made; down it, what each editor should now show, its document, its mode,
-   the tasks, as the playground's host tells its editor now. The editor and
-   the board unchanged: what's built against a host's API is given a host
-   that's the page's end of the socket.
-3. **Where the host's work lives.** The playground's host,
-   `playground/host.ts`, does a host's real work, carrying every open
-   task's head across an edit, a round landing on what's moved since,
-   applying a task, settling a conflict, starting at any scope, beside what
-   it fakes, the agent above all. *Leaning:* that real work moved into the
-   shell part, plain functions over the parts, no Bun, no DOM, so the
-   shell's program runs it and the playground's host could too, in the
-   page, with its fake agent, nothing written twice.
+2. **How the page talks to it.** **Decided 2026-11-26,** as leaned, the
+   socket's address relative and the page's token given it in its own, so a
+   tab and a webview behind code-server's proxy are alike: a WebSocket the
+   page opens when it loads, with the page's own token: up it, the editor's
+   and the board's commands, as hosts are asked today, `SWITCH`, `START`,
+   an edit made; down it, what each editor should now show, its document,
+   its mode, the tasks, as the playground's host tells its editor now. The
+   editor and the board unchanged: what's built against a host's API is
+   given a host that's the page's end of the socket.
+3. **Where the host's work lives.** **Decided 2026-11-26,** as leaned, and
+   the first thing built: one implementation, run by the program and by the
+   playground's host alike, its browser tests testing it still. The
+   playground's host, `playground/host.ts`, does a host's real work,
+   carrying every open task's head across an edit, a round landing on
+   what's moved since, applying a task, settling a conflict, starting at
+   any scope, beside what it fakes, the agent above all. That real work's
+   moved into the shell part, plain functions over the parts, no Bun, no
+   DOM, so the shell's program runs it and the playground's host does too,
+   in the page, with its fake agent, nothing written twice.
 4. **What's kept across a restart.** `.doctor/`'s tasks and copies,
    `TASKS.md` says; but when, and in what form. *Leaning:* not in the core;
    it starts from the folder's files and nothing else, and keeping follows
@@ -109,7 +115,23 @@ picker needs anyway.
 What's built first, each a step that works on its own:
 
 1. the shell part's plain work, moved from the playground's host, the
-   playground's host running it, its tests as they are;
+   playground's host running it, its tests as they are. **Built
+   2026-11-26:** `_Shell_`, holding the tasks and documents parts and the
+   editor's session, its mode, the words each request was sent on, what's
+   only the editor's of each task's proposals, and each round's base;
+   taking each edit, `edited`, and what the editor and the board ask,
+   `asked` and `askedBoard`, by maps of their kinds; telling its observers
+   what the editor and the board should now show, each round it starts,
+   what it set going written on which version, and each stop, what it put
+   back; and taking a round's work back, `landed`, carried across every
+   edit since, a round stopped first landing nothing. What it tells the
+   editor and the board, and the actions it offers on a proposal, in
+   `Projection_Shell.ts`. The playground's host left with its seed, its
+   stand-in for the agent, answering a round with the changes it was
+   given, its log and the board's showing. It reads the editor's and the
+   board's types through their indexes, so its `tsconfig.json` has the
+   DOM's types, as the board's has, though it uses nothing of the DOM;
+   and a round's what the agent part's job becomes, at step 3;
 2. `doctor open`: the program, the parts, `.doctor/`, the page served, its
    socket, an editor on a sample's file, editing it, switching tasks;
 3. the agent endpoint and the `doctor` command, Start queuing a job an
@@ -120,5 +142,5 @@ What's built first, each a step that works on its own:
 
 ## open
 
-Everything under **what's to decide**, walked through before the core's
-built.
+Under **what's to decide**, 1 to 3 decided 2026-11-26; 4 to 7 left as they
+lean, none of them in the core, each walked through as it's come to.

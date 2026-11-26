@@ -18,7 +18,7 @@ import {
   type _Change_Host_
 } from "../../source/documents/index.ts"
 import { carriedOf__Model, type _Edit_Example_ } from "../projected.ts"
-import { actions_Review, actions_Reopen, actions_Dismiss, proposal_Yours } from "../items.ts"
+import { ACTIONS_REVIEW, ACTIONS_REOPEN, ACTIONS_DISMISS, PROPOSAL_YOURS } from "../../source/shell/index.ts"
 import { module_Markdown, type _State_Markdown_ } from "../syntax.ts"
 import { perspective_Markdown } from "../readings.ts"
 import { hostedOf__Editor } from "../host.ts"
@@ -149,7 +149,7 @@ const proposed_readme: Array<_Changes_Host_> = [
   { source: "base", changes: [replacing(quoteOf(39, "`DELAY_MS`"), "`DELAY_MS`")] },
   { source: "cap", changes: [replacing(quoteOf(41, "by the tenth attempt, almost a minute"), "but never longer than 30 seconds")] },
   { source: "link", changes: [replacing(quoteOf(43, "https://example.com/backoff"), "https://example.com/guides/backoff")] },
-  { source: proposal_Yours.source, changes: [replacing(quoteOf(39, "with up to half as much again added at random, so callers that failed together don't all retry together"), "and up to half as long again at random, so that many callers retrying at once don't all come back at the same moment")] },
+  { source: PROPOSAL_YOURS.source, changes: [replacing(quoteOf(39, "with up to half as much again added at random, so callers that failed together don't all retry together"), "and up to half as long again at random, so that many callers retrying at once don't all come back at the same moment")] },
 ]
 
 // what the playground, as host, says of each proposal, listed in every
@@ -161,7 +161,7 @@ const proposal_Signal: _Proposal_Host_ = {
   status: "",
   rationale: "Giving up is aborting the signal; saying so sends the reader to the option that does it.",
   requests: [],
-  actions: actions_Review,
+  actions: ACTIONS_REVIEW,
   attributes: {},
 }
 
@@ -172,7 +172,7 @@ const proposal_Example: _Proposal_Host_ = {
   status: "",
   rationale: "A caller who can cancel should see where the signal goes: to the call, so a request in flight stops, and to retry, so a wait does.",
   requests: [],
-  actions: actions_Review,
+  actions: ACTIONS_REVIEW,
   attributes: {},
 }
 
@@ -183,7 +183,7 @@ const proposal_Stress: _Proposal_Host_ = {
   status: "",
   rationale: "It's the number most callers live with, so it's the one to find at a glance.",
   requests: [],
-  actions: actions_Review,
+  actions: ACTIONS_REVIEW,
   attributes: {},
 }
 
@@ -194,7 +194,7 @@ const proposal_Aborted: _Proposal_Host_ = {
   status: "",
   rationale: "With the module's own proposal, retry asks about the signal between attempts as well as while it waits; said as it is, an abort only cuts a wait short.",
   requests: [],
-  actions: actions_Review,
+  actions: ACTIONS_REVIEW,
   attributes: {},
 }
 
@@ -205,7 +205,7 @@ const proposal_Hook: _Proposal_Host_ = {
   status: "",
   rationale: "Nothing passes onRetry any more: the callers log their retries in their own catch blocks.",
   requests: [],
-  actions: actions_Review,
+  actions: ACTIONS_REVIEW,
   attributes: {},
 }
 
@@ -216,7 +216,7 @@ const proposal_Order: _Proposal_Host_ = {
   status: "",
   rationale: "Whether a call's retried at all is the first thing a caller asks; the options only tune how.",
   requests: [],
-  actions: actions_Review,
+  actions: ACTIONS_REVIEW,
   attributes: {},
 }
 
@@ -236,7 +236,7 @@ const proposal_Timeout: _Proposal_Host_ = {
       status: "RUNNING"
     }
   ],
-  actions: actions_Review,
+  actions: ACTIONS_REVIEW,
   attributes: {},
 }
 
@@ -249,7 +249,7 @@ const proposal_Retry501: _Proposal_Host_ = {
   status: "Rejected",
   rationale: "Some servers send a 501 for a method they'll support after a deploy; tried again a minute later, it works.",
   requests: [],
-  actions: actions_Reopen,
+  actions: ACTIONS_REOPEN,
   attributes: {},
 }
 
@@ -262,7 +262,7 @@ const proposal_Base: _Proposal_Host_ = {
   status: "Accepted",
   rationale: "It's the name a caller finds in the module, and would search for.",
   requests: [],
-  actions: actions_Reopen,
+  actions: ACTIONS_REOPEN,
   attributes: {},
 }
 
@@ -281,7 +281,7 @@ const proposal_Cap: _Proposal_Host_ = {
       status: "STAGED"
     }
   ],
-  actions: actions_Review,
+  actions: ACTIONS_REVIEW,
   attributes: {},
 }
 
@@ -294,14 +294,14 @@ const proposal_Link: _Proposal_Host_ = {
   status: "Withdrawn",
   rationale: "The guides moved under /guides.",
   requests: [],
-  actions: actions_Dismiss,
+  actions: ACTIONS_DISMISS,
   attributes: {},
 }
 
 // the proposals, in the order a frame lists them, decided ones after the
 // rest whatever their place here
 const proposals_readme: Array<_Proposal_Host_> = [
-  proposal_Yours,
+  PROPOSAL_YOURS,
   proposal_Signal,
   proposal_Example,
   proposal_Stress,

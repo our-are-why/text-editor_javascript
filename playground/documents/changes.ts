@@ -9,7 +9,7 @@ import {
 } from "../../source/editor/index.ts"
 import { type _Change_Host_, parseTexts_Line } from "../../source/documents/index.ts"
 import { projectedOf, projectedOf__Carried, type _Edit_Example_ } from "../projected.ts"
-import { actions_Review, actions_Reopen, proposal_Yours } from "../items.ts"
+import { ACTIONS_REVIEW, ACTIONS_REOPEN, PROPOSAL_YOURS } from "../../source/shell/index.ts"
 import { attributesOf__Marks } from "../looks.ts"
 import { module_JavaScript } from "../syntax.ts"
 
@@ -164,7 +164,7 @@ const kinds: _Section_Document_ = {
           { source: "round", changes: [replacing([0, 0], [1, 33], "export function backoff(round) {\n  return DELAY_MS * 2 ** (round - 1);")] }
         ],
         proposals: [
-          { ...proposalOf({ source: "round", title: "Call the attempt counter round", rationale: "n says nothing; round says what it counts." }), state: "ACCEPTED", status: "Accepted", actions: actions_Reopen }
+          { ...proposalOf({ source: "round", title: "Call the attempt counter round", rationale: "n says nothing; round says what it counts." }), state: "ACCEPTED", status: "Accepted", actions: ACTIONS_REOPEN }
         ],
         rounds_Landed: [],
         ranges_Frame: []
@@ -281,7 +281,7 @@ const kinds: _Section_Document_ = {
           editing([1, 9], [1, 16], "INITIAL_MS")
         ],
         proposals: [
-          { ...proposalOf({ source: "base", title: "Name the base delay DELAY_MS", rationale: "BASE said nothing of what it's the base of, or in what unit." }), state: "ACCEPTED", status: "Accepted", actions: actions_Reopen }
+          { ...proposalOf({ source: "base", title: "Name the base delay DELAY_MS", rationale: "BASE said nothing of what it's the base of, or in what unit." }), state: "ACCEPTED", status: "Accepted", actions: ACTIONS_REOPEN }
         ],
         ranges_Frame: []
       })
@@ -305,7 +305,7 @@ const kinds: _Section_Document_ = {
           editing([2, 46], [2, 46], " // no response: 0")
         ],
         proposals: [
-          { ...proposalOf({ source: "status", title: "Work out the status first", rationale: "Then the function reads as its answers, top to bottom." }), state: "ACCEPTED", status: "Accepted", actions: actions_Reopen }
+          { ...proposalOf({ source: "status", title: "Work out the status first", rationale: "Then the function reads as its answers, top to bottom." }), state: "ACCEPTED", status: "Accepted", actions: ACTIONS_REOPEN }
         ],
         ranges_Frame: [{ first: 2, last: 3 }]
       })
@@ -334,10 +334,10 @@ const yours: _Section_Document_ = {
         module_Reading: MODULE_READING_TEXT,
         proposed: [
           { source: "cap", changes: [replacing([0, 6], [0, 14], "MAX_ATTEMPTS")] },
-          { source: proposal_Yours.source, changes: [replacing([0, 17], [0, 18], "3"), replacing([1, 17], [1, 20], "250")] }
+          { source: PROPOSAL_YOURS.source, changes: [replacing([0, 17], [0, 18], "3"), replacing([1, 17], [1, 20], "250")] }
         ],
         proposals: [
-          proposal_Yours,
+          PROPOSAL_YOURS,
           proposalOf({ source: "cap", title: "Say the cap", rationale: "MAX_ATTEMPTS says it's a cap." })
         ],
         rounds_Landed: [],
@@ -357,10 +357,10 @@ const yours: _Section_Document_ = {
         module_Language: module_JavaScript,
         module_Reading: MODULE_READING_TEXT,
         proposed: [
-          { source: proposal_Yours.source, changes: [replacing([0, 19], [0, 19], "\nconst MAX_DELAY_MS = 30_000;"), replacing([1, 17], [1, 20], "250")] }
+          { source: PROPOSAL_YOURS.source, changes: [replacing([0, 19], [0, 19], "\nconst MAX_DELAY_MS = 30_000;"), replacing([1, 17], [1, 20], "250")] }
         ],
         proposals: [
-          proposal_Yours
+          PROPOSAL_YOURS
         ],
         rounds_Landed: [],
         ranges_Frame: []
@@ -1260,7 +1260,7 @@ function proposalOf({
   title,
   rationale
 }: _Api___proposalOf_): _Proposal_Host_ {
-  return { source, title, state: "OPEN", status: "", rationale, requests: [], actions: actions_Review, attributes: {} }
+  return { source, title, state: "OPEN", status: "", rationale, requests: [], actions: ACTIONS_REVIEW, attributes: {} }
 }
 
 interface _Api___requestedOf_ {

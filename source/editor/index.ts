@@ -1,7 +1,9 @@
 import {
   type _Perspective_TextEditor_,
   type _Setup_TextEditor_,
-  _TextEditor_
+  _TextEditor_,
+  type _Applied_Edit_,
+  type _Update_Host_
 } from "./TextEditor.ts"
 import {
   COMPONENTMAP__VIEW_TEXTEDITOR,
@@ -9,8 +11,11 @@ import {
 } from "./View_TextEditor.tsx"
 import {
   type _Scope_Work_,
+  type __BASE_Scope_Work_,
   type _Target_Switch_,
-  _Viewer_TextEditor_
+  _Viewer_TextEditor_,
+  type _Asked_Host_,
+  type __BASE_Asked_Host_
 } from "./Viewer_TextEditor.ts"
 import {
   type _Proposal_Host_,
@@ -67,11 +72,16 @@ export {
   type _Perspective_TextEditor_,
   type _Setup_TextEditor_,
   _TextEditor_,
+  type _Applied_Edit_,
+  type _Update_Host_,
   COMPONENTMAP__VIEW_TEXTEDITOR,
   type _ComponentMap__View_TextEditor_,
   type _Scope_Work_,
+  type __BASE_Scope_Work_,
   type _Target_Switch_,
   _Viewer_TextEditor_,
+  type _Asked_Host_,
+  type __BASE_Asked_Host_,
   type _Proposal_Host_,
   type _Module_Reading_,
   type _Box_Reading_,
