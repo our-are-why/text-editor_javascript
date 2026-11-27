@@ -21,32 +21,25 @@ import {
 } from "../documents/index.ts"
 import { _Tasks_ } from "../tasks/index.ts"
 import {
+  _Shell_,
+  type _State_Shell_,
+  type _Message_Page_,
+  type __BASE_Message_Page_,
+  type _Message_Shell_
+} from "../shell/index.ts"
+import {
   _Agent_,
   answerOf__Refused,
   SECONDS_WAIT,
   commandOf__Wait,
   ANSWER_CLOSED,
   answerOf__NothingYet,
-  nextOf__Mailbox,
-  answeredOf__Offer,
   MS_LAPSE__OFFER,
-  answeredOf__Check,
-  answeredOf__Done,
   SECONDS_WAIT_MOST,
   type _From_Wait_,
-  type _Answer_Agent_,
-  type _Answered_Call_
+  type _Kind_Call_,
+  type _Answer_Agent_
 } from "../agent/index.ts"
-import {
-  _Shell_,
-  briefOf__Job,
-  type _State_Shell_,
-  type _Message_Page_,
-  type __BASE_Message_Page_,
-  type _Message_Shell_,
-  type _Round_Shell_,
-  type _Stop_Shell_
-} from "../shell/index.ts"
 
 export {
   _Program_,
@@ -63,8 +56,6 @@ export {
   type _Api___waited__Program_,
   type _Api___offeredOf__Program_,
   type _Api___called__Program_,
-  type _Kind_Call_,
-  type _Api___handedBack__Program_,
   responseOf__Answer,
   type _Api___responseOf__Answer_,
   secondsOf__Wait,
@@ -98,11 +89,10 @@ class _Program_ {
   texts_Written: Map<string, string>
   writing: Promise<void>
   documents: _Documents_
-  agent: _Agent_
-  rounds_Job: Map<string, _Round_Shell_>
   wakers: Array<() => void>
   isClosing: boolean
   shell: _Shell_
+  agent: _Agent_
   path_First: string
   sockets: Set<ServerWebSocket<_Data_Socket_>>
   server: Server<_Data_Socket_>
@@ -135,17 +125,6 @@ class _Program_ {
         }
       ]
     })
-    this.agent = new _Agent_({
-      model_Agent: {
-        jobs: []
-      },
-      observers: [
-        {
-          changed: () => this.woken()
-        }
-      ]
-    })
-    this.rounds_Job = new Map()
     this.wakers = []
     this.isClosing = false
     this.shell = new _Shell_({
@@ -159,8 +138,17 @@ class _Program_ {
       observers: [
         {
           changed: (state_Shell) => this.told(state_Shell),
-          started: (round_Shell) => this.queued(round_Shell),
-          stopped: (stop_Shell) => this.cancelled(stop_Shell)
+          started: () => {},
+          stopped: () => {},
+          landed: () => {}
+        }
+      ]
+    })
+    this.agent = new _Agent_({
+      state_Shell: this.shell.state(),
+      observers: [
+        {
+          sent: (command_Shell) => this.shell.handle(command_Shell)
         }
       ]
     })
@@ -375,41 +363,19 @@ class _Program_ {
     from,
     command_Wait
   }: _Api___offeredOf__Program_): _Answer_Agent_ | undefined {
-    for (;;) {
-      const job_Agent = nextOf__Mailbox({
-        model_Agent: this.agent.model_Agent,
-        from
-      })
-      if (job_Agent === undefined) return undefined
-      const task = this.shell.taskOf(job_Agent.id_Task)
-      if (task === undefined) {
-        this.agent.handle({
-          kind: "CANCEL",
-          id_Job: job_Agent.id,
-          at: Date.now()
-        })
-        continue
-      }
-      const answered_Call = answeredOf__Offer({
-        job_Agent,
-        brief: briefOf__Job({
-          task,
-          ids_Request: job_Agent.ids_Request
-        }),
-        at: Date.now(),
-        command_Agent: this.command_Agent,
-        command_Wait
-      })
-      this.applied(answered_Call)
+    const answer_Agent = this.agent.offeredOf({
+      from,
+      at: Date.now(),
+      command_Agent: this.command_Agent,
+      command_Wait
+    })
+    if (answer_Agent !== undefined) {
       setTimeout(
-        () => this.agent.handle({
-          kind: "LAPSE",
-          at: Date.now()
-        }),
+        () => this.woken(),
         MS_LAPSE__OFFER + 100
       ).unref()
-      return answered_Call.answer_Agent
     }
+    return answer_Agent
   }
 
   async called({
@@ -419,93 +385,17 @@ class _Program_ {
   }: _Api___called__Program_): Promise<Response> {
     const body: unknown = await request.json().catch(() => ({}))
     const note = typeof body === "object" && body !== null && "note" in body && typeof body.note === "string" ? body.note : ""
-    const answered_Call = kind_Call === "DONE"
-      ? answeredOf__Done({
-        model_Agent: this.agent.model_Agent,
-        id_Job,
-        at: Date.now(),
-        command_Agent: this.command_Agent
-      })
-      : answeredOf__Check({
-        model_Agent: this.agent.model_Agent,
-        id_Job,
-        note,
-        at: Date.now(),
-        command_Agent: this.command_Agent
-      })
-    this.applied(answered_Call)
-    if (answered_Call.answer_Agent.kind === "HANDED_BACK") {
-      this.handedBack({
-        id_Job,
-        note
-      })
-    }
+    const answer_Agent = this.agent.called({
+      kind_Call,
+      id_Job,
+      note,
+      at: Date.now(),
+      command_Agent: this.command_Agent
+    })
     return responseOf__Answer({
-      answer_Agent: answered_Call.answer_Agent,
-      status: answered_Call.answer_Agent.kind === "REFUSED" ? 409 : 200
+      answer_Agent,
+      status: answer_Agent.kind === "REFUSED" ? 409 : 200
     })
-  }
-
-  applied(
-    answered_Call: _Answered_Call_
-  ): void {
-    for (const command_Agent of answered_Call.commands_Agent) this.agent.handle(command_Agent)
-  }
-
-  handedBack({
-    id_Job,
-    note
-  }: _Api___handedBack__Program_): void {
-    const round_Shell = this.rounds_Job.get(id_Job)
-    if (round_Shell === undefined) return
-    this.shell.landed({
-      round_Shell,
-      proposed: [],
-      note
-    })
-  }
-
-  queued(
-    round_Shell: _Round_Shell_
-  ): void {
-    if (round_Shell.requests.length === 0) return
-    const id_Job = `j-${round_Shell.id}`
-    this.rounds_Job.set(
-      id_Job,
-      round_Shell
-    )
-    this.agent.handle({
-      kind: "QUEUE",
-      id_Job,
-      id_Task: round_Shell.id_Task,
-      scope: round_Shell.scope,
-      ids_Request: round_Shell.requests.map((request) => request.id),
-      at: Date.now()
-    })
-  }
-
-  cancelled(
-    stop_Shell: _Stop_Shell_
-  ): void {
-    for (const id_Round of stop_Shell.ids_Round) {
-      this.agent.handle({
-        kind: "CANCEL",
-        id_Job: `j-${id_Round}`,
-        at: Date.now()
-      })
-    }
-  }
-
-  ended(): void {
-    for (const job_Agent of this.agent.model_Agent.jobs) {
-      const isLive = job_Agent.state.kind === "QUEUED" || job_Agent.state.kind === "OFFERED" || job_Agent.state.kind === "BEING_WORKED_ON"
-      if (!isLive || this.shell.taskOf(job_Agent.id_Task)?.kind === "OPEN") continue
-      this.agent.handle({
-        kind: "CANCEL",
-        id_Job: job_Agent.id,
-        at: Date.now()
-      })
-    }
   }
 
   woken(): void {
@@ -564,7 +454,8 @@ class _Program_ {
   told(
     state_Shell: _State_Shell_
   ): void {
-    this.ended()
+    this.agent.heard(state_Shell)
+    this.woken()
     for (const socket of this.sockets) {
       this.sent({
         socket,
@@ -706,13 +597,6 @@ interface _Api___called__Program_ {
   request: Request
   id_Job: string
   kind_Call: _Kind_Call_
-}
-
-type _Kind_Call_ = "CHECK" | "DONE"
-
-interface _Api___handedBack__Program_ {
-  id_Job: string
-  note: string
 }
 
 interface _Api___responseOf__Answer_ {

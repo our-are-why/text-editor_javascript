@@ -22,15 +22,15 @@ documents part and the shell, what everyone works on, knowing nothing of
 who, nor how they reach it; each kind of actor its adapter over the core
 and its transport, a person's the host part, over the page's socket, an
 agent's the agent part, over the agent's endpoint, the `doctor` command
-its face; and the program putting them together, the core, both
-transports and the project's folder, no part of the core. Whether a
-server's the core's is told by reaching doctor another way, an MCP server,
-an agent doctor runs itself, the playground's stand-in: what stays the
-same is the core. So the jobs themselves are the core's, what a Start set
-going and where it stands whoever does it, a person's UI showing it too,
-and move into the shell next, one with its rounds; the agent part keeps
-how an agent's answered, an offer and its lapse, a wait, the answers and
-their next steps.
+its face; and the program putting them together, the core, both transports
+and the project's folder, no part of the core. Whether a server's the
+core's is told by reaching doctor another way, an MCP server, an agent
+doctor runs itself, the playground's stand-in: what stays the same is the
+core. So the jobs themselves are the core's, what a Start set going and
+where it stands whoever does it, a person's UI showing it too, moved into
+the shell the same day, one with its rounds; the agent part keeps how an
+agent's answered, an offer and its lapse, a wait, the answers and their
+next steps, and the brief it's given.
 
 ## what's settled already
 
@@ -289,7 +289,22 @@ What's built first, each a step that works on its own:
    command run in a demo against doctor held in the test. Not yet: the
    note drawn in the editor, the host's API carrying none; and the editor
    telling a job queued from one being worked on, or gone quiet, step 5's
-   of `AGENT.md`'s order;
+   of `AGENT.md`'s order. **The jobs moved into the core 2026-11-27,** as
+   the parts were found to be in layers: the shell's rounds its jobs, in
+   `Jobs_Shell.ts`, queued, being worked on, with when taken, last heard
+   of and the latest note, done or cancelled, one at a time within a task
+   in the order they were made, at once across tasks, moved by a map,
+   `HANDLERMAP__JOBS`, and in the core's state, so a person's UI can show
+   them; an agent taking a job, checking in and handing back the core's
+   commands, `TAKE`, `CHECK_IN` and `HAND_BACK`, the hand back what lands
+   a job's work; a task no longer open its jobs cancelled by the core. The
+   agent part left the agent's adapter, `_Agent_`, holding only the offers
+   it's made, an offer lapsing a minute on, its job keeping its place, and
+   answering each call by maps of where its job stands, the core's state,
+   or offered; the brief, `Brief_Agent.ts`, moved from the shell's to it,
+   as it's what an agent reads; the program's glue between rounds and jobs
+   gone; the playground's stand-in taking each job from the core and
+   handing it back, as an agent does, with no server;
 4. working copies, the diff and the checker, an agent's work landing as
    proposals;
 5. tests spinning up a demo, as the browser tests open the playground now.

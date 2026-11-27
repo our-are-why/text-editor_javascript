@@ -3407,7 +3407,12 @@ const lines_Undone = [
   "38  const status = error?.response?.status ?? 0;",
   line_Conflicted
 ]
-for (let count = 0; count < 20 && !lines_Undone.includes(await lineWith_Conflict("const status = error?.response?.status")); count = count + 1) await opened_Conflict.page.keyboard.press("Control+z")
+// each undo's drawn a frame later, so it's read once drawn, or the loop
+// stops on the line the press before left, one undo too many
+for (let count = 0; count < 20 && !lines_Undone.includes(await lineWith_Conflict("const status = error?.response?.status")); count = count + 1) {
+  await opened_Conflict.page.keyboard.press("Control+z")
+  await opened_Conflict.page.waitForTimeout(100)
+}
 await opened_Conflict.page.waitForTimeout(300)
 const standing_Undone = await standingOf_Conflict()
 const line_Undone_Conflict = await lineWith_Conflict("const status = error?.response?.status")

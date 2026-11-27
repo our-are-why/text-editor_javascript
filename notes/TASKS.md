@@ -29,8 +29,8 @@ each with a recommendation.
 - **run:** the agent working on requests. A request is staged, yours till
   you start it; with the agent, once you have, an agent on it or not yet;
   or addressed. Staged where it was queued, decided 2026-11-26, so draft's
-  a task's word and queued a job's, waiting in the agent part's mailbox,
-  as `AGENT.md` has it; the code and the editor's words renamed
+  a task's word and queued a job's, waiting in the mailbox, as
+  `AGENT.md` has it; the code and the editor's words renamed
   2026-11-26.
 - **mode:** what an editor's in, always one: manual, or a task, then its
   **active task**. Each editor has its own.
@@ -705,7 +705,10 @@ playground's host, `playground/host.ts`, plays all four for now, faked.
   The endpoint and the command, `doctor wait|take|check|done`, built
   2026-11-27 with the shell's core, in `SHELL.md`. Not yet: working
   copies, the checker, questions, and the editor drawing what's waiting
-  for an agent.
+  for an agent. **Its jobs moved into the core 2026-11-27,** the shell's,
+  as the parts were found to be in layers, in `SHELL.md`: the agent part
+  left the agent's adapter, the offers it's made and their lapse, the
+  answers it gives, and the brief.
 - **the shell:** puts them together, doctor's core, knowing nothing of any
   view, as decided 2026-11-27: takes commands in the parts' terms and tells
   what changed; each editor's document and mode, across reloads too, what
@@ -728,7 +731,8 @@ playground's host, `playground/host.ts`, plays all four for now, faked.
   demo. **Its third 2026-11-27:** the agent endpoint and
   `doctor wait|take|check|done`, a Start in the page a job an agent in the
   demo takes. **Split 2026-11-27,** the core made UI-agnostic, what's the
-  UI's moved into `source/host/`, in `SHELL.md`.
+  UI's moved into `source/host/`, in `SHELL.md`; the jobs a Start sets
+  going moved into it the same day.
 
 ## what the editor draws for it
 

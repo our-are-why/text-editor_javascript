@@ -110,7 +110,7 @@ const requested = (notes: string) => program.shell.handle(program.shell.taskOf("
     path: "README.md"
   })
 await program.kept("README.md")
-const stateOf = (id_Job: string) => program.agent.model_Agent.jobs.find((job) => job.id === id_Job)?.state.kind
+const stateOf = (id_Job: string) => program.shell.state().jobs.find((job) => job.id === id_Job)?.state.kind
 const requestOf = (notes: string) => program.shell.tasks.model_Tasks.tasks.flatMap((task) => task.requests).find((request) => request.notes === notes)
 
 const ran_Nothing = await doctor("wait", "--for", "1")

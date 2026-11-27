@@ -68,16 +68,16 @@ interface _Api___hostedOf__Editor_<State> {
 // the board, hidden till the editor's footer is pressed, and hidden again
 // when it's pressed again, as a host shows and hides a view.
 // With no agent, the playground stands in for one: a Start, at any scope,
-// in any task, sets what's staged there going, a proposal never revised by
-// two rounds at once, and a moment later they're done with, as a new round
-// would answer them, what's staged since left for the next. A round's
-// written on the document as it was when it started, its base, here the
-// proposal's changes as they were then, as there's no agent to write
-// others, and lands on the document as it is, carried across every edit
-// since by the shell, so changes written before your edits are marked; a
-// round stopped before then, staged again, lands nothing. A request on no
-// proposal, the document's own or the task's, in any task, answered with
-// nothing to change, as there's no agent to propose one
+// in any task, sets what's staged there going, a job, a proposal never
+// revised by two at once, and a moment later the stand-in takes it from the
+// core and hands it back, as an agent would, what's staged since left for
+// the next. A job's written on the document as it was when it started, its
+// base, here the proposal's changes as they were then, as there's no agent
+// to write others, and lands on the document as it is, carried across every
+// edit since by the shell, so changes written before your edits are marked;
+// a job stopped before then, its requests staged again, lands nothing. A
+// request on no proposal, the document's own or the task's, in any task,
+// answered with nothing to change, as there's no agent to propose one
 function hostedOf__Editor<State>({
   containerElement,
   setup,
@@ -133,36 +133,43 @@ function hostedOf__Editor<State>({
           files,
           count_Edit: host.count_Sent
         }),
-        started: (round_Shell) => {
-          const isOwn = round_Shell.id_Task === about_Task.id
+        started: (job_Shell) => {
+          const isOwn = job_Shell.id_Task === about_Task.id
           if (isOwn) {
             log({
               revising: [
-                ...round_Shell.sources,
-                ...round_Shell.requests.some((request) => request.aim.kind === "DOCUMENT") ? ["document"] : [],
-                ...round_Shell.requests.some((request) => request.aim.kind === "TASK") ? ["task"] : []
+                ...job_Shell.sources,
+                ...job_Shell.requests.some((request) => request.aim.kind === "DOCUMENT") ? ["document"] : [],
+                ...job_Shell.requests.some((request) => request.aim.kind === "TASK") ? ["task"] : []
               ].join(", "),
-              requests: round_Shell.requests.length
+              requests: job_Shell.requests.length
             })
           }
-          if (round_Shell.requests.length === 0) return
           setTimeout(
             () => {
-              const answer_Landing = shell.landed({
-                round_Shell,
-                proposed: round_Shell.proposed,
+              shell.handle({
+                kind: "TAKE",
+                id_Job: job_Shell.id,
                 note: ""
               })
-              if (!isOwn || answer_Landing.sources.length + answer_Landing.ids_Addressed.length === 0) return
-              log({
-                revised: [
-                  ...answer_Landing.sources,
-                  ...answer_Landing.ids_Addressed.length === 0 ? [] : ["document"]
-                ].join(", ")
+              shell.handle({
+                kind: "HAND_BACK",
+                id_Job: job_Shell.id,
+                proposed: job_Shell.proposed,
+                note: ""
               })
             },
             isOwn ? 1600 : 1500
           )
+        },
+        landed: (landing_Job) => {
+          if (landing_Job.job_Shell.id_Task !== about_Task.id || landing_Job.sources.length + landing_Job.ids_Addressed.length === 0) return
+          log({
+            revised: [
+              ...landing_Job.sources,
+              ...landing_Job.ids_Addressed.length === 0 ? [] : ["document"]
+            ].join(", ")
+          })
         },
         stopped: (stop_Shell) => {
           if (stop_Shell.id_Task !== about_Task.id) return

@@ -486,7 +486,7 @@ together. Decided 2026-11-26. Waits on 1 and 2.
    polling: held open, it's answered the moment a job lands in the mailbox,
    or, nothing in time, with nothing yet, and the agent waits again, so
    it's told work's come as it comes. The tasks part keeps a request with
-   the agent; the agent part keeps the job; and the editor draws a request
+   the agent; the shell keeps the job; and the editor draws a request
    whose job's queued as waiting for an agent, still, not shimmering, a
    fourth status between staged and running, and one whose job's being
    worked on as running. **A job gone quiet,** its agent slow, or gone, a
@@ -644,26 +644,28 @@ before them. Decided 2026-11-26.
     the next step in every answer, applying, deciding and collecting left
     yours, as nothing in it offers them.
 
-15. **What's kept, and where: who holds what.** Where each thing lives,
-    and which is the truth of it. **Decided 2026-11-26:** **the project's
-    folder,** `.doctor/`, which `TASKS.md` keeps tasks and documents in,
-    the truth of everything that's a task's: its requests and where they
-    stand, the questions asked of them and your answers, its proposals
-    and rounds, its heads, its frames, and, the documents part's, the
-    version its last job was taken on; **the agent server,** ephemeral,
-    the agent part's own: the mailbox and its jobs, queued, being worked
-    on, waiting on you, the waits open, when each job was last heard of,
-    the address and its tokens, and the working copies; **the editor's
-    host,** its setup, the modules for language, reading and framing,
-    and the view's own state; and **the agent,** its session, the
-    harness's. The agent server holds nothing of a task's, naming
-    requests and proposals by their ids, the task's file holding them, so
-    a restart of it loses only its jobs and copies: starting, it finds
-    requests the task says are with the agent with no job, and stages
-    them again, saying why, for you to start again, their batches gone.
-    **Later, noted as wanted: jobs surviving a restart,** queued jobs and
-    their batches written to the project's folder, so a restart loses
-    none, and, if it can be had, one being worked on picked up again.
+15. **What's kept, and where: who holds what.** Where each thing lives, and
+    which is the truth of it. **Decided 2026-11-26:** **the project's
+    folder,** `.doctor/`, which `TASKS.md` keeps tasks and documents in, the
+    truth of everything that's a task's: its requests and where they stand,
+    the questions asked of them and your answers, its proposals and rounds,
+    its heads, its frames, and, the documents part's, the version its last
+    job was taken on; **the agent server,** ephemeral, the agent part's own:
+    the waits open, the offers made, the address and its tokens, and the
+    working copies; **the core,** ephemeral too, the shell's: the mailbox
+    and its jobs, queued, being worked on, waiting on you, when each was
+    last heard of, moved there 2026-11-27, as the parts were found to be in
+    layers and a person's UI shows them too; **the editor's host,** its
+    setup, the modules for language, reading and framing, and the view's own
+    state; and **the agent,** its session, the harness's. The agent server
+    holds nothing of a task's, naming requests and proposals by their ids,
+    the task's file holding them, so a restart of it loses only its jobs and
+    copies: starting, it finds requests the task says are with the agent
+    with no job, and stages them again, saying why, for you to start again,
+    their batches gone. **Later, noted as wanted: jobs surviving a
+    restart,** queued jobs and their batches written to the project's
+    folder, so a restart loses none, and, if it can be had, one being worked
+    on picked up again.
 
 16. **Faking it, and testing it.** The playground's host fakes the agent
     now, inside itself, a round landing a moment later as its proposal's
@@ -676,7 +678,11 @@ before them. Decided 2026-11-26.
     run the real agent part, the mailbox, jobs, copies, the diff, the
     checker, questions, with no model in it, every time the tests run.
     Real harnesses, Claude Code, `agy` and Codex, tried by hand in the
-    spike, against the same protocol.
+    spike, against the same protocol. **Revised 2026-11-27,** the jobs
+    the core's: the fake takes each job from the core and hands it back,
+    as an agent's adapter does, with no server, the protocol tested by
+    the endpoint's own tests; the rest as decided, once copies and the
+    checker are built.
 
 ## open
 
@@ -688,15 +694,16 @@ stop. Begun 2026-11-26, `source/agent/`, its model first, jobs and their
 states, the mailbox's order, as `TASKS.md` says under who holds what; then,
 2026-11-27, the endpoint and the command, built with the shell's core,
 `SHELL.md`, as they need a real project and a real host beside them, not
-the playground, a job handed back in words for now; next, working copies
-and the checker, then the editor drawing it, questions, and frames kept
-with the task; the spike thrown away, its work the endpoint's now, kept in
-git at `1c729e6`. Details still open inside what's decided: how a
-revision's compared, 3; where a working copy lives, a folder per job or a
-whole worktree-like copy, 3 and 5; frames' joining and splitting by hand,
-and the file's kinds' defaults, after frames kept with the task, 4; a
-session left waiting for hours, to watch in use. Later, noted as wanted or
-possible: an agent's own requests, 12; jobs surviving a restart, 15; Claude
-Code's channels, 7; moves asked about, never hinted, 4; and a file edited
-as something other than how it's stored, under the documents part in
-`TASKS.md`.
+the playground, a job handed back in words for now; the jobs moved into the
+core the same day, the shell's, the parts found to be in layers, the agent
+part left the agent's adapter; next, working copies and the checker, then
+the editor drawing it, questions, and frames kept with the task; the spike
+thrown away, its work the endpoint's now, kept in git at `1c729e6`. Details
+still open inside what's decided: how a revision's compared, 3; where a
+working copy lives, a folder per job or a whole worktree-like copy, 3 and
+5; frames' joining and splitting by hand, and the file's kinds' defaults,
+after frames kept with the task, 4; a session left waiting for hours, to
+watch in use. Later, noted as wanted or possible: an agent's own requests,
+12; jobs surviving a restart, 15; Claude Code's channels, 7; moves asked
+about, never hinted, 4; and a file edited as something other than how it's
+stored, under the documents part in `TASKS.md`.

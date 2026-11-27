@@ -26,40 +26,37 @@ sample in a scene's template literal, is content: leave it as written.
 - **Parts.** `source/` holds one folder per part, each a module of its own:
   `jsx/`, the JSX runtime; `editor/`, the text editor; `board/`, every task
   of the project; `tasks/`, the tasks, their requests and proposals;
-  `documents/`, each document's versions, the changes stated against them
-  and the selections made in them, the editor's model among them, which the
-  editor draws; `agent/`, the jobs agents are given and where each stands,
-  and how an agent's answered; `shell/`, the parts put together, taking
-  commands in their terms; `host/`, the editor's and the board's host,
-  their asks made into the core's commands and the core's state into what
-  they draw, each editor's file and mode its own; `page/`, the page
-  doctor's program serves, an editor and the board, through a host,
-  talking to the core; and `program/`, doctor's program, run in a
-  project's folder. **They're in layers.** The core, `tasks/`,
-  `documents/` and `shell/`, is what everyone works on, knowing nothing of
-  who, nor how they reach it: what's a file's, as a selection, is the
-  documents part's, even where only the editor makes one. Each kind of
-  actor has its adapter over the core, turning its calls into the core's
-  commands and the core's state into what it's shown, and its transport: a
-  person's, `host/`, drawn by `editor/`, `board/` and `jsx/` in `page/`,
-  over the page's socket, the page shown in a browser or in VS Code, by
-  `vscode/`; an agent's, `agent/`, over the agent's endpoint, its face the
-  `doctor` command. `program/` puts them together, the core, both
-  transports and the project's folder, and is no part of the core. The
-  core imports nothing from an adapter, nor one adapter from another.
-  `agent/` holds the jobs themselves for now, which are the core's, what a
-  Start set going and where it stands whoever does it, a person's UI
-  showing it too, till they move into the shell. A part's
-  `index.ts` is its public API: another part, or a host, the playground
-  included, imports only from it, never from a file inside; the tests may
-  reach in, as they test what's inside. A name another part or a host
-  needs is added to the index, imported from its file and exported again.
-  Each part has its own `tsconfig.json`, giving it only what it may use:
-  the DOM for the editor, the board, the runtime and the page; none for a
-  part that isn't drawn, as the core and `agent/` aren't, so they run
-  anywhere, and Bun's for `program/`; `host/` draws nothing either, but
-  reads the editor's and the board's types through their indexes, so it's
-  given the DOM's types, as the board is, and uses nothing of it.
+  `documents/`, each document's versions, the changes stated against them and
+  the selections made in them, the editor's model among them, which the
+  editor draws; `agent/`, an agent's adapter, the jobs offered it, its waits,
+  the answers and next steps it's given; `shell/`, the parts put together,
+  taking commands in their terms, and the jobs a Start sets going, where each
+  stands, whoever does it; `host/`, the editor's and the board's host, their
+  asks made into the core's commands and the core's state into what they
+  draw, each editor's file and mode its own; `page/`, the page doctor's
+  program serves, an editor and the board, through a host, talking to the
+  core; and `program/`, doctor's program, run in a project's folder.
+  **They're in layers.** The core, `tasks/`, `documents/` and `shell/`, is
+  what everyone works on, knowing nothing of who, nor how they reach it:
+  what's a file's, as a selection, is the documents part's, even where only
+  the editor makes one. Each kind of actor has its adapter over the core,
+  turning its calls into the core's commands and the core's state into what
+  it's shown, and its transport: a person's, `host/`, drawn by `editor/`,
+  `board/` and `jsx/` in `page/`, over the page's socket, the page shown in a
+  browser or in VS Code, by `vscode/`; an agent's, `agent/`, over the agent's
+  endpoint, its face the `doctor` command. `program/` puts them together, the
+  core, both transports and the project's folder, and is no part of the core.
+  The core imports nothing from an adapter, nor one adapter from another. A
+  part's `index.ts` is its public API: another part, or a host, the
+  playground included, imports only from it, never from a file inside; the
+  tests may reach in, as they test what's inside. A name another part or a
+  host needs is added to the index, imported from its file and exported
+  again. Each part has its own `tsconfig.json`, giving it only what it may
+  use: the DOM for the editor, the board, the runtime and the page; none for
+  a part that isn't drawn, as the core and `agent/` aren't, so they run
+  anywhere, and Bun's for `program/`; `host/` draws nothing either, but reads
+  the editor's and the board's types through their indexes, so it's given the
+  DOM's types, as the board is, and uses nothing of it.
 
 - **Interfaces for object types.** `interface X { … }`, never
   `type X = { … }`, index signatures and options objects included. A union,

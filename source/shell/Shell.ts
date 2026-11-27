@@ -24,6 +24,13 @@ import {
   type _Transaction_Model_,
   type _Way_Settle_
 } from "../documents/index.ts"
+import {
+  jobsAfter__Command,
+  jobOf__Request,
+  isLive__Job,
+  type _Job_Shell_,
+  type _Command_Jobs_
+} from "./Jobs_Shell.ts"
 
 export {
   _Shell_,
@@ -32,13 +39,12 @@ export {
   type _State_Shell_,
   type _Document_Shell_,
   type _Dismissed_Task_,
-  type _Round_Shell_,
   type _Stop_Shell_,
+  type _Landing_Job_,
   type _Base_Round_,
   type _Again_Request_,
-  type _Landing_Round_,
-  type _Answer_Landing_,
   type _Api___headOf__Shell_,
+  type _Api___landed__Shell_,
   type _Api___requestsOf__Rerun__Shell_,
   type _Api___restated__Shell_,
   type _Api___carried__Shell_,
@@ -71,6 +77,9 @@ export {
   type _END_Command_Shell_,
   type _Kind_End_,
   type _RERUN_Command_Shell_,
+  type _TAKE_Command_Shell_,
+  type _CHECK_IN__Command_Shell_,
+  type _HAND_BACK__Command_Shell_,
   type _HandlerMap__Shell_,
   HANDLERMAP__SHELL,
   waitingOf__Task,
@@ -91,9 +100,9 @@ class _Shell_ {
   tasks: _Tasks_
   documents: _Documents_
   dismissed: Map<string, Set<string>>
+  jobs: Array<_Job_Shell_>
+  count_Job: number
   bases_Round: Map<string, _Base_Round_>
-  rounds_Request: Map<string, number>
-  count_Round: number
   count_Request: number
   observers: Array<_Observer_Shell_>
 
@@ -105,9 +114,9 @@ class _Shell_ {
     this.tasks = tasks
     this.documents = documents
     this.dismissed = new Map()
+    this.jobs = []
+    this.count_Job = 0
     this.bases_Round = new Map()
-    this.rounds_Request = new Map()
-    this.count_Round = 0
     this.count_Request = 0
     this.observers = observers
   }
@@ -118,11 +127,13 @@ class _Shell_ {
     const model_Tasks = this.tasks.model_Tasks
     const model_Documents = this.documents.model_Documents
     const json_Dismissed = JSON.stringify(this.stateOf__Dismissed())
+    const jobs = this.jobs
     handle__Command_Shell({
       shell: this,
       command_Shell
     })
-    const isChanged = this.tasks.model_Tasks !== model_Tasks || this.documents.model_Documents !== model_Documents || JSON.stringify(this.stateOf__Dismissed()) !== json_Dismissed
+    this.dropped()
+    const isChanged = this.tasks.model_Tasks !== model_Tasks || this.documents.model_Documents !== model_Documents || JSON.stringify(this.stateOf__Dismissed()) !== json_Dismissed || this.jobs !== jobs
     if (isChanged) this.changed()
   }
 
@@ -134,7 +145,8 @@ class _Shell_ {
         version: document.version,
         text: document.text
       })),
-      dismissed: this.stateOf__Dismissed()
+      dismissed: this.stateOf__Dismissed(),
+      jobs: this.jobs
     }
   }
 
@@ -181,23 +193,41 @@ class _Shell_ {
     return this.documents.model_Documents.documents.some((document) => document.path === path)
   }
 
-  landed(
-    landing_Round: _Landing_Round_
-  ): _Answer_Landing_ {
-    const round_Shell = landing_Round.round_Shell
-    const id_Task = round_Shell.id_Task
-    const isCurrent = (id: string) => this.rounds_Request.get(keyIn__Task({
+  jobOf(
+    id_Job: string
+  ): _Job_Shell_ | undefined {
+    return this.jobs.find((job) => job.id === id_Job)
+  }
+
+  jobsHandled(
+    command_Jobs: _Command_Jobs_
+  ): void {
+    this.jobs = jobsAfter__Command({
+      jobs: this.jobs,
+      command: command_Jobs
+    })
+  }
+
+  landed({
+    job_Shell,
+    proposed,
+    note
+  }: _Api___landed__Shell_): _Landing_Job_ {
+    const id_Task = job_Shell.id_Task
+    const isCurrent = (id: string) => jobOf__Request({
+      jobs: this.jobs,
       id_Task,
-      id
-    })) === round_Shell.id && idsOf__Started({
+      id_Request: id
+    })?.id === job_Shell.id && idsOf__Started({
       task: this.taskOf(id_Task)
     }).includes(id)
-    const ids_Current = round_Shell.requests.flatMap((request) => isCurrent(request.id) ? [request.id] : [])
-    const idsOf = (source: string) => round_Shell.requests.flatMap((request) => request.aim.kind === "PROPOSAL" && request.aim.id_Proposal === source && ids_Current.includes(request.id) ? [request.id] : [])
-    const sources_Landing = round_Shell.sources.filter((source) => idsOf(source).length > 0 && landing_Round.proposed.some((changes_Source) => changes_Source.source === source))
-    const ids_Addressed = round_Shell.requests.flatMap((request) => ids_Current.includes(request.id) && !(request.aim.kind === "PROPOSAL" && sources_Landing.includes(request.aim.id_Proposal)) ? [request.id] : [])
+    const ids_Current = job_Shell.requests.flatMap((request) => isCurrent(request.id) ? [request.id] : [])
+    const idsOf = (source: string) => job_Shell.requests.flatMap((request) => request.aim.kind === "PROPOSAL" && request.aim.id_Proposal === source && ids_Current.includes(request.id) ? [request.id] : [])
+    const sources_Landing = job_Shell.sources.filter((source) => idsOf(source).length > 0 && proposed.some((changes_Source) => changes_Source.source === source))
+    const ids_Addressed = job_Shell.requests.flatMap((request) => ids_Current.includes(request.id) && !(request.aim.kind === "PROPOSAL" && sources_Landing.includes(request.aim.id_Proposal)) ? [request.id] : [])
     if (sources_Landing.length + ids_Addressed.length === 0) {
       return {
+        job_Shell,
         sources: [],
         ids_Addressed: []
       }
@@ -215,9 +245,9 @@ class _Shell_ {
       this.landedOn({
         id_Task,
         source,
-        path: round_Shell.path,
-        version: round_Shell.version,
-        proposed: landing_Round.proposed.filter((changes_Source) => changes_Source.source === source)
+        path: job_Shell.path,
+        version: job_Shell.version,
+        proposed: proposed.filter((changes_Source) => changes_Source.source === source)
       })
     }
     if (ids_Addressed.length > 0) {
@@ -227,12 +257,12 @@ class _Shell_ {
         ids_Request: ids_Addressed,
         answer: {
           kind: "NOTHING",
-          note: landing_Round.note
+          note: note
         }
       })
     }
-    this.changed()
     return {
+      job_Shell,
       sources: sources_Landing,
       ids_Addressed
     }
@@ -403,9 +433,10 @@ class _Shell_ {
     }).filter((id) => !ids_Before.includes(id))
     const requests_Started = (this.taskOf(id_Task)?.requests ?? []).filter((request) => ids_Started.includes(request.id))
     const sources = task.proposals.flatMap((proposal) => requests_Started.some((request) => request.aim.kind === "PROPOSAL" && request.aim.id_Proposal === proposal.id) ? [proposal.id] : [])
-    this.count_Round += 1
-    const round_Shell: _Round_Shell_ = {
-      id: this.count_Round,
+    if (requests_Started.length === 0) return
+    this.count_Job += 1
+    const job_Shell: _Job_Shell_ = {
+      id: `j-${this.count_Job}`,
       id_Task,
       scope,
       requests: requests_Started,
@@ -415,17 +446,16 @@ class _Shell_ {
       proposed: (this.headOf({
         task,
         path
-      })?.proposed ?? []).filter((changes_Source) => sources.includes(changes_Source.source))
+      })?.proposed ?? []).filter((changes_Source) => sources.includes(changes_Source.source)),
+      queued: Date.now(),
+      state: {
+        kind: "QUEUED"
+      }
     }
-    for (const request of requests_Started) {
-      this.rounds_Request.set(
-        keyIn__Task({
-          id_Task,
-          id: request.id
-        }),
-        round_Shell.id
-      )
-    }
+    this.jobsHandled({
+      kind: "QUEUE",
+      job_Shell
+    })
     for (const source of sources) {
       this.bases_Round.set(
         keyIn__Task({
@@ -436,7 +466,7 @@ class _Shell_ {
           id_Task,
           source,
           path,
-          version: round_Shell.version,
+          version: job_Shell.version,
           requests: requests_Started.flatMap((request) => request.aim.kind === "PROPOSAL" && request.aim.id_Proposal === source
             ? [
               {
@@ -448,7 +478,7 @@ class _Shell_ {
         }
       )
     }
-    for (const observer of this.observers) observer.started(round_Shell)
+    for (const observer of this.observers) observer.started(job_Shell)
   }
 
   stopped({
@@ -465,21 +495,26 @@ class _Shell_ {
       id_Task,
       scope
     })
-    const roundOf = (id: string) => this.rounds_Request.get(keyIn__Task({
+    const jobOf = (id: string) => jobOf__Request({
+      jobs: this.jobs,
       id_Task,
-      id
-    }))
-    const ids_Round = [
+      id_Request: id
+    })
+    const ids_Job = [
       ...new Set(ids_Before.flatMap((id) => {
-        const id_Round = roundOf(id)
+        const job = jobOf(id)
         return idsOf__Started({
           task: this.taskOf(id_Task)
-        }).includes(id) || id_Round === undefined ? [] : [id_Round]
+        }).includes(id) || job === undefined || !isLive__Job({
+          job
+        })
+          ? []
+          : [job.id]
       }))
     ]
     const ids_Rest = idsOf__Started({
       task: this.taskOf(id_Task)
-    }).filter((id) => ids_Round.some((id_Round) => id_Round === roundOf(id)))
+    }).filter((id) => ids_Job.includes(jobOf(id)?.id ?? ""))
     if (ids_Rest.length > 0) {
       this.tasks.handle({
         kind: "STOP",
@@ -494,18 +529,19 @@ class _Shell_ {
       task: this.taskOf(id_Task)
     })
     const ids_Stopped = ids_Before.filter((id) => !ids_After.includes(id))
-    for (const id of ids_Stopped) {
-      this.rounds_Request.delete(keyIn__Task({
-        id_Task,
-        id
-      }))
+    for (const id_Job of ids_Job) {
+      this.jobsHandled({
+        kind: "CANCEL",
+        id_Job,
+        at: Date.now()
+      })
     }
     for (const observer of this.observers) {
       observer.stopped({
         id_Task,
         scope,
         ids_Request: ids_Stopped,
-        ids_Round
+        ids_Job
       })
     }
   }
@@ -567,6 +603,19 @@ class _Shell_ {
       })
     }
   }
+
+  dropped(): void {
+    for (const job of this.jobs) {
+      if (!isLive__Job({
+        job
+      }) || this.taskOf(job.id_Task)?.kind === "OPEN") continue
+      this.jobsHandled({
+        kind: "CANCEL",
+        id_Job: job.id,
+        at: Date.now()
+      })
+    }
+  }
 }
 
 interface _Api__Shell_ {
@@ -577,14 +626,16 @@ interface _Api__Shell_ {
 
 interface _Observer_Shell_ {
   changed: (state_Shell: _State_Shell_) => void
-  started: (round_Shell: _Round_Shell_) => void
+  started: (job_Shell: _Job_Shell_) => void
   stopped: (stop_Shell: _Stop_Shell_) => void
+  landed: (landing_Job: _Landing_Job_) => void
 }
 
 interface _State_Shell_ {
   model_Tasks: _Model_Tasks_
   documents: Array<_Document_Shell_>
   dismissed: Array<_Dismissed_Task_>
+  jobs: Array<_Job_Shell_>
 }
 
 interface _Document_Shell_ {
@@ -598,22 +649,17 @@ interface _Dismissed_Task_ {
   sources: Array<string>
 }
 
-interface _Round_Shell_ {
-  id: number
-  id_Task: string
-  scope: _Scope_Tasks_
-  requests: Array<_Request_Tasks_>
-  sources: Array<string>
-  path: string
-  version: string
-  proposed: Array<_Changes_Source_>
-}
-
 interface _Stop_Shell_ {
   id_Task: string
   scope: _Scope_Tasks_
   ids_Request: Array<string>
-  ids_Round: Array<number>
+  ids_Job: Array<string>
+}
+
+interface _Landing_Job_ {
+  job_Shell: _Job_Shell_
+  sources: Array<string>
+  ids_Addressed: Array<string>
 }
 
 interface _Base_Round_ {
@@ -629,20 +675,15 @@ interface _Again_Request_ {
   aim: _Aim_Request_Tasks_
 }
 
-interface _Landing_Round_ {
-  round_Shell: _Round_Shell_
-  proposed: Array<_Changes_Source_>
-  note: string
-}
-
-interface _Answer_Landing_ {
-  sources: Array<string>
-  ids_Addressed: Array<string>
-}
-
 interface _Api___headOf__Shell_ {
   task: _Task_Tasks_
   path: string
+}
+
+interface _Api___landed__Shell_ {
+  job_Shell: _Job_Shell_
+  proposed: Array<_Changes_Source_>
+  note: string
 }
 
 interface _Api___requestsOf__Rerun__Shell_ {
@@ -714,7 +755,7 @@ function handle__Command_Shell<Kind extends _Command_Shell_["kind"]>({
   })
 }
 
-type _Command_Shell_ = _OPEN_DOCUMENT__Command_Shell_ | _EDIT_Command_Shell_ | _REQUEST_Command_Shell_ | _DRAFT_Command_Shell_ | _START_Command_Shell_ | _STOP_Command_Shell_ | _TASKS_Command_Shell_ | _DECIDE_Command_Shell_ | _DISMISS_PROPOSAL__Command_Shell_ | _ACCEPT_Command_Shell_ | _SETTLE_Command_Shell_ | _END_Command_Shell_ | _RERUN_Command_Shell_
+type _Command_Shell_ = _OPEN_DOCUMENT__Command_Shell_ | _EDIT_Command_Shell_ | _REQUEST_Command_Shell_ | _DRAFT_Command_Shell_ | _START_Command_Shell_ | _STOP_Command_Shell_ | _TASKS_Command_Shell_ | _DECIDE_Command_Shell_ | _DISMISS_PROPOSAL__Command_Shell_ | _ACCEPT_Command_Shell_ | _SETTLE_Command_Shell_ | _END_Command_Shell_ | _RERUN_Command_Shell_ | _TAKE_Command_Shell_ | _CHECK_IN__Command_Shell_ | _HAND_BACK__Command_Shell_
 
 interface __BASE_Command_Shell_<Kind extends string> {
   kind: Kind
@@ -812,6 +853,22 @@ interface _RERUN_Command_Shell_ extends __BASE_Command_Shell_<"RERUN"> {
   id_Task: string
   id_Proposal: string
   path: string
+}
+
+interface _TAKE_Command_Shell_ extends __BASE_Command_Shell_<"TAKE"> {
+  id_Job: string
+  note: string
+}
+
+interface _CHECK_IN__Command_Shell_ extends __BASE_Command_Shell_<"CHECK_IN"> {
+  id_Job: string
+  note: string
+}
+
+interface _HAND_BACK__Command_Shell_ extends __BASE_Command_Shell_<"HAND_BACK"> {
+  id_Job: string
+  proposed: Array<_Changes_Source_>
+  note: string
 }
 
 type _HandlerMap__Shell_ = {
@@ -1027,6 +1084,42 @@ const HANDLERMAP__SHELL: _HandlerMap__Shell_ = {
       },
       path: command_Shell.path
     })
+  },
+  TAKE: ({
+    shell,
+    command_Shell
+  }) => shell.jobsHandled({
+    kind: "TAKE",
+    id_Job: command_Shell.id_Job,
+    note: command_Shell.note,
+    at: Date.now()
+  }),
+  CHECK_IN: ({
+    shell,
+    command_Shell
+  }) => shell.jobsHandled({
+    kind: "CHECK_IN",
+    id_Job: command_Shell.id_Job,
+    note: command_Shell.note,
+    at: Date.now()
+  }),
+  HAND_BACK: ({
+    shell,
+    command_Shell
+  }) => {
+    const job_Shell = shell.jobOf(command_Shell.id_Job)
+    if (job_Shell === undefined || job_Shell.state.kind !== "BEING_WORKED_ON") return
+    shell.jobsHandled({
+      kind: "HAND_BACK",
+      id_Job: job_Shell.id,
+      at: Date.now()
+    })
+    const landing_Job = shell.landed({
+      job_Shell,
+      proposed: command_Shell.proposed,
+      note: command_Shell.note
+    })
+    for (const observer of shell.observers) observer.landed(landing_Job)
   }
 }
 
