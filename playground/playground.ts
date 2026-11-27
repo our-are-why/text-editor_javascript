@@ -9,7 +9,7 @@ import {
   MODULE_MOUSE,
   MODULE_KEYBOARD,
   MODULE_WORDS_TEXT
-} from "../source/editor/index.ts"
+} from "../source/ui/editor/index.ts"
 import type { _Entry_Log_, _Example_ } from "./example.ts"
 import type { _Case_Document_, _Document_, _Status_Case_ } from "./document.ts"
 import type { _Invariant_Scene_, _Scene_ } from "./scene.ts"

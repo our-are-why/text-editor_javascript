@@ -4,7 +4,7 @@ import {
   type _Perspective_TextEditor_,
   parseLines_ViewModel,
   LOOK_CHANGES
-} from "../source/editor/index.ts"
+} from "../source/ui/editor/index.ts"
 import {
   comparisonOf__Texts,
   indexOf__Position,
@@ -12,7 +12,7 @@ import {
   parseTexts_Line,
   type _Text_Model_,
   type _Run_Comparison_
-} from "../source/documents/index.ts"
+} from "../source/core/documents/index.ts"
 import { module_Markdown } from "./syntax.ts"
 
 export {

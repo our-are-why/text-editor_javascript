@@ -1,4 +1,4 @@
-import type { _Attributes_Element_ } from "../source/editor/index.ts"
+import type { _Attributes_Element_ } from "../source/ui/editor/index.ts"
 
 export {
   type _Mark_,

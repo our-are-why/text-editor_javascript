@@ -6,7 +6,7 @@ import type {
   _Stamp_Tasks_,
   _Status_Request_Tasks_,
   _How_Resolution_
-} from "../source/tasks/index.ts"
+} from "../source/core/tasks/index.ts"
 import type {
   _Proposal_Host_,
   _Request_Task_,
@@ -16,17 +16,17 @@ import type {
   _State_Proposal_,
   _State_Task_,
   _Attributes_Element_
-} from "../source/editor/index.ts"
+} from "../source/ui/editor/index.ts"
 import {
   type _Model_TextEditor_,
   type _Stale_Source_,
   versionOf__Text,
   type _Head_Document_
-} from "../source/documents/index.ts"
+} from "../source/core/documents/index.ts"
 import {
   PROPOSAL_YOURS,
   wordsOf__Reference
-} from "../source/host/index.ts"
+} from "../source/ui/host/index.ts"
 
 export {
   seededOf__Example,

@@ -16,7 +16,7 @@ import {
 import type {
   _Message_Page_,
   _Message_Shell_
-} from "../source/shell/index.ts"
+} from "../source/core/shell/index.ts"
 
 // the agent's side of doctor, end to end: doctor open on a fresh demo of the
 // retry sample, held here, and the doctor command run as an agent runs it,

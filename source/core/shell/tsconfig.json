@@ -1,0 +1,13 @@
+{
+  // source/core/shell/, doctor's core coordinator: the tasks and documents
+  // parts put together, and the jobs a Start sets going, taking commands in
+  // their own terms and telling what changed, knowing nothing of any view
+  // or actor: plain data and functions, so no DOM and no Bun, to run
+  // wherever its host does
+  "extends": "../../../tsconfig.base.json",
+  "compilerOptions": {
+    "lib": ["ES2024"],
+    "types": []
+  },
+  "include": ["./**/*"]
+}

@@ -1,8 +1,8 @@
 import { expect, test } from "bun:test"
-import { _Tasks_ } from "../source/tasks/index.ts"
-import { _Documents_, parseTexts_Line } from "../source/documents/index.ts"
-import { _Shell_ } from "../source/shell/index.ts"
-import { _Agent_, MS_LAPSE__OFFER, type _Answer_Agent_, type _From_Wait_ } from "../source/agent/index.ts"
+import { _Tasks_ } from "../source/core/tasks/index.ts"
+import { _Documents_, parseTexts_Line } from "../source/core/documents/index.ts"
+import { _Shell_ } from "../source/core/shell/index.ts"
+import { _Agent_, MS_LAPSE__OFFER, type _Answer_Agent_, type _From_Wait_ } from "../source/agent/protocol/index.ts"
 
 // the agent's adapter over a real core: a wait offered the job it may take,
 // an offer lapsing a minute on, and each call answered by where its job

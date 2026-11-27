@@ -1,0 +1,10 @@
+{
+  // source/ui/editor/, the text editor, which runs in the browser: the DOM,
+  // no Bun; and what source/ declares for the stylesheets its parts import
+  "extends": "../../../tsconfig.base.json",
+  "compilerOptions": {
+    "lib": ["ES2024", "DOM", "DOM.Iterable"],
+    "types": []
+  },
+  "include": ["./**/*", "../../stylesheets.d.ts"]
+}

@@ -1,6 +1,6 @@
 import type { _Scene_ } from "../scene.ts"
 import { retry, proposed_retry, proposals_retry } from "../examples/javascript.ts"
-import { MODULE_READING_TEXT } from "../../source/editor/index.ts"
+import { MODULE_READING_TEXT } from "../../source/ui/editor/index.ts"
 import { projectedOf } from "../projected.ts"
 import { module_JavaScript } from "../syntax.ts"
 

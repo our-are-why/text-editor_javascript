@@ -1,8 +1,8 @@
 import { expect, test } from "bun:test"
 import fc from "fast-check"
-import { modelAfter__Command, versionOf__Text, sha256Of__Text, transactionOf__Texts, carriedOf__Head, textAt__Version, checkedOf__Head, pairOf__Stale, settledOf__Head, type _Model_Documents_, type _Command_Documents_, type _Document_Documents_, type _Head_Document_ } from "../source/documents/Model_Documents.ts"
-import { _Documents_ } from "../source/documents/Documents.ts"
-import { parseTexts_Line, applied__Transaction, textWith__Sources, textIn__Range, positionOf__Index, type _Text_Model_, type _Transaction_Model_, type _Range_Text_, type _Changes_Source_ } from "../source/documents/Model_TextEditor.ts"
+import { modelAfter__Command, versionOf__Text, sha256Of__Text, transactionOf__Texts, carriedOf__Head, textAt__Version, checkedOf__Head, pairOf__Stale, settledOf__Head, type _Model_Documents_, type _Command_Documents_, type _Document_Documents_, type _Head_Document_ } from "../source/core/documents/Model_Documents.ts"
+import { _Documents_ } from "../source/core/documents/Documents.ts"
+import { parseTexts_Line, applied__Transaction, textWith__Sources, textIn__Range, positionOf__Index, type _Text_Model_, type _Transaction_Model_, type _Range_Text_, type _Changes_Source_ } from "../source/core/documents/Model_TextEditor.ts"
 
 const textOf = (multilineText: string): _Text_Model_ => ({ lines: parseTexts_Line(multilineText), marks: [] })
 const on = (from: number, to: number): _Range_Text_ => ({ from: { line: 0, offset: from }, to: { line: 0, offset: to } })

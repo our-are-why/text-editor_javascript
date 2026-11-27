@@ -30,7 +30,13 @@ core. So the jobs themselves are the core's, what a Start set going and
 where it stands whoever does it, a person's UI showing it too, moved into
 the shell the same day, one with its rounds; the agent part keeps how an
 agent's answered, an offer and its lapse, a wait, the answers and their
-next steps, and the brief it's given.
+next steps, and the brief it's given. The folders follow the layers since,
+the same day: `source/core/`, `source/ui/` and `source/agent/`, each
+holding its parts, and `source/program/`; the notes before then name the
+parts' old folders, `source/tasks/` for `source/core/tasks/`,
+`source/agent/` for `source/agent/protocol/`, and so on; `vscode/`, beside
+`source/`, a deployment target, the program composed with what VS Code
+needs.
 
 ## what's settled already
 

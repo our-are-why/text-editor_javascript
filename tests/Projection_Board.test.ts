@@ -1,6 +1,6 @@
 import { expect, test } from "bun:test"
-import { viewModelOf__Tasks_Board, type _Task_Board_ } from "../source/board/Projection_Board.ts"
-import type { _State_Task_ } from "../source/editor/ViewModel_TextEditor.ts"
+import { viewModelOf__Tasks_Board, type _Task_Board_ } from "../source/ui/board/Projection_Board.ts"
+import type { _State_Task_ } from "../source/ui/editor/ViewModel_TextEditor.ts"
 
 // a task as a host tells the board of it, where it stands and nothing more
 // unless said

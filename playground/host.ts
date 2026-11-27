@@ -5,25 +5,25 @@ import {
   type _Range_Lines_,
   type _Asked_Host_,
   type __BASE_Asked_Host_
-} from "../source/editor/index.ts"
+} from "../source/ui/editor/index.ts"
 import {
   type _Model_TextEditor_,
   type _Stale_Source_,
   _Documents_
-} from "../source/documents/index.ts"
+} from "../source/core/documents/index.ts"
 import {
   _Board_,
   COMPONENTMAP__VIEW_BOARD
-} from "../source/board/index.ts"
-import { _Tasks_ } from "../source/tasks/index.ts"
+} from "../source/ui/board/index.ts"
+import { _Tasks_ } from "../source/core/tasks/index.ts"
 import {
   stampOf,
   _Shell_
-} from "../source/shell/index.ts"
+} from "../source/core/shell/index.ts"
 import {
   _Host_,
   PROPOSAL_YOURS
-} from "../source/host/index.ts"
+} from "../source/ui/host/index.ts"
 import type { _Entry_Log_ } from "./example.ts"
 import {
   seededOf__Example,
@@ -55,18 +55,18 @@ interface _Api___hostedOf__Editor_<State> {
 }
 
 // the playground as a host: an editor of a document, and the board under
-// it, told what to show by the host part, source/host/, which keeps the
+// it, told what to show by the host part, source/ui/host/, which keeps the
 // editor's file and mode, makes what it and the board ask into the core's
 // commands, and the core's state into what they draw; the core, the shell
-// part, source/shell/, run here in the page, holding the project's tasks,
-// by the tasks part, and the document, by the documents part, knowing
-// nothing of the editor; the playground giving them what the example says,
-// the task the playground's on and the project's others alike, open or
-// resolved, its own task's changes on the document its head there, each
-// request's words in it, and, the host's, each proposal's attributes;
-// reporting what's asked, and what's done, each as it's told; and showing
-// the board, hidden till the editor's footer is pressed, and hidden again
-// when it's pressed again, as a host shows and hides a view.
+// part, source/core/shell/, run here in the page, holding the project's
+// tasks, by the tasks part, and the document, by the documents part,
+// knowing nothing of the editor; the playground giving them what the
+// example says, the task the playground's on and the project's others
+// alike, open or resolved, its own task's changes on the document its head
+// there, each request's words in it, and, the host's, each proposal's
+// attributes; reporting what's asked, and what's done, each as it's told;
+// and showing the board, hidden till the editor's footer is pressed, and
+// hidden again when it's pressed again, as a host shows and hides a view.
 // With no agent, the playground stands in for one: a Start, at any scope,
 // in any task, sets what's staged there going, a job, a proposal never
 // revised by two at once, and a moment later the stand-in takes it from the

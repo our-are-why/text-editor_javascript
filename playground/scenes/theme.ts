@@ -2,7 +2,7 @@ import type { _Scene_ } from "../scene.ts"
 import {
   viewModelOf__Blocks,
   MODULE_PLAINTEXT
-} from "../../source/editor/index.ts"
+} from "../../source/ui/editor/index.ts"
 import { blocksOf__Text } from "../lines.ts"
 import { fieldNotes } from "./markdown.ts"
 

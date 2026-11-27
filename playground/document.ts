@@ -1,4 +1,4 @@
-import type { _ViewModel_TextEditor_ } from "../source/editor/index.ts"
+import type { _ViewModel_TextEditor_ } from "../source/ui/editor/index.ts"
 
 export {
   type _Document_,

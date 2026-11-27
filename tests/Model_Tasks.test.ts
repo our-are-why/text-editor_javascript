@@ -10,8 +10,8 @@ import {
   type _Task_Tasks_,
   type _Stamp_Tasks_,
   type _Aim_Request_Tasks_
-} from "../source/tasks/index.ts"
-import { parseTexts_Line, type _Head_Document_ } from "../source/documents/index.ts"
+} from "../source/core/tasks/index.ts"
+import { parseTexts_Line, type _Head_Document_ } from "../source/core/documents/index.ts"
 
 const stampAt = (at: string): _Stamp_Tasks_ => ({ at, by: "HUMAN" })
 const MODEL_EMPTY: _Model_Tasks_ = { tasks: [] }

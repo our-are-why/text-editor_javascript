@@ -1,7 +1,7 @@
 import { expect, test } from "bun:test"
 import fc from "fast-check"
-import { comparisonOf__Texts, parseTexts_Line, type _Mark_Text_, type _Position_Text_, type _Range_Text_ } from "../source/documents/Model_TextEditor.ts"
-import { MODULE_READING_TEXT } from "../source/editor/readings/text.ts"
+import { comparisonOf__Texts, parseTexts_Line, type _Mark_Text_, type _Position_Text_, type _Range_Text_ } from "../source/core/documents/Model_TextEditor.ts"
+import { MODULE_READING_TEXT } from "../source/ui/editor/readings/text.ts"
 import { module_Reading_Markdown } from "../playground/readings.ts"
 
 // a range on one line, from a character to another

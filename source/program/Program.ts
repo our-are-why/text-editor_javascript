@@ -18,15 +18,15 @@ import {
   parseTexts_Line,
   flatOf__Text,
   type _Model_Documents_
-} from "../documents/index.ts"
-import { _Tasks_ } from "../tasks/index.ts"
+} from "../core/documents/index.ts"
+import { _Tasks_ } from "../core/tasks/index.ts"
 import {
   _Shell_,
   type _State_Shell_,
   type _Message_Page_,
   type __BASE_Message_Page_,
   type _Message_Shell_
-} from "../shell/index.ts"
+} from "../core/shell/index.ts"
 import {
   _Agent_,
   answerOf__Refused,
@@ -39,7 +39,7 @@ import {
   type _From_Wait_,
   type _Kind_Call_,
   type _Answer_Agent_
-} from "../agent/index.ts"
+} from "../agent/protocol/index.ts"
 
 export {
   _Program_,
@@ -766,7 +766,7 @@ async function builtOf__Page({
   title
 }: _Api___builtOf__Page_): Promise<_Built_Page_> {
   const built = await Bun.build({
-    entrypoints: [join(import.meta.dir, "../page/start.ts")],
+    entrypoints: [join(import.meta.dir, "../ui/page/start.ts")],
     target: "browser",
     naming: "[name].[ext]"
   })

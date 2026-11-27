@@ -1,10 +1,10 @@
 import { expect, test } from "bun:test"
-import { parseModel_TextEditor, textWith__Sources, applied__Transaction, type _Model_TextEditor_, type _Range_Text_, type _Id_Text_ } from "../source/documents/Model_TextEditor.ts"
-import type { _Proposal_Host_ } from "../source/editor/Projection_TextEditor.ts"
-import { editedOf__Request, HISTORY_EMPTY, type _History_TextEditor_, type _Edited_Model_ } from "../source/editor/Editing_TextEditor.ts"
-import type { _Selection_TextEditor_, _Decision_Proposal_, _Status_Request_ } from "../source/editor/ViewModel_TextEditor.ts"
-import { ACTIONS_REVIEW } from "../source/host/index.ts"
-import { MODULE_WORDS_TEXT } from "../source/editor/words/text.ts"
+import { parseModel_TextEditor, textWith__Sources, applied__Transaction, type _Model_TextEditor_, type _Range_Text_, type _Id_Text_ } from "../source/core/documents/Model_TextEditor.ts"
+import type { _Proposal_Host_ } from "../source/ui/editor/Projection_TextEditor.ts"
+import { editedOf__Request, HISTORY_EMPTY, type _History_TextEditor_, type _Edited_Model_ } from "../source/ui/editor/Editing_TextEditor.ts"
+import type { _Selection_TextEditor_, _Decision_Proposal_, _Status_Request_ } from "../source/ui/editor/ViewModel_TextEditor.ts"
+import { ACTIONS_REVIEW } from "../source/ui/host/index.ts"
+import { MODULE_WORDS_TEXT } from "../source/ui/editor/words/text.ts"
 
 // a range on one line, from a character to another
 function on(

@@ -1,9 +1,9 @@
 import { expect, test } from "bun:test"
 import fc from "fast-check"
-import { _Tasks_ } from "../source/tasks/index.ts"
-import { _Documents_, parseTexts_Line } from "../source/documents/index.ts"
-import { _Shell_, type _Job_Shell_, type _Stop_Shell_, type _Landing_Job_ } from "../source/shell/index.ts"
-import { jobsAfter__Command, isTakeable__Job, jobOf__Request, type _Command_Jobs_ } from "../source/shell/Jobs_Shell.ts"
+import { _Tasks_ } from "../source/core/tasks/index.ts"
+import { _Documents_, parseTexts_Line } from "../source/core/documents/index.ts"
+import { _Shell_, type _Job_Shell_, type _Stop_Shell_, type _Landing_Job_ } from "../source/core/shell/index.ts"
+import { jobsAfter__Command, isTakeable__Job, jobOf__Request, type _Command_Jobs_ } from "../source/core/shell/Jobs_Shell.ts"
 
 // the core's jobs, what a Start sets going and where each stands, whoever
 // does it: the model's own rules first, then the shell keeping them, a Start

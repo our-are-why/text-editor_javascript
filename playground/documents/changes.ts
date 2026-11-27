@@ -4,16 +4,16 @@ import {
   type _Proposal_Host_,
   type _Request_Host_,
   MODULE_READING_TEXT
-} from "../../source/editor/index.ts"
-import { type _Change_Host_, parseTexts_Line } from "../../source/documents/index.ts"
+} from "../../source/ui/editor/index.ts"
+import { type _Change_Host_, parseTexts_Line } from "../../source/core/documents/index.ts"
 import { projectedOf, projectedOf__Carried, type _Edit_Example_ } from "../projected.ts"
-import { ACTIONS_REVIEW, ACTIONS_REOPEN, PROPOSAL_YOURS } from "../../source/host/index.ts"
+import { ACTIONS_REVIEW, ACTIONS_REOPEN, PROPOSAL_YOURS } from "../../source/ui/host/index.ts"
 import { attributesOf__Marks } from "../looks.ts"
 import { module_JavaScript } from "../syntax.ts"
 import type {
   _Side_Text_,
   _Piece_Text_
-} from "../../source/documents/index.ts"
+} from "../../source/core/documents/index.ts"
 
 export {
   changes

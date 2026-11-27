@@ -1,0 +1,12 @@
+{
+  // source/agent/protocol/, an agent's adapter over the core: the jobs
+  // offered it, its waits, the answers and next steps it's given, and its
+  // brief: plain data and functions, drawn by nothing, so no DOM and no
+  // Bun, to run wherever its host does
+  "extends": "../../../tsconfig.base.json",
+  "compilerOptions": {
+    "lib": ["ES2024"],
+    "types": []
+  },
+  "include": ["./**/*"]
+}

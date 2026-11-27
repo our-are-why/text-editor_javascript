@@ -4,7 +4,7 @@ import {
   type _Line_Run_,
   type _Group_Underlay_,
   type _STRETCH_Underlay_Text_
-} from "../../source/editor/index.ts"
+} from "../../source/ui/editor/index.ts"
 import { groupsOf__Lines, lineOf, originsOf__Document, textElementsIn } from "../lines.ts"
 import { attributesOf__Link, attributesOf__Change, attributesOf__Marks } from "../looks.ts"
 

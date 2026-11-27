@@ -7,5 +7,5 @@
     "lib": ["ES2024", "DOM", "DOM.Iterable"],
     "types": []
   },
-  "include": ["./**/*", "../source/stylesheets.d.ts", "../source/editor/editContext.d.ts"]
+  "include": ["./**/*", "../source/stylesheets.d.ts", "../source/ui/editor/editContext.d.ts"]
 }

@@ -1,0 +1,11 @@
+{
+  // source/core/tasks/, the project's tasks, their requests and proposals,
+  // and the moves between their states: plain data and functions, drawn by
+  // nothing, so no DOM and no Bun, to run wherever its host does
+  "extends": "../../../tsconfig.base.json",
+  "compilerOptions": {
+    "lib": ["ES2024"],
+    "types": []
+  },
+  "include": ["./**/*"]
+}

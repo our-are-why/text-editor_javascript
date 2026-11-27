@@ -6,7 +6,7 @@ import {
   type _Module_Language_,
   type _Range_Lines_,
   type _ViewModel_TextEditor_
-} from "../source/editor/index.ts"
+} from "../source/ui/editor/index.ts"
 import {
   parseModel_TextEditor,
   type _Mark_Text_,
@@ -18,8 +18,8 @@ import {
   type _Document_Documents_,
   parseTexts_Line,
   carriedOf__Head
-} from "../source/documents/index.ts"
-import { PROPOSAL_YOURS } from "../source/host/index.ts"
+} from "../source/core/documents/index.ts"
+import { PROPOSAL_YOURS } from "../source/ui/host/index.ts"
 
 export {
   modelOf,

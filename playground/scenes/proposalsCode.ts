@@ -2,9 +2,9 @@ import type { _Scene_ } from "../scene.ts"
 import {
   MODULE_PLAINTEXT,
   MODULE_READING_TEXT
-} from "../../source/editor/index.ts"
-import { parseTexts_Line } from "../../source/documents/index.ts"
-import { ACTIONS_REVIEW } from "../../source/host/index.ts"
+} from "../../source/ui/editor/index.ts"
+import { parseTexts_Line } from "../../source/core/documents/index.ts"
+import { ACTIONS_REVIEW } from "../../source/ui/host/index.ts"
 import { projectedOf } from "../projected.ts"
 import { readingTime } from "./code.ts"
 

@@ -3,11 +3,11 @@
   "private": true,
   "type": "module",
   "imports": {
-    "#jsx/jsx-runtime": "./source/jsx/Jsx.ts",
-    "#jsx/jsx-dev-runtime": "./source/jsx/Jsx.ts"
+    "#jsx/jsx-runtime": "./source/ui/jsx/Jsx.ts",
+    "#jsx/jsx-dev-runtime": "./source/ui/jsx/Jsx.ts"
   },
   "scripts": {
-    "check": "tsc -p tsconfig.json && tsc -p playground && tsc -p source/jsx && tsc -p source/editor && tsc -p source/board && tsc -p source/tasks && tsc -p source/documents && tsc -p source/agent && tsc -p source/shell && tsc -p source/host && tsc -p source/page && tsc -p source/program && tsc -p vscode",
+    "check": "bun scripts/checkLayers.ts && tsc -p tsconfig.json && tsc -p playground && tsc -p source/core/tasks && tsc -p source/core/documents && tsc -p source/core/shell && tsc -p source/agent/protocol && tsc -p source/ui/jsx && tsc -p source/ui/editor && tsc -p source/ui/board && tsc -p source/ui/host && tsc -p source/ui/page && tsc -p source/program && tsc -p vscode",
     "test": "bun test",
     "playground": "bun scripts/servePlayground.ts",
     "demo": "bun scripts/demo.ts",

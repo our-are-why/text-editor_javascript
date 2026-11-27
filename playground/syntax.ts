@@ -2,7 +2,7 @@ import type {
   _Stretch_Line_,
   _Module_Language_,
   _Syntax_Line_
-} from "../source/editor/index.ts"
+} from "../source/ui/editor/index.ts"
 
 export {
   type _Syntax_,

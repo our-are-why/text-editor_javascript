@@ -23,40 +23,42 @@ sample in a scene's template literal, is content: leave it as written.
   }
   ```
 
-- **Parts.** `source/` holds one folder per part, each a module of its own:
-  `jsx/`, the JSX runtime; `editor/`, the text editor; `board/`, every task
-  of the project; `tasks/`, the tasks, their requests and proposals;
-  `documents/`, each document's versions, the changes stated against them and
-  the selections made in them, the editor's model among them, which the
-  editor draws; `agent/`, an agent's adapter, the jobs offered it, its waits,
-  the answers and next steps it's given; `shell/`, the parts put together,
-  taking commands in their terms, and the jobs a Start sets going, where each
-  stands, whoever does it; `host/`, the editor's and the board's host, their
-  asks made into the core's commands and the core's state into what they
-  draw, each editor's file and mode its own; `page/`, the page doctor's
-  program serves, an editor and the board, through a host, talking to the
-  core; and `program/`, doctor's program, run in a project's folder.
-  **They're in layers.** The core, `tasks/`, `documents/` and `shell/`, is
-  what everyone works on, knowing nothing of who, nor how they reach it:
-  what's a file's, as a selection, is the documents part's, even where only
-  the editor makes one. Each kind of actor has its adapter over the core,
-  turning its calls into the core's commands and the core's state into what
-  it's shown, and its transport: a person's, `host/`, drawn by `editor/`,
-  `board/` and `jsx/` in `page/`, over the page's socket, the page shown in a
-  browser or in VS Code, by `vscode/`; an agent's, `agent/`, over the agent's
-  endpoint, its face the `doctor` command. `program/` puts them together, the
-  core, both transports and the project's folder, and is no part of the core.
-  The core imports nothing from an adapter, nor one adapter from another. A
-  part's `index.ts` is its public API: another part, or a host, the
-  playground included, imports only from it, never from a file inside; the
-  tests may reach in, as they test what's inside. A name another part or a
-  host needs is added to the index, imported from its file and exported
-  again. Each part has its own `tsconfig.json`, giving it only what it may
-  use: the DOM for the editor, the board, the runtime and the page; none for
-  a part that isn't drawn, as the core and `agent/` aren't, so they run
-  anywhere, and Bun's for `program/`; `host/` draws nothing either, but reads
-  the editor's and the board's types through their indexes, so it's given the
-  DOM's types, as the board is, and uses nothing of it.
+- **Parts.** `source/` holds one folder per layer, each holding its parts,
+  each part a module of its own. `core/`, the core, what everyone works on,
+  knowing nothing of who, nor how they reach it: `core/tasks/`, the tasks,
+  their requests and proposals; `core/documents/`, each document's versions,
+  the changes stated against them and the selections made in them, the
+  editor's model among them, which the editor draws; and `core/shell/`, the
+  parts put together, taking commands in their terms, and the jobs a Start
+  sets going, where each stands, whoever does it. `ui/`, a person's adapter
+  over the core: `ui/jsx/`, the JSX runtime; `ui/editor/`, the text editor;
+  `ui/board/`, every task of the project; `ui/host/`, the editor's and the
+  board's host, their asks made into the core's commands and the core's state
+  into what they draw, each editor's file and mode its own; and `ui/page/`,
+  the page doctor's program serves, an editor and the board, through a host,
+  talking to the core over its socket. `agent/`, an agent's adapter over the
+  core: `agent/protocol/`, the jobs offered it, its waits, and the answers
+  and next steps it's given, over the agent's endpoint, its face the `doctor`
+  command. And `program/`, doctor's program, run in a project's folder,
+  putting the layers together, the core, both transports and the project's
+  folder, and no part of the core. Beside `source/`, `vscode/`, a deployment
+  target, the program composed with what VS Code needs, its page shown in VS
+  Code's tabs; and `playground/`, a host showing the parts' views. **The
+  layers:** each imports only its own and the core's, the core only itself,
+  and the program the core's and the agent's, the UI's page built by its
+  path, never imported; what's a file's, as a selection, is the documents
+  part's, even where only the editor makes one. A part's `index.ts` is its
+  public API: another part, or a host, the playground included, imports only
+  from it, never from a file inside; the tests may reach in, as they test
+  what's inside. `bun run check` checks both, by `scripts/checkLayers.ts`. A
+  name another part or a host needs is added to the index, imported from its
+  file and exported again. Each part has its own `tsconfig.json`, giving it
+  only what it may use: the DOM for the editor, the board, the runtime and
+  the page; none for a part that isn't drawn, as the core's and the agent's
+  aren't, so they run anywhere, and Bun's for `program/`; `ui/host/` draws
+  nothing either, but reads the editor's and the board's types through their
+  indexes, so it's given the DOM's types, as the board is, and uses nothing
+  of it.
 
 - **Interfaces for object types.** `interface X { … }`, never
   `type X = { … }`, index signatures and options objects included. A union,
@@ -109,24 +111,25 @@ sample in a scene's template literal, is content: leave it as written.
 - **Constants in `source/` are all caps**, keeping the `_` between head and
   qualifier: `REGEXP_LINEBREAK`. Constants elsewhere keep camelCase, for
   now.
-- **Comments.** Match the file: `source/editor/ViewModel_TextEditor.ts`,
-  `source/editor/View_TextEditor.tsx` and `source/jsx/Jsx.ts` have none.
-- **JSX for drawing.** Elements are written in JSX, which `source/jsx/Jsx.ts`
-  makes into descriptions, as Preact does, and `draw__Node_Jsx` draws into a
-  container: tags with string attributes, and components. An `<svg>`, and
-  what's drawn in one, or into one, is made in SVG's namespace; what's in
-  its `<foreignObject>`, in HTML's again. A node, what a child or a
-  component gives, is a description, text, a DOM node made elsewhere,
-  `null`, `undefined`, a boolean, or an array of them; nothing, `true` and
-  `false` draw nothing. No keys, no fragments, which `tsc` rejects. A
-  component is a function of its props, destructured in its signature,
-  returning `JSX.Element`, or the node it gives when it gives something
-  else: text, or nothing. Given more than one prop or attribute, a tag puts
-  each on its own line. A `ref` only takes its element, as a reference;
-  nothing's done in one: what's done to elements once they're drawn, text
-  underlays measured, the class does, after it draws, where it's seen. Its
-  exports, `jsx`, `jsxs`, `jsxDEV` and `JSX`, and the props `children` and
-  `ref`, are JSX's names, not ours.
+- **Comments.** Match the file: `source/ui/editor/ViewModel_TextEditor.ts`,
+  `source/ui/editor/View_TextEditor.tsx` and `source/ui/jsx/Jsx.ts` have
+  none.
+- **JSX for drawing.** Elements are written in JSX, which
+  `source/ui/jsx/Jsx.ts` makes into descriptions, as Preact does, and
+  `draw__Node_Jsx` draws into a container: tags with string attributes, and
+  components. An `<svg>`, and what's drawn in one, or into one, is made in
+  SVG's namespace; what's in its `<foreignObject>`, in HTML's again. A node,
+  what a child or a component gives, is a description, text, a DOM node made
+  elsewhere, `null`, `undefined`, a boolean, or an array of them; nothing,
+  `true` and `false` draw nothing. No keys, no fragments, which `tsc`
+  rejects. A component is a function of its props, destructured in its
+  signature, returning `JSX.Element`, or the node it gives when it gives
+  something else: text, or nothing. Given more than one prop or attribute, a
+  tag puts each on its own line. A `ref` only takes its element, as a
+  reference; nothing's done in one: what's done to elements once they're
+  drawn, text underlays measured, the class does, after it draws, where it's
+  seen. Its exports, `jsx`, `jsxs`, `jsxDEV` and `JSX`, and the props
+  `children` and `ref`, are JSX's names, not ours.
 - **Maps, not switches, for kinds.** A union's kinds are drawn by looking
   each one's component up in a component map typed by kind,
   `componentMap_View.block[block_ViewModel.kind]`, in a component generic
