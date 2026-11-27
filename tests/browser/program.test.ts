@@ -104,10 +104,11 @@ await rm(
   }
 )
 
-test("doctor open writes its endpoint to .doctor/, its address and the page's token, kept out of git", () => {
+test("doctor open writes its endpoint to .doctor/, its address, the page's token and the agent's, kept out of git", () => {
   expect(endpoint).toEqual({
     address: addresses.address,
     token_Page: program.token_Page,
+    token_Agent: program.token_Agent,
     pid: process.pid
   })
   expect(text_Ignore).toBe(`${NAME_ENDPOINT}\n*.writing\n`)

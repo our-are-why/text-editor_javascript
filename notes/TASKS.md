@@ -702,8 +702,10 @@ playground's host, `playground/host.ts`, plays all four for now, faked.
   time within a task, in the order they were made, at once across tasks,
   and the latest job a request's in, `jobOf__Request`; `_Agent_` holding
   them; tested by examples, and by a property over any sequence of moves.
-  Not yet: the endpoint and the command, working copies, the checker,
-  questions, and the editor drawing what's waiting for an agent.
+  The endpoint and the command, `doctor wait|take|check|done`, built
+  2026-11-27 with the shell's core, in `SHELL.md`. Not yet: working
+  copies, the checker, questions, and the editor drawing what's waiting
+  for an agent.
 - **the shell:** puts them together: keeps each editor's document and
   mode, across reloads too; takes each editor's commands to the part
   they're for; tells each open editor what it should now show, and passes
@@ -722,7 +724,9 @@ playground's host, `playground/host.ts`, plays all four for now, faked.
   the same day:** `doctor open`, `source/program/`, on a project's
   folder, serving the page, `source/page/`, the editor and the board
   talking to the shell over a socket; `bun run demo retry` opening it on a
-  demo.
+  demo. **Its third 2026-11-27:** the agent endpoint and
+  `doctor wait|take|check|done`, a Start in the page a job an agent in the
+  demo takes.
 
 ## what the editor draws for it
 

@@ -154,7 +154,8 @@ function hostedOf__Editor<State>({
             () => {
               const answer_Landing = shell.landed({
                 round_Shell,
-                proposed: round_Shell.proposed
+                proposed: round_Shell.proposed,
+                note: ""
               })
               if (!isOwn || answer_Landing.sources.length + answer_Landing.ids_Addressed.length === 0) return
               log({

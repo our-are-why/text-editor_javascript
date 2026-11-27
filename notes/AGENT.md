@@ -684,12 +684,13 @@ findings under the first principle: both harnesses keep to the loop; a
 wait's held as long as the agent asks, `wait --for`; a job's offered till a
 first check-in takes it, and checked in on between steps, which finds a
 stop. Begun 2026-11-26, `source/agent/`, its model first, jobs and their
-states, the mailbox's order, as `TASKS.md` says under who holds what; next,
-the endpoint and the command, built with the shell's core, `SHELL.md`, as
-they need a real project and a real host beside them, not the playground;
-then working copies and the checker, the editor drawing it, questions, and
-frames kept with the task; the spike in `spikes/mailbox/` thrown away once
-the endpoint's built. Details still open inside what's decided: how a
+states, the mailbox's order, as `TASKS.md` says under who holds what; then,
+2026-11-27, the endpoint and the command, built with the shell's core,
+`SHELL.md`, as they need a real project and a real host beside them, not
+the playground, a job handed back in words for now; next, working copies
+and the checker, then the editor drawing it, questions, and frames kept
+with the task; the spike in `spikes/mailbox/`, its work the endpoint's now,
+to be thrown away. Details still open inside what's decided: how a
 revision's compared, 3; where a working copy lives, a folder per job or a
 whole worktree-like copy, 3 and 5; frames' joining and splitting by hand,
 and the file's kinds' defaults, after frames kept with the task, 4; a

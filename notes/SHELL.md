@@ -170,7 +170,32 @@ What's built first, each a step that works on its own:
    need; and the shell's changes to the text while the page's own edits
    are on their way, which the page leaves till they've arrived;
 3. the agent endpoint and the `doctor` command, Start queuing a job an
-   agent in the demo takes;
+   agent in the demo takes. **Built 2026-11-27:** each round the shell
+   starts queued as a job, `j-` and the round's number, carrying what it
+   was started at; Stop cancelling every job it touches, the shell
+   stopping whole rounds, each one's other requests staged again, as
+   `AGENT.md` decided under 10; a task ended, its jobs cancelled. The
+   protocol in the agent part, `Protocol_Agent.ts`, plain data: what each
+   call answers and its next step, a check-in's and a hand back's by maps
+   of the job's state; the endpoint in the program, at `/agent/`, the
+   agent's token in `.doctor/endpoint.json` beside the page's: a wait
+   held as long as it's asked, 50 seconds unless it says, up to an hour,
+   answered the moment a job it may take is queued, never given one once
+   its caller's gone, and answered closed as doctor stops; an offer let
+   go after a minute untaken, queued again in its place; a job offered
+   with its brief, `briefOf__Job`, the shell's: its task, its requests,
+   the rest of the task's requests and its proposals to inform it, and the
+   task's files. `doctor wait|take|check|done`, the same command as
+   `doctor open`, finding the endpoint by `.doctor/` up from where it's
+   run; its answers saying the command as it can be run there, `doctor`
+   on the path, else `bun` and its file. Handed back, a job's requests
+   addressed with the agent's note, nothing changed, as a job's asked to
+   answer in words and change no file till working copies come, doctor
+   writing its own text over a file changed under it. Tested by the
+   command run in a demo against doctor held in the test. Not yet: the
+   note drawn in the editor, the host's API carrying none; and the editor
+   telling a job queued from one being worked on, or gone quiet, step 5's
+   of `AGENT.md`'s order;
 4. working copies, the diff and the checker, an agent's work landing as
    proposals;
 5. tests spinning up a demo, as the browser tests open the playground now.

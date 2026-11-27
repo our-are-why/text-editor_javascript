@@ -8,6 +8,8 @@ import {
   pathFirstOf__Files,
   addressesOf__Program,
   type _Addresses_Program_,
+  commandOf__Doctor,
+  endpointOf__Folder,
   DIR_DOCTOR,
   NAME_ENDPOINT
 } from "./Program.ts"
@@ -22,6 +24,8 @@ export {
   pathFirstOf__Files,
   addressesOf__Program,
   type _Addresses_Program_,
+  commandOf__Doctor,
+  endpointOf__Folder,
   DIR_DOCTOR,
   NAME_ENDPOINT
 }

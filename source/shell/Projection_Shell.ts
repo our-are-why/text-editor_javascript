@@ -59,7 +59,11 @@ export {
   scopeOf__Work,
   type _Api___scopeOf__Work_,
   type _ScopeMap__Kind_Work_,
-  SCOPEMAP_WORK
+  SCOPEMAP_WORK,
+  briefOf__Job,
+  type _Api___briefOf__Job_,
+  type _Brief_Job_,
+  type _Task_Brief_
 }
 
 interface _Api___taskHostOf__Task_ {
@@ -510,4 +514,42 @@ const SCOPEMAP_WORK: _ScopeMap__Kind_Work_ = {
   TASK: () => ({
     kind: "TASK"
   })
+}
+
+interface _Api___briefOf__Job_ {
+  task: _Task_Tasks_
+  ids_Request: Array<string>
+}
+
+interface _Brief_Job_ {
+  task: _Task_Brief_
+  requests: Array<_Request_Tasks_>
+  requests_Other: Array<_Request_Tasks_>
+  proposals: Array<_Proposal_Tasks_>
+  files: Array<string>
+}
+
+interface _Task_Brief_ {
+  id: string
+  name: string
+  summary: string
+}
+
+function briefOf__Job({
+  task,
+  ids_Request
+}: _Api___briefOf__Job_): _Brief_Job_ {
+  return {
+    task: {
+      id: task.id,
+      name: task.name,
+      summary: task.summary
+    },
+    requests: task.requests.filter((request) => ids_Request.includes(request.id)),
+    requests_Other: task.requests.filter((request) => !ids_Request.includes(request.id) && request.status.kind !== "ADDRESSED"),
+    proposals: task.proposals,
+    files: pathsOf__Task({
+      task
+    })
+  }
 }

@@ -24,6 +24,7 @@ import {
   type _OPEN_Task_Tasks_,
   type _Request_Tasks_,
   type _Aim_Request_Tasks_,
+  type _Scope_Tasks_,
   type _Stamp_Tasks_,
   type _Author_Tasks_,
   type _Words_Aim_
@@ -314,8 +315,8 @@ class _Shell_ {
     }).includes(id)
     const ids_Current = round_Shell.requests.flatMap((request) => isCurrent(request.id) ? [request.id] : [])
     const idsOf = (source: string) => round_Shell.requests.flatMap((request) => request.aim.kind === "PROPOSAL" && request.aim.id_Proposal === source && ids_Current.includes(request.id) ? [request.id] : [])
-    const sources_Landing = round_Shell.sources.filter((source) => idsOf(source).length > 0)
-    const ids_Addressed = round_Shell.requests.flatMap((request) => request.aim.kind !== "PROPOSAL" && ids_Current.includes(request.id) ? [request.id] : [])
+    const sources_Landing = round_Shell.sources.filter((source) => idsOf(source).length > 0 && landing_Round.proposed.some((changes_Source) => changes_Source.source === source))
+    const ids_Addressed = round_Shell.requests.flatMap((request) => ids_Current.includes(request.id) && !(request.aim.kind === "PROPOSAL" && sources_Landing.includes(request.aim.id_Proposal)) ? [request.id] : [])
     if (sources_Landing.length + ids_Addressed.length === 0) {
       return {
         sources: [],
@@ -346,7 +347,7 @@ class _Shell_ {
         ids_Request: ids_Addressed,
         answer: {
           kind: "NOTHING",
-          note: ""
+          note: landing_Round.note
         }
       })
     }
@@ -536,14 +537,15 @@ class _Shell_ {
     const ids_Before = idsOf__Started({
       task
     })
+    const scope = scopeOf__Work({
+      scope_Work,
+      task,
+      name_Document: this.name_Document
+    })
     this.tasks.handle({
       kind: "START",
       id_Task,
-      scope: scopeOf__Work({
-        scope_Work,
-        task,
-        name_Document: this.name_Document
-      }),
+      scope,
       stamp: stampOf({
         by: "HUMAN"
       })
@@ -557,6 +559,7 @@ class _Shell_ {
     const round_Shell: _Round_Shell_ = {
       id: this.count_Round,
       id_Task,
+      scope,
       requests: requests_Started,
       sources,
       version: this.documentOf().version,
@@ -613,6 +616,31 @@ class _Shell_ {
         name_Document: this.name_Document
       })
     })
+    const roundOf = (id: string) => this.rounds_Request.get(keyIn__Task({
+      id_Task,
+      id
+    }))
+    const ids_Round = [
+      ...new Set(ids_Before.flatMap((id) => {
+        const id_Round = roundOf(id)
+        return idsOf__Started({
+          task: this.taskOf(id_Task)
+        }).includes(id) || id_Round === undefined ? [] : [id_Round]
+      }))
+    ]
+    const ids_Rest = idsOf__Started({
+      task: this.taskOf(id_Task)
+    }).filter((id) => ids_Round.some((id_Round) => id_Round === roundOf(id)))
+    if (ids_Rest.length > 0) {
+      this.tasks.handle({
+        kind: "STOP",
+        id_Task,
+        scope: {
+          kind: "REQUESTS",
+          ids_Request: ids_Rest
+        }
+      })
+    }
     const ids_After = idsOf__Started({
       task: this.taskOf(id_Task)
     })
@@ -627,7 +655,8 @@ class _Shell_ {
       observer.stopped({
         id_Task,
         scope_Work,
-        ids_Request: ids_Stopped
+        ids_Request: ids_Stopped,
+        ids_Round
       })
     }
   }
@@ -777,6 +806,7 @@ interface _Shown_Shell_ {
 interface _Round_Shell_ {
   id: number
   id_Task: string
+  scope: _Scope_Tasks_
   requests: Array<_Request_Tasks_>
   sources: Array<string>
   version: string
@@ -787,11 +817,13 @@ interface _Stop_Shell_ {
   id_Task: string
   scope_Work: _Scope_Work_
   ids_Request: Array<string>
+  ids_Round: Array<number>
 }
 
 interface _Landing_Round_ {
   round_Shell: _Round_Shell_
   proposed: Array<_Changes_Source_>
+  note: string
 }
 
 interface _Answer_Landing_ {

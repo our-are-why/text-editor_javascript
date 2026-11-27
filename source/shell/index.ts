@@ -20,7 +20,9 @@ import {
   ACTIONS_REOPEN,
   ACTIONS_DISMISS,
   roundsOf__Stale,
-  scopeOf__Work
+  scopeOf__Work,
+  briefOf__Job,
+  type _Brief_Job_
 } from "./Projection_Shell.ts"
 import {
   handle__Message_Page,
@@ -51,6 +53,8 @@ export {
   ACTIONS_DISMISS,
   roundsOf__Stale,
   scopeOf__Work,
+  briefOf__Job,
+  type _Brief_Job_,
   handle__Message_Page,
   type _Message_Page_,
   type _Message_Shell_,

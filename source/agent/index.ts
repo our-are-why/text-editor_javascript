@@ -37,6 +37,21 @@ import {
   jobOf__Request,
   type _Api___jobOf__Request_
 } from "./Model_Agent.ts"
+import {
+  answeredOf__Offer,
+  type _Answered_Call_,
+  type _Answer_Agent_,
+  type _JOB_Answer_Agent_,
+  type _Offered_Job_,
+  answerOf__NothingYet,
+  ANSWER_CLOSED,
+  answeredOf__Check,
+  answeredOf__Done,
+  answerOf__Refused,
+  commandOf__Wait,
+  SECONDS_WAIT,
+  SECONDS_WAIT_MOST
+} from "./Protocol_Agent.ts"
 
 export {
   _Agent_,
@@ -73,5 +88,18 @@ export {
   type _ANY_From_Wait_,
   type _TASK_From_Wait_,
   jobOf__Request,
-  type _Api___jobOf__Request_
+  type _Api___jobOf__Request_,
+  answeredOf__Offer,
+  type _Answered_Call_,
+  type _Answer_Agent_,
+  type _JOB_Answer_Agent_,
+  type _Offered_Job_,
+  answerOf__NothingYet,
+  ANSWER_CLOSED,
+  answeredOf__Check,
+  answeredOf__Done,
+  answerOf__Refused,
+  commandOf__Wait,
+  SECONDS_WAIT,
+  SECONDS_WAIT_MOST
 }

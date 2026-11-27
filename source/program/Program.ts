@@ -1,5 +1,6 @@
 import {
   basename,
+  dirname,
   join
 } from "node:path"
 import {
@@ -20,11 +21,31 @@ import {
 } from "../documents/index.ts"
 import { _Tasks_ } from "../tasks/index.ts"
 import {
+  _Agent_,
+  answerOf__Refused,
+  SECONDS_WAIT,
+  commandOf__Wait,
+  ANSWER_CLOSED,
+  answerOf__NothingYet,
+  nextOf__Mailbox,
+  answeredOf__Offer,
+  MS_LAPSE__OFFER,
+  answeredOf__Check,
+  answeredOf__Done,
+  SECONDS_WAIT_MOST,
+  type _From_Wait_,
+  type _Answer_Agent_,
+  type _Answered_Call_
+} from "../agent/index.ts"
+import {
   _Shell_,
   handle__Message_Page,
+  briefOf__Job,
   type _Shown_Shell_,
   type _Message_Page_,
-  type _Message_Shell_
+  type _Message_Shell_,
+  type _Round_Shell_,
+  type _Stop_Shell_
 } from "../shell/index.ts"
 
 export {
@@ -32,6 +53,14 @@ export {
   type _Api__Program_,
   type _Built_Page_,
   type _File_Page_,
+  type _Api___waited__Program_,
+  type _Api___offeredOf__Program_,
+  type _Api___called__Program_,
+  type _Kind_Call_,
+  type _Api___handedBack__Program_,
+  responseOf__Answer,
+  type _Api___responseOf__Answer_,
+  secondsOf__Wait,
   type _Endpoint_Program_,
   openedOf__Program,
   type _Api___openedOf__Program_,
@@ -45,6 +74,9 @@ export {
   addressesOf__Program,
   type _Api___addressesOf__Program_,
   type _Addresses_Program_,
+  commandOf__Doctor,
+  endpointOf__Folder,
+  type _Api___endpointOf__Folder_,
   DIR_DOCTOR,
   NAME_ENDPOINT
 }
@@ -54,9 +86,15 @@ class _Program_ {
   files: Array<string>
   page_Built: _Built_Page_
   token_Page: string
+  token_Agent: string
+  command_Agent: string
   texts_Written: Map<string, string>
   writing: Promise<void>
   documents: _Documents_
+  agent: _Agent_
+  rounds_Job: Map<string, _Round_Shell_>
+  wakers: Array<() => void>
+  isClosing: boolean
   shell: _Shell_
   sockets_Page: Set<ServerWebSocket<undefined>>
   count_Edit: number
@@ -69,12 +107,16 @@ class _Program_ {
     text_Shown,
     page_Built,
     token_Page,
+    token_Agent,
+    command_Agent,
     port
   }: _Api__Program_) {
     this.dir_Project = dir_Project
     this.files = files
     this.page_Built = page_Built
     this.token_Page = token_Page
+    this.token_Agent = token_Agent
+    this.command_Agent = command_Agent
     const text_Model = {
       lines: parseTexts_Line(text_Shown),
       marks: []
@@ -101,6 +143,19 @@ class _Program_ {
       path: path_Shown,
       text: text_Model
     })
+    this.agent = new _Agent_({
+      model_Agent: {
+        jobs: []
+      },
+      observers: [
+        {
+          changed: () => this.woken()
+        }
+      ]
+    })
+    this.rounds_Job = new Map()
+    this.wakers = []
+    this.isClosing = false
     this.shell = new _Shell_({
       tasks: new _Tasks_({
         model_Tasks: {
@@ -119,8 +174,8 @@ class _Program_ {
       observers: [
         {
           shown: (shown_Shell) => this.shown(shown_Shell),
-          started: () => {},
-          stopped: () => {},
+          started: (round_Shell) => this.queued(round_Shell),
+          stopped: (stop_Shell) => this.cancelled(stop_Shell),
           opening: (path) => this.opening(path)
         }
       ]
@@ -145,8 +200,9 @@ class _Program_ {
 
   fetched(
     request: Request
-  ): Response | undefined {
+  ): Response | Promise<Response> | undefined {
     const url = new URL(request.url)
+    if (url.pathname.startsWith("/agent/")) return this.answered(request)
     const name = url.pathname.slice(url.pathname.lastIndexOf("/") + 1)
     if (name === "socket") {
       if (url.searchParams.get("token") !== this.token_Page) {
@@ -189,6 +245,273 @@ class _Program_ {
       )
   }
 
+  answered(
+    request: Request
+  ): Response | Promise<Response> {
+    const url = new URL(request.url)
+    if (request.headers.get("authorization") !== `Bearer ${this.token_Agent}`) {
+      return responseOf__Answer({
+        answer_Agent: answerOf__Refused({
+          issues: ["that isn't this project's agent token: run the command from inside the project"],
+          command_Agent: this.command_Agent
+        }),
+        status: 401
+      })
+    }
+    const id_Task = url.searchParams.get("task")
+    const from: _From_Wait_ = id_Task === null
+      ? {
+        kind: "ANY"
+      }
+      : {
+        kind: "TASK",
+        id_Task
+      }
+    const route = `${request.method} ${url.pathname}`
+    if (route === "GET /agent/wait") {
+      return this.waited({
+        request,
+        from,
+        seconds: secondsOf__Wait(url.searchParams.get("for"))
+      })
+    }
+    if (route === "GET /agent/take") {
+      const command_Wait = commandOf__Wait({
+        command_Agent: this.command_Agent,
+        seconds: SECONDS_WAIT,
+        from
+      })
+      return responseOf__Answer({
+        answer_Agent: this.offeredOf({
+          from,
+          command_Wait
+        }) ?? answerOf__NothingYet({
+          command_Wait
+        }),
+        status: 200
+      })
+    }
+    const call = url.pathname.match(/^\/agent\/job\/([^/]+)\/(check|done)$/)
+    if (request.method === "POST" && call !== null) {
+      return this.called({
+        request,
+        id_Job: call[1] ?? "",
+        kind_Call: call[2] === "done" ? "DONE" : "CHECK"
+      })
+    }
+    return responseOf__Answer({
+      answer_Agent: answerOf__Refused({
+        issues: [`there's no ${route}`],
+        command_Agent: this.command_Agent
+      }),
+      status: 404
+    })
+  }
+
+  async waited({
+    request,
+    from,
+    seconds
+  }: _Api___waited__Program_): Promise<Response> {
+    this.server.timeout(
+      request,
+      0
+    )
+    const command_Wait = commandOf__Wait({
+      command_Agent: this.command_Agent,
+      seconds,
+      from
+    })
+    const until = Date.now() + seconds * 1000
+    const gone = new Promise<void>((resolve) => request.signal.addEventListener(
+      "abort",
+      () => resolve()
+    ))
+    for (;;) {
+      if (this.isClosing) {
+        return responseOf__Answer({
+          answer_Agent: ANSWER_CLOSED,
+          status: 200
+        })
+      }
+      if (request.signal.aborted) {
+        return new Response(
+          null,
+          {
+            status: 499
+          }
+        )
+      }
+      const answer_Offer = this.offeredOf({
+        from,
+        command_Wait
+      })
+      if (answer_Offer !== undefined) {
+        return responseOf__Answer({
+          answer_Agent: answer_Offer,
+          status: 200
+        })
+      }
+      const left = until - Date.now()
+      if (left <= 0) {
+        return responseOf__Answer({
+          answer_Agent: answerOf__NothingYet({
+            command_Wait
+          }),
+          status: 200
+        })
+      }
+      await Promise.race([
+        new Promise<void>((resolve) => this.wakers.push(resolve)),
+        gone,
+        Bun.sleep(left)
+      ])
+    }
+  }
+
+  offeredOf({
+    from,
+    command_Wait
+  }: _Api___offeredOf__Program_): _Answer_Agent_ | undefined {
+    for (;;) {
+      const job_Agent = nextOf__Mailbox({
+        model_Agent: this.agent.model_Agent,
+        from
+      })
+      if (job_Agent === undefined) return undefined
+      const task = this.shell.taskOf(job_Agent.id_Task)
+      if (task === undefined) {
+        this.agent.handle({
+          kind: "CANCEL",
+          id_Job: job_Agent.id,
+          at: Date.now()
+        })
+        continue
+      }
+      const answered_Call = answeredOf__Offer({
+        job_Agent,
+        brief: briefOf__Job({
+          task,
+          ids_Request: job_Agent.ids_Request
+        }),
+        at: Date.now(),
+        command_Agent: this.command_Agent,
+        command_Wait
+      })
+      this.applied(answered_Call)
+      setTimeout(
+        () => this.agent.handle({
+          kind: "LAPSE",
+          at: Date.now()
+        }),
+        MS_LAPSE__OFFER + 100
+      ).unref()
+      return answered_Call.answer_Agent
+    }
+  }
+
+  async called({
+    request,
+    id_Job,
+    kind_Call
+  }: _Api___called__Program_): Promise<Response> {
+    const body: unknown = await request.json().catch(() => ({}))
+    const note = typeof body === "object" && body !== null && "note" in body && typeof body.note === "string" ? body.note : ""
+    const answered_Call = kind_Call === "DONE"
+      ? answeredOf__Done({
+        model_Agent: this.agent.model_Agent,
+        id_Job,
+        at: Date.now(),
+        command_Agent: this.command_Agent
+      })
+      : answeredOf__Check({
+        model_Agent: this.agent.model_Agent,
+        id_Job,
+        note,
+        at: Date.now(),
+        command_Agent: this.command_Agent
+      })
+    this.applied(answered_Call)
+    if (answered_Call.answer_Agent.kind === "HANDED_BACK") {
+      this.handedBack({
+        id_Job,
+        note
+      })
+    }
+    return responseOf__Answer({
+      answer_Agent: answered_Call.answer_Agent,
+      status: answered_Call.answer_Agent.kind === "REFUSED" ? 409 : 200
+    })
+  }
+
+  applied(
+    answered_Call: _Answered_Call_
+  ): void {
+    for (const command_Agent of answered_Call.commands_Agent) this.agent.handle(command_Agent)
+  }
+
+  handedBack({
+    id_Job,
+    note
+  }: _Api___handedBack__Program_): void {
+    const round_Shell = this.rounds_Job.get(id_Job)
+    if (round_Shell === undefined) return
+    this.shell.landed({
+      round_Shell,
+      proposed: [],
+      note
+    })
+  }
+
+  queued(
+    round_Shell: _Round_Shell_
+  ): void {
+    if (round_Shell.requests.length === 0) return
+    const id_Job = `j-${round_Shell.id}`
+    this.rounds_Job.set(
+      id_Job,
+      round_Shell
+    )
+    this.agent.handle({
+      kind: "QUEUE",
+      id_Job,
+      id_Task: round_Shell.id_Task,
+      scope: round_Shell.scope,
+      ids_Request: round_Shell.requests.map((request) => request.id),
+      at: Date.now()
+    })
+  }
+
+  cancelled(
+    stop_Shell: _Stop_Shell_
+  ): void {
+    for (const id_Round of stop_Shell.ids_Round) {
+      this.agent.handle({
+        kind: "CANCEL",
+        id_Job: `j-${id_Round}`,
+        at: Date.now()
+      })
+    }
+  }
+
+  ended(): void {
+    for (const job_Agent of this.agent.model_Agent.jobs) {
+      const isLive = job_Agent.state.kind === "QUEUED" || job_Agent.state.kind === "OFFERED" || job_Agent.state.kind === "BEING_WORKED_ON"
+      if (!isLive || this.shell.taskOf(job_Agent.id_Task)?.kind === "OPEN") continue
+      this.agent.handle({
+        kind: "CANCEL",
+        id_Job: job_Agent.id,
+        at: Date.now()
+      })
+    }
+  }
+
+  woken(): void {
+    const wakers = this.wakers
+    this.wakers = []
+    for (const wake of wakers) wake()
+  }
+
   connected(
     socket: ServerWebSocket<undefined>
   ): void {
@@ -221,6 +544,7 @@ class _Program_ {
   shown(
     shown_Shell: _Shown_Shell_
   ): void {
+    this.ended()
     this.sent({
       kind: "SHOWN",
       shown_Shell,
@@ -278,6 +602,9 @@ class _Program_ {
   }
 
   async stop(): Promise<void> {
+    this.isClosing = true
+    this.woken()
+    await Bun.sleep(50)
     await this.server.stop(true)
     await this.writing
     await rm(
@@ -296,7 +623,60 @@ interface _Api__Program_ {
   text_Shown: string
   page_Built: _Built_Page_
   token_Page: string
+  token_Agent: string
+  command_Agent: string
   port: number
+}
+
+interface _Api___waited__Program_ {
+  request: Request
+  from: _From_Wait_
+  seconds: number
+}
+
+interface _Api___offeredOf__Program_ {
+  from: _From_Wait_
+  command_Wait: string
+}
+
+interface _Api___called__Program_ {
+  request: Request
+  id_Job: string
+  kind_Call: _Kind_Call_
+}
+
+type _Kind_Call_ = "CHECK" | "DONE"
+
+interface _Api___handedBack__Program_ {
+  id_Job: string
+  note: string
+}
+
+interface _Api___responseOf__Answer_ {
+  answer_Agent: _Answer_Agent_
+  status: number
+}
+
+function responseOf__Answer({
+  answer_Agent,
+  status
+}: _Api___responseOf__Answer_): Response {
+  return new Response(
+    JSON.stringify(answer_Agent),
+    {
+      status,
+      headers: {
+        "content-type": "application/json"
+      }
+    }
+  )
+}
+
+function secondsOf__Wait(
+  text_Seconds: string | null
+): number {
+  const seconds = Number(text_Seconds ?? SECONDS_WAIT)
+  return Number.isFinite(seconds) && seconds >= 1 ? Math.min(Math.round(seconds), SECONDS_WAIT_MOST) : SECONDS_WAIT
 }
 
 interface _Built_Page_ {
@@ -312,6 +692,7 @@ interface _File_Page_ {
 interface _Endpoint_Program_ {
   address: string
   token_Page: string
+  token_Agent: string
   pid: number
 }
 
@@ -370,6 +751,8 @@ async function openedOf__Program({
       title: basename(dir_Project)
     }),
     token_Page: tokenOf(),
+    token_Agent: tokenOf(),
+    command_Agent: commandOf__Doctor(),
     port
   })
   await mkdir(
@@ -386,6 +769,7 @@ async function openedOf__Program({
       uri_Proxy: undefined
     }).address,
     token_Page: program.token_Page,
+    token_Agent: program.token_Agent,
     pid: process.pid
   }
   await Bun.write(
@@ -503,4 +887,24 @@ function addressesOf__Program({
     page: `${address}${query}`,
     page_Proxied: uri_Proxy === undefined ? undefined : `${uri_Proxy.replace("{{port}}", String(program.server.port))}${query}`
   }
+}
+
+function commandOf__Doctor(): string {
+  return Bun.which("doctor") === null ? `bun ${join(import.meta.dir, "doctor.ts")}` : "doctor"
+}
+
+interface _Api___endpointOf__Folder_ {
+  dir: string
+}
+
+async function endpointOf__Folder({
+  dir
+}: _Api___endpointOf__Folder_): Promise<_Endpoint_Program_ | undefined> {
+  const file_Endpoint = Bun.file(join(dir, DIR_DOCTOR, NAME_ENDPOINT))
+  if (await file_Endpoint.exists()) return await file_Endpoint.json()
+  return dirname(dir) === dir
+    ? undefined
+    : endpointOf__Folder({
+      dir: dirname(dir)
+    })
 }
