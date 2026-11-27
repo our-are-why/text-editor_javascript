@@ -88,7 +88,8 @@ an agent dropping out loses nothing of yours, its job shown gone quiet,
 for you to stop and start again, so robustness never rests on an agent
 behaving.
 
-**Found by the spike,** 2026-11-26, `spikes/mailbox/`, a mailbox, a wait,
+**Found by the spike,** 2026-11-26, `spikes/mailbox/`, in git at `1c729e6`,
+thrown away 2026-11-27 once the endpoint was built, a mailbox, a wait,
 a take, a hand back and a stop, each call logged, tried in real sessions
 of Claude Code, 28 minutes, and `agy`, 6, Codex having no subscription
 here. Both keep to the loop: waiting, woken mid-wait as a job lands,
@@ -689,8 +690,8 @@ states, the mailbox's order, as `TASKS.md` says under who holds what; then,
 `SHELL.md`, as they need a real project and a real host beside them, not
 the playground, a job handed back in words for now; next, working copies
 and the checker, then the editor drawing it, questions, and frames kept
-with the task; the spike in `spikes/mailbox/`, its work the endpoint's now,
-to be thrown away. Details still open inside what's decided: how a
+with the task; the spike thrown away, its work the endpoint's now, kept in
+git at `1c729e6`. Details still open inside what's decided: how a
 revision's compared, 3; where a working copy lives, a folder per job or a
 whole worktree-like copy, 3 and 5; frames' joining and splitting by hand,
 and the file's kinds' defaults, after frames kept with the task, 4; a
