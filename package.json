@@ -7,10 +7,11 @@
     "#jsx/jsx-dev-runtime": "./source/jsx/Jsx.ts"
   },
   "scripts": {
-    "check": "tsc -p tsconfig.json && tsc -p playground && tsc -p source/jsx && tsc -p source/editor && tsc -p source/board && tsc -p source/tasks && tsc -p source/documents && tsc -p source/agent && tsc -p source/shell",
+    "check": "tsc -p tsconfig.json && tsc -p playground && tsc -p source/jsx && tsc -p source/editor && tsc -p source/board && tsc -p source/tasks && tsc -p source/documents && tsc -p source/agent && tsc -p source/shell && tsc -p source/page && tsc -p source/program",
     "test": "bun test",
     "playground": "bun scripts/servePlayground.ts",
-    "demo": "bun scripts/demo.ts"
+    "demo": "bun scripts/demo.ts",
+    "doctor": "bun source/program/doctor.ts"
   },
   "devDependencies": {
     "@types/bun": "1.4.4",

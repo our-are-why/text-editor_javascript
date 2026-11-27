@@ -22,6 +22,13 @@ import {
   roundsOf__Stale,
   scopeOf__Work
 } from "./Projection_Shell.ts"
+import {
+  handle__Message_Page,
+  type _Message_Page_,
+  type _Message_Shell_,
+  type __BASE_Message_Shell_,
+  type _SHOWN_Message_Shell_
+} from "./Message_Shell.ts"
 
 export {
   _Shell_,
@@ -43,5 +50,10 @@ export {
   ACTIONS_REOPEN,
   ACTIONS_DISMISS,
   roundsOf__Stale,
-  scopeOf__Work
+  scopeOf__Work,
+  handle__Message_Page,
+  type _Message_Page_,
+  type _Message_Shell_,
+  type __BASE_Message_Shell_,
+  type _SHOWN_Message_Shell_
 }

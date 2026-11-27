@@ -39,8 +39,10 @@ module and README the playground's examples draw. `bun run demo <name>`
 copies one to a folder of its own in the system's temporary folder, outside
 this repository, so an agent opened there works in a project of its own,
 not inside doctor's, its rules and its git; makes it a git repository with
-one commit; and, once the shell's built, opens doctor on it. A demo's
-thrown away as the folder's cleared, and made again whenever wanted, as the
+one commit; and opens doctor on it, `doctor open`, its page's address
+printed, and, run in code-server's terminal, the address through its
+proxy, as `VSCODE_PROXY_URI` gives it. A demo's thrown away as the
+folder's cleared, and made again whenever wanted, as the
 prototype's `samples/` were copied into a `playground/` to play in.
 
 ## VS Code, later
@@ -106,9 +108,11 @@ picker needs anyway.
    reading what changes; not in the core.
 6. **Several editors, and pages.** One page, one editor, to begin with;
    `TASKS.md`'s several editors after.
-7. **Which files.** A project's files the documents part opens as they're
-   asked for, a page's file picker listing the folder's text files, never
-   what git ignores, nor `.doctor/`.
+7. **Which files.** **Decided 2026-11-26,** as leaned, and built with the
+   core's second step: a project's files the documents part opens as
+   they're asked for, the editor's picker listing the folder's text files,
+   git's own and those it doesn't ignore, never `.doctor/`'s, nor one with
+   a NUL in its first 8,000 bytes; listed once, as doctor's opened.
 
 ## the core, in order
 
@@ -133,7 +137,38 @@ What's built first, each a step that works on its own:
    DOM's types, as the board's has, though it uses nothing of the DOM;
    and a round's what the agent part's job becomes, at step 3;
 2. `doctor open`: the program, the parts, `.doctor/`, the page served, its
-   socket, an editor on a sample's file, editing it, switching tasks;
+   socket, an editor on a sample's file, editing it, switching tasks.
+   **Built 2026-11-26:** `source/program/`, Bun's, `doctor open [folder]
+   [--file <path>] [--port <port>]`, `bun run doctor`, on 127.0.0.1 and a
+   free port unless one's given, the file shown first the one asked for,
+   else the README, else the first; the shell holding the tasks part,
+   empty, and the documents part, each file opened as the editor asks for
+   it, the shell asking its host to read it, as it reads nothing itself;
+   the page built by Bun as doctor opens and served by relative addresses,
+   at its root or under a proxy's prefix, alike; its socket shut to a
+   caller without the page's token, given the page in its own address;
+   `.doctor/endpoint.json`, the address, the page's token and the pid,
+   with a `.gitignore` keeping it out of git, taken away when doctor's
+   stopped; and what moves a file, an edit in manual or a task applied,
+   written to it at once, through a file in `.doctor/` renamed over it.
+   `source/page/`, the DOM's: the editor and the board, made from what
+   the shell first shows, every edit and ask sent up, what's shown drawn,
+   the editor keeping its own model, and its undo history, while the
+   shell's yet to have every edit it sent, or when what's shown is the
+   same; the board shown and hidden by the page; one page at a time,
+   another taking over, and a reload coming back as it was left, the shell
+   holding it. The messages between them in the shell part,
+   `Message_Shell.ts`, an edit saying which file it was made in, so one
+   crossing a file's opening is dropped. Tested by a demo opened in
+   Chromium. Not yet: a file's language, every file drawn as plain text,
+   as the syntax modules are the playground's; a file's line endings,
+   written with `\n`; the frame ranges a host gives, which widen and join
+   the frames the editor draws round the changes, every frame drawn as in
+   the playground but none of them widened, as nothing keeps the ranges
+   till frames are kept with the task, and given the editor only as it's
+   made, not as it's updated, which a page opening file after file will
+   need; and the shell's changes to the text while the page's own edits
+   are on their way, which the page leaves till they've arrived;
 3. the agent endpoint and the `doctor` command, Start queuing a job an
    agent in the demo takes;
 4. working copies, the diff and the checker, an agent's work landing as

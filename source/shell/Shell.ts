@@ -36,7 +36,8 @@ import {
   type _Document_Documents_,
   type _Head_Document_,
   type _Changes_Source_,
-  type _Model_TextEditor_
+  type _Model_TextEditor_,
+  type _Text_Model_
 } from "../documents/index.ts"
 import {
   roundsOf__Stale,
@@ -61,6 +62,7 @@ export {
   type _Stop_Shell_,
   type _Landing_Round_,
   type _Answer_Landing_,
+  type _Api___opened__Shell_,
   type _Api___requestsOf__Rerun__Shell_,
   type _Api___restated__Shell_,
   type _Api___landedOn__Shell_,
@@ -353,6 +355,22 @@ class _Shell_ {
       sources: sources_Landing,
       ids_Addressed
     }
+  }
+
+  opened({
+    path,
+    text
+  }: _Api___opened__Shell_): void {
+    const isKept = this.documents.model_Documents.documents.some((document) => document.path === path)
+    if (!isKept) {
+      this.documents.handle({
+        kind: "OPEN",
+        path,
+        text
+      })
+    }
+    this.name_Document = path
+    this.updated()
   }
 
   requestsOf__Rerun({
@@ -748,6 +766,7 @@ interface _Observer_Shell_ {
   shown: (shown_Shell: _Shown_Shell_) => void
   started: (round_Shell: _Round_Shell_) => void
   stopped: (stop_Shell: _Stop_Shell_) => void
+  opening: (path: string) => void
 }
 
 interface _Shown_Shell_ {
@@ -778,6 +797,11 @@ interface _Landing_Round_ {
 interface _Answer_Landing_ {
   sources: Array<string>
   ids_Addressed: Array<string>
+}
+
+interface _Api___opened__Shell_ {
+  path: string
+  text: _Text_Model_
 }
 
 interface _Api___requestsOf__Rerun__Shell_ {
@@ -1060,7 +1084,11 @@ function SWITCH_handle__Asked_Host({
   return true
 }
 
-function OPEN_FILE__handle__Asked_Host({}: _Api___handle__Asked_Host_<"OPEN_FILE">): boolean {
+function OPEN_FILE__handle__Asked_Host({
+  shell,
+  asked_Host
+}: _Api___handle__Asked_Host_<"OPEN_FILE">): boolean {
+  for (const observer of shell.observers) observer.opening(asked_Host.path)
   return true
 }
 

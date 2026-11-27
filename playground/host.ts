@@ -173,7 +173,10 @@ function hostedOf__Editor<State>({
             stopped: stop_Shell.scope_Work.kind,
             requests: stop_Shell.ids_Request.length
           })
-        }
+        },
+        // the playground has one document an example, so a file asked for,
+        // reported, opens nothing
+        opening: () => {}
       }
     ]
   })

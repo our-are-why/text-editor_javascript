@@ -1,4 +1,9 @@
-import { cpSync, existsSync, mkdirSync, readdirSync } from "node:fs"
+import {
+  cpSync,
+  existsSync,
+  mkdirSync,
+  readdirSync
+} from "node:fs"
 import { tmpdir } from "node:os"
 import { join } from "node:path"
 
@@ -38,7 +43,8 @@ async function madeOf__Demo({
 }
 
 // bun run demo <sample>: a demo of it, in the system's temporary folder,
-// gone as it's cleared
+// gone as it's cleared, and doctor opened on it, as doctor open would be by
+// hand, till it's stopped with Ctrl-C
 if (import.meta.main) {
   const name_Sample = process.argv[2]
   const names_Sample = readdirSync(join(import.meta.dir, "..", "samples"))
@@ -51,4 +57,24 @@ if (import.meta.main) {
     dir_Demos: join(tmpdir(), "doctor-demos")
   })
   console.log(`The ${name_Sample} demo's at ${dir_Demo}`)
+  const subprocess = Bun.spawn(
+    [
+      "bun",
+      join(import.meta.dir, "..", "source", "program", "doctor.ts"),
+      "open",
+      dir_Demo
+    ],
+    {
+      stdio: [
+        "inherit",
+        "inherit",
+        "inherit"
+      ]
+    }
+  )
+  process.on(
+    "SIGINT",
+    () => {}
+  )
+  process.exit(await subprocess.exited)
 }

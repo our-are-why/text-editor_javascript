@@ -28,18 +28,22 @@ scene's template literal, is content: leave it as written.
   of the project; `tasks/`, the tasks, their requests and proposals;
   `documents/`, each document's versions and the changes stated against
   them, the editor's model among them, which the editor draws; `agent/`, the
-  jobs agents are given and where each stands; and `shell/`, what puts the
-  parts together and tells the editor and the board what to show. A part's
-  `index.ts` is its public API: another part, or a host, the playground
-  included, imports only from it, never from a file inside; the tests may
-  reach in, as they test what's inside. A name another part or a host needs
-  is added to the index, imported from its file and exported again. Each
-  part has its own `tsconfig.json`, giving it only what it may use: the DOM
-  for the editor, the board and the runtime; none for a part that isn't
-  drawn, as `tasks/`, `documents/` and `agent/` aren't, so they run
-  anywhere. `shell/` draws nothing either, and runs in a page or in Bun, but
-  reads the editor's and the board's types through their indexes, so it's
-  given the DOM's types, as the board is, and uses nothing of it.
+  jobs agents are given and where each stands; `shell/`, what puts the parts
+  together and tells the editor and the board what to show; `page/`, the
+  page doctor's program serves, the editor and the board talking to the
+  shell; and `program/`, doctor's program, run in a project's folder. A
+  part's `index.ts` is its public API: another part, or a host, the
+  playground included, imports only from it, never from a file inside; the
+  tests may reach in, as they test what's inside. A name another part or a
+  host needs is added to the index, imported from its file and exported
+  again. Each part has its own `tsconfig.json`, giving it only what it may
+  use: the DOM for the editor, the board and the runtime; none for a part
+  that isn't drawn, as `tasks/`, `documents/` and `agent/` aren't, so they
+  run anywhere. `shell/` draws nothing either, and runs in a page or in Bun,
+  but reads the editor's and the board's types through their indexes, so
+  it's given the DOM's types, as the board is, and uses nothing of it.
+  `page/` is drawn, so it has the DOM; `program/` has Bun, and the DOM's
+  types only as it reads the shell's.
 
 - **Interfaces for object types.** `interface X { … }`, never
   `type X = { … }`, index signatures and options objects included. A union,

@@ -718,7 +718,11 @@ playground's host, `playground/host.ts`, plays all four for now, faked.
   editor and the board ask, by maps of their kinds, telling them what to
   show, and telling of each round it starts and each stop; the playground's
   host left with its seed, its stand-in for the agent, its log and the
-  board's showing, its browser tests passing as they did.
+  board's showing, its browser tests passing as they did. **Its second
+  the same day:** `doctor open`, `source/program/`, on a project's
+  folder, serving the page, `source/page/`, the editor and the board
+  talking to the shell over a socket; `bun run demo retry` opening it on a
+  demo.
 
 ## what the editor draws for it
 
