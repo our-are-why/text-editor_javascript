@@ -53,12 +53,9 @@ import {
   type _Block_ViewModel_,
   type _Position_Run_,
   type _Range_Lines_,
-  type _Selected_Text_,
   type _State_Proposal_,
   type _State_Task_,
   type _Kind_End_,
-  type _Piece_Text_,
-  type _Side_Text_,
   type _Part_Task_
 } from "./ViewModel_TextEditor.ts"
 import { MODULE_KEYBOARD } from "./modules/keyboard.ts"
@@ -115,12 +112,9 @@ export {
   type _Block_ViewModel_,
   type _Position_Run_,
   type _Range_Lines_,
-  type _Selected_Text_,
   type _State_Proposal_,
   type _State_Task_,
   type _Kind_End_,
-  type _Piece_Text_,
-  type _Side_Text_,
   type _Part_Task_,
   MODULE_KEYBOARD,
   MODULE_MOUSE,

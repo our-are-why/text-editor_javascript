@@ -11,7 +11,8 @@ import {
   applied__Transaction,
   parseTexts_Line,
   textIn__Range,
-  shiftedBy__Position
+  shiftedBy__Position,
+  type _Piece_Text_
 } from "../documents/index.ts"
 import {
   type _Proposal_Host_,
@@ -20,7 +21,6 @@ import {
 import {
   type _Selection_TextEditor_,
   type _Place_Text_,
-  type _Piece_Text_,
   type _Decision_Proposal_,
   isSame__Selection,
   isSame__Id_Text,

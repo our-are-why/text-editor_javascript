@@ -1,33 +1,16 @@
-import type {
-  _Target_Switch_,
-  _Selected_Text_,
-  _Update_Host_,
-  _Mode_Host_,
-  _Proposal_Host_,
-  _Standing_Task_,
-  _Applied_Edit_,
-  _Asked_Host_,
-  __BASE_Asked_Host_,
-  _Scope_Work_,
-  _Kind_End_
-} from "../editor/index.ts"
-import type {
-  _Update_Board_,
-  _Task_Board_,
-  _Asked_Board_,
-  __BASE_Asked_Board_
-} from "../board/index.ts"
 import {
   isOwn__Source,
   type _Tasks_,
   type _Task_Tasks_,
-  type _OPEN_Task_Tasks_,
+  type _Model_Tasks_,
   type _Request_Tasks_,
   type _Aim_Request_Tasks_,
   type _Scope_Tasks_,
+  type _Proposal_Tasks_,
+  type _Decision_Proposal_Tasks_,
+  type _Command_Tasks_,
   type _Stamp_Tasks_,
-  type _Author_Tasks_,
-  type _Words_Aim_
+  type _Author_Tasks_
 } from "../tasks/index.ts"
 import {
   carriedOf__Head,
@@ -37,51 +20,63 @@ import {
   type _Document_Documents_,
   type _Head_Document_,
   type _Changes_Source_,
-  type _Model_TextEditor_,
-  type _Text_Model_
+  type _Text_Model_,
+  type _Transaction_Model_,
+  type _Way_Settle_
 } from "../documents/index.ts"
-import {
-  roundsOf__Stale,
-  taskHostOf__Task,
-  proposalsHostOf__Task,
-  standingOf__Tasks,
-  boardedOf__Tasks,
-  scopeOf__Work,
-  waitingOf__Task,
-  SHOWNMAP_STATE,
-  type _Content_Task_
-} from "./Projection_Shell.ts"
 
 export {
   _Shell_,
   type _Api__Shell_,
-  type _Base_Round_,
-  type _Again_Request_,
   type _Observer_Shell_,
-  type _Shown_Shell_,
+  type _State_Shell_,
+  type _Document_Shell_,
+  type _Dismissed_Task_,
   type _Round_Shell_,
   type _Stop_Shell_,
+  type _Base_Round_,
+  type _Again_Request_,
   type _Landing_Round_,
   type _Answer_Landing_,
-  type _Api___opened__Shell_,
+  type _Api___headOf__Shell_,
   type _Api___requestsOf__Rerun__Shell_,
   type _Api___restated__Shell_,
+  type _Api___carried__Shell_,
   type _Api___landedOn__Shell_,
   type _Api___freshened__Shell_,
-  type _Api___dismissedIn__Shell_,
   type _Api___started__Shell_,
   type _Api___stopped__Shell_,
-  type _Api___requested__Shell_,
+  type _Api___accepted__Shell_,
   type _Api___ended__Shell_,
-  handle__Asked_Host,
-  type _Api___handle__Asked_Host_,
-  type _HandlerMap__Asked_Host_,
-  HANDLERMAP__ASKED_HOST,
-  handle__Asked_Board,
-  type _Api___handle__Asked_Board_,
-  type _HandlerMap__Asked_Board_,
-  HANDLERMAP__ASKED_BOARD,
-  type _Api___END_handle__Asked_Board_,
+  handle__Command_Shell,
+  type _Api___handle__Command_Shell_,
+  type _Command_Shell_,
+  type __BASE_Command_Shell_,
+  type _OPEN_DOCUMENT__Command_Shell_,
+  type _EDIT_Command_Shell_,
+  type _Mode_Edit_,
+  type __BASE_Mode_Edit_,
+  type _MANUAL_Mode_Edit_,
+  type _TASK_Mode_Edit_,
+  type _REQUEST_Command_Shell_,
+  type _Request_Made_,
+  type _DRAFT_Command_Shell_,
+  type _START_Command_Shell_,
+  type _STOP_Command_Shell_,
+  type _TASKS_Command_Shell_,
+  type _DECIDE_Command_Shell_,
+  type _DISMISS_PROPOSAL__Command_Shell_,
+  type _ACCEPT_Command_Shell_,
+  type _SETTLE_Command_Shell_,
+  type _END_Command_Shell_,
+  type _Kind_End_,
+  type _RERUN_Command_Shell_,
+  type _HandlerMap__Shell_,
+  HANDLERMAP__SHELL,
+  waitingOf__Task,
+  type _Api___waitingOf__Task_,
+  isAsked__Proposal,
+  type _Api___isAsked__Proposal_,
   keyIn__Task,
   type _Api___keyIn__Task_,
   idsOf__Started,
@@ -89,87 +84,74 @@ export {
   stampOf,
   type _Api___stampOf_,
   idOf__Task_Next,
-  type _Api___idOf__Task_Next_,
-  aimOf__Reference,
-  type _Api___aimOf__Reference_,
-  wordsOf__Reference,
-  type _Api___wordsOf__Reference_
+  type _Api___idOf__Task_Next_
 }
 
 class _Shell_ {
   tasks: _Tasks_
   documents: _Documents_
-  name_Document: string
-  files: Array<string>
-  target_Mode: _Target_Switch_
-  references: Map<string, _Selected_Text_ | null>
-  contents: Map<string, _Content_Task_>
+  dismissed: Map<string, Set<string>>
   bases_Round: Map<string, _Base_Round_>
   rounds_Request: Map<string, number>
-  count_Request: number
   count_Round: number
+  count_Request: number
   observers: Array<_Observer_Shell_>
 
   constructor({
     tasks,
     documents,
-    name_Document,
-    files,
-    target_Mode,
-    references,
-    contents,
     observers
   }: _Api__Shell_) {
     this.tasks = tasks
     this.documents = documents
-    this.name_Document = name_Document
-    this.files = files
-    this.target_Mode = target_Mode
-    this.references = references
-    this.contents = contents
+    this.dismissed = new Map()
     this.bases_Round = new Map()
     this.rounds_Request = new Map()
-    this.count_Request = 0
     this.count_Round = 0
+    this.count_Request = 0
     this.observers = observers
   }
 
-  shown(): _Shown_Shell_ {
-    const task = this.taskIn()
-    const head = task === undefined ? undefined : this.headOf(task)
-    return this.shownOf({
-      document: this.documentOf().text,
-      proposed: head?.proposed ?? []
+  handle(
+    command_Shell: _Command_Shell_
+  ): void {
+    const model_Tasks = this.tasks.model_Tasks
+    const model_Documents = this.documents.model_Documents
+    const json_Dismissed = JSON.stringify(this.stateOf__Dismissed())
+    handle__Command_Shell({
+      shell: this,
+      command_Shell
     })
+    const isChanged = this.tasks.model_Tasks !== model_Tasks || this.documents.model_Documents !== model_Documents || JSON.stringify(this.stateOf__Dismissed()) !== json_Dismissed
+    if (isChanged) this.changed()
   }
 
-  shownOf(
-    model_TextEditor: _Model_TextEditor_
-  ): _Shown_Shell_ {
-    const task = this.taskIn()
-    const head = task === undefined ? undefined : this.headOf(task)
+  state(): _State_Shell_ {
     return {
-      update_Host: {
-        model_TextEditor,
-        name_Document: this.name_Document,
-        proposals: this.proposalsOf(),
-        mode: this.modeOf(),
-        tasks: this.standingsOf(),
-        files: this.files,
-        rounds_Landed: roundsOf__Stale({
-          stale: head?.stale ?? []
-        })
-      },
-      update_Board: {
-        tasks: this.boardedOf(),
-        paths_Shown: [this.name_Document]
-      }
+      model_Tasks: this.tasks.model_Tasks,
+      documents: this.documents.model_Documents.documents.map((document) => ({
+        path: document.path,
+        version: document.version,
+        text: document.text
+      })),
+      dismissed: this.stateOf__Dismissed()
     }
   }
 
-  taskIn(): _OPEN_Task_Tasks_ | undefined {
-    const task = this.target_Mode.kind === "TASK" ? this.taskOf(this.target_Mode.id) : undefined
-    return task?.kind === "OPEN" ? task : undefined
+  stateOf__Dismissed(): Array<_Dismissed_Task_> {
+    return [...this.dismissed].map(([
+      id_Task,
+      sources
+    ]) => ({
+      id_Task,
+      sources: [...sources]
+    }))
+  }
+
+  changed(): void {
+    this.released()
+    const state_Shell = this.state()
+    for (const observer of this.observers) observer.changed(state_Shell)
   }
 
   taskOf(
@@ -178,128 +160,25 @@ class _Shell_ {
     return this.tasks.model_Tasks.tasks.find((task) => task.id === id_Task)
   }
 
-  headOf(
-    task: _Task_Tasks_
-  ): _Head_Document_ | undefined {
-    return task.heads.find((head) => head.path === this.name_Document)
+  headOf({
+    task,
+    path
+  }: _Api___headOf__Shell_): _Head_Document_ | undefined {
+    return task.heads.find((head) => head.path === path)
   }
 
-  documentOf(): _Document_Documents_ {
-    const document = this.documents.model_Documents.documents.find((document_Each) => document_Each.path === this.name_Document)
-    if (document === undefined) throw new Error(`${this.name_Document} isn't kept`)
+  documentOf(
+    path: string
+  ): _Document_Documents_ {
+    const document = this.documents.model_Documents.documents.find((document_Each) => document_Each.path === path)
+    if (document === undefined) throw new Error(`${path} isn't kept`)
     return document
   }
 
-  proposalsOf(): Array<_Proposal_Host_> {
-    const task = this.taskIn()
-    return task === undefined
-      ? []
-      : proposalsHostOf__Task({
-        task,
-        content: this.contentOf(task.id),
-        name_Document: this.name_Document,
-        references: this.references
-      })
-  }
-
-  contentOf(
-    id_Task: string
-  ): _Content_Task_ {
-    return this.contents.get(id_Task) ?? {
-      attributes: new Map(),
-      sources_Dismissed: new Set()
-    }
-  }
-
-  modeOf(): _Mode_Host_ {
-    const task = this.taskIn()
-    return task === undefined
-      ? {
-        kind: "MANUAL"
-      }
-      : {
-        kind: "TASK",
-        task: taskHostOf__Task({
-          task,
-          name_Document: this.name_Document,
-          references: this.references
-        })
-      }
-  }
-
-  standingsOf(): Array<_Standing_Task_> {
-    return this.tasks.model_Tasks.tasks.flatMap((task) => task.kind === "OPEN"
-      ? [
-        standingOf__Tasks({
-          task,
-          name_Document: this.name_Document
-        })
-      ]
-      : [])
-  }
-
-  boardedOf(): Array<_Task_Board_> {
-    return [
-      ...this.tasks.model_Tasks.tasks.filter((task) => task.kind === "OPEN"),
-      ...this.tasks.model_Tasks.tasks
-        .flatMap((task) => task.kind === "RESOLVED" ? [task] : [])
-        .toSorted((
-          task,
-          task_Other
-        ) => task.resolution.stamp.at.localeCompare(task_Other.resolution.stamp.at))
-    ].map((task) => boardedOf__Tasks({
-      task,
-      count_Editors: this.target_Mode.kind === "TASK" && this.target_Mode.id === task.id ? 1 : 0
-    }))
-  }
-
-  edited(
-    applied_Edit: _Applied_Edit_
-  ): void {
-    const task = this.taskIn()
-    const standings_Before = JSON.stringify(this.standingsOf())
-    this.documents.handle({
-      kind: "EDIT",
-      path: this.name_Document,
-      version: this.documentOf().version,
-      transaction: applied_Edit.transaction
-    })
-    if (task !== undefined) {
-      this.restated({
-        id_Task: task.id,
-        change: (head) => checkedOf__Head({
-          document: this.documentOf(),
-          head: {
-            ...head,
-            version: this.documentOf().version,
-            proposed: applied_Edit.model_After.proposed
-          }
-        })
-      })
-    }
-    this.carried(task === undefined ? [] : [task.id])
-    this.released()
-    if (JSON.stringify(this.standingsOf()) !== standings_Before) this.told(applied_Edit.model_After)
-  }
-
-  asked(
-    asked_Host: _Asked_Host_
-  ): void {
-    const isChanged = handle__Asked_Host({
-      shell: this,
-      asked_Host
-    })
-    if (isChanged) this.updated()
-  }
-
-  askedBoard(
-    asked_Board: _Asked_Board_
-  ): void {
-    const isChanged = handle__Asked_Board({
-      shell: this,
-      asked_Board
-    })
-    if (isChanged) this.updated()
+  isKept(
+    path: string
+  ): boolean {
+    return this.documents.model_Documents.documents.some((document) => document.path === path)
   }
 
   landed(
@@ -336,6 +215,7 @@ class _Shell_ {
       this.landedOn({
         id_Task,
         source,
+        path: round_Shell.path,
         version: round_Shell.version,
         proposed: landing_Round.proposed.filter((changes_Source) => changes_Source.source === source)
       })
@@ -351,27 +231,11 @@ class _Shell_ {
         }
       })
     }
-    this.updated()
+    this.changed()
     return {
       sources: sources_Landing,
       ids_Addressed
     }
-  }
-
-  opened({
-    path,
-    text
-  }: _Api___opened__Shell_): void {
-    const isKept = this.documents.model_Documents.documents.some((document) => document.path === path)
-    if (!isKept) {
-      this.documents.handle({
-        kind: "OPEN",
-        path,
-        text
-      })
-    }
-    this.name_Document = path
-    this.updated()
   }
 
   requestsOf__Rerun({
@@ -387,7 +251,13 @@ class _Shell_ {
       : [
         {
           notes: "Again, on the document as it is now.",
-          reference: null
+          aim: {
+            kind: "PROPOSAL",
+            id_Proposal: source,
+            words: {
+              kind: "ALL"
+            }
+          }
         }
       ]
   }
@@ -396,29 +266,12 @@ class _Shell_ {
     prefix: string
   ): string {
     this.count_Request += 1
-    return `${prefix}-${this.count_Request}`
-  }
-
-  updated(): void {
-    if (this.target_Mode.kind === "TASK" && this.taskIn() === undefined) {
-      this.target_Mode = {
-        kind: "MANUAL"
-      }
-    }
-    this.released()
-    const shown_Shell = this.shown()
-    for (const observer of this.observers) observer.shown(shown_Shell)
-  }
-
-  told(
-    model_TextEditor: _Model_TextEditor_
-  ): void {
-    const shown_Shell = this.shownOf(model_TextEditor)
-    for (const observer of this.observers) observer.shown(shown_Shell)
+    return `${prefix}-again-${this.count_Request}`
   }
 
   restated({
     id_Task,
+    path,
     change
   }: _Api___restated__Shell_): void {
     const task = this.taskOf(id_Task)
@@ -426,21 +279,28 @@ class _Shell_ {
     this.tasks.handle({
       kind: "RESTATE",
       id_Task,
-      head: change(this.headOf(task) ?? {
-        path: this.name_Document,
-        version: this.documentOf().version,
+      head: change(this.headOf({
+        task,
+        path
+      }) ?? {
+        path,
+        version: this.documentOf(path).version,
         proposed: [],
         stale: []
       })
     })
   }
 
-  carried(
-    ids_Except: Array<string>
-  ): void {
-    const document = this.documentOf()
+  carried({
+    path,
+    ids_Except
+  }: _Api___carried__Shell_): void {
+    const document = this.documentOf(path)
     for (const task of this.tasks.model_Tasks.tasks) {
-      const head = this.headOf(task)
+      const head = this.headOf({
+        task,
+        path
+      })
       if (task.kind !== "OPEN" || ids_Except.includes(task.id) || head === undefined) continue
       this.tasks.handle({
         kind: "RESTATE",
@@ -454,27 +314,30 @@ class _Shell_ {
   }
 
   released(): void {
-    const versions = [...this.bases_Round.values()].flatMap((base_Round) => {
-      const isRunning = (this.taskOf(base_Round.id_Task)?.requests ?? []).some((request) => request.status.kind === "WITH_AGENT" && request.aim.kind === "PROPOSAL" && request.aim.id_Proposal === base_Round.source)
-      return isRunning ? [base_Round.version] : []
-    })
-    this.documents.handle({
-      kind: "RELEASE",
-      path: this.name_Document,
-      versions
-    })
+    for (const document of this.documents.model_Documents.documents) {
+      const versions = [...this.bases_Round.values()].flatMap((base_Round) => {
+        const isRunning = (this.taskOf(base_Round.id_Task)?.requests ?? []).some((request) => request.status.kind === "WITH_AGENT" && request.aim.kind === "PROPOSAL" && request.aim.id_Proposal === base_Round.source)
+        return isRunning && base_Round.path === document.path ? [base_Round.version] : []
+      })
+      this.documents.handle({
+        kind: "RELEASE",
+        path: document.path,
+        versions
+      })
+    }
   }
 
   landedOn({
     id_Task,
     source,
+    path,
     version,
     proposed
   }: _Api___landedOn__Shell_): void {
     const head_Round = carriedOf__Head({
-      document: this.documentOf(),
+      document: this.documentOf(path),
       head: {
-        path: this.name_Document,
+        path,
         version,
         proposed,
         stale: []
@@ -485,6 +348,7 @@ class _Shell_ {
     ] = head_Round.proposed
     this.restated({
       id_Task,
+      path,
       change: (head) => ({
         ...head,
         proposed: changes_Round === undefined
@@ -502,45 +366,29 @@ class _Shell_ {
     id_Task,
     sources
   }: _Api___freshened__Shell_): void {
-    this.restated({
-      id_Task,
-      change: (head) => ({
-        ...head,
-        stale: head.stale.filter((stale_Source) => !sources.includes(stale_Source.source))
+    const task = this.taskOf(id_Task)
+    for (const head of task?.heads ?? []) {
+      if (!head.stale.some((stale_Source) => sources.includes(stale_Source.source))) continue
+      this.restated({
+        id_Task,
+        path: head.path,
+        change: (head_Each) => ({
+          ...head_Each,
+          stale: head_Each.stale.filter((stale_Source) => !sources.includes(stale_Source.source))
+        })
       })
-    })
-  }
-
-  dismissedIn({
-    id_Task,
-    source
-  }: _Api___dismissedIn__Shell_): void {
-    const content = this.contentOf(id_Task)
-    this.contents.set(
-      id_Task,
-      {
-        ...content,
-        sources_Dismissed: new Set([
-          ...content.sources_Dismissed,
-          source
-        ])
-      }
-    )
+    }
   }
 
   started({
     id_Task,
-    scope_Work
+    scope,
+    path
   }: _Api___started__Shell_): void {
     const task = this.taskOf(id_Task)
     if (task === undefined || task.kind !== "OPEN") return
     const ids_Before = idsOf__Started({
       task
-    })
-    const scope = scopeOf__Work({
-      scope_Work,
-      task,
-      name_Document: this.name_Document
     })
     this.tasks.handle({
       kind: "START",
@@ -562,8 +410,12 @@ class _Shell_ {
       scope,
       requests: requests_Started,
       sources,
-      version: this.documentOf().version,
-      proposed: (this.headOf(task)?.proposed ?? []).filter((changes_Source) => sources.includes(changes_Source.source))
+      path,
+      version: this.documentOf(path).version,
+      proposed: (this.headOf({
+        task,
+        path
+      })?.proposed ?? []).filter((changes_Source) => sources.includes(changes_Source.source))
     }
     for (const request of requests_Started) {
       this.rounds_Request.set(
@@ -583,12 +435,13 @@ class _Shell_ {
         {
           id_Task,
           source,
+          path,
           version: round_Shell.version,
           requests: requests_Started.flatMap((request) => request.aim.kind === "PROPOSAL" && request.aim.id_Proposal === source
             ? [
               {
                 notes: request.notes,
-                reference: this.references.get(request.id) ?? null
+                aim: request.aim
               }
             ]
             : [])
@@ -600,7 +453,7 @@ class _Shell_ {
 
   stopped({
     id_Task,
-    scope_Work
+    scope
   }: _Api___stopped__Shell_): void {
     const task = this.taskOf(id_Task)
     if (task === undefined) return
@@ -610,11 +463,7 @@ class _Shell_ {
     this.tasks.handle({
       kind: "STOP",
       id_Task,
-      scope: scopeOf__Work({
-        scope_Work,
-        task,
-        name_Document: this.name_Document
-      })
+      scope
     })
     const roundOf = (id: string) => this.rounds_Request.get(keyIn__Task({
       id_Task,
@@ -654,71 +503,18 @@ class _Shell_ {
     for (const observer of this.observers) {
       observer.stopped({
         id_Task,
-        scope_Work,
+        scope,
         ids_Request: ids_Stopped,
         ids_Round
       })
     }
   }
 
-  requested({
-    id,
-    notes,
-    aim,
-    isStarting
-  }: _Api___requested__Shell_): void {
-    const task = this.taskIn()
-    const id_Task = task?.id ?? idOf__Task_Next({
-      tasks: this.tasks.model_Tasks.tasks
-    })
-    if (task === undefined) {
-      this.tasks.handle({
-        kind: "DRAFT",
-        id_Task,
-        name: notes,
-        request: {
-          id,
-          notes,
-          aim
-        },
-        stamp: stampOf({
-          by: "HUMAN"
-        })
-      })
-      this.target_Mode = {
-        kind: "TASK",
-        id: id_Task
-      }
-    } else {
-      this.tasks.handle({
-        kind: "REQUEST",
-        id_Task,
-        request: {
-          id,
-          notes,
-          aim
-        },
-        stamp: stampOf({
-          by: "HUMAN"
-        })
-      })
-    }
-    if (isStarting) {
-      this.started({
-        id_Task,
-        scope_Work: {
-          kind: "REQUEST",
-          source: null,
-          id
-        }
-      })
-    }
-  }
-
-  acceptedIn(
-    paths: Array<string>
-  ): void {
-    const task = this.taskIn()
+  accepted({
+    id_Task,
+    paths
+  }: _Api___accepted__Shell_): void {
+    const task = this.taskOf(id_Task)
     if (task === undefined) return
     const sources_Accepted = paths.flatMap((path) => waitingOf__Task({
       task,
@@ -727,13 +523,13 @@ class _Shell_ {
     for (const id_Proposal of sources_Accepted) {
       this.tasks.handle({
         kind: "DECIDE",
-        id_Task: task.id,
+        id_Task,
         id_Proposal,
         decision: "ACCEPTED"
       })
     }
     this.freshened({
-      id_Task: task.id,
+      id_Task,
       sources: sources_Accepted
     })
   }
@@ -750,57 +546,56 @@ class _Shell_ {
       })
     })
     const task = this.taskOf(id_Task)
-    const head = task === undefined ? undefined : this.headOf(task)
-    if (task === undefined || head === undefined || task.kind !== "RESOLVED" || task.resolution.how !== "APPLIED") return
-    this.documents.handle({
-      kind: "APPLY",
-      path: this.name_Document,
-      version: head.version,
-      proposed: head.proposed,
-      sources: head.proposed.flatMap((changes_Source) => isOwn__Source({
-        task,
-        source: changes_Source.source
+    if (task === undefined || task.kind !== "RESOLVED" || task.resolution.how !== "APPLIED") return
+    for (const head of task.heads) {
+      if (!this.isKept(head.path)) continue
+      this.documents.handle({
+        kind: "APPLY",
+        path: head.path,
+        version: head.version,
+        proposed: head.proposed,
+        sources: head.proposed.flatMap((changes_Source) => isOwn__Source({
+          task,
+          source: changes_Source.source
+        })
+          ? [changes_Source.source]
+          : [])
       })
-        ? [changes_Source.source]
-        : [])
-    })
-    this.carried([id_Task])
+      this.carried({
+        path: head.path,
+        ids_Except: [id_Task]
+      })
+    }
   }
 }
 
 interface _Api__Shell_ {
   tasks: _Tasks_
   documents: _Documents_
-  name_Document: string
-  files: Array<string>
-  target_Mode: _Target_Switch_
-  references: Map<string, _Selected_Text_ | null>
-  contents: Map<string, _Content_Task_>
   observers: Array<_Observer_Shell_>
 }
 
-interface _Base_Round_ {
-  id_Task: string
-  source: string
-  version: string
-  requests: Array<_Again_Request_>
-}
-
-interface _Again_Request_ {
-  notes: string
-  reference: _Selected_Text_ | null
-}
-
 interface _Observer_Shell_ {
-  shown: (shown_Shell: _Shown_Shell_) => void
+  changed: (state_Shell: _State_Shell_) => void
   started: (round_Shell: _Round_Shell_) => void
   stopped: (stop_Shell: _Stop_Shell_) => void
-  opening: (path: string) => void
 }
 
-interface _Shown_Shell_ {
-  update_Host: _Update_Host_
-  update_Board: _Update_Board_
+interface _State_Shell_ {
+  model_Tasks: _Model_Tasks_
+  documents: Array<_Document_Shell_>
+  dismissed: Array<_Dismissed_Task_>
+}
+
+interface _Document_Shell_ {
+  path: string
+  version: string
+  text: _Text_Model_
+}
+
+interface _Dismissed_Task_ {
+  id_Task: string
+  sources: Array<string>
 }
 
 interface _Round_Shell_ {
@@ -809,15 +604,29 @@ interface _Round_Shell_ {
   scope: _Scope_Tasks_
   requests: Array<_Request_Tasks_>
   sources: Array<string>
+  path: string
   version: string
   proposed: Array<_Changes_Source_>
 }
 
 interface _Stop_Shell_ {
   id_Task: string
-  scope_Work: _Scope_Work_
+  scope: _Scope_Tasks_
   ids_Request: Array<string>
   ids_Round: Array<number>
+}
+
+interface _Base_Round_ {
+  id_Task: string
+  source: string
+  path: string
+  version: string
+  requests: Array<_Again_Request_>
+}
+
+interface _Again_Request_ {
+  notes: string
+  aim: _Aim_Request_Tasks_
 }
 
 interface _Landing_Round_ {
@@ -831,9 +640,9 @@ interface _Answer_Landing_ {
   ids_Addressed: Array<string>
 }
 
-interface _Api___opened__Shell_ {
+interface _Api___headOf__Shell_ {
+  task: _Task_Tasks_
   path: string
-  text: _Text_Model_
 }
 
 interface _Api___requestsOf__Rerun__Shell_ {
@@ -843,12 +652,19 @@ interface _Api___requestsOf__Rerun__Shell_ {
 
 interface _Api___restated__Shell_ {
   id_Task: string
+  path: string
   change: (head: _Head_Document_) => _Head_Document_
+}
+
+interface _Api___carried__Shell_ {
+  path: string
+  ids_Except: Array<string>
 }
 
 interface _Api___landedOn__Shell_ {
   id_Task: string
   source: string
+  path: string
   version: string
   proposed: Array<_Changes_Source_>
 }
@@ -858,26 +674,20 @@ interface _Api___freshened__Shell_ {
   sources: Array<string>
 }
 
-interface _Api___dismissedIn__Shell_ {
-  id_Task: string
-  source: string
-}
-
 interface _Api___started__Shell_ {
   id_Task: string
-  scope_Work: _Scope_Work_
+  scope: _Scope_Tasks_
+  path: string
 }
 
 interface _Api___stopped__Shell_ {
   id_Task: string
-  scope_Work: _Scope_Work_
+  scope: _Scope_Tasks_
 }
 
-interface _Api___requested__Shell_ {
-  id: string
-  notes: string
-  aim: _Aim_Request_Tasks_
-  isStarting: boolean
+interface _Api___accepted__Shell_ {
+  id_Task: string
+  paths: Array<string>
 }
 
 interface _Api___ended__Shell_ {
@@ -885,407 +695,366 @@ interface _Api___ended__Shell_ {
   kind_End: _Kind_End_
 }
 
-interface _Api___handle__Asked_Host_<Kind extends _Asked_Host_["kind"]> {
+interface _Api___handle__Command_Shell_<Kind extends _Command_Shell_["kind"]> {
   shell: _Shell_
-  asked_Host: Extract<
-    _Asked_Host_,
-    __BASE_Asked_Host_<Kind>
+  command_Shell: Extract<
+    _Command_Shell_,
+    __BASE_Command_Shell_<Kind>
   >
 }
 
-function handle__Asked_Host<Kind extends _Asked_Host_["kind"]>({
+function handle__Command_Shell<Kind extends _Command_Shell_["kind"]>({
   shell,
-  asked_Host
-}: _Api___handle__Asked_Host_<Kind>): boolean {
-  const handle = HANDLERMAP__ASKED_HOST[asked_Host.kind]
-  return handle({
+  command_Shell
+}: _Api___handle__Command_Shell_<Kind>): void {
+  const handle = HANDLERMAP__SHELL[command_Shell.kind]
+  handle({
     shell,
-    asked_Host
+    command_Shell
   })
 }
 
-type _HandlerMap__Asked_Host_ = {
-  [Kind in _Asked_Host_["kind"]]: (api_Handler: _Api___handle__Asked_Host_<Kind>) => boolean
+type _Command_Shell_ = _OPEN_DOCUMENT__Command_Shell_ | _EDIT_Command_Shell_ | _REQUEST_Command_Shell_ | _DRAFT_Command_Shell_ | _START_Command_Shell_ | _STOP_Command_Shell_ | _TASKS_Command_Shell_ | _DECIDE_Command_Shell_ | _DISMISS_PROPOSAL__Command_Shell_ | _ACCEPT_Command_Shell_ | _SETTLE_Command_Shell_ | _END_Command_Shell_ | _RERUN_Command_Shell_
+
+interface __BASE_Command_Shell_<Kind extends string> {
+  kind: Kind
 }
 
-const HANDLERMAP__ASKED_HOST: _HandlerMap__Asked_Host_ = {
-  ACTION: ACTION_handle__Asked_Host,
-  REQUEST: REQUEST_handle__Asked_Host,
-  EDIT: EDIT_handle__Asked_Host,
-  REMOVE: REMOVE_handle__Asked_Host,
-  DISMISS: DISMISS_handle__Asked_Host,
-  START: START_handle__Asked_Host,
-  STOP: STOP_handle__Asked_Host,
-  TASK: TASK_handle__Asked_Host,
-  END: END_handle__Asked_Host,
-  SWITCH: SWITCH_handle__Asked_Host,
-  OPEN_FILE: OPEN_FILE__handle__Asked_Host,
-  SHOW_BOARD: SHOW_BOARD__handle__Asked_Host,
-  RERUN: RERUN_handle__Asked_Host,
-  SETTLE: SETTLE_handle__Asked_Host
+interface _OPEN_DOCUMENT__Command_Shell_ extends __BASE_Command_Shell_<"OPEN_DOCUMENT"> {
+  path: string
+  text: _Text_Model_
 }
 
-function ACTION_handle__Asked_Host({
-  shell,
-  asked_Host
-}: _Api___handle__Asked_Host_<"ACTION">): boolean {
-  const task = shell.taskIn()
-  if (task === undefined) return false
-  const proposal = task.proposals.find((proposal_Each) => proposal_Each.id === asked_Host.source)
-  const action_Item = proposal === undefined ? undefined : SHOWNMAP_STATE[proposal.decision].actions.find((action_Each) => action_Each.command === asked_Host.command)
-  if (action_Item === undefined) return false
-  const stateAfter = action_Item.stateAfter
-  if (stateAfter !== "REQUESTED" && stateAfter !== "REVISING") {
-    shell.freshened({
-      id_Task: task.id,
-      sources: [asked_Host.source]
+interface _EDIT_Command_Shell_ extends __BASE_Command_Shell_<"EDIT"> {
+  path: string
+  transaction: _Transaction_Model_
+  mode: _Mode_Edit_
+}
+
+type _Mode_Edit_ = _MANUAL_Mode_Edit_ | _TASK_Mode_Edit_
+
+interface __BASE_Mode_Edit_<Kind extends string> {
+  kind: Kind
+}
+
+interface _MANUAL_Mode_Edit_ extends __BASE_Mode_Edit_<"MANUAL"> {}
+
+interface _TASK_Mode_Edit_ extends __BASE_Mode_Edit_<"TASK"> {
+  id_Task: string
+  proposed: Array<_Changes_Source_>
+}
+
+interface _REQUEST_Command_Shell_ extends __BASE_Command_Shell_<"REQUEST"> {
+  id_Task: string
+  request: _Request_Made_
+  isStarting: boolean
+  path: string
+}
+
+interface _Request_Made_ {
+  id: string
+  notes: string
+  aim: _Aim_Request_Tasks_
+}
+
+interface _DRAFT_Command_Shell_ extends __BASE_Command_Shell_<"DRAFT"> {
+  request: _Request_Made_
+  isStarting: boolean
+  path: string
+}
+
+interface _START_Command_Shell_ extends __BASE_Command_Shell_<"START"> {
+  id_Task: string
+  scope: _Scope_Tasks_
+  path: string
+}
+
+interface _STOP_Command_Shell_ extends __BASE_Command_Shell_<"STOP"> {
+  id_Task: string
+  scope: _Scope_Tasks_
+}
+
+interface _TASKS_Command_Shell_ extends __BASE_Command_Shell_<"TASKS"> {
+  command_Tasks: _Command_Tasks_
+}
+
+interface _DECIDE_Command_Shell_ extends __BASE_Command_Shell_<"DECIDE"> {
+  id_Task: string
+  id_Proposal: string
+  decision: _Decision_Proposal_Tasks_
+}
+
+interface _DISMISS_PROPOSAL__Command_Shell_ extends __BASE_Command_Shell_<"DISMISS_PROPOSAL"> {
+  id_Task: string
+  id_Proposal: string
+}
+
+interface _ACCEPT_Command_Shell_ extends __BASE_Command_Shell_<"ACCEPT"> {
+  id_Task: string
+  paths: Array<string>
+}
+
+interface _SETTLE_Command_Shell_ extends __BASE_Command_Shell_<"SETTLE"> {
+  id_Task: string
+  path: string
+  source: string
+  way: _Way_Settle_
+}
+
+interface _END_Command_Shell_ extends __BASE_Command_Shell_<"END"> {
+  id_Task: string
+  kind_End: _Kind_End_
+}
+
+type _Kind_End_ = "APPLY" | "CANCEL" | "DISCARD"
+
+interface _RERUN_Command_Shell_ extends __BASE_Command_Shell_<"RERUN"> {
+  id_Task: string
+  id_Proposal: string
+  path: string
+}
+
+type _HandlerMap__Shell_ = {
+  [Kind in _Command_Shell_["kind"]]: (api_Handler: _Api___handle__Command_Shell_<Kind>) => void
+}
+
+const HANDLERMAP__SHELL: _HandlerMap__Shell_ = {
+  OPEN_DOCUMENT: ({
+    shell,
+    command_Shell
+  }) => {
+    if (shell.isKept(command_Shell.path)) return
+    shell.documents.handle({
+      kind: "OPEN",
+      path: command_Shell.path,
+      text: command_Shell.text
     })
-  }
-  if (stateAfter === null) {
-    shell.restated({
-      id_Task: task.id,
-      change: (head) => ({
-        ...head,
-        proposed: head.proposed.filter((changes_Source) => changes_Source.source !== asked_Host.source)
+  },
+  EDIT: ({
+    shell,
+    command_Shell
+  }) => {
+    const path = command_Shell.path
+    const mode = command_Shell.mode
+    if (!shell.isKept(path)) return
+    shell.documents.handle({
+      kind: "EDIT",
+      path,
+      version: shell.documentOf(path).version,
+      transaction: command_Shell.transaction
+    })
+    if (mode.kind === "TASK") {
+      shell.restated({
+        id_Task: mode.id_Task,
+        path,
+        change: (head) => checkedOf__Head({
+          document: shell.documentOf(path),
+          head: {
+            ...head,
+            version: shell.documentOf(path).version,
+            proposed: mode.proposed
+          }
+        })
       })
+    }
+    shell.carried({
+      path,
+      ids_Except: mode.kind === "TASK" ? [mode.id_Task] : []
     })
-    shell.dismissedIn({
-      id_Task: task.id,
-      source: asked_Host.source
-    })
-  } else if (stateAfter === "REQUESTED" || stateAfter === "REVISING") {
-    const notes = asked_Host.notes
-    if (notes === null) return true
-    const id = shell.idOf__Request_Next(asked_Host.source)
-    shell.references.set(
-      id,
-      asked_Host.reference
-    )
+  },
+  REQUEST: ({
+    shell,
+    command_Shell
+  }) => {
     shell.tasks.handle({
       kind: "REQUEST",
-      id_Task: task.id,
-      request: {
-        id,
-        notes,
-        aim: aimOf__Reference({
-          kind: "PROPOSAL",
-          reference: asked_Host.reference,
-          path: asked_Host.source
-        })
-      },
+      id_Task: command_Shell.id_Task,
+      request: command_Shell.request,
       stamp: stampOf({
         by: "HUMAN"
       })
     })
-  } else {
+    if (!command_Shell.isStarting) return
+    shell.started({
+      id_Task: command_Shell.id_Task,
+      scope: {
+        kind: "REQUESTS",
+        ids_Request: [command_Shell.request.id]
+      },
+      path: command_Shell.path
+    })
+  },
+  DRAFT: ({
+    shell,
+    command_Shell
+  }) => {
+    const id_Task = idOf__Task_Next({
+      tasks: shell.tasks.model_Tasks.tasks
+    })
+    shell.tasks.handle({
+      kind: "DRAFT",
+      id_Task,
+      name: command_Shell.request.notes,
+      request: command_Shell.request,
+      stamp: stampOf({
+        by: "HUMAN"
+      })
+    })
+    if (!command_Shell.isStarting) return
+    shell.started({
+      id_Task,
+      scope: {
+        kind: "REQUESTS",
+        ids_Request: [command_Shell.request.id]
+      },
+      path: command_Shell.path
+    })
+  },
+  START: ({
+    shell,
+    command_Shell
+  }) => shell.started({
+    id_Task: command_Shell.id_Task,
+    scope: command_Shell.scope,
+    path: command_Shell.path
+  }),
+  STOP: ({
+    shell,
+    command_Shell
+  }) => shell.stopped({
+    id_Task: command_Shell.id_Task,
+    scope: command_Shell.scope
+  }),
+  TASKS: ({
+    shell,
+    command_Shell
+  }) => shell.tasks.handle(command_Shell.command_Tasks),
+  DECIDE: ({
+    shell,
+    command_Shell
+  }) => {
+    shell.freshened({
+      id_Task: command_Shell.id_Task,
+      sources: [command_Shell.id_Proposal]
+    })
     shell.tasks.handle({
       kind: "DECIDE",
-      id_Task: task.id,
-      id_Proposal: asked_Host.source,
-      decision: stateAfter
+      id_Task: command_Shell.id_Task,
+      id_Proposal: command_Shell.id_Proposal,
+      decision: command_Shell.decision
     })
-  }
-  return true
-}
-
-function REQUEST_handle__Asked_Host({
-  shell,
-  asked_Host
-}: _Api___handle__Asked_Host_<"REQUEST">): boolean {
-  const id = shell.idOf__Request_Next("document")
-  shell.references.set(
-    id,
-    asked_Host.aim.reference
-  )
-  shell.requested({
-    id,
-    notes: asked_Host.notes,
-    aim: aimOf__Reference({
-      kind: asked_Host.aim.kind,
-      reference: asked_Host.aim.reference,
-      path: shell.name_Document
-    }),
-    isStarting: asked_Host.isStarting
-  })
-  return true
-}
-
-function EDIT_handle__Asked_Host({
-  shell,
-  asked_Host
-}: _Api___handle__Asked_Host_<"EDIT">): boolean {
-  const task = shell.taskIn()
-  if (task === undefined) return true
-  shell.tasks.handle({
-    kind: "EDIT",
-    id_Task: task.id,
-    id_Request: asked_Host.id,
-    notes: asked_Host.notes
-  })
-  return true
-}
-
-function REMOVE_handle__Asked_Host({
-  shell,
-  asked_Host
-}: _Api___handle__Asked_Host_<"REMOVE">): boolean {
-  const task = shell.taskIn()
-  if (task === undefined) return true
-  shell.tasks.handle({
-    kind: "REMOVE",
-    id_Task: task.id,
-    id_Request: asked_Host.id
-  })
-  return true
-}
-
-function DISMISS_handle__Asked_Host({
-  shell,
-  asked_Host
-}: _Api___handle__Asked_Host_<"DISMISS">): boolean {
-  const task = shell.taskIn()
-  if (task === undefined) return true
-  shell.tasks.handle({
-    kind: "DISMISS",
-    id_Task: task.id,
-    id_Request: asked_Host.id
-  })
-  return true
-}
-
-function START_handle__Asked_Host({
-  shell,
-  asked_Host
-}: _Api___handle__Asked_Host_<"START">): boolean {
-  const task = shell.taskIn()
-  if (task === undefined) return true
-  shell.started({
-    id_Task: task.id,
-    scope_Work: asked_Host.scope
-  })
-  return true
-}
-
-function STOP_handle__Asked_Host({
-  shell,
-  asked_Host
-}: _Api___handle__Asked_Host_<"STOP">): boolean {
-  const task = shell.taskIn()
-  if (task === undefined) return true
-  shell.stopped({
-    id_Task: task.id,
-    scope_Work: asked_Host.scope
-  })
-  return true
-}
-
-function TASK_handle__Asked_Host({
-  shell,
-  asked_Host
-}: _Api___handle__Asked_Host_<"TASK">): boolean {
-  const command = asked_Host.command
-  const task = shell.taskIn()
-  if (command === "accept-here") {
-    shell.acceptedIn([shell.name_Document])
-  } else if (command === "accept-task") {
-    shell.acceptedIn(task === undefined ? [] : [...new Set(task.proposals.map((proposal) => proposal.path))])
-  } else if (command.startsWith("accept-in:")) {
-    shell.acceptedIn([command.slice("accept-in:".length)])
-  }
-  return true
-}
-
-function END_handle__Asked_Host({
-  shell,
-  asked_Host
-}: _Api___handle__Asked_Host_<"END">): boolean {
-  const task = shell.taskIn()
-  if (task === undefined) return true
-  shell.ended({
-    id_Task: task.id,
-    kind_End: asked_Host.end
-  })
-  return true
-}
-
-function SWITCH_handle__Asked_Host({
-  shell,
-  asked_Host
-}: _Api___handle__Asked_Host_<"SWITCH">): boolean {
-  shell.target_Mode = asked_Host.target
-  return true
-}
-
-function OPEN_FILE__handle__Asked_Host({
-  shell,
-  asked_Host
-}: _Api___handle__Asked_Host_<"OPEN_FILE">): boolean {
-  for (const observer of shell.observers) observer.opening(asked_Host.path)
-  return true
-}
-
-function SHOW_BOARD__handle__Asked_Host({}: _Api___handle__Asked_Host_<"SHOW_BOARD">): boolean {
-  return true
-}
-
-function RERUN_handle__Asked_Host({
-  shell,
-  asked_Host
-}: _Api___handle__Asked_Host_<"RERUN">): boolean {
-  const task = shell.taskIn()
-  if (task === undefined) return false
-  const requests_Again = shell.requestsOf__Rerun({
-    id_Task: task.id,
-    source: asked_Host.source
-  })
-  for (const request_Again of requests_Again) {
-    const id = shell.idOf__Request_Next(asked_Host.source)
-    shell.references.set(
-      id,
-      request_Again.reference
-    )
-    shell.tasks.handle({
-      kind: "REQUEST",
-      id_Task: task.id,
-      request: {
-        id,
-        notes: request_Again.notes,
-        aim: aimOf__Reference({
-          kind: "PROPOSAL",
-          reference: request_Again.reference,
-          path: asked_Host.source
-        })
-      },
-      stamp: stampOf({
-        by: "HUMAN"
+  },
+  DISMISS_PROPOSAL: ({
+    shell,
+    command_Shell
+  }) => {
+    const task = shell.taskOf(command_Shell.id_Task)
+    const proposal = task?.proposals.find((proposal_Each) => proposal_Each.id === command_Shell.id_Proposal)
+    if (proposal === undefined) return
+    shell.freshened({
+      id_Task: command_Shell.id_Task,
+      sources: [command_Shell.id_Proposal]
+    })
+    shell.restated({
+      id_Task: command_Shell.id_Task,
+      path: proposal.path,
+      change: (head) => ({
+        ...head,
+        proposed: head.proposed.filter((changes_Source) => changes_Source.source !== command_Shell.id_Proposal)
       })
     })
-  }
-  shell.started({
-    id_Task: task.id,
-    scope_Work: {
-      kind: "PROPOSAL",
-      source: asked_Host.source
-    }
-  })
-  return true
-}
-
-function SETTLE_handle__Asked_Host({
-  shell,
-  asked_Host
-}: _Api___handle__Asked_Host_<"SETTLE">): boolean {
-  const task = shell.taskIn()
-  if (task === undefined) return false
-  shell.restated({
-    id_Task: task.id,
-    change: (head) => settledOf__Head({
-      document: shell.documentOf(),
-      head,
-      source: asked_Host.source,
-      way: asked_Host.way
-    })
-  })
-  return true
-}
-
-interface _Api___handle__Asked_Board_<Kind extends _Asked_Board_["kind"]> {
-  shell: _Shell_
-  asked_Board: Extract<
-    _Asked_Board_,
-    __BASE_Asked_Board_<Kind>
-  >
-}
-
-function handle__Asked_Board<Kind extends _Asked_Board_["kind"]>({
-  shell,
-  asked_Board
-}: _Api___handle__Asked_Board_<Kind>): boolean {
-  const handle = HANDLERMAP__ASKED_BOARD[asked_Board.kind]
-  return handle({
+    shell.dismissed.set(
+      command_Shell.id_Task,
+      new Set([
+        ...shell.dismissed.get(command_Shell.id_Task) ?? [],
+        command_Shell.id_Proposal
+      ])
+    )
+  },
+  ACCEPT: ({
     shell,
-    asked_Board
-  })
-}
-
-type _HandlerMap__Asked_Board_ = {
-  [Kind in _Asked_Board_["kind"]]: (api_Handler: _Api___handle__Asked_Board_<Kind>) => boolean
-}
-
-const HANDLERMAP__ASKED_BOARD: _HandlerMap__Asked_Board_ = {
-  SWITCH: SWITCH_handle__Asked_Board,
-  START: START_handle__Asked_Board,
-  STOP: STOP_handle__Asked_Board,
-  APPLY: END_handle__Asked_Board,
-  CANCEL: END_handle__Asked_Board,
-  DISCARD: END_handle__Asked_Board,
-  COLLECT: COLLECT_handle__Asked_Board,
-  NEW_TASK: NEW_TASK__handle__Asked_Board
-}
-
-function SWITCH_handle__Asked_Board({
-  shell,
-  asked_Board
-}: _Api___handle__Asked_Board_<"SWITCH">): boolean {
-  shell.target_Mode = {
-    kind: "TASK",
-    id: asked_Board.id
+    command_Shell
+  }) => shell.accepted({
+    id_Task: command_Shell.id_Task,
+    paths: command_Shell.paths
+  }),
+  SETTLE: ({
+    shell,
+    command_Shell
+  }) => shell.restated({
+    id_Task: command_Shell.id_Task,
+    path: command_Shell.path,
+    change: (head) => settledOf__Head({
+      document: shell.documentOf(command_Shell.path),
+      head,
+      source: command_Shell.source,
+      way: command_Shell.way
+    })
+  }),
+  END: ({
+    shell,
+    command_Shell
+  }) => shell.ended({
+    id_Task: command_Shell.id_Task,
+    kind_End: command_Shell.kind_End
+  }),
+  RERUN: ({
+    shell,
+    command_Shell
+  }) => {
+    for (const request_Again of shell.requestsOf__Rerun({
+      id_Task: command_Shell.id_Task,
+      source: command_Shell.id_Proposal
+    })) {
+      shell.tasks.handle({
+        kind: "REQUEST",
+        id_Task: command_Shell.id_Task,
+        request: {
+          id: shell.idOf__Request_Next(command_Shell.id_Proposal),
+          notes: request_Again.notes,
+          aim: request_Again.aim
+        },
+        stamp: stampOf({
+          by: "HUMAN"
+        })
+      })
+    }
+    shell.started({
+      id_Task: command_Shell.id_Task,
+      scope: {
+        kind: "PROPOSALS",
+        ids_Proposal: [command_Shell.id_Proposal]
+      },
+      path: command_Shell.path
+    })
   }
-  return true
 }
 
-function START_handle__Asked_Board({
-  shell,
-  asked_Board
-}: _Api___handle__Asked_Board_<"START">): boolean {
-  shell.started({
-    id_Task: asked_Board.id,
-    scope_Work: {
-      kind: "TASK"
-    }
-  })
-  return true
+interface _Api___waitingOf__Task_ {
+  task: _Task_Tasks_
+  path: string
 }
 
-function STOP_handle__Asked_Board({
-  shell,
-  asked_Board
-}: _Api___handle__Asked_Board_<"STOP">): boolean {
-  shell.stopped({
-    id_Task: asked_Board.id,
-    scope_Work: {
-      kind: "TASK"
-    }
-  })
-  return true
+function waitingOf__Task({
+  task,
+  path
+}: _Api___waitingOf__Task_): Array<_Proposal_Tasks_> {
+  return task.proposals.filter((proposal) => proposal.path === path && proposal.decision === "OPEN" && !isAsked__Proposal({
+    task,
+    proposal
+  }))
 }
 
-type _Api___END_handle__Asked_Board_ = _Api___handle__Asked_Board_<"APPLY"> | _Api___handle__Asked_Board_<"CANCEL"> | _Api___handle__Asked_Board_<"DISCARD">
-
-function END_handle__Asked_Board({
-  shell,
-  asked_Board
-}: _Api___END_handle__Asked_Board_): boolean {
-  shell.ended({
-    id_Task: asked_Board.id,
-    kind_End: asked_Board.kind
-  })
-  return true
+interface _Api___isAsked__Proposal_ {
+  task: _Task_Tasks_
+  proposal: _Proposal_Tasks_
 }
 
-function COLLECT_handle__Asked_Board({
-  shell,
-  asked_Board
-}: _Api___handle__Asked_Board_<"COLLECT">): boolean {
-  shell.tasks.handle({
-    kind: "COLLECT",
-    ids_Task: asked_Board.ids
-  })
-  return true
-}
-
-function NEW_TASK__handle__Asked_Board({}: _Api___handle__Asked_Board_<"NEW_TASK">): boolean {
-  return true
+function isAsked__Proposal({
+  task,
+  proposal
+}: _Api___isAsked__Proposal_): boolean {
+  return task.requests.some((request) => request.aim.kind === "PROPOSAL" && request.aim.id_Proposal === proposal.id && request.status.kind !== "ADDRESSED")
 }
 
 interface _Api___keyIn__Task_ {
@@ -1332,53 +1101,4 @@ function idOf__Task_Next({
 }: _Api___idOf__Task_Next_): string {
   const numbers = tasks.map((task) => Number(task.id.replace(/^T-/, ""))).filter((number) => Number.isInteger(number))
   return `T-${Math.max(0, ...numbers) + 1}`
-}
-
-interface _Api___aimOf__Reference_ {
-  kind: "TASK" | "DOCUMENT" | "PROPOSAL"
-  reference: _Selected_Text_ | null
-  path: string
-}
-
-function aimOf__Reference({
-  kind,
-  reference,
-  path
-}: _Api___aimOf__Reference_): _Aim_Request_Tasks_ {
-  const words = wordsOf__Reference({
-    reference
-  })
-  return kind === "TASK"
-    ? {
-      kind: "TASK",
-      words
-    }
-    : kind === "DOCUMENT"
-      ? {
-        kind: "DOCUMENT",
-        path,
-        words
-      }
-      : {
-        kind: "PROPOSAL",
-        id_Proposal: path,
-        words
-      }
-}
-
-interface _Api___wordsOf__Reference_ {
-  reference: _Selected_Text_ | null
-}
-
-function wordsOf__Reference({
-  reference
-}: _Api___wordsOf__Reference_): _Words_Aim_ {
-  return reference === null
-    ? {
-      kind: "ALL"
-    }
-    : {
-      kind: "QUOTED",
-      text: reference.text
-    }
 }

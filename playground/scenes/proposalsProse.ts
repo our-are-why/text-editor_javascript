@@ -4,7 +4,7 @@ import {
   MODULE_READING_TEXT
 } from "../../source/editor/index.ts"
 import { type _Range_Text_ } from "../../source/documents/index.ts"
-import { ACTIONS_REVIEW } from "../../source/shell/index.ts"
+import { ACTIONS_REVIEW } from "../../source/host/index.ts"
 import { attributesOf__Marks } from "../looks.ts"
 import { projectedOf } from "../projected.ts"
 import { movingTheWorkshop } from "./plainText.ts"

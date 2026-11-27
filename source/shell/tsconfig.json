@@ -1,13 +1,12 @@
 {
-  // source/shell/, what puts the parts together and tells the editor and the
-  // board what to show: it draws nothing and runs in the browser or in Bun,
-  // its host's, using neither; the DOM's types only as the editor's and the
-  // board's are read through their indexes, so what source/ declares for the
-  // stylesheets their parts import, and the editor's EditContext, with them
+  // source/shell/, doctor's core coordinator: the tasks, documents and agent
+  // parts put together, taking commands in their own terms and telling what
+  // changed, knowing nothing of any view: plain data and functions, so no
+  // DOM and no Bun, to run wherever its host does
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
-    "lib": ["ES2024", "DOM", "DOM.Iterable"],
+    "lib": ["ES2024"],
     "types": []
   },
-  "include": ["./**/*", "../stylesheets.d.ts", "../editor/editContext.d.ts"]
+  "include": ["./**/*"]
 }

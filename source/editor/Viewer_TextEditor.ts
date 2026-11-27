@@ -57,10 +57,8 @@ import {
   type _DOCUMENT_Target_Request_,
   type _TASK_Target_Request_,
   type _Aim_Request_,
-  type _Selected_Text_,
   type _Kind_End_,
   sideOf__Run,
-  type _Piece_Text_,
   type _Form_Request_,
   type _Place_Form_,
   type _Header_ViewModel_,
@@ -75,7 +73,9 @@ import type {
   _Id_Text_,
   _Range_Text_,
   _Position_Text_,
-  _NonEmpty_
+  _NonEmpty_,
+  _Selected_Text_,
+  _Piece_Text_
 } from "../documents/index.ts"
 import type {
   _Request_Edit_,

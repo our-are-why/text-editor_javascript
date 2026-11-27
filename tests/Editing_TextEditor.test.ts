@@ -3,7 +3,7 @@ import { parseModel_TextEditor, textWith__Sources, applied__Transaction, type _M
 import type { _Proposal_Host_ } from "../source/editor/Projection_TextEditor.ts"
 import { editedOf__Request, HISTORY_EMPTY, type _History_TextEditor_, type _Edited_Model_ } from "../source/editor/Editing_TextEditor.ts"
 import type { _Selection_TextEditor_, _Decision_Proposal_, _Status_Request_ } from "../source/editor/ViewModel_TextEditor.ts"
-import { ACTIONS_REVIEW } from "../source/shell/index.ts"
+import { ACTIONS_REVIEW } from "../source/host/index.ts"
 import { MODULE_WORDS_TEXT } from "../source/editor/words/text.ts"
 
 // a range on one line, from a character to another

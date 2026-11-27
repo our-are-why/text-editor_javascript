@@ -19,7 +19,7 @@ import {
   parseTexts_Line,
   carriedOf__Head
 } from "../source/documents/index.ts"
-import { PROPOSAL_YOURS } from "../source/shell/index.ts"
+import { PROPOSAL_YOURS } from "../source/host/index.ts"
 
 export {
   modelOf,

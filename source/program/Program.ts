@@ -39,10 +39,10 @@ import {
 } from "../agent/index.ts"
 import {
   _Shell_,
-  handle__Message_Page,
   briefOf__Job,
-  type _Shown_Shell_,
+  type _State_Shell_,
   type _Message_Page_,
+  type __BASE_Message_Page_,
   type _Message_Shell_,
   type _Round_Shell_,
   type _Stop_Shell_
@@ -51,8 +51,15 @@ import {
 export {
   _Program_,
   type _Api__Program_,
+  type _Data_Socket_,
   type _Built_Page_,
   type _File_Page_,
+  type _Api___heard__Program_,
+  type _Api___sent__Program_,
+  handle__Message_Page,
+  type _Api___handle__Message_Page_,
+  type _HandlerMap__Message_Page_,
+  HANDLERMAP__MESSAGE_PAGE,
   type _Api___waited__Program_,
   type _Api___offeredOf__Program_,
   type _Api___called__Program_,
@@ -96,15 +103,14 @@ class _Program_ {
   wakers: Array<() => void>
   isClosing: boolean
   shell: _Shell_
-  sockets_Page: Set<ServerWebSocket<undefined>>
-  count_Edit: number
-  server: Server<undefined>
+  path_First: string
+  sockets: Set<ServerWebSocket<_Data_Socket_>>
+  server: Server<_Data_Socket_>
 
   constructor({
     dir_Project,
     files,
-    path_Shown,
-    text_Shown,
+    path_First,
     page_Built,
     token_Page,
     token_Agent,
@@ -117,16 +123,7 @@ class _Program_ {
     this.token_Page = token_Page
     this.token_Agent = token_Agent
     this.command_Agent = command_Agent
-    const text_Model = {
-      lines: parseTexts_Line(text_Shown),
-      marks: []
-    }
-    this.texts_Written = new Map([
-      [
-        path_Shown,
-        flatOf__Text(text_Model)
-      ]
-    ])
+    this.texts_Written = new Map()
     this.writing = Promise.resolve()
     this.documents = new _Documents_({
       model_Documents: {
@@ -137,11 +134,6 @@ class _Program_ {
           changed: (model_Documents) => this.changed(model_Documents)
         }
       ]
-    })
-    this.documents.handle({
-      kind: "OPEN",
-      path: path_Shown,
-      text: text_Model
     })
     this.agent = new _Agent_({
       model_Agent: {
@@ -164,35 +156,28 @@ class _Program_ {
         observers: []
       }),
       documents: this.documents,
-      name_Document: path_Shown,
-      files: this.files,
-      target_Mode: {
-        kind: "MANUAL"
-      },
-      references: new Map(),
-      contents: new Map(),
       observers: [
         {
-          shown: (shown_Shell) => this.shown(shown_Shell),
+          changed: (state_Shell) => this.told(state_Shell),
           started: (round_Shell) => this.queued(round_Shell),
-          stopped: (stop_Shell) => this.cancelled(stop_Shell),
-          opening: (path) => this.opening(path)
+          stopped: (stop_Shell) => this.cancelled(stop_Shell)
         }
       ]
     })
-    this.sockets_Page = new Set()
-    this.count_Edit = 0
+    this.path_First = path_First
+    this.sockets = new Set()
     this.server = Bun.serve({
       hostname: "127.0.0.1",
       port,
       fetch: (request) => this.fetched(request),
       websocket: {
         open: (socket) => this.connected(socket),
-        message: (socket, data) => {
-          if (this.sockets_Page.has(socket)) this.heard(String(data))
-        },
+        message: (socket, data) => this.heard({
+          socket,
+          data: String(data)
+        }),
         close: (socket) => {
-          this.sockets_Page.delete(socket)
+          this.sockets.delete(socket)
         }
       }
     })
@@ -203,6 +188,7 @@ class _Program_ {
   ): Response | Promise<Response> | undefined {
     const url = new URL(request.url)
     if (url.pathname.startsWith("/agent/")) return this.answered(request)
+    if (url.pathname === "/page/files") return this.listed(request)
     const name = url.pathname.slice(url.pathname.lastIndexOf("/") + 1)
     if (name === "socket") {
       if (url.searchParams.get("token") !== this.token_Page) {
@@ -216,7 +202,9 @@ class _Program_ {
       return this.server.upgrade(
         request,
         {
-          data: undefined
+          data: {
+            count_Edit: 0
+          }
         }
       )
         ? undefined
@@ -306,6 +294,20 @@ class _Program_ {
       }),
       status: 404
     })
+  }
+
+  listed(
+    request: Request
+  ): Response {
+    if (request.headers.get("authorization") !== `Bearer ${this.token_Page}`) {
+      return new Response(
+        "Not this page's.",
+        {
+          status: 403
+        }
+      )
+    }
+    return Response.json(this.files)
   }
 
   async waited({
@@ -513,72 +515,76 @@ class _Program_ {
   }
 
   connected(
-    socket: ServerWebSocket<undefined>
+    socket: ServerWebSocket<_Data_Socket_>
   ): void {
-    for (const socket_Other of this.sockets_Page) {
-      socket_Other.close(
-        4000,
-        "opened in another page"
-      )
-    }
-    this.sockets_Page = new Set([socket])
-    this.count_Edit = 0
+    this.sockets.add(socket)
     this.sent({
-      kind: "SHOWN",
-      shown_Shell: this.shell.shown(),
-      count_Edit: this.count_Edit
+      socket,
+      state_Shell: this.shell.state()
     })
   }
 
-  heard(
-    data: string
-  ): void {
-    const message_Page: _Message_Page_ = JSON.parse(data)
-    this.count_Edit = message_Page.count_Edit
-    handle__Message_Page({
-      shell: this.shell,
-      message_Page
+  async kept(
+    path: string
+  ): Promise<void> {
+    if (this.shell.isKept(path)) return
+    const text_Model = {
+      lines: parseTexts_Line(await Bun.file(join(this.dir_Project, path)).text()),
+      marks: []
+    }
+    if (this.shell.isKept(path)) return
+    this.texts_Written.set(
+      path,
+      flatOf__Text(text_Model)
+    )
+    this.shell.handle({
+      kind: "OPEN_DOCUMENT",
+      path,
+      text: text_Model
     })
   }
 
-  shown(
-    shown_Shell: _Shown_Shell_
+  heard({
+    socket,
+    data
+  }: _Api___heard__Program_): void {
+    if (!this.sockets.has(socket)) return
+    try {
+      const message_Page: _Message_Page_ = JSON.parse(data)
+      handle__Message_Page({
+        program: this,
+        socket,
+        message_Page
+      })
+    } catch (error) {
+      console.error("doctor couldn't take a page's message:", error)
+    }
+  }
+
+  told(
+    state_Shell: _State_Shell_
   ): void {
     this.ended()
-    this.sent({
-      kind: "SHOWN",
-      shown_Shell,
-      count_Edit: this.count_Edit
-    })
-  }
-
-  sent(
-    message_Shell: _Message_Shell_
-  ): void {
-    const data = JSON.stringify(message_Shell)
-    for (const socket of this.sockets_Page) socket.send(data)
-  }
-
-  opening(
-    path: string
-  ): void {
-    if (!this.files.includes(path)) return
-    Bun.file(join(this.dir_Project, path)).text().then((text) => {
-      const text_Model = {
-        lines: parseTexts_Line(text),
-        marks: []
-      }
-      if (!this.texts_Written.has(path)) {
-        this.texts_Written.set(
-          path,
-          flatOf__Text(text_Model)
-        )
-      }
-      this.shell.opened({
-        path,
-        text: text_Model
+    for (const socket of this.sockets) {
+      this.sent({
+        socket,
+        state_Shell
       })
-    })
+    }
+  }
+
+  sent({
+    socket,
+    state_Shell
+  }: _Api___sent__Program_): void {
+    const message_Shell: _Message_Shell_ = {
+      kind: "STATE",
+      state_Shell,
+      files: this.files,
+      path_First: this.path_First,
+      count_Edit: socket.data.count_Edit
+    }
+    socket.send(JSON.stringify(message_Shell))
   }
 
   changed(
@@ -619,13 +625,70 @@ class _Program_ {
 interface _Api__Program_ {
   dir_Project: string
   files: Array<string>
-  path_Shown: string
-  text_Shown: string
+  path_First: string
   page_Built: _Built_Page_
   token_Page: string
   token_Agent: string
   command_Agent: string
   port: number
+}
+
+interface _Data_Socket_ {
+  count_Edit: number
+}
+
+interface _Api___heard__Program_ {
+  socket: ServerWebSocket<_Data_Socket_>
+  data: string
+}
+
+interface _Api___handle__Message_Page_<Kind extends _Message_Page_["kind"]> {
+  program: _Program_
+  socket: ServerWebSocket<_Data_Socket_>
+  message_Page: Extract<
+    _Message_Page_,
+    __BASE_Message_Page_<Kind>
+  >
+}
+
+function handle__Message_Page<Kind extends _Message_Page_["kind"]>({
+  program,
+  socket,
+  message_Page
+}: _Api___handle__Message_Page_<Kind>): void {
+  const handle = HANDLERMAP__MESSAGE_PAGE[message_Page.kind]
+  handle({
+    program,
+    socket,
+    message_Page
+  })
+}
+
+type _HandlerMap__Message_Page_ = {
+  [Kind in _Message_Page_["kind"]]: (api_Handler: _Api___handle__Message_Page_<Kind>) => void
+}
+
+const HANDLERMAP__MESSAGE_PAGE: _HandlerMap__Message_Page_ = {
+  COMMAND: ({
+    program,
+    socket,
+    message_Page
+  }) => {
+    if (message_Page.command_Shell.kind === "EDIT") socket.data.count_Edit += 1
+    program.shell.handle(message_Page.command_Shell)
+  },
+  OPEN: ({
+    program,
+    message_Page
+  }) => {
+    if (!program.files.includes(message_Page.path)) return
+    program.kept(message_Page.path).catch((error: unknown) => console.error(`doctor couldn't open ${message_Page.path}:`, error))
+  }
+}
+
+interface _Api___sent__Program_ {
+  socket: ServerWebSocket<_Data_Socket_>
+  state_Shell: _State_Shell_
 }
 
 interface _Api___waited__Program_ {
@@ -731,22 +794,21 @@ const NAME_ENDPOINT = "endpoint.json"
 interface _Api___openedOf__Program_ {
   dir_Project: string
   files: Array<string>
-  path_Shown: string
+  path_First: string
   port: number
 }
 
 async function openedOf__Program({
   dir_Project,
   files,
-  path_Shown,
+  path_First,
   port
 }: _Api___openedOf__Program_): Promise<_Program_> {
-  if (!files.includes(path_Shown)) throw new Error(`${path_Shown} isn't one of the project's files`)
+  if (!files.includes(path_First)) throw new Error(`${path_First} isn't one of the project's files`)
   const program = new _Program_({
     dir_Project,
     files,
-    path_Shown,
-    text_Shown: await Bun.file(join(dir_Project, path_Shown)).text(),
+    path_First,
     page_Built: await builtOf__Page({
       title: basename(dir_Project)
     }),

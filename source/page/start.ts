@@ -22,13 +22,22 @@ document.body.append(
   containerElement_Editor,
   containerElement_Board
 )
+const params = new URLSearchParams(location.search)
 const url_Socket = new URL(
-  `socket?token=${encodeURIComponent(new URLSearchParams(location.search).get("token") ?? "")}`,
+  "socket",
   location.href
 )
 url_Socket.protocol = location.protocol === "https:" ? "wss:" : "ws:"
+url_Socket.search = new URLSearchParams([
+  [
+    "token",
+    params.get("token") ?? ""
+  ]
+]).toString()
 await openedOf__Page({
   url_Socket,
+  id_Editor: params.get("editor") ?? "page",
+  path_Asked: params.get("path") ?? undefined,
   setup: {
     componentMap: COMPONENTMAP__VIEW_TEXTEDITOR,
     modules: [
@@ -43,7 +52,8 @@ await openedOf__Page({
   },
   containerElement_Editor,
   containerElement_Board,
-  containerElement_Status
+  containerElement_Status,
+  host_Page: params.get("host") === "vscode" ? "FRAMED" : "ALONE"
 }).catch((error: unknown) => {
   containerElement_Status.textContent = `doctor's page couldn't open: ${error instanceof Error ? error.message : String(error)}`
   containerElement_Status.hidden = false

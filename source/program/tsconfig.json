@@ -1,12 +1,11 @@
 {
   // source/program/, doctor's program, run in a project's folder: Bun, and
-  // the DOM's types only as the shell's are read, which read the editor's
-  // and the board's, with what source/ declares for their stylesheets and
-  // the editor's EditContext; it uses nothing of the DOM
+  // the core it carries between pages and agents, knowing nothing of any
+  // view, so no DOM
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
-    "lib": ["ES2024", "DOM", "DOM.Iterable"],
+    "lib": ["ES2024"],
     "types": ["bun"]
   },
-  "include": ["./**/*", "../stylesheets.d.ts", "../editor/editContext.d.ts"]
+  "include": ["./**/*"]
 }

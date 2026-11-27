@@ -36,6 +36,9 @@ export {
   type __BASE_Id_Text_,
   type _DOCUMENT_Id_Text_,
   type _CHANGE_Id_Text_,
+  type _Selected_Text_,
+  type _Side_Text_,
+  type _Piece_Text_,
   type _CHANGE_Step_Transaction_,
   type _SOURCE_Step_Transaction_,
   type _Applied_Transaction_,
@@ -751,6 +754,19 @@ interface _DOCUMENT_Id_Text_ extends __BASE_Id_Text_<"DOCUMENT"> {}
 interface _CHANGE_Id_Text_ extends __BASE_Id_Text_<"CHANGE"> {
   source: string
   index: number
+}
+
+interface _Selected_Text_ {
+  pieces: _NonEmpty_<_Piece_Text_>
+  text: string
+  side: _Side_Text_
+}
+
+type _Side_Text_ = "CURRENT" | "PROPOSED"
+
+interface _Piece_Text_ {
+  id_Text: _Id_Text_
+  range: _Range_Text_
 }
 
 interface _CHANGE_Step_Transaction_ extends __BASE_Step_Transaction_<"CHANGE"> {

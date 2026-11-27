@@ -18,7 +18,7 @@ import {
   type _Change_Host_
 } from "../../source/documents/index.ts"
 import { carriedOf__Model, type _Edit_Example_ } from "../projected.ts"
-import { ACTIONS_REVIEW, ACTIONS_REOPEN, ACTIONS_DISMISS, PROPOSAL_YOURS } from "../../source/shell/index.ts"
+import { ACTIONS_REVIEW, ACTIONS_REOPEN, ACTIONS_DISMISS, PROPOSAL_YOURS } from "../../source/host/index.ts"
 import { module_Markdown, type _State_Markdown_ } from "../syntax.ts"
 import { perspective_Markdown } from "../readings.ts"
 import { hostedOf__Editor } from "../host.ts"

@@ -7,7 +7,6 @@ import type {
   _Proposal_Host_,
   _Request_Host_,
   _Attributes_Element_,
-  _Selected_Text_,
   _Decision_Proposal_,
   _Action_Item_,
   _Standing_Task_,
@@ -21,19 +20,22 @@ import {
   stateOf__Task,
   countsOf__Task,
   type _Task_Tasks_,
-  type _Proposal_Tasks_,
   type _Request_Tasks_,
-  type _Scope_Tasks_
+  type _Scope_Tasks_,
+  type _Words_Aim_,
+  type _Aim_Request_Tasks_
 } from "../tasks/index.ts"
-import type { _Stale_Source_ } from "../documents/index.ts"
+import type {
+  _Stale_Source_,
+  _Selected_Text_
+} from "../documents/index.ts"
+import { waitingOf__Task } from "../shell/index.ts"
 
 export {
   taskHostOf__Task,
   type _Api___taskHostOf__Task_,
-  waitingOf__Task,
-  type _Api___waitingOf__Task_,
-  isAsked__Proposal,
-  type _Api___isAsked__Proposal_,
+  referenceOf__Words,
+  type _Api___referenceOf__Words_,
   countsOf__Proposals_Path,
   type _Api___countsOf__Proposals_Path_,
   countsOf__Requests_Path,
@@ -60,22 +62,20 @@ export {
   type _Api___scopeOf__Work_,
   type _ScopeMap__Kind_Work_,
   SCOPEMAP_WORK,
-  briefOf__Job,
-  type _Api___briefOf__Job_,
-  type _Brief_Job_,
-  type _Task_Brief_
+  aimOf__Reference,
+  type _Api___aimOf__Reference_,
+  wordsOf__Reference,
+  type _Api___wordsOf__Reference_
 }
 
 interface _Api___taskHostOf__Task_ {
   task: _Task_Tasks_
   name_Document: string
-  references: Map<string, _Selected_Text_ | null>
 }
 
 function taskHostOf__Task({
   task,
-  name_Document,
-  references
+  name_Document
 }: _Api___taskHostOf__Task_): _Task_Host_ {
   const paths = pathsOf__Task({
     task
@@ -135,7 +135,9 @@ function taskHostOf__Task({
           notes: request.notes,
           aim: {
             kind: request.aim.kind,
-            reference: references.get(request.id) ?? null
+            reference: referenceOf__Words({
+              words: request.aim.words
+            })
           },
           status: request.status.kind === "STAGED" ? "STAGED" : request.status.kind === "WITH_AGENT" ? "RUNNING" : "ADDRESSED",
           sources_Answering: request.status.kind === "ADDRESSED" && request.status.answer.kind === "PROPOSALS" ? request.status.answer.ids_Proposal : []
@@ -163,31 +165,20 @@ function taskHostOf__Task({
   }
 }
 
-interface _Api___waitingOf__Task_ {
-  task: _Task_Tasks_
-  path: string
+interface _Api___referenceOf__Words_ {
+  words: _Words_Aim_
 }
 
-function waitingOf__Task({
-  task,
-  path
-}: _Api___waitingOf__Task_): Array<_Proposal_Tasks_> {
-  return task.proposals.filter((proposal) => proposal.path === path && proposal.decision === "OPEN" && !isAsked__Proposal({
-    task,
-    proposal
-  }))
-}
-
-interface _Api___isAsked__Proposal_ {
-  task: _Task_Tasks_
-  proposal: _Proposal_Tasks_
-}
-
-function isAsked__Proposal({
-  task,
-  proposal
-}: _Api___isAsked__Proposal_): boolean {
-  return task.requests.some((request) => request.aim.kind === "PROPOSAL" && request.aim.id_Proposal === proposal.id && request.status.kind !== "ADDRESSED")
+function referenceOf__Words({
+  words
+}: _Api___referenceOf__Words_): _Selected_Text_ | null {
+  return words.kind === "QUOTED"
+    ? {
+      pieces: words.pieces,
+      text: words.text,
+      side: words.side
+    }
+    : null
 }
 
 interface _Api___countsOf__Proposals_Path_ {
@@ -260,14 +251,12 @@ interface _Api___proposalsHostOf__Task_ {
   task: _Task_Tasks_
   content: _Content_Task_
   name_Document: string
-  references: Map<string, _Selected_Text_ | null>
 }
 
 function proposalsHostOf__Task({
   task,
   content,
-  name_Document,
-  references
+  name_Document
 }: _Api___proposalsHostOf__Task_): Array<_Proposal_Host_> {
   return [
     PROPOSAL_YOURS,
@@ -284,7 +273,9 @@ function proposalsHostOf__Task({
             {
               id: request.id,
               notes: request.notes,
-              reference: references.get(request.id) ?? null,
+              reference: referenceOf__Words({
+                words: request.aim.words
+              }),
               status: request.status.kind === "WITH_AGENT" ? "RUNNING" : "STAGED"
             }
           ]
@@ -516,40 +507,53 @@ const SCOPEMAP_WORK: _ScopeMap__Kind_Work_ = {
   })
 }
 
-interface _Api___briefOf__Job_ {
-  task: _Task_Tasks_
-  ids_Request: Array<string>
+interface _Api___aimOf__Reference_ {
+  kind: "TASK" | "DOCUMENT" | "PROPOSAL"
+  reference: _Selected_Text_ | null
+  path: string
 }
 
-interface _Brief_Job_ {
-  task: _Task_Brief_
-  requests: Array<_Request_Tasks_>
-  requests_Other: Array<_Request_Tasks_>
-  proposals: Array<_Proposal_Tasks_>
-  files: Array<string>
+function aimOf__Reference({
+  kind,
+  reference,
+  path
+}: _Api___aimOf__Reference_): _Aim_Request_Tasks_ {
+  const words = wordsOf__Reference({
+    reference
+  })
+  return kind === "TASK"
+    ? {
+      kind: "TASK",
+      words
+    }
+    : kind === "DOCUMENT"
+      ? {
+        kind: "DOCUMENT",
+        path,
+        words
+      }
+      : {
+        kind: "PROPOSAL",
+        id_Proposal: path,
+        words
+      }
 }
 
-interface _Task_Brief_ {
-  id: string
-  name: string
-  summary: string
+interface _Api___wordsOf__Reference_ {
+  reference: _Selected_Text_ | null
 }
 
-function briefOf__Job({
-  task,
-  ids_Request
-}: _Api___briefOf__Job_): _Brief_Job_ {
-  return {
-    task: {
-      id: task.id,
-      name: task.name,
-      summary: task.summary
-    },
-    requests: task.requests.filter((request) => ids_Request.includes(request.id)),
-    requests_Other: task.requests.filter((request) => !ids_Request.includes(request.id) && request.status.kind !== "ADDRESSED"),
-    proposals: task.proposals,
-    files: pathsOf__Task({
-      task
-    })
-  }
+function wordsOf__Reference({
+  reference
+}: _Api___wordsOf__Reference_): _Words_Aim_ {
+  return reference === null
+    ? {
+      kind: "ALL"
+    }
+    : {
+      kind: "QUOTED",
+      pieces: reference.pieces,
+      text: reference.text,
+      side: reference.side
+    }
 }

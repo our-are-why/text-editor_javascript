@@ -3,8 +3,8 @@ import { parseModel_TextEditor, parseTexts_Line, type _Changes_Host_, type _Chan
 import { type _Over_Change_ } from "../source/documents/Model_Documents.ts"
 import { viewModelOf__Model, type _Proposal_Host_, type _Task_Host_, type _Mode_Host_, type _Standing_Task_, type _Counts_Proposals_, type _Counts_Requests_ } from "../source/editor/Projection_TextEditor.ts"
 import { MODULE_READING_TEXT } from "../source/editor/readings/text.ts"
-import { MODULE_PLAINTEXT, isLines__Part_Frame, pointedAt__ViewModel, type _State_Task_, type _Header_ViewModel_, type _Decision_Proposal_, type _Status_Request_, type _Piece_Text_, type _Range_Lines_, type _ViewModel_TextEditor_, type _Line_Run_, type _Underlay_Text_, type _Run_Lines_ } from "../source/editor/ViewModel_TextEditor.ts"
-import { ACTIONS_REVIEW, roundsOf__Stale } from "../source/shell/index.ts"
+import { MODULE_PLAINTEXT, isLines__Part_Frame, pointedAt__ViewModel, type _State_Task_, type _Header_ViewModel_, type _Decision_Proposal_, type _Status_Request_, type _Range_Lines_, type _ViewModel_TextEditor_, type _Line_Run_, type _Underlay_Text_, type _Run_Lines_ } from "../source/editor/ViewModel_TextEditor.ts"
+import { ACTIONS_REVIEW, roundsOf__Stale } from "../source/host/index.ts"
 import { model_retry, proposals_retry, stale_retry, ranges_retry, setup_retry } from "../playground/examples/javascript.ts"
 import { model_readme, proposals_readme, stale_readme, ranges_readme, setup_readme } from "../playground/examples/markdown.ts"
 import { perspective_Markdown } from "../playground/readings.ts"
@@ -13,6 +13,9 @@ import { changes } from "../playground/documents/changes.ts"
 import { proposalsCode } from "../playground/scenes/proposalsCode.ts"
 import { proposalsThread } from "../playground/scenes/proposalsThread.ts"
 import { proposalsProse } from "../playground/scenes/proposalsProse.ts"
+import type {
+  _Piece_Text_
+} from "../source/documents/index.ts"
 
 // a model from a document and its changes as a host writes them, the test
 // failing, with why, if it's refused

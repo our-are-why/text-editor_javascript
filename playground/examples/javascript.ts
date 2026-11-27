@@ -7,7 +7,6 @@ import {
   type _Proposal_Host_,
   type _Request_Task_,
   type _Range_Lines_,
-  type _Selected_Text_,
   MODULE_WORDS_TEXT,
   PERSPECTIVE_CHANGES
 } from "../../source/editor/index.ts"
@@ -15,10 +14,11 @@ import {
   parseTexts_Line,
   type _Range_Text_,
   type _Changes_Host_,
-  type _Change_Host_
+  type _Change_Host_,
+  type _Selected_Text_
 } from "../../source/documents/index.ts"
 import { carriedOf__Model, type _Edit_Example_ } from "../projected.ts"
-import { ACTIONS_REVIEW, ACTIONS_REOPEN, ACTIONS_DISMISS, PROPOSAL_YOURS } from "../../source/shell/index.ts"
+import { ACTIONS_REVIEW, ACTIONS_REOPEN, ACTIONS_DISMISS, PROPOSAL_YOURS } from "../../source/host/index.ts"
 import { module_JavaScript, type _State_JavaScript_ } from "../syntax.ts"
 import { hostedOf__Editor, type _Other_Task_ } from "../host.ts"
 

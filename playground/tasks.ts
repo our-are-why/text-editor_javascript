@@ -11,11 +11,11 @@ import type {
   _Proposal_Host_,
   _Request_Task_,
   _Request_Host_,
-  _Selected_Text_,
   _Counts_Proposals_,
   _Counts_Requests_,
   _State_Proposal_,
-  _State_Task_
+  _State_Task_,
+  _Attributes_Element_
 } from "../source/editor/index.ts"
 import {
   type _Model_TextEditor_,
@@ -25,9 +25,8 @@ import {
 } from "../source/documents/index.ts"
 import {
   PROPOSAL_YOURS,
-  wordsOf__Reference,
-  type _Content_Task_
-} from "../source/shell/index.ts"
+  wordsOf__Reference
+} from "../source/host/index.ts"
 
 export {
   seededOf__Example,
@@ -89,14 +88,12 @@ interface _Resolved_Task_ {
   state: _State_Task_
 }
 
-// the example's tasks as the tasks part holds them, and what's only the
-// editor's of them, kept beside: the words each request was sent on, as the
-// editor quotes them; and what only the editor draws of the task the
-// playground's on
+// the example's tasks as the tasks part holds them, each request's words
+// in it, where they were sent on; and, beside, what only the editor draws of
+// the task the playground's on, each proposal's attributes
 interface _Seed_Tasks_ {
   model_Tasks: _Model_Tasks_
-  references: Map<string, _Selected_Text_ | null>
-  content_Own: _Content_Task_
+  attributes_Own: Map<string, _Attributes_Element_>
 }
 
 // the example's tasks as the tasks part holds them: the task the
@@ -106,7 +103,9 @@ interface _Seed_Tasks_ {
 // playground's on alone with proposals here, its changes on the document
 // shown its head there, stated against the document's version, what landed
 // on it written before your edits stale; each resolved one, as it ended;
-// and what only the editor draws of the task the playground's on
+// each request's words where it was sent on them, in the task; and what
+// only the editor draws of the task the playground's on, its proposals'
+// attributes
 function seededOf__Example({
   name_Document,
   model_TextEditor,
@@ -163,26 +162,10 @@ function seededOf__Example({
         }))
       ]
     },
-    references: new Map([
-      ...proposals_Own.flatMap((proposal_Host) => proposal_Host.requests.map((request_Host): [string, _Selected_Text_ | null] => [
-        request_Host.id,
-        request_Host.reference
-      ])),
-      ...[
-        about_Task,
-        ...tasks_Other
-      ].flatMap((task_Seed) => task_Seed.requests.map((request_Task): [string, _Selected_Text_ | null] => [
-        request_Task.id,
-        request_Task.aim.reference
-      ]))
-    ]),
-    content_Own: {
-      attributes: new Map(proposals_Own.map((proposal_Host) => [
-        proposal_Host.source,
-        proposal_Host.attributes
-      ])),
-      sources_Dismissed: new Set<string>()
-    }
+    attributes_Own: new Map(proposals_Own.map((proposal_Host) => [
+      proposal_Host.source,
+      proposal_Host.attributes
+    ]))
   }
 }
 

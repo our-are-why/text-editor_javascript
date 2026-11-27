@@ -4,6 +4,9 @@ import {
   type _Range_Text_,
   type _Position_Text_,
   type _NonEmpty_,
+  type _Selected_Text_,
+  type _Side_Text_,
+  type _Piece_Text_,
   mapped__NonEmpty,
   parseTexts_Line
 } from "../documents/index.ts"
@@ -158,10 +161,7 @@ export {
   type _DOCUMENT_Aim_Request_,
   type _TASK_Aim_Request_,
   type _PROPOSAL_Target_Request_,
-  type _Selected_Text_,
-  type _Side_Text_,
   sideOf__Run,
-  type _Piece_Text_,
   type _Form_Request_,
   type _Head_Form_,
   type _Quote_Form_,
@@ -1895,14 +1895,6 @@ interface _PROPOSAL_Target_Request_ extends __BASE_Target_Request_<"PROPOSAL"> {
   reference: _Selected_Text_ | null
 }
 
-interface _Selected_Text_ {
-  pieces: _NonEmpty_<_Piece_Text_>
-  text: string
-  side: _Side_Text_
-}
-
-type _Side_Text_ = "CURRENT" | "PROPOSED"
-
 interface _Api___sideOf__Run_ {
   blocks_ViewModel: Array<_Block_ViewModel_>
   id_Run: string
@@ -1916,11 +1908,6 @@ function sideOf__Run({
     ? block_ViewModel.parts.flatMap((part_Frame) => isLines__Part_Frame(part_Frame) && part_Frame.run.id === id_Run ? [SIDEMAP__KIND_RUN[part_Frame.kind]] : [])
     : block_ViewModel.run.id === id_Run ? [SIDEMAP__KIND_RUN[block_ViewModel.kind]] : [])
   return side$[0] ?? "CURRENT"
-}
-
-interface _Piece_Text_ {
-  id_Text: _Id_Text_
-  range: _Range_Text_
 }
 
 interface _Form_Request_ {

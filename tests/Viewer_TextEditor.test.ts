@@ -2,12 +2,15 @@ import { expect, test } from "bun:test"
 import { parseModel_TextEditor, type _Changes_Host_ } from "../source/documents/Model_TextEditor.ts"
 import { viewModelOf__Model } from "../source/editor/Projection_TextEditor.ts"
 import { MODULE_READING_TEXT } from "../source/editor/readings/text.ts"
-import { MODULE_PLAINTEXT, confirmingAt__ViewModel, editingAt__ViewModel, askingAt__ViewModel, wordsAt__ViewModel, headOf__Quote, sizeOf__Quote, peekOf__Quote, placeIn__Line, positionIn__Run, textOf__Line, type _Selection_TextEditor_, type _End_Selection_, type _Piece_Text_ } from "../source/editor/ViewModel_TextEditor.ts"
+import { MODULE_PLAINTEXT, confirmingAt__ViewModel, editingAt__ViewModel, askingAt__ViewModel, wordsAt__ViewModel, headOf__Quote, sizeOf__Quote, peekOf__Quote, placeIn__Line, positionIn__Run, textOf__Line, type _Selection_TextEditor_, type _End_Selection_ } from "../source/editor/ViewModel_TextEditor.ts"
 import { HANDLERMAP__TEXTEDITOR, type _State__Viewer_TextEditor_, type _Command_TextEditor_ } from "../source/editor/Viewer_TextEditor.ts"
 import type { _Request_Edit_ } from "../source/editor/Editing_TextEditor.ts"
 import type { _Layout_View_ } from "../source/editor/View_TextEditor.tsx"
-import { ACTIONS_REVIEW } from "../source/shell/index.ts"
+import { ACTIONS_REVIEW } from "../source/host/index.ts"
 import { MODULE_WORDS_TEXT } from "../source/editor/words/text.ts"
+import type {
+  _Piece_Text_
+} from "../source/documents/index.ts"
 
 // a document of four lines, the first framed, a proposal replacing its "two"
 // with "2"; the third blank; the last holding an emoji of two code points,

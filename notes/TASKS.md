@@ -706,10 +706,11 @@ playground's host, `playground/host.ts`, plays all four for now, faked.
   2026-11-27 with the shell's core, in `SHELL.md`. Not yet: working
   copies, the checker, questions, and the editor drawing what's waiting
   for an agent.
-- **the shell:** puts them together: keeps each editor's document and
-  mode, across reloads too; takes each editor's commands to the part
-  they're for; tells each open editor what it should now show, and passes
-  an edit made in one editor to the others showing the same version. Begun
+- **the shell:** puts them together, doctor's core, knowing nothing of any
+  view, as decided 2026-11-27: takes commands in the parts' terms and tells
+  what changed; each editor's document and mode, across reloads too, what
+  each open editor should now show, and its commands made from what it's
+  asked, the UI's, the host part's, `source/host/`, in each page. Begun
   2026-11-26 in `SHELL.md`, early, as the agent part's endpoint needs a
   real project and a real host beside it: the program that opens a
   project, its `.doctor/`, serving the editor and answering agents; end to
@@ -726,7 +727,8 @@ playground's host, `playground/host.ts`, plays all four for now, faked.
   talking to the shell over a socket; `bun run demo retry` opening it on a
   demo. **Its third 2026-11-27:** the agent endpoint and
   `doctor wait|take|check|done`, a Start in the page a job an agent in the
-  demo takes.
+  demo takes. **Split 2026-11-27,** the core made UI-agnostic, what's the
+  UI's moved into `source/host/`, in `SHELL.md`.
 
 ## what the editor draws for it
 

@@ -8,13 +8,29 @@ a real project and a real host beside it, not the playground, whose host
 fakes everything inside a page. A draft of what it is and what's to
 decide, before its core's built, as `TASKS.md` and `AGENT.md` were.
 
-It starts from `TASKS.md`, whose **who holds what** gives it its job:
-keeping each editor's document and mode, across reloads too; taking each
-editor's commands to the part they're for; telling each open editor what it
-should now show; and passing an edit made in one editor to the others
-showing the same version, under **several editors**. And from `AGENT.md`,
-under **what's kept, and where**, which says what's the shell's: the
-project's folder, the truth of everything a task's, and the agent server.
+It starts from `TASKS.md`'s **who holds what**, and from `AGENT.md`'s
+**what's kept, and where**, which says what's the shell's: the project's
+folder, the truth of everything a task's, and the agent server. **Doctor's
+core is UI-agnostic,** decided 2026-11-27: the shell puts the parts
+together in their own terms and knows nothing of any view, editor, board or
+page; what each editor shows, its file and its mode, across reloads too,
+and how the editor's and the board's asks become the core's commands, are
+the UI's, the host part's, `source/host/`, each page keeping its own.
+
+**In layers,** decided the same day: the core, the tasks part, the
+documents part and the shell, what everyone works on, knowing nothing of
+who, nor how they reach it; each kind of actor its adapter over the core
+and its transport, a person's the host part, over the page's socket, an
+agent's the agent part, over the agent's endpoint, the `doctor` command
+its face; and the program putting them together, the core, both
+transports and the project's folder, no part of the core. Whether a
+server's the core's is told by reaching doctor another way, an MCP server,
+an agent doctor runs itself, the playground's stand-in: what stays the
+same is the core. So the jobs themselves are the core's, what a Start set
+going and where it stands whoever does it, a person's UI showing it too,
+and move into the shell next, one with its rounds; the agent part keeps
+how an agent's answered, an offer and its lapse, a wait, the answers and
+their next steps.
 
 ## what's settled already
 
@@ -25,7 +41,8 @@ project's folder, the truth of everything a task's, and the agent server.
   and tokens, and the working copies, wherever they turn out to live.
 - **the parts it holds:** the tasks part, the documents part and the agent
   part, each its class holding its model, the shell the one place they're
-  put together; never in an editor, which is told what to show.
+  put together; never in a view, which keeps its own state and draws what
+  the parts' state gives it.
 - **agents reach it** by the `doctor` command, a thin face over a local HTTP
   endpoint the shell serves, as `AGENT.md` decided, its address and an
   agent's token in `.doctor/`.
@@ -81,12 +98,14 @@ picker needs anyway.
 2. **How the page talks to it.** **Decided 2026-11-26,** as leaned, the
    socket's address relative and the page's token given it in its own, so a
    tab and a webview behind code-server's proxy are alike: a WebSocket the
-   page opens when it loads, with the page's own token: up it, the editor's
-   and the board's commands, as hosts are asked today, `SWITCH`, `START`,
-   an edit made; down it, what each editor should now show, its document,
-   its mode, the tasks, as the playground's host tells its editor now. The
-   editor and the board unchanged: what's built against a host's API is
-   given a host that's the page's end of the socket.
+   page opens when it loads, with the page's own token. **Revised
+   2026-11-27,** the core knowing nothing of views: up it, the core's
+   commands, in the parts' terms, made by the page's host from what the
+   editor and the board ask, and a file to open; down it, the core's
+   state, the tasks and the documents open, with the project's files and
+   how many of that page's edits are in, each page working out what it
+   shows. The editor and the board unchanged: what's built against a
+   host's API is given one, `source/host/`, in the page.
 3. **Where the host's work lives.** **Decided 2026-11-26,** as leaned, and
    the first thing built: one implementation, run by the program and by the
    playground's host alike, its browser tests testing it still. The
@@ -96,7 +115,13 @@ picker needs anyway.
    any scope, beside what it fakes, the agent above all. That real work's
    moved into the shell part, plain functions over the parts, no Bun, no
    DOM, so the shell's program runs it and the playground's host does too,
-   in the page, with its fake agent, nothing written twice.
+   in the page, with its fake agent, nothing written twice. **Revised
+   2026-11-27,** as the core must know nothing of any view: the shell part
+   keeps only the core's work, in the parts' terms; what's the UI's, the
+   editor's and the board's asks made into commands, what they draw, each
+   editor's file and mode, moved into the host part, `source/host/`, which
+   the page and the playground's host both run, nothing written twice
+   still.
 4. **What's kept across a restart.** `.doctor/`'s tasks and copies,
    `TASKS.md` says; but when, and in what form. *Leaning:* not in the core;
    it starts from the folder's files and nothing else, and keeping follows
@@ -107,7 +132,18 @@ picker needs anyway.
    difference edits. *Leaning:* the shell watching the project's files and
    reading what changes; not in the core.
 6. **Several editors, and pages.** One page, one editor, to begin with;
-   `TASKS.md`'s several editors after.
+   `TASKS.md`'s several editors after. **Settled 2026-11-27,** as VS Code's
+   tabs asked, first by the shell holding each editor's file and mode, till
+   the core was found to have to know nothing of views: the core holds no
+   editor; each page keeps its own, through the host part, remembered
+   across a reload by the page itself, under its editor's id, a tab's its
+   file's, a browser's `page`; so several tabs, or pages, ask nothing of
+   the core, each told its state; applying a task applies its head on every
+   file. Not yet: the board's switch moving every editor, as `TASKS.md` has
+   it, each page's moving its own; the board counting a task's editors,
+   each page counting its own; one file in two pages, each taking the
+   other's text as it changes, its undo history lost; and a job's round
+   written on the one file it was started from.
 7. **Which files.** **Decided 2026-11-26,** as leaned, and built with the
    core's second step: a project's files the documents part opens as
    they're asked for, the editor's picker listing the folder's text files,
@@ -135,7 +171,22 @@ What's built first, each a step that works on its own:
    given, its log and the board's showing. It reads the editor's and the
    board's types through their indexes, so its `tsconfig.json` has the
    DOM's types, as the board's has, though it uses nothing of the DOM;
-   and a round's what the agent part's job becomes, at step 3;
+   and a round's what the agent part's job becomes, at step 3. **Split
+   2026-11-27,** the core UI-agnostic: the shell part the core's
+   coordinator alone, taking commands in the parts' terms by a map of them,
+   `HANDLERMAP__SHELL`, a file opened, an edit, a request, a draft, Start
+   and Stop, a decision, a proposal dismissed, accepting, settling, ending,
+   running again, the tasks part's own passed through, and telling its
+   observers its state and each round it starts and each stop, never what a
+   view shows, its `tsconfig.json` without the DOM; the editor's and the
+   board's asks, what they draw and the actions offered on a proposal moved
+   into the host part, `source/host/`, `_Host_`, one editor's and its
+   board's, with the editor's file and mode, keeping the editor's model
+   after its own edit, updating it only when what it shows has changed;
+   the words a request's made on kept in the task, a quoted aim holding its
+   selection, the selection the documents part's, as a place in a file is
+   no view's; the playground's host running the core and a host in the
+   page;
 2. `doctor open`: the program, the parts, `.doctor/`, the page served, its
    socket, an editor on a sample's file, editing it, switching tasks.
    **Built 2026-11-26:** `source/program/`, Bun's, `doctor open [folder]

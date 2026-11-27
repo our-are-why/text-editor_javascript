@@ -72,7 +72,7 @@ if (command === "open") {
   const program = await openedOf__Program({
     dir_Project,
     files,
-    path_Shown,
+    path_First: path_Shown,
     port: Number(values.port ?? "0")
   })
   const addresses = addressesOf__Program({
@@ -104,10 +104,19 @@ if (command === "open") {
     }))
     process.exit(1)
   }
-  const query = new URLSearchParams([
-    ...values.for === undefined ? [] : [["for", values.for]],
-    ...values.task === undefined ? [] : [["task", values.task]]
-  ])
+  const query = new URLSearchParams()
+  if (values.for !== undefined) {
+    query.set(
+      "for",
+      values.for
+    )
+  }
+  if (values.task !== undefined) {
+    query.set(
+      "task",
+      values.task
+    )
+  }
   const isPosted = command === "check" || command === "done"
   const path = isPosted ? `agent/job/${encodeURIComponent(first ?? "")}/${command}` : `agent/${command}?${query}`
   try {

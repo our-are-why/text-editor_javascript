@@ -18,9 +18,12 @@ import {
 import { _Tasks_ } from "../source/tasks/index.ts"
 import {
   stampOf,
-  _Shell_,
-  PROPOSAL_YOURS
+  _Shell_
 } from "../source/shell/index.ts"
+import {
+  _Host_,
+  PROPOSAL_YOURS
+} from "../source/host/index.ts"
 import type { _Entry_Log_ } from "./example.ts"
 import {
   seededOf__Example,
@@ -52,17 +55,18 @@ interface _Api___hostedOf__Editor_<State> {
 }
 
 // the playground as a host: an editor of a document, and the board under
-// it, both told what to show by the shell, source/shell/, which does a
-// host's work, as notes/SHELL.md says, holding the project's tasks, by the
-// tasks part, and the document, by the documents part, and taking each edit
-// and everything the editor and the board ask; the playground giving it
-// what the example says, the task the playground's on and the project's
-// others alike, open or resolved, its own task's changes on the document its
-// head there, and what's only the editor's of them, the words every request
-// was sent on and each proposal's attributes; reporting what's asked, and
-// what's done, each as it's told; and showing the board, hidden till the
-// editor's footer is pressed, and hidden again when it's pressed again, as
-// a host shows and hides a view.
+// it, told what to show by the host part, source/host/, which keeps the
+// editor's file and mode, makes what it and the board ask into the core's
+// commands, and the core's state into what they draw; the core, the shell
+// part, source/shell/, run here in the page, holding the project's tasks,
+// by the tasks part, and the document, by the documents part, knowing
+// nothing of the editor; the playground giving them what the example says,
+// the task the playground's on and the project's others alike, open or
+// resolved, its own task's changes on the document its head there, each
+// request's words in it, and, the host's, each proposal's attributes;
+// reporting what's asked, and what's done, each as it's told; and showing
+// the board, hidden till the editor's footer is pressed, and hidden again
+// when it's pressed again, as a host shows and hides a view.
 // With no agent, the playground stands in for one: a Start, at any scope,
 // in any task, sets what's staged there going, a proposal never revised by
 // two rounds at once, and a moment later they're done with, as a new round
@@ -112,31 +116,23 @@ function hostedOf__Editor<State>({
     path: name_Document,
     text: model_TextEditor.document
   })
+  // what a Stop was asked at, the editor's or the board's, which the core,
+  // knowing nothing of either, says nothing of when it reports what it put
+  // back
+  let kind_Stop = "TASK"
   const shell: _Shell_ = new _Shell_({
     tasks: new _Tasks_({
       model_Tasks: seed.model_Tasks,
       observers: []
     }),
     documents,
-    name_Document,
-    files,
-    target_Mode: {
-      kind: "TASK",
-      id: about_Task.id
-    },
-    references: seed.references,
-    contents: new Map([
-      [
-        about_Task.id,
-        seed.content_Own
-      ]
-    ]),
     observers: [
       {
-        shown: (shown_Shell) => {
-          editor.update(shown_Shell.update_Host)
-          board.update(shown_Shell.update_Board)
-        },
+        changed: (state_Shell) => host.heard({
+          state_Shell,
+          files,
+          count_Edit: host.count_Sent
+        }),
         started: (round_Shell) => {
           const isOwn = round_Shell.id_Task === about_Task.id
           if (isOwn) {
@@ -171,33 +167,52 @@ function hostedOf__Editor<State>({
         stopped: (stop_Shell) => {
           if (stop_Shell.id_Task !== about_Task.id) return
           log({
-            stopped: stop_Shell.scope_Work.kind,
+            stopped: kind_Stop,
             requests: stop_Shell.ids_Request.length
           })
-        },
-        // the playground has one document an example, so a file asked for,
-        // reported, opens nothing
-        opening: () => {}
+        }
       }
     ]
   })
-  const shown_Shell = shell.shown()
+  const host: _Host_ = new _Host_({
+    name_Document,
+    target_Mode: {
+      kind: "TASK",
+      id: about_Task.id
+    },
+    files,
+    attributes: seed.attributes_Own,
+    state_Shell: shell.state(),
+    suffix_Id: "",
+    observers: [
+      {
+        sent: (command_Shell) => shell.handle(command_Shell),
+        // the playground has one document an example, so a file asked for,
+        // reported, opens nothing
+        opening: () => {},
+        shown: (update_Host) => editor.update(update_Host),
+        boarded: (update_Board) => board.update(update_Board)
+      }
+    ]
+  })
+  const shown_Host = host.showing()
+  if (shown_Host === undefined) throw new Error(`${name_Document} isn't kept`)
   const editor: _TextEditor_<State> = new _TextEditor_({
     containerElement,
     setup,
-    model_TextEditor,
+    model_TextEditor: shown_Host.update_Host.model_TextEditor,
     name_Document,
-    proposals: shown_Shell.update_Host.proposals,
-    mode: shown_Shell.update_Host.mode,
-    tasks: shown_Shell.update_Host.tasks,
+    proposals: shown_Host.update_Host.proposals,
+    mode: shown_Host.update_Host.mode,
+    tasks: shown_Host.update_Host.tasks,
     files,
-    rounds_Landed: shown_Shell.update_Host.rounds_Landed,
+    rounds_Landed: shown_Host.update_Host.rounds_Landed,
     source_Yours: PROPOSAL_YOURS.source,
     ranges_Frame,
     observers: [
       {
         applied: (applied_Edit) => {
-          shell.edited(applied_Edit)
+          host.edited(applied_Edit)
           log({
             edited: applied_Edit.request_Edit.kind,
             proposals: applied_Edit.sources_Changed.join(", "),
@@ -205,14 +220,16 @@ function hostedOf__Editor<State>({
           })
         },
         asked: (asked_Host) => {
+          if (asked_Host.kind === "STOP") kind_Stop = asked_Host.scope.kind
           logged__Asked_Host({
             asked_Host,
+            host,
             shell,
             id_Task_Own: about_Task.id,
             containerElement_Board,
             log
           })
-          shell.asked(asked_Host)
+          host.asked(asked_Host)
         }
       }
     ]
@@ -220,8 +237,8 @@ function hostedOf__Editor<State>({
   const board: _Board_ = new _Board_({
     containerElement: containerElement_Board,
     componentMap: COMPONENTMAP__VIEW_BOARD,
-    tasks: shown_Shell.update_Board.tasks,
-    paths_Shown: shown_Shell.update_Board.paths_Shown,
+    tasks: shown_Host.update_Board.tasks,
+    paths_Shown: shown_Host.update_Board.paths_Shown,
     observers: [
       {
         asked: (asked_Board) => {
@@ -229,7 +246,8 @@ function hostedOf__Editor<State>({
             board: asked_Board.kind,
             tasks: asked_Board.kind === "COLLECT" ? asked_Board.ids.join(", ") : asked_Board.kind === "NEW_TASK" ? null : asked_Board.id
           })
-          shell.askedBoard(asked_Board)
+          if (asked_Board.kind === "STOP") kind_Stop = "TASK"
+          host.askedBoard(asked_Board)
         }
       }
     ]
@@ -242,6 +260,7 @@ interface _Api___logged__Asked_Host_<Kind extends _Asked_Host_["kind"]> {
     _Asked_Host_,
     __BASE_Asked_Host_<Kind>
   >
+  host: _Host_
   shell: _Shell_
   id_Task_Own: string
   containerElement_Board: HTMLElement
@@ -254,6 +273,7 @@ interface _Api___logged__Asked_Host_<Kind extends _Asked_Host_["kind"]> {
 // hidden, as a host shows and hides a view
 function logged__Asked_Host<Kind extends _Asked_Host_["kind"]>({
   asked_Host,
+  host,
   shell,
   id_Task_Own,
   containerElement_Board,
@@ -262,6 +282,7 @@ function logged__Asked_Host<Kind extends _Asked_Host_["kind"]>({
   const logged = logMap_Asked[asked_Host.kind]
   logged({
     asked_Host,
+    host,
     shell,
     id_Task_Own,
     containerElement_Board,
@@ -314,11 +335,11 @@ const logMap_Asked: _LogMap__Asked_Host_ = {
   }),
   START: ({
     asked_Host,
-    shell,
+    host,
     id_Task_Own,
     log
   }) => {
-    const task = shell.taskIn()
+    const task = host.taskIn()
     if (task === undefined || task.id === id_Task_Own) return
     log({
       started: asked_Host.scope.kind,
@@ -327,11 +348,11 @@ const logMap_Asked: _LogMap__Asked_Host_ = {
   },
   STOP: ({
     asked_Host,
-    shell,
+    host,
     id_Task_Own,
     log
   }) => {
-    const task = shell.taskIn()
+    const task = host.taskIn()
     if (task === undefined || task.id === id_Task_Own) return
     log({
       stopped: asked_Host.scope.kind,
@@ -346,11 +367,11 @@ const logMap_Asked: _LogMap__Asked_Host_ = {
   }),
   END: ({
     asked_Host,
-    shell,
+    host,
     log
   }) => log({
     ended: asked_Host.end,
-    task: shell.taskIn()?.id ?? null
+    task: host.taskIn()?.id ?? null
   }),
   SWITCH: ({
     asked_Host,
@@ -375,10 +396,11 @@ const logMap_Asked: _LogMap__Asked_Host_ = {
   },
   RERUN: ({
     asked_Host,
+    host,
     shell,
     log
   }) => {
-    const task = shell.taskIn()
+    const task = host.taskIn()
     if (task === undefined) return
     log({
       rerun: asked_Host.source,

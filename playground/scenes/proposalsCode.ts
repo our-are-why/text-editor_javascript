@@ -4,7 +4,7 @@ import {
   MODULE_READING_TEXT
 } from "../../source/editor/index.ts"
 import { parseTexts_Line } from "../../source/documents/index.ts"
-import { ACTIONS_REVIEW } from "../../source/shell/index.ts"
+import { ACTIONS_REVIEW } from "../../source/host/index.ts"
 import { projectedOf } from "../projected.ts"
 import { readingTime } from "./code.ts"
 

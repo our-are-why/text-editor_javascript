@@ -1,4 +1,7 @@
-import type { _Head_Document_ } from "../documents/index.ts"
+import type {
+  _Head_Document_,
+  _Selected_Text_
+} from "../documents/index.ts"
 
 export {
   modelAfter__Command,
@@ -168,9 +171,7 @@ interface __BASE_Words_Aim_<Kind extends string> {
 
 interface _ALL_Words_Aim_ extends __BASE_Words_Aim_<"ALL"> {}
 
-interface _QUOTED_Words_Aim_ extends __BASE_Words_Aim_<"QUOTED"> {
-  text: string
-}
+interface _QUOTED_Words_Aim_ extends __BASE_Words_Aim_<"QUOTED">, _Selected_Text_ {}
 
 type _Status_Request_Tasks_ = _STAGED_Status_Request_Tasks_ | _WITH_AGENT__Status_Request_Tasks_ | _ADDRESSED_Status_Request_Tasks_
 

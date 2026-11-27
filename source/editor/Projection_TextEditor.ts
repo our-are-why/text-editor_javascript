@@ -20,7 +20,9 @@ import {
   type _Stale_Change_,
   pairOf__Stale,
   type _Pair_Stale_,
-  type _Text_Line_NonTerminated_
+  type _Text_Line_NonTerminated_,
+  type _Selected_Text_,
+  type _Piece_Text_
 } from "../documents/index.ts"
 import {
   isLines__Part_Frame,
@@ -80,8 +82,6 @@ import {
   sizeOf__Quote,
   peekOf__Quote,
   type _Reference_Request_,
-  type _Selected_Text_,
-  type _Piece_Text_,
   isSame__Id_Text,
   type _Kind_Stale_,
   type _Way_Stale_
