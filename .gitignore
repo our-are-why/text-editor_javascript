@@ -6,3 +6,6 @@
 
 # the packages bun install fetches; bun.lock records their versions
 node_modules/
+
+# what scripts/buildExtension.ts builds: the VS Code adapter and its .vsix
+build/

@@ -1,0 +1,77 @@
+{
+  "name": "doctor",
+  "publisher": "our-are-why",
+  "displayName": "doctor",
+  "description": "doctor in VS Code: VS Code's editor for a doctor project's files, breadcrumbs off, its own header and footer; a thin adapter over doctor open.",
+  "version": "0.0.1",
+  "engines": {
+    "vscode": "^1.140.0"
+  },
+  "main": "./extension.js",
+  "capabilities": {
+    "untrustedWorkspaces": {
+      "supported": "limited",
+      "description": "doctor opens on a folder only once you trust it, as it reads and writes the folder's files, and agents work in it."
+    }
+  },
+  "activationEvents": [
+    "onStartupFinished",
+    "onCustomEditor:doctor.file"
+  ],
+  "contributes": {
+    "commands": [
+      {
+        "command": "doctor.open",
+        "title": "Open",
+        "category": "doctor"
+      },
+      {
+        "command": "doctor.openFile",
+        "title": "Open This File",
+        "category": "doctor"
+      },
+      {
+        "command": "doctor.openText",
+        "title": "Open in Text Editor",
+        "category": "doctor"
+      },
+      {
+        "command": "doctor.stop",
+        "title": "Stop",
+        "category": "doctor"
+      }
+    ],
+    "menus": {
+      "explorer/context": [
+        {
+          "command": "doctor.openFile",
+          "when": "!explorerResourceIsFolder",
+          "group": "navigation"
+        },
+        {
+          "command": "doctor.openText",
+          "when": "!explorerResourceIsFolder",
+          "group": "navigation"
+        }
+      ],
+      "editor/title/context": [
+        {
+          "command": "doctor.openFile",
+          "group": "navigation"
+        }
+      ]
+    },
+    "customEditors": [
+      {
+        "viewType": "doctor.file",
+        "displayName": "doctor",
+        "selector": [
+          {
+            "filenamePattern": "*"
+          }
+        ],
+        "priority": "option"
+      }
+    ]
+  }
+}

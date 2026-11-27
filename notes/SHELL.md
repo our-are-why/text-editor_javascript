@@ -62,7 +62,7 @@ proxy, as `VSCODE_PROXY_URI` gives it. A demo's thrown away as the
 folder's cleared, and made again whenever wanted, as the
 prototype's `samples/` were copied into a `playground/` to play in.
 
-## VS Code, later
+## VS Code
 
 Noted 2026-11-26: a thin adapter, later, so doctor's used in VS Code, the
 web's included, as code-server serves it, on the sample projects and
@@ -85,6 +85,49 @@ free port,** saying where it is in `.doctor/`; **its colours a host's,**
 the editor's `--view-*` variables, VS Code's theme mapped onto them; and,
 the one hook likely, **a file opened from outside,** which the page's own
 picker needs anyway.
+
+**Built 2026-11-27,** asked for as the demo's to be driven from VS Code
+too: `vscode/`, a host beside the playground, run in VS Code's Node
+extension host, code-server's, altering nothing of the core, its tabs each
+a page of its own. **doctor's VS Code's editor for a doctor project's
+files,** a custom editor, `doctor.file`, the default in a folder with
+`.doctor/`, by `workbench.editorAssociations`, and **breadcrumbs off**
+there, `breadcrumbs.enabled`, both set for the workspace, a single
+folder's `.vscode/settings.json`, as VS Code takes the association at no
+narrower scope, neither set if the workspace has it already; so VS Code
+opens doctor itself, from the Explorer, Quick Open, wherever, a file open
+already only brought forward, and doctor's header the one bar under a tab.
+Each tab its file's, as many open as you like, doctor's page framed in it
+through `asExternalUri`, code-server's proxy, as in a browser's tab, each
+its own editor, `file:` and its path, the page remembering its file and
+mode under it, so it comes back after a reload as it was; a file doctor
+doesn't list, binary, ignored or its own, reopened in VS Code's text
+editor, as the program's `GET /page/files`, behind the page's token, lists
+them; a file picked in doctor's editor opened in its tab, the page asking
+its host, as `host=vscode` tells it to. Found the way there the same day:
+one tab for the whole project, which read as a project's, not a file's;
+the custom editor, which read as doctor nested in VS Code's file view, VS
+Code's breadcrumbs over doctor's header; VS Code's status bar tried for
+the task and the counts, the editor's header and footer left out by the
+component map, a setting choosing, and dropped as awful, doctor's chrome
+its own, and no setting for it; then tabs of doctor's own, webview panels,
+a file opened in VS Code's text editor moved over to one, which flickered,
+and opened a tab and closed it again even for a file open already, as VS
+Code opens its own editor before any extension hears of it; so the custom
+editor again, breadcrumbs off. **doctor: Open This File,** from the
+palette, the Explorer's and a file's tab's menus, **Open in Text Editor,**
+the way back to VS Code's for a file, **Open,** and **Stop.** doctor found
+on a folder by `.doctor/endpoint.json`, if it answers, or started, `doctor
+open`, apart from the window, so a reload loses nothing. None of it in a
+folder you've not trusted, a new one's Restricted Mode, which turned the
+adapter off till it said it works there in part, files opening in VS
+Code's text editor, its commands saying to trust it first. Agents in VS
+Code's terminals find doctor by `.doctor/`, as in any. `bun run vscode`
+builds it, `scripts/buildExtension.ts`, the program's path baked in, packs
+a `.vsix` into `build/`, and installs it into the code-server running
+here, as the prototype's scripts did. Not yet: VS Code's theme's colours
+on the page; the board in a tab of its own, each file's tab showing it
+under its editor for now; the `doctor` command on the terminals' path.
 
 ## what's to decide
 

@@ -1,8 +1,8 @@
 # TypeScript style
 
-For all the TypeScript we write here: `source/`, `playground/`, `scripts/`,
-`tests/`. Text that only looks like code, such as the TypeScript sample in a
-scene's template literal, is content: leave it as written.
+For all the TypeScript we write here: `source/`, `playground/`, `vscode/`,
+`scripts/`, `tests/`. Text that only looks like code, such as the TypeScript
+sample in a scene's template literal, is content: leave it as written.
 
 - **No semicolons.** End statements, fields and type members with a newline.
   Keep one only where a line starting with `(`, `[` or a backtick would
@@ -42,10 +42,11 @@ scene's template literal, is content: leave it as written.
   actor has its adapter over the core, turning its calls into the core's
   commands and the core's state into what it's shown, and its transport: a
   person's, `host/`, drawn by `editor/`, `board/` and `jsx/` in `page/`,
-  over the page's socket; an agent's, `agent/`, over the agent's endpoint,
-  its face the `doctor` command. `program/` puts them together, the core,
-  both transports and the project's folder, and is no part of the core.
-  The core imports nothing from an adapter, nor one adapter from another.
+  over the page's socket, the page shown in a browser or in VS Code, by
+  `vscode/`; an agent's, `agent/`, over the agent's endpoint, its face the
+  `doctor` command. `program/` puts them together, the core, both
+  transports and the project's folder, and is no part of the core. The
+  core imports nothing from an adapter, nor one adapter from another.
   `agent/` holds the jobs themselves for now, which are the core's, what a
   Start set going and where it stands whoever does it, a person's UI
   showing it too, till they move into the shell. A part's

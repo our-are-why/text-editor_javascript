@@ -1,0 +1,11 @@
+{
+  // vscode/, doctor's adapter for VS Code, run in VS Code's Node extension
+  // host, code-server's too: Node's and VS Code's types, no DOM and no Bun,
+  // which the host hasn't; bundled by Bun, as scripts/buildExtension.ts does
+  "extends": "../tsconfig.base.json",
+  "compilerOptions": {
+    "lib": ["ES2024"],
+    "types": ["node", "vscode"]
+  },
+  "include": ["./**/*"]
+}
