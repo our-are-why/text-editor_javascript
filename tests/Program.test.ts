@@ -27,12 +27,13 @@ import type {
 // refused; a caller that's gone never given a job; a wait kept to another
 // task given none; a call without the agent's token refused; a project with
 // no doctor open said so; a job taken given a working copy, a git worktree
-// of the project, outside it, as the task has it, the agent's edit in it, a
-// file it made and one it deleted, numbered, its grouping verified and
-// handed back, a proposal landed for review for each, the project as it
-// was till the new file and the deletion are accepted and the task applied,
-// then the one made and the other deleted, and the copy taken away once the
-// task ends; the project's files listed for the page's token, as they are,
+// of the project, outside it, as the task has it, a file the agent deleted
+// in it, the program's first, one it made and its edit, numbered, its
+// grouping verified and handed back, a proposal landed for review for each,
+// the project as it was till the deletion and the new file are accepted and
+// the task applied, then the one deleted and the other made, and the copy
+// taken away once the task ends; the project's files listed for the page's
+// token, as they are, its first one still there,
 // as VS Code's adapter asks them; two pages told the core's state alike, a
 // request made through one seen by the other, the core knowing nothing of
 // either; and a wait answered closed as doctor stops
@@ -199,19 +200,19 @@ const copy_Given = {
   diff: (await Bun.$`git -C ${dir_Copy} status --porcelain`.quiet().text()).trim(),
   worktrees: (await Bun.$`git -C ${dir_Demo} worktree list --porcelain`.quiet().text()).includes(dir_Copy)
 }
-const text_Package = await Bun.file(join(dir_Demo, "package.json")).text()
+const text_Retry = await Bun.file(join(dir_Demo, "retry.js")).text()
 const text_Backoff = "# Backoff\n\nEach retry waits twice as long as the one before.\n"
-await Bun.write(join(dir_Copy, "README.md"), text_README.replace("# retry", "# retry, with backoff"))
+await rm(join(dir_Copy, "README.md"))
 await Bun.write(join(dir_Copy, "docs", "backoff.md"), text_Backoff)
-await rm(join(dir_Copy, "package.json"))
+await Bun.write(join(dir_Copy, "retry.js"), text_Retry.replace("const ATTEMPTS = 5;", "const ATTEMPTS = 3;"))
 const ran_Changes = await doctorIn(dir_Copy, "changes", "j-3")
 const path_Grouping = join(dir_Demos, "grouping.json")
 await Bun.write(path_Grouping, JSON.stringify({
   stamp: ran_Changes.answer["stamp"],
   proposals: [
     {
-      title: "Say it backs off",
-      why: "Its title says what it does.",
+      title: "Drop the README",
+      why: "Its doc comment says it all.",
       changes: [1],
       answers: ["request-Wait for an agent that's here."]
     },
@@ -222,8 +223,8 @@ await Bun.write(path_Grouping, JSON.stringify({
       answers: ["request-Wait for an agent that's here."]
     },
     {
-      title: "Drop package.json",
-      why: "It has nothing to install.",
+      title: "Fewer attempts",
+      why: "Five is too many.",
       changes: [3],
       answers: ["request-Wait for an agent that's here."]
     }
@@ -234,16 +235,16 @@ const ran_Landed = await doctorIn(dir_Copy, "done", "j-3", "Named its backoff.",
 const landed_Copy = {
   proposals: program.shell.taskOf("T-1")?.proposals.map((proposal) => [proposal.id, proposal.effect, proposal.title]),
   status: requestOf("Wait for an agent that's here.")?.status,
-  isUnchanged: await Bun.file(join(dir_Demo, "README.md")).text() === text_README && await Bun.file(join(dir_Demo, "package.json")).text() === text_Package && !(await Bun.file(join(dir_Demo, "docs", "backoff.md")).exists()),
+  isUnchanged: await Bun.file(join(dir_Demo, "README.md")).text() === text_README && await Bun.file(join(dir_Demo, "retry.js")).text() === text_Retry && !(await Bun.file(join(dir_Demo, "docs", "backoff.md")).exists()),
   files: program.files
 }
 for (const [
   id_Proposal,
   decision
 ] of [
-  ["j-3.1", "REJECTED"],
+  ["j-3.1", "ACCEPTED"],
   ["j-3.2", "ACCEPTED"],
-  ["j-3.3", "ACCEPTED"]
+  ["j-3.3", "REJECTED"]
 ] as const) {
   program.shell.handle({
     kind: "DECIDE",
@@ -259,12 +260,13 @@ program.shell.handle({
 })
 await Bun.sleep(1500)
 const applied_Copy = {
-  text_README: await Bun.file(join(dir_Demo, "README.md")).text() === text_README,
+  isREADME_Gone: !(await Bun.file(join(dir_Demo, "README.md")).exists()),
   text_Backoff: await Bun.file(join(dir_Demo, "docs", "backoff.md")).text().catch(() => "none"),
-  isPackage_Gone: !(await Bun.file(join(dir_Demo, "package.json")).exists()),
-  files: program.files
+  text_Retry: await Bun.file(join(dir_Demo, "retry.js")).text() === text_Retry,
+  files: program.files,
+  path_First: program.pathFirst()
 }
-const isCopy_Gone = !(await Bun.file(join(dir_Copy, "README.md")).exists())
+const isCopy_Gone = !(await Bun.file(join(dir_Copy, "retry.js")).exists())
 
 const listedFor = (token: string) => fetch(
   `${program.server.url}page/files`,
@@ -310,7 +312,8 @@ const lastOf = (page: _Page_Test_) => page.messages.at(-1)
 const seen_Pages = [page_A, page_B].map((page) => ({
   isOpened: lastOf(page)?.state_Shell.documents.some((document) => document.path === "retry.js") ?? false,
   isDrafted: lastOf(page)?.state_Shell.model_Tasks.tasks.some((task) => task.requests.some((request) => request.id === "request-two-pages")) ?? false,
-  files: lastOf(page)?.files ?? []
+  files: lastOf(page)?.files ?? [],
+  path_First: lastOf(page)?.path_First
 }))
 page_A.socket.close()
 page_B.socket.close()
@@ -391,46 +394,49 @@ test("help says the loop, each of the agent's commands, and the person's", () =>
   for (const command of ["wait [--for <seconds>] [--task <id>]", "take [--task <id>]", "check <job>", "changes <job>", "verify <job> <file>", "done <job>", "open [folder]"]) expect(help).toContain(command)
 })
 
-test("a job taken is given a working copy, a git worktree of the project outside it, its files as given, nothing changed in it to git, doctor found from inside it; an edit there, a file made and one deleted, numbered, the file each made or deleted one change of its whole text, said so, its grouping verified and handed back, a proposal landed for review for each, a change, a new file and a deletion, its request answered by them, the project itself unchanged; the new file and the deletion accepted and the task applied, the file made and the other deleted, the project's files listed as they now are; the copy taken away once the task ends", () => {
+test("a job taken is given a working copy, a git worktree of the project outside it, its files as given, nothing changed in it to git, doctor found from inside it; a file deleted there, the request's and the program's first, one made and an edit, numbered, the file each made or deleted one change of its whole text, said so, its grouping verified and handed back, a proposal landed for review for each, a deletion, a new file and a change, its request answered by them, the project itself unchanged; the deletion and the new file accepted and the task applied, the one deleted and the other made, the project's files listed as they now are, and its first file one still there; the copy taken away once the task ends", () => {
   expect([ran_Copied.answer["kind"], copy_Given]).toEqual(["TAKEN", { isOutside: true, isAsGiven: true, diff: "", worktrees: true }])
   expect(ran_Changes.answer["changes"]).toEqual([
-    { number: 1, path: "README.md", file: "changed", lines: "1", before: "", after: ", with backoff" },
+    { number: 1, path: "README.md", file: "deleted", lines: `1–${text_README.split("\n").length}`, before: text_README, after: "" },
     { number: 2, path: "docs/backoff.md", file: "made", lines: "1", before: "", after: text_Backoff },
-    { number: 3, path: "package.json", file: "deleted", lines: `1–${text_Package.split("\n").length}`, before: text_Package, after: "" }
+    { number: 3, path: "retry.js", file: "changed", lines: "4", before: "5", after: "3" }
   ])
   expect([ran_Verified.answer["kind"], ran_Verified.answer["issues"]]).toEqual(["VERIFIED", []])
-  expect([ran_Landed.answer["kind"], ran_Landed.answer["reports"]]).toEqual(["HANDED_BACK", ["docs/backoff.md is in no request of this job: its changes are proposed all the same, for review", "package.json is in no request of this job: its changes are proposed all the same, for review"]])
+  expect([ran_Landed.answer["kind"], ran_Landed.answer["reports"]]).toEqual(["HANDED_BACK", ["docs/backoff.md is in no request of this job: its changes are proposed all the same, for review", "retry.js is in no request of this job: its changes are proposed all the same, for review"]])
   expect(landed_Copy).toEqual({
-    proposals: [["j-3.1", "CHANGE", "Say it backs off"], ["j-3.2", "MAKE", "Say how it backs off"], ["j-3.3", "REMOVE", "Drop package.json"]],
+    proposals: [["j-3.1", "REMOVE", "Drop the README"], ["j-3.2", "MAKE", "Say how it backs off"], ["j-3.3", "CHANGE", "Fewer attempts"]],
     status: { kind: "ADDRESSED", answer: { kind: "PROPOSALS", ids_Proposal: ["j-3.1", "j-3.2", "j-3.3"] } },
     isUnchanged: true,
     files: ["README.md", "package.json", "retry.js"]
   })
   expect(applied_Copy).toEqual({
-    text_README: true,
+    isREADME_Gone: true,
     text_Backoff,
-    isPackage_Gone: true,
-    files: ["README.md", "docs/backoff.md", "retry.js"]
+    text_Retry: true,
+    files: ["docs/backoff.md", "package.json", "retry.js"],
+    path_First: "docs/backoff.md"
   })
   expect(isCopy_Gone).toBe(true)
 })
 
 test("the project's files are listed for the page's token, as VS Code's adapter asks them, never for another's", () => {
   expect(status_Unlisted).toBe(403)
-  expect(files_Listed).toEqual(["README.md", "docs/backoff.md", "retry.js"])
+  expect(files_Listed).toEqual(["docs/backoff.md", "package.json", "retry.js"])
 })
 
-test("two pages are told the core's state alike: a file one opens, and a task one drafts, seen by both, with the project's files; the core knowing nothing of either", () => {
+test("two pages are told the core's state alike: a file one opens, and a task one drafts, seen by both, with the project's files and its first, one that's there; the core knowing nothing of either", () => {
   expect(seen_Pages).toEqual([
     {
       isOpened: true,
       isDrafted: true,
-      files: ["README.md", "docs/backoff.md", "retry.js"]
+      files: ["docs/backoff.md", "package.json", "retry.js"],
+      path_First: "docs/backoff.md"
     },
     {
       isOpened: true,
       isDrafted: true,
-      files: ["README.md", "docs/backoff.md", "retry.js"]
+      files: ["docs/backoff.md", "package.json", "retry.js"],
+      path_First: "docs/backoff.md"
     }
   ])
 })

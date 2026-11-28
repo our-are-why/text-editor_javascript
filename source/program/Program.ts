@@ -670,10 +670,18 @@ class _Program_ {
       files: this.files,
       isListening_Agent: this.isListening_Agent,
       at: Date.now(),
-      path_First: this.path_First,
+      path_First: this.pathFirst(),
       count_Edit: socket.data.count_Edit
     }
     socket.send(JSON.stringify(message_Shell))
+  }
+
+  pathFirst(): string {
+    return this.files.includes(this.path_First)
+      ? this.path_First
+      : pathFirstOf__Files({
+        files: this.files
+      }) ?? this.path_First
   }
 
   changed(

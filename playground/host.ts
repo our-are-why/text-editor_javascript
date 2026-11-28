@@ -241,6 +241,7 @@ function hostedOf__Editor<State>({
         // the playground has one document an example, so a file asked for,
         // reported, opens nothing
         opening: () => {},
+        gone: () => {},
         shown: (update_Host) => editor.update(update_Host),
         boarded: (update_Board) => board.update(update_Board)
       }

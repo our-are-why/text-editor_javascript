@@ -284,7 +284,10 @@ into proposals and into frames, which leans on what it reads, 5, and on
    given a task's files as the task has them, a file absent while no
    accepted proposal makes it, or once an accepted one deletes it; and
    applying the task writing a file made, its folders too, and deleting one
-   deleted, the project's files listed as they now are. Not yet: a rename,
+   deleted, the project's files listed as they now are, the first a page
+   opens one still there, and an editor showing one deleted, nothing
+   proposing it, taken back to the file it showed before, its tab closed in
+   VS Code. Not yet: a rename,
    said as a file deleted and another made; projects that aren't git's; the
    form edited, for files stored otherwise.
 

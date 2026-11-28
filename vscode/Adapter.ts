@@ -15,6 +15,9 @@ export {
   type _Api__Adapter_,
   type _Api___resolved__Adapter_,
   type _Message_Page_,
+  type __BASE_Message_Page_,
+  type _OPEN_FILE__Message_Page_,
+  type _CLOSE__Message_Page_,
   type _Endpoint_Doctor_,
   type _Associations_Editor_,
   pathOf__File,
@@ -94,6 +97,10 @@ class _Adapter_ {
       url_Page: `${uri_Page.toString(true)}?${params}`
     })
     panel.webview.onDidReceiveMessage((message_Page: _Message_Page_) => {
+      if (message_Page.kind === "CLOSE") {
+        panel.dispose()
+        return
+      }
       vscode.commands.executeCommand(
         "vscode.openWith",
         vscode.Uri.joinPath(folder.uri, message_Page.path),
@@ -189,10 +196,17 @@ interface _Api___resolved__Adapter_ {
   panel: vscode.WebviewPanel
 }
 
-interface _Message_Page_ {
-  kind: "OPEN_FILE"
+type _Message_Page_ = _OPEN_FILE__Message_Page_ | _CLOSE__Message_Page_
+
+interface __BASE_Message_Page_<Kind extends string> {
+  kind: Kind
+}
+
+interface _OPEN_FILE__Message_Page_ extends __BASE_Message_Page_<"OPEN_FILE"> {
   path: string
 }
+
+interface _CLOSE__Message_Page_ extends __BASE_Message_Page_<"CLOSE"> {}
 
 interface _Endpoint_Doctor_ {
   address: string

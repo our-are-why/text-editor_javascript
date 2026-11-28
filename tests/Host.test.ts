@@ -10,7 +10,9 @@ import type { _Update_Board_ } from "../source/ui/board/index.ts"
 // the editor's host over a real core: what it tells the editor and the
 // board of a request with the agent, waiting while its job's queued and
 // running once an agent takes it, worked out from the core's jobs; and
-// whether an agent's listening, as its page is told
+// whether an agent's listening, as its page is told; and the file it shows
+// gone, deleted, nothing proposing it, the editor taken back to the file
+// it showed before
 
 test("a request with the agent is waiting while its job's queued, no agent on it, and running once one takes it: in the editor's task, the task's state, its standing and the board's; with no job at all, as a playground's seed, running, as before; and whether an agent's listening, as the host's told", () => {
   let host: _Host_ | undefined
@@ -33,7 +35,7 @@ test("a request with the agent is waiting while its job's queued, no agent on it
     attributes: new Map(),
     state_Shell: shell.state(),
     suffix_Id: "",
-    observers: [{ sent: (command_Shell) => shell.handle(command_Shell), opening: () => {}, shown: (update_Host) => shown.push(update_Host), boarded: (update_Board) => boarded.push(update_Board) }]
+    observers: [{ sent: (command_Shell) => shell.handle(command_Shell), opening: () => {}, gone: () => {}, shown: (update_Host) => shown.push(update_Host), boarded: (update_Board) => boarded.push(update_Board) }]
   })
   host.showing()
   const seenOf = () => {
@@ -88,7 +90,7 @@ test("a job being worked on that nothing's heard of for five minutes is quiet, i
   })
   shell.handle({ kind: "OPEN_DOCUMENT", path: "README.md", text: { lines: parseTexts_Line("# retry\n"), marks: [] }, isPresent: true })
   const shown: Array<_Update_Host_> = []
-  host = new _Host_({ name_Document: "README.md", target_Mode: { kind: "MANUAL" }, files, isListening_Agent: true, at: Date.now(), attributes: new Map(), state_Shell: shell.state(), suffix_Id: "", observers: [{ sent: (command_Shell) => shell.handle(command_Shell), opening: () => {}, shown: (update_Host) => shown.push(update_Host), boarded: () => {} }] })
+  host = new _Host_({ name_Document: "README.md", target_Mode: { kind: "MANUAL" }, files, isListening_Agent: true, at: Date.now(), attributes: new Map(), state_Shell: shell.state(), suffix_Id: "", observers: [{ sent: (command_Shell) => shell.handle(command_Shell), opening: () => {}, gone: () => {}, shown: (update_Host) => shown.push(update_Host), boarded: () => {} }] })
   host.showing()
   host.asked({ kind: "REQUEST", aim: { kind: "DOCUMENT", reference: null }, notes: "Say what it retries.", isStarting: true })
   shell.handle({ kind: "TAKE", id_Job: "j-1", note: "starting" })
@@ -112,4 +114,55 @@ test("a job being worked on that nothing's heard of for five minutes is quiet, i
   expect(seen_Six).toEqual(["QUIET", ["QUIET 6"], [[0, 1]]])
   expect(count_Ticked).toBe(count_Before)
   expect(seen_Heard).toEqual(["WORKING", ["RUNNING 0"], [[1, 0]]])
+})
+
+test("the file an editor shows, deleted by a task applied, nothing proposing it, is gone: the host says so, once, and taken back, as a page takes it, to the file it showed before; a new file an open task proposes, not there yet, isn't gone till the task's cancelled", () => {
+  let host: _Host_ | undefined
+  const textOf = (text: string) => ({ lines: parseTexts_Line(text), marks: [] })
+  const shell = new _Shell_({
+    tasks: new _Tasks_({ model_Tasks: { tasks: [] }, observers: [] }),
+    documents: new _Documents_({ model_Documents: { documents: [] }, observers: [] }),
+    jobs: [],
+    observers: [{ changed: (state_Shell) => host?.heard({ at: Date.now(), state_Shell, files: ["README.md", "retry.js"], isListening_Agent: false, count_Edit: 0 }), started: () => {}, stopped: () => {}, landed: () => {} }]
+  })
+  shell.handle({ kind: "OPEN_DOCUMENT", path: "README.md", text: textOf("# retry\n"), isPresent: true })
+  shell.handle({ kind: "OPEN_DOCUMENT", path: "retry.js", text: textOf("let n = 1\n"), isPresent: true })
+  const gones: Array<string> = []
+  host = new _Host_({
+    at: Date.now(),
+    name_Document: "README.md",
+    target_Mode: { kind: "MANUAL" },
+    files: ["README.md", "retry.js"],
+    isListening_Agent: false,
+    attributes: new Map(),
+    state_Shell: shell.state(),
+    suffix_Id: "",
+    observers: [{ sent: (command_Shell) => shell.handle(command_Shell), opening: () => {}, gone: (path) => {
+      gones.push(path)
+      host?.left()
+    }, shown: () => {}, boarded: () => {} }]
+  })
+  const landedOn = (path: string, effect: "MAKE" | "REMOVE", next: string, id_Job: string) => {
+    shell.handle({ kind: "DRAFT", request: { id: `r-${id_Job}`, notes: "Do it.", aim: { kind: "DOCUMENT", path, words: { kind: "ALL" } } }, isStarting: true, path })
+    shell.handle({ kind: "TAKE", id_Job, note: "" })
+    const document = shell.documentOf(path)
+    const lines = document.text.lines
+    shell.handle({ kind: "HAND_BACK", id_Job, landing: { proposals: [{ id: `${id_Job}.1`, path, effect, title: effect, rationale: "", version: document.version, changes: [{ kind: "REPLACE", range: { from: { line: 0, offset: 0 }, to: { line: lines.length - 1, offset: (lines.at(-1) ?? "").length } }, next: textOf(next) }], ids_Request: [`r-${id_Job}`] }], nothings: [] }, note: "" })
+    return shell.taskOf(`T-${id_Job.slice(2)}`)?.id ?? ""
+  }
+  host.asked({ kind: "OPEN_FILE", path: "retry.js" })
+  const id_Deleting = landedOn("retry.js", "REMOVE", "", "j-1")
+  shell.handle({ kind: "DECIDE", id_Task: id_Deleting, id_Proposal: "j-1.1", decision: "ACCEPTED" })
+  const shown_Proposed = host.name_Document
+  shell.handle({ kind: "END", id_Task: id_Deleting, kind_End: "APPLY" })
+  const shown_Applied = [host.name_Document, host.path_Wanted, gones.slice()]
+  shell.handle({ kind: "OPEN_DOCUMENT", path: "docs/new.md", text: textOf(""), isPresent: false })
+  const id_Making = landedOn("docs/new.md", "MAKE", "# New\n", "j-2")
+  host.asked({ kind: "OPEN_FILE", path: "docs/new.md" })
+  const shown_Made = [host.name_Document, gones.slice()]
+  shell.handle({ kind: "END", id_Task: id_Making, kind_End: "CANCEL" })
+  expect([shell.documentOf("retry.js").isPresent, shown_Proposed]).toEqual([false, "retry.js"])
+  expect(shown_Applied).toEqual(["README.md", "README.md", ["retry.js"]])
+  expect(shown_Made).toEqual(["docs/new.md", ["retry.js"]])
+  expect([host.name_Document, gones]).toEqual(["README.md", ["retry.js", "docs/new.md"]])
 })

@@ -81,6 +81,7 @@ class _Page_<State> {
             kind: "OPEN",
             path
           }),
+          gone: () => this.gone(),
           shown: (update_Host) => this.shown(update_Host),
           boarded: (update_Board) => this.board.update(update_Board)
         }
@@ -177,6 +178,19 @@ class _Page_<State> {
     }
     this.host.asked(asked_Host)
     this.remembered()
+  }
+
+  gone(): void {
+    if (this.host_Page === "FRAMED") {
+      window.parent.postMessage(
+        {
+          kind: "CLOSE"
+        },
+        "*"
+      )
+      return
+    }
+    this.host.left()
   }
 
   sent(

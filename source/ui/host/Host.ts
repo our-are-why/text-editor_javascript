@@ -52,6 +52,7 @@ export {
 class _Host_ {
   name_Document: string
   path_Wanted: string
+  path_Before: string
   target_Mode: _Target_Switch_
   files: Array<string>
   isListening_Agent: boolean
@@ -82,6 +83,7 @@ class _Host_ {
   }: _Api__Host_) {
     this.name_Document = name_Document
     this.path_Wanted = name_Document
+    this.path_Before = name_Document
     this.target_Mode = target_Mode
     this.files = files
     this.isListening_Agent = isListening_Agent
@@ -122,8 +124,32 @@ class _Host_ {
       }
       this.ids_Drafting = this.ids_Drafting.filter((id) => id !== id_Request)
     }
-    if (this.path_Wanted !== this.name_Document && this.isKept(this.path_Wanted)) this.name_Document = this.path_Wanted
+    if (this.path_Wanted !== this.name_Document && this.isKept(this.path_Wanted)) this.moved(this.path_Wanted)
+    if (this.isGone()) {
+      for (const observer of this.observers) observer.gone(this.name_Document)
+    }
     this.shown(isOwn)
+  }
+
+  moved(
+    path: string
+  ): void {
+    if (path === this.name_Document) return
+    this.path_Before = this.name_Document
+    this.name_Document = path
+  }
+
+  isGone(): boolean {
+    const document = this.state_Shell.documents.find((document_Each) => document_Each.path === this.name_Document)
+    return this.path_Wanted === this.name_Document && document !== undefined && !document.isPresent && !this.state_Shell.model_Tasks.tasks.some((task) => task.kind === "OPEN" && task.heads.some((head) => head.path === this.name_Document))
+  }
+
+  left(): void {
+    const path = [
+      this.path_Before,
+      ...this.files
+    ].find((path_Each) => path_Each !== this.name_Document && this.files.includes(path_Each))
+    if (path !== undefined) this.opened(path)
   }
 
   ticked(): void {
@@ -347,7 +373,7 @@ class _Host_ {
   ): void {
     this.path_Wanted = path
     if (this.isKept(path)) {
-      this.name_Document = path
+      this.moved(path)
       return
     }
     for (const observer of this.observers) observer.opening(path)
@@ -376,6 +402,7 @@ interface _Api__Host_ {
 interface _Observer_Host_ {
   sent: (command_Shell: _Command_Shell_) => void
   opening: (path: string) => void
+  gone: (path: string) => void
   shown: (update_Host: _Update_Host_) => void
   boarded: (update_Board: _Update_Board_) => void
 }

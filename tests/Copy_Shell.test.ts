@@ -114,7 +114,7 @@ const filesLanded = (shell: _Shell_, job_Shell: _Job_Shell_, files: Array<_File_
 // each proposal the editor lists in a file's frames, and what it says it
 // does to the file, through the host, as a page draws it
 const itemsDrawnOf = (shell: _Shell_, path: string) => {
-  const host = new _Host_({ name_Document: path, target_Mode: { kind: "TASK", id: "T-1" }, files: ["retry.js"], isListening_Agent: false, at: Date.now(), attributes: new Map(), state_Shell: shell.state(), suffix_Id: "", observers: [{ sent: () => {}, opening: () => {}, shown: () => {}, boarded: () => {} }] })
+  const host = new _Host_({ name_Document: path, target_Mode: { kind: "TASK", id: "T-1" }, files: ["retry.js"], isListening_Agent: false, at: Date.now(), attributes: new Map(), state_Shell: shell.state(), suffix_Id: "", observers: [{ sent: () => {}, opening: () => {}, gone: () => {}, shown: () => {}, boarded: () => {} }] })
   const update_Host = host.showing()?.update_Host
   if (update_Host === undefined) throw new Error("nothing shown")
   const viewModel = viewModelOf__Model({ ...update_Host, source_Yours: "yours", ranges_Frame: [], module_Language: MODULE_PLAINTEXT, module_Reading: MODULE_READING_TEXT })
@@ -201,7 +201,7 @@ const drawableAfter = (shell: _Shell_, job_Shell: _Job_Shell_, landing: _Landing
 // the task as the editor draws it, through the host, as a page would: the
 // proposals it lists in its frames
 const sourcesDrawnOf = (shell: _Shell_) => {
-  const host = new _Host_({ name_Document: "retry.js", target_Mode: { kind: "TASK", id: "T-1" }, files: ["retry.js"], isListening_Agent: false, at: Date.now(), attributes: new Map(), state_Shell: shell.state(), suffix_Id: "", observers: [{ sent: () => {}, opening: () => {}, shown: () => {}, boarded: () => {} }] })
+  const host = new _Host_({ name_Document: "retry.js", target_Mode: { kind: "TASK", id: "T-1" }, files: ["retry.js"], isListening_Agent: false, at: Date.now(), attributes: new Map(), state_Shell: shell.state(), suffix_Id: "", observers: [{ sent: () => {}, opening: () => {}, gone: () => {}, shown: () => {}, boarded: () => {} }] })
   const update_Host = host.showing()?.update_Host
   if (update_Host === undefined) throw new Error("nothing shown")
   const viewModel = viewModelOf__Model({ ...update_Host, source_Yours: "yours", ranges_Frame: [], module_Language: MODULE_PLAINTEXT, module_Reading: MODULE_READING_TEXT })
