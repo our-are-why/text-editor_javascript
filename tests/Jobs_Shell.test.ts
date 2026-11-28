@@ -119,6 +119,7 @@ const shellMade = () => {
   const shell = new _Shell_({
     tasks: new _Tasks_({ model_Tasks: { tasks: [] }, observers: [] }),
     documents: new _Documents_({ model_Documents: { documents: [] }, observers: [] }),
+    jobs: [],
     observers: [{ changed: () => {}, started: (job_Shell) => told.started.push(job_Shell.id), stopped: (stop_Shell) => told.stopped.push(stop_Shell), landed: (landing_Job) => told.landed.push(landing_Job) }]
   })
   shell.handle({ kind: "OPEN_DOCUMENT", path: "README.md", text: { lines: parseTexts_Line("# retry\n"), marks: [] } })

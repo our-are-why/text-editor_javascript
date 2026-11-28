@@ -294,8 +294,9 @@ What's built first, each a step that works on its own:
    writing its own text over a file changed under it. Tested by the
    command run in a demo against doctor held in the test. Not yet: the
    note drawn in the editor, the host's API carrying none; and the editor
-   telling a job queued from one being worked on, or gone quiet, step 5's
-   of `AGENT.md`'s order. **The jobs moved into the core 2026-11-27,** as
+   telling a job gone quiet, step 5's of `AGENT.md`'s order, a job queued
+   told from one being worked on since, under its 13. **The jobs moved
+   into the core 2026-11-27,** as
    the parts were found to be in layers: the shell's rounds its jobs, in
    `Jobs_Shell.ts`, queued, being worked on, with when taken, last heard
    of and the latest note, done or cancelled, one at a time within a task

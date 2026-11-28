@@ -54,6 +54,7 @@ class _Host_ {
   path_Wanted: string
   target_Mode: _Target_Switch_
   files: Array<string>
+  isListening_Agent: boolean
   attributes: Map<string, _Attributes_Element_>
   state_Shell: _State_Shell_
   ids_Drafting: Array<string>
@@ -71,6 +72,7 @@ class _Host_ {
     name_Document,
     target_Mode,
     files,
+    isListening_Agent,
     attributes,
     state_Shell,
     suffix_Id,
@@ -80,6 +82,7 @@ class _Host_ {
     this.path_Wanted = name_Document
     this.target_Mode = target_Mode
     this.files = files
+    this.isListening_Agent = isListening_Agent
     this.attributes = attributes
     this.state_Shell = state_Shell
     this.ids_Drafting = []
@@ -97,12 +100,14 @@ class _Host_ {
   heard({
     state_Shell,
     files,
+    isListening_Agent,
     count_Edit
   }: _Heard_Host_): void {
     const isOwn = count_Edit > this.count_Acked
     this.count_Acked = count_Edit
     this.state_Shell = state_Shell
     this.files = files
+    this.isListening_Agent = isListening_Agent
     for (const id_Request of this.ids_Drafting) {
       const task = this.state_Shell.model_Tasks.tasks.find((task_Each) => task_Each.kind === "OPEN" && task_Each.requests.some((request) => request.id === id_Request))
       if (task === undefined) continue
@@ -160,7 +165,8 @@ class _Host_ {
       mode: update_Host.mode,
       tasks: update_Host.tasks,
       files: update_Host.files,
-      rounds_Landed: update_Host.rounds_Landed
+      rounds_Landed: update_Host.rounds_Landed,
+      isListening_Agent: update_Host.isListening_Agent
     }
   }
 
@@ -199,7 +205,8 @@ class _Host_ {
             attributes: this.attributes,
             sources_Dismissed: new Set(this.state_Shell.dismissed.find((dismissed) => dismissed.id_Task === task.id)?.sources ?? [])
           },
-          name_Document: this.name_Document
+          name_Document: this.name_Document,
+          jobs: this.state_Shell.jobs
         }),
       mode: task === undefined
         ? {
@@ -209,21 +216,24 @@ class _Host_ {
           kind: "TASK",
           task: taskHostOf__Task({
             task,
-            name_Document: this.name_Document
+            name_Document: this.name_Document,
+            jobs: this.state_Shell.jobs
           })
         },
       tasks: this.state_Shell.model_Tasks.tasks.flatMap((task_Each) => task_Each.kind === "OPEN"
         ? [
           standingOf__Tasks({
             task: task_Each,
-            name_Document: this.name_Document
+            name_Document: this.name_Document,
+            jobs: this.state_Shell.jobs
           })
         ]
         : []),
       files: this.files,
       rounds_Landed: roundsOf__Stale({
         stale: head?.stale ?? []
-      })
+      }),
+      isListening_Agent: this.isListening_Agent
     }
   }
 
@@ -239,7 +249,8 @@ class _Host_ {
         ) => task.resolution.stamp.at.localeCompare(task_Other.resolution.stamp.at))
     ].map((task) => boardedOf__Tasks({
       task,
-      count_Editors: this.target_Mode.kind === "TASK" && this.target_Mode.id === task.id ? 1 : 0
+      count_Editors: this.target_Mode.kind === "TASK" && this.target_Mode.id === task.id ? 1 : 0,
+      jobs: this.state_Shell.jobs
     }))
     return {
       tasks: tasks_Board,
@@ -337,6 +348,7 @@ interface _Api__Host_ {
   name_Document: string
   target_Mode: _Target_Switch_
   files: Array<string>
+  isListening_Agent: boolean
   attributes: Map<string, _Attributes_Element_>
   state_Shell: _State_Shell_
   suffix_Id: string
@@ -353,6 +365,7 @@ interface _Observer_Host_ {
 interface _Heard_Host_ {
   state_Shell: _State_Shell_
   files: Array<string>
+  isListening_Agent: boolean
   count_Edit: number
 }
 

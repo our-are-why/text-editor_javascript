@@ -113,7 +113,29 @@ await program.kept("README.md")
 const stateOf = (id_Job: string) => program.shell.state().jobs.find((job) => job.id === id_Job)?.state.kind
 const requestOf = (notes: string) => program.shell.tasks.model_Tasks.tasks.flatMap((task) => task.requests).find((request) => request.notes === notes)
 
+interface _Page_Test_ {
+  messages: Array<_Message_Shell_>
+  socket: WebSocket
+}
+
+const pageOpened = async (): Promise<_Page_Test_> => {
+  const url = new URL(`socket?token=${program.token_Page}`, program.server.url)
+  url.protocol = "ws:"
+  const socket = new WebSocket(url)
+  const messages: Array<_Message_Shell_> = []
+  socket.addEventListener("message", (event) => messages.push(JSON.parse(String(event.data))))
+  await new Promise((resolve) => socket.addEventListener("open", resolve, { once: true }))
+  return {
+    messages,
+    socket
+  }
+}
+const page_Listening = await pageOpened()
+await Bun.sleep(200)
+const listening_Before = page_Listening.messages.map((message) => message.isListening_Agent)
 const ran_Nothing = await doctor("wait", "--for", "1")
+const listening_After = page_Listening.messages.map((message) => message.isListening_Agent)
+page_Listening.socket.close()
 const waiting = doctor("wait", "--for", "20")
 await Bun.sleep(600)
 requested("Say what it retries.")
@@ -170,23 +192,6 @@ const listedFor = (token: string) => fetch(
 const status_Unlisted = (await listedFor(program.token_Agent)).status
 const files_Listed: unknown = await (await listedFor(program.token_Page)).json()
 
-interface _Page_Test_ {
-  messages: Array<_Message_Shell_>
-  socket: WebSocket
-}
-
-const pageOpened = async (): Promise<_Page_Test_> => {
-  const url = new URL(`socket?token=${program.token_Page}`, program.server.url)
-  url.protocol = "ws:"
-  const socket = new WebSocket(url)
-  const messages: Array<_Message_Shell_> = []
-  socket.addEventListener("message", (event) => messages.push(JSON.parse(String(event.data))))
-  await new Promise((resolve) => socket.addEventListener("open", resolve, { once: true }))
-  return {
-    messages,
-    socket
-  }
-}
 const page_A = await pageOpened()
 const page_B = await pageOpened()
 await Bun.sleep(200)
@@ -285,6 +290,11 @@ test("a wait kept to one task is given none of another's", () => {
 test("a call without the agent's token is refused, and the command run where no doctor's open says so", () => {
   expect(status_Unasked).toBe(401)
   expect([ran_Nowhere.answer["kind"], ran_Nowhere.code]).toEqual(["NO_DOCTOR", 1])
+})
+
+test("a page is told whether an agent's listening: no agent having called, none is; a wait open, one is, told at once; and still, the wait answered, an agent having called within the minute", () => {
+  expect(listening_Before).toEqual([false])
+  expect(listening_After).toEqual([false, true])
 })
 
 test("help says the loop, each of the agent's commands, and the person's", () => {

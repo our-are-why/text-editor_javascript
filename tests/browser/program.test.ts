@@ -22,7 +22,9 @@ import {
 // doctor open on a fresh demo of the retry sample, its page opened in
 // Chromium as you'd open it, and used as you'd use it: the file it shows
 // first, typed into in manual, which moves the file on disk; a request on
-// the file, which drafts a task, the editor in it; another of the project's
+// the file, which drafts a task, the editor in it; the request started with
+// no agent listening, drawn waiting, then an agent calling, and taking its
+// job, drawn running, over the program's own endpoint; another of the project's
 // files opened from the picker; and the page reloaded, which comes back as
 // it was left, the shell holding it. The socket shut to a caller without
 // the page's token, the page served under a proxy's prefix as at its root,
@@ -83,6 +85,56 @@ await page.mouse.move(5, 5)
 await settled()
 await page.waitForTimeout(300)
 const shown_Requested = await shownOf()
+const agentOf = () => page.evaluate(() => ({
+  footer: document.querySelector(".agent_Footer_htmlView")?.textContent ?? null,
+  state_Document: document.querySelector(".trigger_Document_htmlView")?.getAttribute("data-state") ?? null,
+  progress: [...document.querySelectorAll(".progress_Said_htmlView")].map((said) => said.textContent)
+}))
+const calledAgent = (
+  path: string,
+  method: string
+) => fetch(
+  `${addresses.address}agent/${path}`,
+  {
+    method,
+    headers: {
+      authorization: `Bearer ${program.token_Agent}`
+    },
+    body: method === "POST"
+      ? JSON.stringify({
+        note: "starting"
+      })
+      : null
+  }
+)
+await page.hover(".trigger_Document_htmlView")
+await page.waitForTimeout(300)
+// the file's Start all, folded behind its group's ellipsis, opened by
+// pointing at the ellipsis, as a person does
+const start_Document = page.locator(".card_Document_htmlView [data-scope=\"DOCUMENT\"][data-work=\"START\"]")
+const box_More = await start_Document.locator("xpath=ancestor::*[contains(concat(' ', @class, ' '), ' fold_Action_htmlView ')][1]").locator(":scope > .more_htmlView").boundingBox()
+if (box_More === null) throw new Error("no ellipsis over the file's Start all")
+await page.mouse.move(
+  box_More.x + box_More.width / 2,
+  box_More.y + box_More.height / 2
+)
+await page.waitForTimeout(200)
+const box_Start = await start_Document.boundingBox()
+if (box_Start === null) throw new Error("no Start all for the file")
+await page.mouse.click(
+  box_Start.x + box_Start.width / 2,
+  box_Start.y + box_Start.height / 2
+)
+await page.mouse.move(5, 5)
+await settled()
+await page.waitForTimeout(300)
+const shown_Waiting = await agentOf()
+await calledAgent("take", "GET")
+await page.waitForTimeout(300)
+const shown_Listening = await agentOf()
+await calledAgent("job/j-1/check", "POST")
+await page.waitForTimeout(300)
+const shown_Running = await agentOf()
 await page.hover(".trigger_Picker_htmlView")
 await page.waitForTimeout(400)
 const choices_Picker = await page.evaluate(() => [...document.querySelectorAll(".choice_Picker_htmlView")].map((choice) => choice.getAttribute("data-path")))
@@ -130,6 +182,24 @@ test("typed into in manual, the file moves, on disk", () => {
 
 test("a request on the file, in manual, drafts a task named for it, the editor in it", () => {
   expect(shown_Requested.task).toBe("Say what it retries.")
+})
+
+test("a request started with no agent listening waits: drawn waiting, the file Waiting, the footer saying no agent's listening; an agent calling, the footer says one is, the job it's offered still waiting; taken, the request's running, the file Working", () => {
+  expect(shown_Waiting).toEqual({
+    footer: "No agent listening",
+    state_Document: "WAITING",
+    progress: ["waiting"]
+  })
+  expect(shown_Listening).toEqual({
+    footer: "Agent listening",
+    state_Document: "WAITING",
+    progress: ["waiting"]
+  })
+  expect(shown_Running).toEqual({
+    footer: "Agent listening",
+    state_Document: "WORKING",
+    progress: ["running"]
+  })
 })
 
 test("the picker lists the project's text files, and one pressed is opened, the editor still in its task", () => {

@@ -124,6 +124,7 @@ export {
   type _Footer_ViewModel_,
   type _Count_Tasks_,
   type _Kind_Count_,
+  type _Agent_Footer_,
   type _Pending_Confirm_,
   type _Request_Item_,
   type _Reference_Request_,
@@ -243,7 +244,7 @@ interface _Part_Task_ {
   text: string
 }
 
-type _Kind_Part_ = "CONFLICT" | "YOURS" | "STAGED" | "AGENT"
+type _Kind_Part_ = "CONFLICT" | "YOURS" | "STAGED" | "AGENT" | "WAITING"
 
 interface _Picker_Header_ {
   label: string
@@ -275,7 +276,7 @@ interface _Document_Header_ {
   revisions_Level: _Revisions_Level_
 }
 
-type _State_Document_ = "NONE" | "YOUR_TURN" | "WORKING" | "DONE"
+type _State_Document_ = "NONE" | "YOUR_TURN" | "WAITING" | "WORKING" | "DONE"
 
 interface _Proposals_Card_ {
   figure: _Figure_Card_ | null
@@ -337,7 +338,7 @@ interface _Task_Header_ {
   revisions_Level: _Revisions_Level_
 }
 
-type _State_Task_ = "DRAFT" | "WORKING" | "YOUR_TURN" | "APPLIED" | "CANCELED" | "DISCARDED"
+type _State_Task_ = "DRAFT" | "WAITING" | "WORKING" | "YOUR_TURN" | "APPLIED" | "CANCELED" | "DISCARDED"
 
 interface _End_Task_ {
   kind: _Kind_End_
@@ -363,6 +364,7 @@ interface _Part_Header_ {
 interface _Footer_ViewModel_ {
   title: string
   counts: Array<_Count_Tasks_>
+  agent: _Agent_Footer_
 }
 
 interface _Count_Tasks_ {
@@ -370,7 +372,12 @@ interface _Count_Tasks_ {
   count: number
 }
 
-type _Kind_Count_ = "YOURS" | "CONFLICTS" | "WORKING" | "DRAFTS"
+interface _Agent_Footer_ {
+  isListening: boolean
+  label: string
+}
+
+type _Kind_Count_ = "YOURS" | "CONFLICTS" | "WORKING" | "WAITING" | "DRAFTS"
 
 type _Block_ViewModel_ = _LINES_Block__ViewModel_ | _FRAME_Block__ViewModel_ | _FOLDED_Block__ViewModel_
 
@@ -562,7 +569,7 @@ interface _Reference_Request_ {
   pieces: Array<_Piece_Text_> | null
 }
 
-type _Status_Request_ = "STAGED" | "RUNNING" | "ADDRESSED"
+type _Status_Request_ = "STAGED" | "WAITING" | "RUNNING" | "ADDRESSED"
 
 interface _Stale_Item_ {
   kind: _Kind_Stale_
@@ -705,7 +712,11 @@ const HEADER_EMPTY: _Header_ViewModel_ = {
 
 const FOOTER_EMPTY: _Footer_ViewModel_ = {
   title: "",
-  counts: []
+  counts: [],
+  agent: {
+    isListening: false,
+    label: ""
+  }
 }
 
 function neighboredOf__Blocks(

@@ -25,6 +25,7 @@ const result = parseModel_TextEditor({
 })
 if (result.kind === "REFUSED") throw new Error("refused")
 const viewModel = viewModelOf__Model({
+  isListening_Agent: false,
   model_TextEditor: result.model_TextEditor,
   name_Document: "notes/digits.txt",
   proposals: [{ source: "digit", title: "Write two as a digit", state: "OPEN", status: "", rationale: "", requests: [], actions: ACTIONS_REVIEW, attributes: {} }],
@@ -230,6 +231,7 @@ test("a selection all in one text, but not running on in it, as across a move's 
   const result_Move = parseModel_TextEditor({ multilineText: "alpha beta", marks: [], proposed: [{ source: "swap", changes: [{ kind: "MOVE", range: { from: { line: 0, offset: 6 }, to: { line: 0, offset: 10 } }, at: { line: 0, offset: 0 } }] }] })
   if (result_Move.kind === "REFUSED") throw new Error("refused")
   const viewModel_Move = viewModelOf__Model({
+    isListening_Agent: false,
     model_TextEditor: result_Move.model_TextEditor,
     name_Document: "notes/digits.txt",
     proposals: [{ source: "swap", title: "Beta first", state: "OPEN", status: "", rationale: "", requests: [], actions: ACTIONS_REVIEW, attributes: {} }],
@@ -271,6 +273,7 @@ function viewModelWith(
   const result_Yours = parseModel_TextEditor({ multilineText, marks: [], proposed: [{ source: "yours", changes }] })
   if (result_Yours.kind === "REFUSED") throw new Error("refused")
   return viewModelOf__Model({
+    isListening_Agent: false,
     model_TextEditor: result_Yours.model_TextEditor,
     name_Document: "notes/digits.txt",
     proposals: [{ source: "yours", title: "Your edits", state: "OPEN", status: "", rationale: "", requests: [], actions: [], attributes: {} }],
@@ -512,6 +515,7 @@ test("a listed request's words pointed at, by the pointer or the keyboard, lit w
   const reference_One = { pieces: [{ id_Text: { kind: "DOCUMENT" as const }, range: { from: { line: 0, offset: 0 }, to: { line: 0, offset: 3 } } }] as [_Piece_Text_, ...Array<_Piece_Text_>], text: "one", side: "CURRENT" as const }
   const reference_Four = { pieces: [{ id_Text: { kind: "DOCUMENT" as const }, range: { from: { line: 1, offset: 0 }, to: { line: 1, offset: 4 } } }] as [_Piece_Text_, ...Array<_Piece_Text_>], text: "four", side: "CURRENT" as const }
   const viewModel_Referring = viewModelOf__Model({
+    isListening_Agent: false,
     model_TextEditor: result.model_TextEditor,
     name_Document: "notes/digits.txt",
     proposals: [{ source: "digit", title: "Write two as a digit", state: "OPEN", status: "", rationale: "", requests: [{ id: "spell", notes: "Spell it.", reference: reference_Digit, status: "STAGED" }], actions: ACTIONS_REVIEW, attributes: {} }],
@@ -591,6 +595,7 @@ test("revisions staged: a revision's notes added, asked of the host, its draft c
 test("an action that would drop revisions staged is asked first: pressed, nothing asked of the host, the item asking in its place, which action and how many it'd drop, the keyboard on Cancel; confirmed, asked; cancelled, nothing; one with nothing staged asked at once; a staged request removed, asked of the host by its id; Start, on one request, a proposal's or the document's, from the header, asked with that scope; Stop, by its scope, as Start is; a host's task action, from the header, asked as it is; Run again, on a round that landed after your edits, asked for its proposal; the document's own requests removed, started and, addressed, dismissed, on no proposal; Revise, from the document's card, a form for the whole document, in that card, saying it's a revision, the document's proposals being in, no point of its own, put away, the keyboard back on that card's Add a request; Revise, from the task's card, one for the task as a whole, aimed at no document, none with no task, in the task's card, sent or put away, the keyboard back on its Add a request, left empty, put away where the keyboard's gone; each form saying, where there's a task, where what's written goes; Escape in the task's card, the keyboard back on the text; a staged request's Edit, a proposal's in its frame's item, or the document's in its card, marked as being edited, the keyboard in its box; saved, asked of the host, its words trimmed, nothing written, nothing; cancelled, nothing asked; the keyboard back on its Edit either way; and one being revised, accepted, asks to stop its revision, dropping what's asked of it", () => {
   const id_Item = { source: "digit", range_Frame: { first: 1, last: 1 } }
   const viewModel_Staged = viewModelOf__Model({
+    isListening_Agent: false,
     model_TextEditor: result.model_TextEditor,
     name_Document: "notes/digits.txt",
     proposals: [{ source: "digit", title: "Write two as a digit", state: "OPEN", status: "", rationale: "", requests: [{ id: "say", notes: "Say it.", reference: null, status: "STAGED" }, { id: "spell", notes: "Spell it.", reference: null, status: "STAGED" }], actions: ACTIONS_REVIEW, attributes: {} }],
@@ -701,6 +706,7 @@ test("an action that would drop revisions staged is asked first: pressed, nothin
     { kind: "EDIT", source: "digit", id: "spell", notes: "Spell it out." }
   ])
   const viewModel_Running = viewModelOf__Model({
+    isListening_Agent: false,
     model_TextEditor: result.model_TextEditor,
     name_Document: "notes/digits.txt",
     proposals: [{ source: "digit", title: "Write two as a digit", state: "OPEN", status: "", rationale: "", requests: [{ id: "say", notes: "Say it.", reference: null, status: "RUNNING" }, { id: "spell", notes: "Spell it.", reference: null, status: "STAGED" }], actions: ACTIONS_REVIEW, attributes: {} }],

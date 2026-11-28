@@ -225,9 +225,11 @@
    beat, begun when the editor's are, so the two read as one: the spinner
    turning, and a running part's words shimmering, a soft band passing
    through them, dimming them to half at its middle, a pass every two
-   turns; still where motion's asked to be reduced, the plum saying it */
+   turns, the spinner only while a task in the column's being worked on,
+   still while all its tasks are waiting for an agent, as their parts are;
+   still where motion's asked to be reduced, the plum saying it */
 @media (prefers-reduced-motion: no-preference) {
-  .htmlView_board [data-kind="AGENT"]:has(.tile_htmlView) .mark_Column_htmlView::before {
+  .htmlView_board [data-kind="AGENT"]:has(.tile_htmlView[data-state="WORKING"]) .mark_Column_htmlView::before {
     animation: turning_Board_htmlView 1.5s linear infinite;
   }
 
@@ -382,7 +384,7 @@
   color: color-mix(in srgb, var(--accent_proposals_htmlView) 85%, CanvasText);
 }
 
-.htmlView_board .part_Tile_htmlView:is([data-kind="STAGED"], [data-kind="AGENT"]) {
+.htmlView_board .part_Tile_htmlView:is([data-kind="STAGED"], [data-kind="AGENT"], [data-kind="WAITING"]) {
   color: color-mix(in srgb, var(--accent_revision_htmlView) 85%, CanvasText);
 }
 

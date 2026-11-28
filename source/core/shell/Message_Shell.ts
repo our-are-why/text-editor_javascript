@@ -36,6 +36,7 @@ interface __BASE_Message_Shell_<Kind extends string> {
 interface _STATE_Message_Shell_ extends __BASE_Message_Shell_<"STATE"> {
   state_Shell: _State_Shell_
   files: Array<string>
+  isListening_Agent: boolean
   path_First: string
   count_Edit: number
 }

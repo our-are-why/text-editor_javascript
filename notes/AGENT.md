@@ -609,17 +609,43 @@ kinds of it, most else answered already by what's decided above.
     apart from what's asked, waits till it's needed.
 
 13. **Where the agent's work shows.** **Decided 2026-11-26:** beside what's
-    drawn already, a request staged, running, shimmering, and addressed,
-    the board's columns and the footer's counts: a request whose job's
-    queued, waiting for an agent, still, not shimmering; a job gone quiet,
-    marked, "quiet · 14 min", counted in the footer and on the board; a
-    question waiting, on its request, counted as needing you; and whether
-    any agent's listening, the footer counting the waits open, agents
-    waiting for work apart from agents waiting on you, "2 agents waiting",
-    and saying none's free while jobs are queued, so a Start pressed with
-    no agent open, or every one waiting on you, says why nothing's
-    happening: answer, or open one. Who's on a job isn't shown, as no
-    owner's kept; what it's doing, later, with progress reports.
+    drawn already, a request staged, running, shimmering, and addressed, the
+    board's columns and the footer's counts: a request whose job's queued,
+    waiting for an agent, still, not shimmering; a job gone quiet, marked,
+    "quiet · 14 min", counted in the footer and on the board; a question
+    waiting, on its request, counted as needing you; and whether any agent's
+    listening, the footer counting the waits open, agents waiting for work
+    apart from agents waiting on you, "2 agents waiting", and saying none's
+    free while jobs are queued, so a Start pressed with no agent open, or
+    every one waiting on you, says why nothing's happening: answer, or open
+    one. Who's on a job isn't shown, as no owner's kept; what it's doing,
+    later, with progress reports. **Built 2026-11-27, the first of it,**
+    from the core's jobs, as the host works out what it draws: a request
+    whose job's queued drawn waiting, its word "waiting", still, never
+    shimmering, a fourth status between staged and running, a proposal under
+    revision still revising; the task and the file Waiting, their word shown
+    after their name in the header, faded, as nothing's at work to shimmer,
+    their mark the spinner's arc, still and fainter, the work about to
+    begin; counted apart, "1 waiting", in the header, the switcher, the
+    footer and on the board, in the agent's column, whose spinner turns only
+    while a task in it's being worked on; Stop, and its count, taking in
+    what's waiting too, its title saying with the agent. Whether an agent's
+    listening said in the footer whenever there are tasks, chosen so you
+    always know, "Agent listening", its dot filled, or "No agent listening",
+    a ring: an agent with a wait open, or having called within the minute,
+    as agents aren't told apart, 14, and one's between waits for seconds
+    while it reads each answer, so no count of them. The playground's
+    stand-in an agent, listening or not as each example says, taking each
+    job the moment it may, one at a time within a task, so a job started
+    behind another of its task's waits its turn there too; a seed's requests
+    waiting given a job queued behind its task's running ones, each a job
+    being worked on, never done. The examples show it: the JavaScript
+    example's agent always listening, Log each retry with one request at
+    work and one waiting behind it, taken, and done with, once the one at
+    work's stopped; the Markdown example's with no agent listening, its
+    tasks Waiting, a revision waiting, and whatever's started there waiting
+    too. Not yet: a job gone quiet, next; a question waiting; agents waiting
+    on you.
 
 ### identity, what's kept, and faking it
 

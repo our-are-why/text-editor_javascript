@@ -53,6 +53,7 @@ class _TextEditor_<State> {
   tasks: Array<_Standing_Task_>
   files: Array<string>
   rounds_Landed: Array<_Landed_Round_>
+  isListening_Agent: boolean
   source_Yours: string
   ranges_Frame: Array<_Range_Lines_>
   observers: Array<_Observer_TextEditor_>
@@ -70,6 +71,7 @@ class _TextEditor_<State> {
     tasks,
     files,
     rounds_Landed,
+    isListening_Agent,
     source_Yours,
     ranges_Frame,
     observers
@@ -83,6 +85,7 @@ class _TextEditor_<State> {
     this.tasks = tasks
     this.files = files
     this.rounds_Landed = rounds_Landed
+    this.isListening_Agent = isListening_Agent
     this.source_Yours = source_Yours
     this.ranges_Frame = ranges_Frame
     this.observers = observers
@@ -147,6 +150,7 @@ class _TextEditor_<State> {
     this.tasks = update_Host.tasks
     this.files = update_Host.files
     this.rounds_Landed = update_Host.rounds_Landed
+    this.isListening_Agent = update_Host.isListening_Agent
     if (!isKept_Model) this.history = HISTORY_EMPTY
     this.viewer.show(this.projected())
   }
@@ -169,6 +173,7 @@ class _TextEditor_<State> {
       tasks: this.tasks,
       files: this.files,
       rounds_Landed: this.rounds_Landed,
+      isListening_Agent: this.isListening_Agent,
       source_Yours: this.source_Yours,
       ranges_Frame: this.ranges_Frame,
       module_Language: this.setup.module_Language,
@@ -187,6 +192,7 @@ interface _Api__TextEditor_<State> {
   tasks: Array<_Standing_Task_>
   files: Array<string>
   rounds_Landed: Array<_Landed_Round_>
+  isListening_Agent: boolean
   source_Yours: string
   ranges_Frame: Array<_Range_Lines_>
   observers: Array<_Observer_TextEditor_>
@@ -215,6 +221,7 @@ interface _Update_Host_ {
   tasks: Array<_Standing_Task_>
   files: Array<string>
   rounds_Landed: Array<_Landed_Round_>
+  isListening_Agent: boolean
 }
 
 interface _Setup_TextEditor_<State> {

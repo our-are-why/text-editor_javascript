@@ -175,7 +175,7 @@ function projectedOf<State>({
   rounds_Landed,
   ranges_Frame
 }: _Api___projectedOf_<State>): _ViewModel_TextEditor_ {
-  return viewModelOf__Model({ model_TextEditor: modelOf({ multilineText, marks, proposed }), name_Document: "", proposals, rounds_Landed, source_Yours: PROPOSAL_YOURS.source, mode: { kind: "MANUAL" }, tasks: [], files: [], ranges_Frame, module_Language, module_Reading })
+  return viewModelOf__Model({ isListening_Agent: true, model_TextEditor: modelOf({ multilineText, marks, proposed }), name_Document: "", proposals, rounds_Landed, source_Yours: PROPOSAL_YOURS.source, mode: { kind: "MANUAL" }, tasks: [], files: [], ranges_Frame, module_Language, module_Reading })
 }
 
 interface _Api___projectedOf__Carried_<State> {
@@ -211,6 +211,7 @@ function projectedOf__Carried<State>({
     edits
   })
   return viewModelOf__Model({
+    isListening_Agent: true,
     model_TextEditor: carried.model_TextEditor,
     name_Document: "",
     proposals,

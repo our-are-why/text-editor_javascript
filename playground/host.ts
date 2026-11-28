@@ -18,7 +18,8 @@ import {
 import { _Tasks_ } from "../source/core/tasks/index.ts"
 import {
   stampOf,
-  _Shell_
+  _Shell_,
+  isTakeable__Job
 } from "../source/core/shell/index.ts"
 import {
   _Host_,
@@ -51,6 +52,7 @@ interface _Api___hostedOf__Editor_<State> {
   containerElement_Board: HTMLElement
   files: Array<string>
   ranges_Frame: Array<_Range_Lines_>
+  isListening_Agent: boolean
   log: (entry: _Entry_Log_) => void
 }
 
@@ -67,17 +69,23 @@ interface _Api___hostedOf__Editor_<State> {
 // attributes; reporting what's asked, and what's done, each as it's told;
 // and showing the board, hidden till the editor's footer is pressed, and
 // hidden again when it's pressed again, as a host shows and hides a view.
-// With no agent, the playground stands in for one: a Start, at any scope,
-// in any task, sets what's staged there going, a job, a proposal never
-// revised by two at once, and a moment later the stand-in takes it from the
-// core and hands it back, as an agent would, what's staged since left for
-// the next. A job's written on the document as it was when it started, its
-// base, here the proposal's changes as they were then, as there's no agent
-// to write others, and lands on the document as it is, carried across every
-// edit since by the shell, so changes written before your edits are marked;
-// a job stopped before then, its requests staged again, lands nothing. A
-// request on no proposal, the document's own or the task's, in any task,
-// answered with nothing to change, as there's no agent to propose one
+// With no agent, the playground stands in for one, as the example says,
+// listening or not, the footer saying which. A Start, at any scope, in any
+// task, sets what's staged there going, a job, a proposal never revised by
+// two at once. Listening, the stand-in takes each job from the core the
+// moment it may, one at a time within a task, as any agent does, so it's
+// drawn running, and hands it back a moment after it was started, or,
+// seeded, after it took it, what's staged since left for the next; a job
+// behind another of its task's, the example's seeded at work and never
+// done, waiting its turn, drawn waiting till that's stopped. Not
+// listening, it takes nothing, and every job waits. A job's written on the
+// document as it was when it started, its base, here the proposal's
+// changes as they were then, as there's no agent to write others, and
+// lands on the document as it is, carried across every edit since by the
+// shell, so changes written before your edits are marked; a job stopped
+// before then, its requests staged again, lands nothing. A request on no
+// proposal, the document's own or the task's, in any task, answered with
+// nothing to change, as there's no agent to propose one
 function hostedOf__Editor<State>({
   containerElement,
   setup,
@@ -91,6 +99,7 @@ function hostedOf__Editor<State>({
   containerElement_Board,
   files,
   ranges_Frame,
+  isListening_Agent,
   log
 }: _Api___hostedOf__Editor_<State>): _TextEditor_<State> {
   const seed = seededOf__Example({
@@ -120,19 +129,52 @@ function hostedOf__Editor<State>({
   // knowing nothing of either, says nothing of when it reports what it put
   // back
   let kind_Stop = "TASK"
+  // when each job the stand-in's given goes back, a moment after its Start
+  const ats_Done = new Map<string, number>()
+  const delayOf = (id_Task: string) => id_Task === about_Task.id ? 1600 : 1500
   const shell: _Shell_ = new _Shell_({
     tasks: new _Tasks_({
       model_Tasks: seed.model_Tasks,
       observers: []
     }),
     documents,
+    jobs: seed.jobs,
     observers: [
       {
-        changed: (state_Shell) => host.heard({
-          state_Shell,
-          files,
-          count_Edit: host.count_Sent
-        }),
+        changed: (state_Shell) => {
+          host.heard({
+            state_Shell,
+            files,
+            isListening_Agent,
+            count_Edit: host.count_Sent
+          })
+          if (!isListening_Agent) return
+          queueMicrotask(() => {
+            for (const job_Shell of shell.jobs) {
+              if (!isTakeable__Job({
+                jobs: shell.jobs,
+                job: job_Shell
+              })) continue
+              shell.handle({
+                kind: "TAKE",
+                id_Job: job_Shell.id,
+                note: ""
+              })
+              setTimeout(
+                () => shell.handle({
+                  kind: "HAND_BACK",
+                  id_Job: job_Shell.id,
+                  proposed: job_Shell.proposed,
+                  note: ""
+                }),
+                Math.max(
+                  0,
+                  (ats_Done.get(job_Shell.id) ?? Date.now() + delayOf(job_Shell.id_Task)) - Date.now()
+                )
+              )
+            }
+          })
+        },
         started: (job_Shell) => {
           const isOwn = job_Shell.id_Task === about_Task.id
           if (isOwn) {
@@ -145,21 +187,9 @@ function hostedOf__Editor<State>({
               requests: job_Shell.requests.length
             })
           }
-          setTimeout(
-            () => {
-              shell.handle({
-                kind: "TAKE",
-                id_Job: job_Shell.id,
-                note: ""
-              })
-              shell.handle({
-                kind: "HAND_BACK",
-                id_Job: job_Shell.id,
-                proposed: job_Shell.proposed,
-                note: ""
-              })
-            },
-            isOwn ? 1600 : 1500
+          ats_Done.set(
+            job_Shell.id,
+            Date.now() + delayOf(job_Shell.id_Task)
           )
         },
         landed: (landing_Job) => {
@@ -188,6 +218,7 @@ function hostedOf__Editor<State>({
       id: about_Task.id
     },
     files,
+    isListening_Agent,
     attributes: seed.attributes_Own,
     state_Shell: shell.state(),
     suffix_Id: "",
@@ -214,6 +245,7 @@ function hostedOf__Editor<State>({
     tasks: shown_Host.update_Host.tasks,
     files,
     rounds_Landed: shown_Host.update_Host.rounds_Landed,
+    isListening_Agent: shown_Host.update_Host.isListening_Agent,
     source_Yours: PROPOSAL_YOURS.source,
     ranges_Frame,
     observers: [

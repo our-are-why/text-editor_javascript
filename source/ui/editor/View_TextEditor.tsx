@@ -1436,6 +1436,18 @@ function Footer_TextEditor__Html({
 }: _Api___Footer_TextEditor__Html_): JSX.Element {
   return (
     <div class="footer_htmlView">
+      {footer_ViewModel.agent.label !== "" && (
+        <span
+          class="agent_Footer_htmlView"
+          data-listening={footer_ViewModel.agent.isListening ? "" : undefined}
+        >
+          <span
+            class="mark_Agent_htmlView"
+            aria-hidden="true"
+          />
+          {footer_ViewModel.agent.label}
+        </span>
+      )}
       {footer_ViewModel.counts.length > 0 && (
         <button
           type="button"

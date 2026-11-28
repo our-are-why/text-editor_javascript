@@ -109,12 +109,13 @@ class _Shell_ {
   constructor({
     tasks,
     documents,
+    jobs,
     observers
   }: _Api__Shell_) {
     this.tasks = tasks
     this.documents = documents
     this.dismissed = new Map()
-    this.jobs = []
+    this.jobs = jobs
     this.count_Job = 0
     this.bases_Round = new Map()
     this.count_Request = 0
@@ -621,6 +622,7 @@ class _Shell_ {
 interface _Api__Shell_ {
   tasks: _Tasks_
   documents: _Documents_
+  jobs: Array<_Job_Shell_>
   observers: Array<_Observer_Shell_>
 }
 

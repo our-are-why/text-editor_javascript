@@ -76,7 +76,8 @@ export {
   endpointOf__Folder,
   type _Api___endpointOf__Folder_,
   DIR_DOCTOR,
-  NAME_ENDPOINT
+  NAME_ENDPOINT,
+  MS_LISTENING__AGENT
 }
 
 class _Program_ {
@@ -91,6 +92,9 @@ class _Program_ {
   documents: _Documents_
   wakers: Array<() => void>
   isClosing: boolean
+  count_Waits: number
+  at_Called_Agent: number
+  isListening_Agent: boolean
   shell: _Shell_
   agent: _Agent_
   path_First: string
@@ -127,6 +131,9 @@ class _Program_ {
     })
     this.wakers = []
     this.isClosing = false
+    this.count_Waits = 0
+    this.at_Called_Agent = 0
+    this.isListening_Agent = false
     this.shell = new _Shell_({
       tasks: new _Tasks_({
         model_Tasks: {
@@ -135,6 +142,7 @@ class _Program_ {
         observers: []
       }),
       documents: this.documents,
+      jobs: [],
       observers: [
         {
           changed: (state_Shell) => this.told(state_Shell),
@@ -234,6 +242,8 @@ class _Program_ {
         status: 401
       })
     }
+    this.at_Called_Agent = Date.now()
+    this.listened()
     const id_Task = url.searchParams.get("task")
     const from: _From_Wait_ = id_Task === null
       ? {
@@ -317,45 +327,73 @@ class _Program_ {
       "abort",
       () => resolve()
     ))
-    for (;;) {
-      if (this.isClosing) {
-        return responseOf__Answer({
-          answer_Agent: ANSWER_CLOSED,
-          status: 200
+    this.count_Waits += 1
+    this.listened()
+    try {
+      for (;;) {
+        if (this.isClosing) {
+          return responseOf__Answer({
+            answer_Agent: ANSWER_CLOSED,
+            status: 200
+          })
+        }
+        if (request.signal.aborted) {
+          return new Response(
+            null,
+            {
+              status: 499
+            }
+          )
+        }
+        const answer_Offer = this.offeredOf({
+          from,
+          command_Wait
         })
+        if (answer_Offer !== undefined) {
+          return responseOf__Answer({
+            answer_Agent: answer_Offer,
+            status: 200
+          })
+        }
+        const left = until - Date.now()
+        if (left <= 0) {
+          return responseOf__Answer({
+            answer_Agent: answerOf__NothingYet({
+              command_Wait
+            }),
+            status: 200
+          })
+        }
+        await Promise.race([
+          new Promise<void>((resolve) => this.wakers.push(resolve)),
+          gone,
+          Bun.sleep(left)
+        ])
       }
-      if (request.signal.aborted) {
-        return new Response(
-          null,
-          {
-            status: 499
-          }
-        )
-      }
-      const answer_Offer = this.offeredOf({
-        from,
-        command_Wait
+    } finally {
+      this.count_Waits -= 1
+      this.at_Called_Agent = Date.now()
+      this.listened()
+    }
+  }
+
+  listened(): void {
+    const at_Quiet = this.at_Called_Agent + MS_LISTENING__AGENT
+    const isListening_Agent = this.count_Waits > 0 || Date.now() < at_Quiet
+    if (isListening_Agent && this.count_Waits === 0) {
+      setTimeout(
+        () => this.listened(),
+        at_Quiet - Date.now() + 50
+      ).unref()
+    }
+    if (isListening_Agent === this.isListening_Agent) return
+    this.isListening_Agent = isListening_Agent
+    const state_Shell = this.shell.state()
+    for (const socket of this.sockets) {
+      this.sent({
+        socket,
+        state_Shell
       })
-      if (answer_Offer !== undefined) {
-        return responseOf__Answer({
-          answer_Agent: answer_Offer,
-          status: 200
-        })
-      }
-      const left = until - Date.now()
-      if (left <= 0) {
-        return responseOf__Answer({
-          answer_Agent: answerOf__NothingYet({
-            command_Wait
-          }),
-          status: 200
-        })
-      }
-      await Promise.race([
-        new Promise<void>((resolve) => this.wakers.push(resolve)),
-        gone,
-        Bun.sleep(left)
-      ])
     }
   }
 
@@ -472,6 +510,7 @@ class _Program_ {
       kind: "STATE",
       state_Shell,
       files: this.files,
+      isListening_Agent: this.isListening_Agent,
       path_First: this.path_First,
       count_Edit: socket.data.count_Edit
     }
@@ -670,6 +709,8 @@ async function writtenOf__File({
     join(dir_Project, path)
   )
 }
+
+const MS_LISTENING__AGENT = 60_000
 
 const DIR_DOCTOR = ".doctor"
 

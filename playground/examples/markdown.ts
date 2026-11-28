@@ -220,8 +220,8 @@ const proposal_Order: _Proposal_Host_ = {
   attributes: {},
 }
 
-// open, being revised, as the module's own proposal is, its words not to
-// be typed into until the agent's done
+// open, a revision of it waiting for an agent, none listening here, its
+// words not to be typed into until it's done
 const proposal_Timeout: _Proposal_Host_ = {
   source: "timeout",
   title: "Retry a request that timed out",
@@ -233,7 +233,7 @@ const proposal_Timeout: _Proposal_Host_ = {
       id: "timeout-0",
       notes: "only when the request is safe to send twice, a GET or a PUT.",
       reference: null,
-      status: "RUNNING"
+      status: "WAITING"
     }
   ],
   actions: ACTIONS_REVIEW,
@@ -379,7 +379,7 @@ const requests_readme: Array<_Request_Task_> = [
 const markdown: _Example_ = {
   name: "markdown",
   title: "Markdown",
-  about: "The JavaScript example's module's README, in Markdown, drawn whole as its source, its syntax worked out by a language module, the playground's Markdown tokenizer, and styled by the playground, as a host's theme: its syntax kept as it's written, faint, and what that marks shown as it marks it, headings and strong words bold, emphasis italic, code and links coloured. Its marks are its syntax, so the document holds none, and a proposal that makes words bold puts in asterisks. Its changes are read two ways, a button over it for each, both in the editor's changes look: as Markdown, the playground's reading, first, what a change means, a word made bold one dashed ring, restyled, round it and its asterisks, as it was and as it becomes; and as text, the editor's reading, every character that changed ringed, the asterisks put in green, as code's are. The fenced JavaScript is the JavaScript module's to colour, the Markdown module handing its lines on. Eleven proposals, keeping the README in step with the module's: in its opening words, how a caller gives up, inline code put in; a signal passed in the example's call, inside the fence; in the options, framed whole, a default made bold, words replaced, and onRetry's line taken out; what it retries, its heading, words and table, moved up before the options, carrying a row put in, being revised, and a row taken out, rejected, so not ringed; and in how long it waits, framed from its words to its link, the base delay's name, accepted and applied, its words the README's already, so nothing to ring, the quote's last words changed, a revision asked for, and the link's address, withdrawn, so not ringed. The README moved under a round since it was written, \"on it\" taken out after \"gives up\" in its opening words, so how a caller gives up is stale, its long line drawn as the round was written on it and as the file has it, both wrapping, Run again offered. And your edit, the task's own, in how long it waits, says it as the module's comment does: most of a long line, its ring waved, cut where the line wraps. The README has a request of its own, on the link's words: the link keeps its own underline, the request's dotted line drawn under it. Point at a ring or an item to see a proposal; press a move's note to go to its other end.",
+  about: "The JavaScript example's module's README, in Markdown, drawn whole as its source, its syntax worked out by a language module, the playground's Markdown tokenizer, and styled by the playground, as a host's theme: its syntax kept as it's written, faint, and what that marks shown as it marks it, headings and strong words bold, emphasis italic, code and links coloured. Its marks are its syntax, so the document holds none, and a proposal that makes words bold puts in asterisks. Its changes are read two ways, a button over it for each, both in the editor's changes look: as Markdown, the playground's reading, first, what a change means, a word made bold one dashed ring, restyled, round it and its asterisks, as it was and as it becomes; and as text, the editor's reading, every character that changed ringed, the asterisks put in green, as code's are. The fenced JavaScript is the JavaScript module's to colour, the Markdown module handing its lines on. Eleven proposals, keeping the README in step with the module's: in its opening words, how a caller gives up, inline code put in; a signal passed in the example's call, inside the fence; in the options, framed whole, a default made bold, words replaced, and onRetry's line taken out; what it retries, its heading, words and table, moved up before the options, carrying a row put in, its revision waiting for an agent, and a row taken out, rejected, so not ringed; and in how long it waits, framed from its words to its link, the base delay's name, accepted and applied, its words the README's already, so nothing to ring, the quote's last words changed, a revision asked for, and the link's address, withdrawn, so not ringed. The README moved under a round since it was written, \"on it\" taken out after \"gives up\" in its opening words, so how a caller gives up is stale, its long line drawn as the round was written on it and as the file has it, both wrapping, Run again offered. And your edit, the task's own, in how long it waits, says it as the module's comment does: most of a long line, its ring waved, cut where the line wraps. The README has a request of its own, on the link's words: the link keeps its own underline, the request's dotted line drawn under it. No agent's listening here, the footer says so, so nothing's worked on: the row's revision waits, still, never shimmering, said waiting, so the task's Waiting, said after its name in the header, faded, as nothing's at work to shimmer, its mark in the switcher the spinner's arc, still and fainter; Tidy the retry loop's three requests on the module wait too, the task Waiting, in the agent's column on the board, its spinner still; and anything you Start here waits, as with no agent open. Point at a ring or an item to see a proposal; press a move's note to go to its other end.",
   // the editor, put together as above, drawing the README and its
   // proposals into the stage, over it a button for each perspective, the
   // one shown pressed; pressing another shows it, and reports which; and
@@ -418,7 +418,7 @@ const markdown: _Example_ = {
             {
               name: "retry.js",
               counts_Proposals: { OPEN: 14, REQUESTED: 0, REVISING: 0, ACCEPTED: 0, REJECTED: 0, WITHDRAWN: 0 },
-              counts_Requests: { STAGED: 8, RUNNING: 3 }
+              counts_Requests: { WAITING: 3, STAGED: 8, RUNNING: 0 }
             }
           ]
         }
@@ -440,6 +440,7 @@ const markdown: _Example_ = {
         "tests/retry.test.js"
       ],
       ranges_Frame: ranges_readme,
+      isListening_Agent: false,
       log
     })
     const buttons = setup_readme.perspectives.map((perspective) => {

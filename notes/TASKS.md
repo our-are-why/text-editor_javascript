@@ -704,8 +704,9 @@ playground's host, `playground/host.ts`, plays all four for now, faked.
   them; tested by examples, and by a property over any sequence of moves.
   The endpoint and the command, `doctor wait|take|check|done`, built
   2026-11-27 with the shell's core, in `SHELL.md`. Not yet: working
-  copies, the checker, questions, and the editor drawing what's waiting
-  for an agent. **Its jobs moved into the core 2026-11-27,** the shell's,
+  copies, the checker, questions, and a job gone quiet drawn, what's
+  waiting for an agent drawn since, under 13 in `AGENT.md`. **Its jobs
+  moved into the core 2026-11-27,** the shell's,
   as the parts were found to be in layers, in `SHELL.md`: the agent part
   left the agent's adapter, the offers it's made and their lapse, the
   answers it gives, and the brief.

@@ -27,6 +27,10 @@ import {
   PROPOSAL_YOURS,
   wordsOf__Reference
 } from "../source/ui/host/index.ts"
+import type {
+  _Job_Shell_,
+  _State_Job_
+} from "../source/core/shell/index.ts"
 
 export {
   seededOf__Example,
@@ -35,7 +39,8 @@ export {
   type _Elsewhere_Task_,
   type _Other_Task_,
   type _Resolved_Task_,
-  type _Seed_Tasks_
+  type _Seed_Tasks_,
+  type _Seeded_Task_
 }
 
 interface _Api___seededOf__Example_ {
@@ -93,6 +98,7 @@ interface _Resolved_Task_ {
 // the task the playground's on, each proposal's attributes
 interface _Seed_Tasks_ {
   model_Tasks: _Model_Tasks_
+  jobs: Array<_Job_Shell_>
   attributes_Own: Map<string, _Attributes_Element_>
 }
 
@@ -103,9 +109,10 @@ interface _Seed_Tasks_ {
 // playground's on alone with proposals here, its changes on the document
 // shown its head there, stated against the document's version, what landed
 // on it written before your edits stale; each resolved one, as it ended;
-// each request's words where it was sent on them, in the task; and what
-// only the editor draws of the task the playground's on, its proposals'
-// attributes
+// each request's words where it was sent on them, in the task; the jobs
+// its requests with the agent are in where any of them wait, as below; and
+// what only the editor draws of the task the playground's on, its
+// proposals' attributes
 function seededOf__Example({
   name_Document,
   model_TextEditor,
@@ -120,48 +127,57 @@ function seededOf__Example({
   const version = versionOf__Text({
     text_Model: model_TextEditor.document
   })
+  const seeded: Array<_Seeded_Task_> = [
+    taskOf__Content({
+      id: about_Task.id,
+      name: about_Task.name,
+      summary: about_Task.summary,
+      summary_Document: about_Task.summary_Document,
+      isStarted: true,
+      proposals: proposals_Own,
+      requests: about_Task.requests,
+      documents_Elsewhere: about_Task.documents_Elsewhere,
+      heads: [
+        {
+          path: name_Document,
+          version,
+          proposed: model_TextEditor.proposed,
+          stale
+        }
+      ],
+      name_Document,
+      stamp
+    }),
+    ...tasks_Other.map((task_Other) => taskOf__Content({
+      id: task_Other.id,
+      name: task_Other.name,
+      summary: "",
+      summary_Document: "",
+      isStarted: task_Other.isStarted,
+      proposals: [],
+      requests: task_Other.requests,
+      documents_Elsewhere: task_Other.documents_Elsewhere,
+      heads: [],
+      name_Document,
+      stamp
+    }))
+  ]
   return {
     model_Tasks: {
       tasks: [
-        taskOf__Content({
-          id: about_Task.id,
-          name: about_Task.name,
-          summary: about_Task.summary,
-          summary_Document: about_Task.summary_Document,
-          isStarted: true,
-          proposals: proposals_Own,
-          requests: about_Task.requests,
-          documents_Elsewhere: about_Task.documents_Elsewhere,
-          heads: [
-            {
-              path: name_Document,
-              version,
-              proposed: model_TextEditor.proposed,
-              stale
-            }
-          ],
-          name_Document,
-          stamp
-        }),
-        ...tasks_Other.map((task_Other) => taskOf__Content({
-          id: task_Other.id,
-          name: task_Other.name,
-          summary: "",
-          summary_Document: "",
-          isStarted: task_Other.isStarted,
-          proposals: [],
-          requests: task_Other.requests,
-          documents_Elsewhere: task_Other.documents_Elsewhere,
-          heads: [],
-          name_Document,
-          stamp
-        })),
+        ...seeded.map((seeded_Task) => seeded_Task.task),
         ...tasks_Resolved.map((task_Resolved) => taskOf__Resolved({
           task_Resolved,
           stamp
         }))
       ]
     },
+    jobs: seeded.flatMap((seeded_Task) => jobsOf__Seed({
+      seeded_Task,
+      name_Document,
+      version,
+      at: Date.parse(stamp.at)
+    })),
     attributes_Own: new Map(proposals_Own.map((proposal_Host) => [
       proposal_Host.source,
       proposal_Host.attributes
@@ -183,11 +199,17 @@ interface _Api___taskOf__Content_ {
   stamp: _Stamp_Tasks_
 }
 
+interface _Seeded_Task_ {
+  task: _Task_Tasks_
+  ids_Waiting: Array<string>
+}
+
 // an open task as the tasks part holds it, from what the example says it
 // has: its proposals here, each in its state, with what's asked of them;
 // its own requests, on the document shown or the task, each where it
 // stands; what the example counts it has elsewhere, made into as many
-// proposals and requests; and its changes, its heads
+// proposals and requests; and its changes, its heads; with which of its
+// requests with the agent are waiting for one, for their jobs
 function taskOf__Content({
   id,
   name,
@@ -200,14 +222,18 @@ function taskOf__Content({
   heads,
   name_Document,
   stamp
-}: _Api___taskOf__Content_): _Task_Tasks_ {
+}: _Api___taskOf__Content_): _Seeded_Task_ {
   const elsewhere = documents_Elsewhere.map((elsewhere_Task) => countedOn__Path({
     path: elsewhere_Task.name,
     counts_Proposals: elsewhere_Task.counts_Proposals,
     counts_Requests: elsewhere_Task.counts_Requests,
     stamp
   }))
-  return {
+  const ids_Waiting = [
+    ...proposals.flatMap((proposal_Host) => proposal_Host.requests),
+    ...requests
+  ].flatMap((request) => request.status === "WAITING" ? [request.id] : [])
+  const task: _Task_Tasks_ = {
     kind: "OPEN",
     id,
     name,
@@ -286,6 +312,13 @@ function taskOf__Content({
         kind: "UNSTARTED"
       }
   }
+  return {
+    task,
+    ids_Waiting: [
+      ...ids_Waiting,
+      ...elsewhere.flatMap((counted) => counted.ids_Waiting)
+    ]
+  }
 }
 
 interface _Api___statusOf__Host_ {
@@ -295,8 +328,9 @@ interface _Api___statusOf__Host_ {
 }
 
 // where a request the editor's told of stands, as the tasks part holds it:
-// running, started; addressed, by the proposals that answer it, or with
-// nothing needing to change
+// running, or waiting for an agent, with the agent, its job saying which;
+// addressed, by the proposals that answer it, or with nothing needing to
+// change
 function statusOf__Host({
   request_Host,
   sources_Answering,
@@ -306,7 +340,7 @@ function statusOf__Host({
     ? {
       kind: "STAGED"
     }
-    : request_Host.status === "RUNNING"
+    : request_Host.status === "RUNNING" || request_Host.status === "WAITING"
       ? {
         kind: "WITH_AGENT",
         stamp
@@ -335,13 +369,14 @@ interface _Api___countedOn__Path_ {
 interface _Counted_Path_ {
   proposals: Array<_Proposal_Tasks_>
   requests: Array<_Request_Tasks_>
+  ids_Waiting: Array<string>
 }
 
 // as many proposals and requests on a document not shown here as the
 // example counts there, as it says nothing more of them: each proposal in
 // its state, one with revisions asked of it a request staged on it, one
 // being revised a request running on it, and the requests counted beyond
-// those, the document's own
+// those, the document's own, those waiting for an agent last
 function countedOn__Path({
   path,
   counts_Proposals,
@@ -401,7 +436,8 @@ function countedOn__Path({
   const count_Running = counts_Requests.RUNNING - counts_Proposals.REVISING
   const requests_Path = [
     ...Array.from({ length: Math.max(count_Staged, 0) }, () => "STAGED" as const),
-    ...Array.from({ length: Math.max(count_Running, 0) }, () => "WITH_AGENT" as const)
+    ...Array.from({ length: Math.max(count_Running, 0) }, () => "WITH_AGENT" as const),
+    ...Array.from({ length: counts_Requests.WAITING }, () => "WITH_AGENT" as const)
   ].map((
     kind,
     index
@@ -430,7 +466,102 @@ function countedOn__Path({
     requests: [
       ...requests_Proposals,
       ...requests_Path
-    ]
+    ],
+    ids_Waiting: requests_Path.slice(requests_Path.length - counts_Requests.WAITING).map((request) => request.id)
+  }
+}
+
+interface _Api___jobsOf__Seed_ {
+  seeded_Task: _Seeded_Task_
+  name_Document: string
+  version: string
+  at: number
+}
+
+// the jobs of a task the example seeds with requests waiting for an agent:
+// its running ones each a job of its own being worked on, never handed
+// back, and those waiting one job queued behind them, so they wait, as
+// they would behind an agent at work, till those are stopped; a task with
+// none waiting none, its running requests jobless, as a seed's always
+// were, so what's started in it runs at once, as it did
+function jobsOf__Seed({
+  seeded_Task,
+  name_Document,
+  version,
+  at
+}: _Api___jobsOf__Seed_): Array<_Job_Shell_> {
+  const task = seeded_Task.task
+  const ids_Waiting = seeded_Task.ids_Waiting
+  if (ids_Waiting.length === 0) return []
+  const requests_With = task.requests.filter((request) => request.status.kind === "WITH_AGENT")
+  const requests_Waiting = requests_With.filter((request) => ids_Waiting.includes(request.id))
+  return [
+    ...requests_With
+      .filter((request) => !ids_Waiting.includes(request.id))
+      .map((request) => jobOf__Seed({
+        id: `j-seed ${request.id}`,
+        task,
+        requests: [request],
+        name_Document,
+        version,
+        at,
+        state: {
+          kind: "BEING_WORKED_ON",
+          taken: at,
+          heard: at,
+          note: ""
+        }
+      })),
+    jobOf__Seed({
+      id: `j-seed ${task.id} waiting`,
+      task,
+      requests: requests_Waiting,
+      name_Document,
+      version,
+      at,
+      state: {
+        kind: "QUEUED"
+      }
+    })
+  ]
+}
+
+interface _Api___jobOf__Seed_ {
+  id: string
+  task: _Task_Tasks_
+  requests: Array<_Request_Tasks_>
+  name_Document: string
+  version: string
+  at: number
+  state: _State_Job_
+}
+
+// a job a seed starts with, as a Start would have made it: the requests it
+// started, the proposals they revise, and what those propose here
+function jobOf__Seed({
+  id,
+  task,
+  requests,
+  name_Document,
+  version,
+  at,
+  state
+}: _Api___jobOf__Seed_): _Job_Shell_ {
+  const sources = requests.flatMap((request) => request.aim.kind === "PROPOSAL" ? [request.aim.id_Proposal] : [])
+  return {
+    id,
+    id_Task: task.id,
+    scope: {
+      kind: "REQUESTS",
+      ids_Request: requests.map((request) => request.id)
+    },
+    requests,
+    sources,
+    path: name_Document,
+    version,
+    proposed: (task.heads.find((head) => head.path === name_Document)?.proposed ?? []).filter((changes_Source) => sources.includes(changes_Source.source)),
+    queued: at,
+    state
   }
 }
 

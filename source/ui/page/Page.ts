@@ -62,6 +62,7 @@ class _Page_<State> {
       name_Document,
       target_Mode,
       files: message_Shell.files,
+      isListening_Agent: message_Shell.isListening_Agent,
       attributes: new Map(),
       state_Shell: message_Shell.state_Shell,
       suffix_Id: `-${Array.from(
@@ -95,6 +96,7 @@ class _Page_<State> {
       tasks: shown_Host.update_Host.tasks,
       files: shown_Host.update_Host.files,
       rounds_Landed: shown_Host.update_Host.rounds_Landed,
+      isListening_Agent: shown_Host.update_Host.isListening_Agent,
       source_Yours: PROPOSAL_YOURS.source,
       ranges_Frame: [],
       observers: [
@@ -134,6 +136,7 @@ class _Page_<State> {
     this.host.heard({
       state_Shell: message_Shell.state_Shell,
       files: message_Shell.files,
+      isListening_Agent: message_Shell.isListening_Agent,
       count_Edit: message_Shell.count_Edit
     })
   }

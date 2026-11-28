@@ -721,7 +721,9 @@ const itemsOf = (source: string) => opened_JavaScript.page.evaluate(async (sourc
     starts: element.querySelectorAll(".request_htmlView .start_Request_htmlView").length,
     adds: element.querySelectorAll(".request_htmlView .add_Request_htmlView").length,
     starts_Request: element.querySelectorAll(".start_Said_htmlView").length,
-    progress: element.querySelectorAll(".progress_Said_htmlView[data-status=\"RUNNING\"]").length,
+    // with the agent, running or waiting its turn, as which it is at a
+    // moment depends on whether another job of the task's still at work
+    progress: element.querySelectorAll(":is(.progress_Said_htmlView[data-status=\"RUNNING\"], .progress_Said_htmlView[data-status=\"WAITING\"])").length,
     ink_Revise: [...element.querySelectorAll(":is(.action_htmlView, .add_Request_htmlView)[data-command=\"revise\"]")].map((button) => getComputedStyle(button).color).join()
   }))
 }, source)
@@ -989,7 +991,7 @@ test("the header over the document stays put as it scrolls, saying the host's ta
   expect(header_Working).toEqual({ task: ["Tidy the retry loop", "WORKING", "Working"], parts: [], spinners: 0, document: ["retry.js", "WORKING", "Working"], card: ["Cancel", "Accept all (10)", "Start all (6)", "Stop all (3)"], card_Document: ["Accept all (7)", "Start all (5)", "Stop all (2)"], isSticky: true })
   expect(card_Resting.isShown).toBe(false)
   expect(card_Hovered).toEqual({ isShown: true, head: "T-12Working…Cancel", summary: "Keeps every error, names the attempt counter round, caps the delay, and stops once the caller aborts; drops the onRetry hook and the opening comment.", id: "T-12", figures: ["Proposals: 6 of 19 decided (10 to review · 1 revision requested · 2 revising · 5 accepted · 1 rejected)", "Scope Revisions: 7 staged · 3 running", "Level Revisions: "], documents: ["retry.js (this document): 4 of 13 decided (7 to review · 1 revision requested · 1 revising · 3 accepted · 1 rejected)", "README.md: 2 of 6 decided (3 to review · 1 revising · 2 accepted)"], parts: ["head_Card_htmlView", "summary_Card_htmlView", "section_Card_htmlView", "section_Card_htmlView", "section_Card_htmlView"] })
-  expect(card_Document).toEqual({ isShown: true, label: "retry.js", summary: "In retry.js: the loop's errors, its counter's name, its delays and its abort, and two things it no longer needs.", figures: ["Proposals: 4 of 13 decided (7 to review · 1 revision requested · 1 revising · 3 accepted · 1 rejected)", "Scope Revisions: 6 staged · 2 running", "Level Revisions: "], actions: ["Accept all (7)", "Starts all 5 requests staged in this file, its own and its proposals'", "Stops all 2 running in this file, its own and its proposals', staging them again"] })
+  expect(card_Document).toEqual({ isShown: true, label: "retry.js", summary: "In retry.js: the loop's errors, its counter's name, its delays and its abort, and two things it no longer needs.", figures: ["Proposals: 4 of 13 decided (7 to review · 1 revision requested · 1 revising · 3 accepted · 1 rejected)", "Scope Revisions: 6 staged · 2 running", "Level Revisions: "], actions: ["Accept all (7)", "Starts all 5 requests staged in this file, its own and its proposals'", "Stops all 2 with the agent in this file, its own and its proposals', staging them again"] })
   expect(header_Stopped).toEqual({ task: ["Tidy the retry loop", "YOUR_TURN", "Your turn"], parts: [], spinners: 0, document: ["retry.js", "YOUR_TURN", "Your turn"], card: ["Cancel", "Accept all (10)", "Start all (10)"], card_Document: ["Accept all (7)", "Start all (8)"], isSticky: true })
   expect(header_Started).toEqual({ task: ["Tidy the retry loop", "WORKING", "Working"], parts: [], spinners: 0, document: ["retry.js", "WORKING", "Working"], card: ["Cancel", "Accept all (10)", "Start all (2)", "Stop all (8)"], card_Document: ["Accept all (7)", "Stop all (8)"], isSticky: true })
   expect(header_Done).toEqual({ task: ["Tidy the retry loop", "YOUR_TURN", "Your turn"], parts: [], spinners: 0, document: ["retry.js", "YOUR_TURN", "Your turn"], card: ["Cancel", "Accept all (12)", "Start all (2)"], card_Document: ["Accept all (9)"], isSticky: true })
@@ -1472,7 +1474,10 @@ const stop_Group = await progressOf("Stop me.")
 const logged_Stops = (await opened_JavaScript.logged()).slice(count_Stopping).filter((entry) => "stopped" in entry)
 
 test("each scope's Stop: a document's request in progress, Stop after it, pressed, staged again, its Start again, the card kept open though the pointer's gone, its button gone with what it did; its group's Stop, by its heading, while any of them is in progress, putting them back; each asked of the host by its scope", () => {
-  expect(stop_Running).toEqual({ progress: "running", controls: ["Stop"] })
+  // with the agent, running, or waiting its turn behind another of the
+  // task's jobs still at work, one at a time within a task
+  expect(["running", "waiting"]).toContain(stop_Running.progress ?? "")
+  expect(stop_Running.controls).toEqual(["Stop"])
   expect(stop_Stopped).toEqual({ progress: "staged", controls: ["Edit", "Start", "Remove"] })
   expect(card_Kept).toBe(true)
   expect(head_Running).toEqual(["Stop", "Add"])
@@ -2450,7 +2455,7 @@ test("a chevron after the task's name opens the switcher's card, never with the 
   expect(cards_Name).toEqual(["visible", "hidden"])
   expect(options_Switch).toEqual([
     "TASK | Tidy the retry loop | 2 conflicts · 3 running | here",
-    "TASK | Log each retry | 1 running | ",
+    "TASK | Log each retry | 1 running · 1 waiting | ",
     "TASK | Rename attempts to tries | 1 staged | ",
     "TASK | Name the retry options | 2 staged | ",
     "TASK | Add a timeout option | 2 staged | ",
@@ -3501,4 +3506,85 @@ test("a conflict settled from its item: each says what the file did and offers i
   expect(footer_Settled).toBe("6 tasks: 4 need you, 2 working, 1 draft")
   expect(logged_Settle).toEqual([{ settled: "status", way: "BOTH" }, { settled: "base", way: "KEEP" }])
   expect(opened_Settle.errors).toEqual([])
+})
+
+// the agent, in each example: the JavaScript example's always listening,
+// the footer saying so, at work on one of Log each retry's requests, the
+// other waiting behind it, as one job's worked on at a time within a task;
+// switched to it, the one at work said running, the one waiting said
+// waiting; the one at work stopped, the one waiting taken, said running,
+// and a moment later done with, as an agent would. The Markdown example's
+// with no agent listening, the footer saying so: its task, and its other,
+// Waiting, its proposal's revision waiting, and its own request, started,
+// still waiting a while on
+const pressedVia = async (page: Awaited<ReturnType<typeof openExample>>["page"], control: ReturnType<Awaited<ReturnType<typeof openExample>>["page"]["locator"]>) => {
+  const box_More = await control.locator("xpath=ancestor::*[contains(concat(' ', @class, ' '), ' fold_Action_htmlView ')][1]").locator(":scope > .more_htmlView").boundingBox()
+  if (box_More !== null) await page.mouse.move(box_More.x + box_More.width / 2, box_More.y + box_More.height / 2)
+  await page.waitForTimeout(200)
+  const box = await control.boundingBox()
+  if (box === null) throw new Error("nothing to press")
+  await page.mouse.click(box.x + box.width / 2, box.y + box.height / 2)
+}
+const saidOf = (page: Awaited<ReturnType<typeof openExample>>["page"]) => page.evaluate(() => [...new Set([...document.querySelectorAll(".said_htmlView")].map((said) => `${said.querySelector(".notes_Said_htmlView")?.textContent ?? ""} | ${said.querySelector(".progress_Said_htmlView")?.textContent ?? ""}`))])
+const opened_Agent = await openExample(
+  "javascript",
+  1
+)
+await opened_Agent.page.waitForSelector(".htmlView_editor .line_htmlView")
+const footer_Listening = await opened_Agent.page.evaluate(() => document.querySelector(".agent_Footer_htmlView")?.textContent ?? null)
+await opened_Agent.page.hover(".trigger_Switcher_htmlView")
+await opened_Agent.page.waitForTimeout(300)
+await opened_Agent.page.click(".choice_Switcher_htmlView[data-switch=\"TASK\"][data-id=\"T-13\"]")
+await opened_Agent.page.mouse.move(5, 5)
+await opened_Agent.page.waitForTimeout(500)
+const said_Queued = await saidOf(opened_Agent.page)
+const state_Queued = await opened_Agent.page.evaluate(() => document.querySelector(".trigger_Task_htmlView")?.getAttribute("data-state") ?? null)
+await opened_Agent.page.hover(".trigger_Document_htmlView")
+await opened_Agent.page.waitForTimeout(300)
+await pressedVia(opened_Agent.page, opened_Agent.page.locator(".card_Document_htmlView .said_htmlView", { hasText: "Log each attempt that fails" }).locator(".stop_Said_htmlView"))
+await opened_Agent.page.mouse.move(5, 5)
+await opened_Agent.page.waitForTimeout(400)
+const said_Taken = await saidOf(opened_Agent.page)
+await opened_Agent.page.waitForTimeout(2000)
+const said_Done = await saidOf(opened_Agent.page)
+await opened_Agent.close()
+
+const opened_Away = await openExample(
+  "markdown",
+  1
+)
+await opened_Away.page.waitForSelector(".htmlView_editor .line_htmlView")
+await opened_Away.page.waitForTimeout(300)
+const away_Opened = await opened_Away.page.evaluate(() => ({
+  footer: document.querySelector(".agent_Footer_htmlView")?.textContent ?? null,
+  counts: document.querySelector(".tasks_Footer_htmlView")?.getAttribute("title") ?? null,
+  task: [document.querySelector(".trigger_Task_htmlView")?.getAttribute("data-state") ?? null, document.querySelector(".trigger_Task_htmlView .state_Task_htmlView")?.textContent ?? null],
+  revision: document.querySelector(".item_htmlView[data-source=\"timeout\"] .progress_Said_htmlView")?.textContent ?? null
+}))
+await opened_Away.page.hover(".trigger_Document_htmlView")
+await opened_Away.page.waitForTimeout(300)
+await pressedVia(opened_Away.page, opened_Away.page.locator(".card_Document_htmlView .said_htmlView .start_Said_htmlView").first())
+await opened_Away.page.mouse.move(5, 5)
+await opened_Away.page.waitForTimeout(2000)
+const said_Away = await opened_Away.page.evaluate(() => [...new Set([...document.querySelectorAll(".card_Document_htmlView .said_htmlView .progress_Said_htmlView")].map((progress) => progress.textContent))])
+await opened_Away.close()
+
+test("the JavaScript example's agent is always listening, the footer saying so; switched to Log each retry, its request at work's said running, the one waiting behind it waiting; the one at work stopped, the one waiting's taken, running, and a moment later done with", () => {
+  expect(footer_Listening).toBe("Agent listening")
+  expect(state_Queued).toBe("WORKING")
+  expect(said_Queued).toEqual(["Say in the README what's logged, and where. | waiting", "Log each attempt that fails, with its error and which round it was. | running"])
+  expect(said_Taken).toEqual(["Say in the README what's logged, and where. | running", "Log each attempt that fails, with its error and which round it was. | staged"])
+  expect(said_Done).toEqual(["Say in the README what's logged, and where. | done · nothing to change", "Log each attempt that fails, with its error and which round it was. | staged"])
+  expect(opened_Agent.errors).toEqual([])
+})
+
+test("the Markdown example has no agent listening, the footer saying so: its task Waiting, said after its name, its other task waiting too, its proposal's revision waiting; its own request, started, still waiting a while on", () => {
+  expect(away_Opened).toEqual({
+    footer: "No agent listening",
+    counts: "2 tasks: 2 need you, 2 waiting",
+    task: ["WAITING", "Waiting"],
+    revision: "waiting"
+  })
+  expect(said_Away).toEqual(["waiting"])
+  expect(opened_Away.errors).toEqual([])
 })

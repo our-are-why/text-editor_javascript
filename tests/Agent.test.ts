@@ -15,6 +15,7 @@ const wired = () => {
   const shell = new _Shell_({
     tasks: new _Tasks_({ model_Tasks: { tasks: [] }, observers: [] }),
     documents: new _Documents_({ model_Documents: { documents: [] }, observers: [] }),
+    jobs: [],
     observers: [{ changed: (state_Shell) => agent?.heard(state_Shell), started: () => {}, stopped: () => {}, landed: () => {} }]
   })
   agent = new _Agent_({ state_Shell: shell.state(), observers: [{ sent: (command_Shell) => shell.handle(command_Shell) }] })

@@ -12,7 +12,9 @@ import type {
   _Standing_Task_,
   _Landed_Round_,
   _Scope_Work_,
-  __BASE_Scope_Work_
+  __BASE_Scope_Work_,
+  _State_Task_,
+  _Status_Request_
 } from "../editor/index.ts"
 import type { _Task_Board_ } from "../board/index.ts"
 import {
@@ -21,6 +23,7 @@ import {
   countsOf__Task,
   type _Task_Tasks_,
   type _Request_Tasks_,
+  type _Status_Request_Tasks_,
   type _Scope_Tasks_,
   type _Words_Aim_,
   type _Aim_Request_Tasks_
@@ -29,10 +32,23 @@ import type {
   _Stale_Source_,
   _Selected_Text_
 } from "../../core/documents/index.ts"
-import { waitingOf__Task } from "../../core/shell/index.ts"
+import {
+  waitingOf__Task,
+  jobOf__Request,
+  type _Job_Shell_
+} from "../../core/shell/index.ts"
 
 export {
   taskHostOf__Task,
+  stateHostOf__Task,
+  type _Api___stateHostOf__Task_,
+  countsAgentOf__Task,
+  type _Api___countsAgentOf__Task_,
+  type _Counts_Agent_,
+  statusHostOf__Request,
+  type _Api___statusHostOf__Request_,
+  type _StatusMap__Status_Request_Tasks_,
+  STATUSMAP__STATUS_REQUEST_TASKS,
   type _Api___taskHostOf__Task_,
   referenceOf__Words,
   type _Api___referenceOf__Words_,
@@ -71,11 +87,13 @@ export {
 interface _Api___taskHostOf__Task_ {
   task: _Task_Tasks_
   name_Document: string
+  jobs: Array<_Job_Shell_>
 }
 
 function taskHostOf__Task({
   task,
-  name_Document
+  name_Document,
+  jobs
 }: _Api___taskHostOf__Task_): _Task_Host_ {
   const paths = pathsOf__Task({
     task
@@ -101,8 +119,9 @@ function taskHostOf__Task({
   return {
     id: task.id,
     name: task.name,
-    state: stateOf__Task({
-      task
+    state: stateHostOf__Task({
+      task,
+      jobs
     }),
     summary: task.summary,
     reason: "",
@@ -114,7 +133,8 @@ function taskHostOf__Task({
       }),
       counts_Requests: countsOf__Requests_Path({
         task,
-        path
+        path,
+        jobs
       }),
       isShown: path === name_Document,
       actions: count_Waiting(path) === 0
@@ -139,7 +159,11 @@ function taskHostOf__Task({
               words: request.aim.words
             })
           },
-          status: request.status.kind === "STAGED" ? "STAGED" : request.status.kind === "WITH_AGENT" ? "RUNNING" : "ADDRESSED",
+          status: statusHostOf__Request({
+            task,
+            request,
+            jobs
+          }),
           sources_Answering: request.status.kind === "ADDRESSED" && request.status.answer.kind === "PROPOSALS" ? request.status.answer.ids_Proposal : []
         }
       ]
@@ -163,6 +187,91 @@ function taskHostOf__Task({
         }
       ]
   }
+}
+
+interface _Api___stateHostOf__Task_ {
+  task: _Task_Tasks_
+  jobs: Array<_Job_Shell_>
+}
+
+function stateHostOf__Task({
+  task,
+  jobs
+}: _Api___stateHostOf__Task_): _State_Task_ {
+  const state = stateOf__Task({
+    task
+  })
+  if (state !== "WORKING") return state
+  return countsAgentOf__Task({
+    task,
+    jobs
+  }).count_Running > 0
+    ? "WORKING"
+    : "WAITING"
+}
+
+interface _Api___countsAgentOf__Task_ {
+  task: _Task_Tasks_
+  jobs: Array<_Job_Shell_>
+}
+
+interface _Counts_Agent_ {
+  count_Running: number
+  count_Waiting: number
+}
+
+function countsAgentOf__Task({
+  task,
+  jobs
+}: _Api___countsAgentOf__Task_): _Counts_Agent_ {
+  const statuses = task.requests.map((request) => statusHostOf__Request({
+    task,
+    request,
+    jobs
+  }))
+  return {
+    count_Running: statuses.filter((status) => status === "RUNNING").length,
+    count_Waiting: statuses.filter((status) => status === "WAITING").length
+  }
+}
+
+interface _Api___statusHostOf__Request_ {
+  task: _Task_Tasks_
+  request: _Request_Tasks_
+  jobs: Array<_Job_Shell_>
+}
+
+function statusHostOf__Request({
+  task,
+  request,
+  jobs
+}: _Api___statusHostOf__Request_): _Status_Request_ {
+  const statusOf = STATUSMAP__STATUS_REQUEST_TASKS[request.status.kind]
+  return statusOf({
+    task,
+    request,
+    jobs
+  })
+}
+
+type _StatusMap__Status_Request_Tasks_ = {
+  [Kind in _Status_Request_Tasks_["kind"]]: (api_Status: _Api___statusHostOf__Request_) => _Status_Request_
+}
+
+const STATUSMAP__STATUS_REQUEST_TASKS: _StatusMap__Status_Request_Tasks_ = {
+  STAGED: () => "STAGED",
+  WITH_AGENT: ({
+    task,
+    request,
+    jobs
+  }) => jobOf__Request({
+    jobs,
+    id_Task: task.id,
+    id_Request: request.id
+  })?.state.kind === "QUEUED"
+    ? "WAITING"
+    : "RUNNING",
+  ADDRESSED: () => "ADDRESSED"
 }
 
 interface _Api___referenceOf__Words_ {
@@ -214,19 +323,28 @@ function countsOf__Proposals_Path({
 interface _Api___countsOf__Requests_Path_ {
   task: _Task_Tasks_
   path: string
+  jobs: Array<_Job_Shell_>
 }
 
 function countsOf__Requests_Path({
   task,
-  path
+  path,
+  jobs
 }: _Api___countsOf__Requests_Path_): _Counts_Requests_ {
-  const requests_Path = task.requests.filter((request) => pathOf__Request({
-    task,
-    request
-  }) === path)
+  const statuses = task.requests
+    .filter((request) => pathOf__Request({
+      task,
+      request
+    }) === path)
+    .map((request) => statusHostOf__Request({
+      task,
+      request,
+      jobs
+    }))
   return {
-    STAGED: requests_Path.filter((request) => request.status.kind === "STAGED").length,
-    RUNNING: requests_Path.filter((request) => request.status.kind === "WITH_AGENT").length
+    STAGED: statuses.filter((status) => status === "STAGED").length,
+    WAITING: statuses.filter((status) => status === "WAITING").length,
+    RUNNING: statuses.filter((status) => status === "RUNNING").length
   }
 }
 
@@ -251,12 +369,14 @@ interface _Api___proposalsHostOf__Task_ {
   task: _Task_Tasks_
   content: _Content_Task_
   name_Document: string
+  jobs: Array<_Job_Shell_>
 }
 
 function proposalsHostOf__Task({
   task,
   content,
-  name_Document
+  name_Document,
+  jobs
 }: _Api___proposalsHostOf__Task_): Array<_Proposal_Host_> {
   return [
     PROPOSAL_YOURS,
@@ -276,7 +396,11 @@ function proposalsHostOf__Task({
               reference: referenceOf__Words({
                 words: request.aim.words
               }),
-              status: request.status.kind === "WITH_AGENT" ? "RUNNING" : "STAGED"
+              status: statusHostOf__Request({
+                task,
+                request,
+                jobs
+              })
             }
           ]
           : []),
@@ -367,20 +491,27 @@ const SHOWNMAP_STATE: _ShownMap__State_ = {
 interface _Api___standingOf__Tasks_ {
   task: _Task_Tasks_
   name_Document: string
+  jobs: Array<_Job_Shell_>
 }
 
 function standingOf__Tasks({
   task,
-  name_Document
+  name_Document,
+  jobs
 }: _Api___standingOf__Tasks_): _Standing_Task_ {
   const counts = countsOf__Task({
     task
   })
+  const counts_Agent = countsAgentOf__Task({
+    task,
+    jobs
+  })
   return {
     id: task.id,
     name: task.name,
-    state: stateOf__Task({
-      task
+    state: stateHostOf__Task({
+      task,
+      jobs
     }),
     isOnDocument: pathsOf__Task({
       task
@@ -388,28 +519,36 @@ function standingOf__Tasks({
     count_Undecided: counts.count_Undecided,
     count_Conflicts: counts.count_Conflicts,
     count_Staged: counts.count_Staged,
-    count_Running: counts.count_Running
+    count_Running: counts_Agent.count_Running,
+    count_Waiting: counts_Agent.count_Waiting
   }
 }
 
 interface _Api___boardedOf__Tasks_ {
   task: _Task_Tasks_
   count_Editors: number
+  jobs: Array<_Job_Shell_>
 }
 
 function boardedOf__Tasks({
   task,
-  count_Editors
+  count_Editors,
+  jobs
 }: _Api___boardedOf__Tasks_): _Task_Board_ {
   const counts = countsOf__Task({
     task
+  })
+  const counts_Agent = countsAgentOf__Task({
+    task,
+    jobs
   })
   const isOpen = task.kind === "OPEN"
   return {
     id: task.id,
     name: task.name,
-    state: stateOf__Task({
-      task
+    state: stateHostOf__Task({
+      task,
+      jobs
     }),
     paths: isOpen
       ? pathsOf__Task({
@@ -418,7 +557,8 @@ function boardedOf__Tasks({
       : [],
     count_Undecided: isOpen ? counts.count_Undecided : 0,
     count_Conflicts: isOpen ? counts.count_Conflicts : 0,
-    count_Running: isOpen ? counts.count_Running : 0,
+    count_Running: isOpen ? counts_Agent.count_Running : 0,
+    count_Waiting: isOpen ? counts_Agent.count_Waiting : 0,
     count_Staged: isOpen ? counts.count_Staged : 0,
     count_Editors
   }

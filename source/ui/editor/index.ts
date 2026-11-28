@@ -32,7 +32,8 @@ import {
   viewModelOf__Model,
   LABELMAP__STATE_TASK,
   NOTEMAP__STATE_TASK,
-  partsOf__Counts_Task
+  partsOf__Counts_Task,
+  ISAGENTSMAP__KIND_PART
 } from "./Projection_TextEditor.ts"
 import {
   type _Action_Item_,
@@ -55,6 +56,7 @@ import {
   type _Range_Lines_,
   type _State_Proposal_,
   type _State_Task_,
+  type _Status_Request_,
   type _Kind_End_,
   type _Part_Task_
 } from "./ViewModel_TextEditor.ts"
@@ -94,6 +96,7 @@ export {
   LABELMAP__STATE_TASK,
   NOTEMAP__STATE_TASK,
   partsOf__Counts_Task,
+  ISAGENTSMAP__KIND_PART,
   type _Action_Item_,
   type _Decision_Proposal_,
   MODULE_PLAINTEXT,
@@ -114,6 +117,7 @@ export {
   type _Range_Lines_,
   type _State_Proposal_,
   type _State_Task_,
+  type _Status_Request_,
   type _Kind_End_,
   type _Part_Task_,
   MODULE_KEYBOARD,

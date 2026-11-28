@@ -2,6 +2,7 @@ import {
   LABELMAP__STATE_TASK,
   NOTEMAP__STATE_TASK,
   partsOf__Counts_Task,
+  ISAGENTSMAP__KIND_PART,
   type _State_Task_,
   type _Part_Task_
 } from "../editor/index.ts"
@@ -33,6 +34,7 @@ interface _Task_Board_ {
   count_Undecided: number
   count_Conflicts: number
   count_Running: number
+  count_Waiting: number
   count_Staged: number
   count_Editors: number
 }
@@ -97,6 +99,7 @@ type _KindMap__State_Task_ = {
 
 const KINDMAP__STATE_TASK: _KindMap__State_Task_ = {
   DRAFT: () => "DRAFTS",
+  WAITING: (task_Board) => kindOf__Task_Open(task_Board),
   WORKING: (task_Board) => kindOf__Task_Open(task_Board),
   YOUR_TURN: (task_Board) => kindOf__Task_Open(task_Board),
   APPLIED: () => "RESOLVED",
@@ -107,7 +110,7 @@ const KINDMAP__STATE_TASK: _KindMap__State_Task_ = {
 function kindOf__Task_Open(
   task_Board: _Task_Board_
 ): _Column_Board_["kind"] {
-  return partsOf__Counts_Task(task_Board).some((part_Task) => part_Task.kind !== "AGENT") ? "YOURS" : "AGENT"
+  return partsOf__Counts_Task(task_Board).some((part_Task) => !ISAGENTSMAP__KIND_PART[part_Task.kind]) ? "YOURS" : "AGENT"
 }
 
 interface _Api___tileOf__Task_Board_ {
@@ -150,6 +153,10 @@ const MOREMAP__STATE_TASK: _ActionsMap__State_Task_ = {
     task_Board,
     kind_Cancel: "DISCARD"
   }),
+  WAITING: (task_Board) => actionsOf__Task_Open({
+    task_Board,
+    kind_Cancel: "CANCEL"
+  }),
   WORKING: (task_Board) => actionsOf__Task_Open({
     task_Board,
     kind_Cancel: "CANCEL"
@@ -181,7 +188,7 @@ function actionsOf__Task_Open({
           label: `Start all (${task_Board.count_Staged})`
         }
       ],
-    ...task_Board.count_Running === 0
+    ...task_Board.count_Running + task_Board.count_Waiting === 0
       ? []
       : [
         {
@@ -189,7 +196,7 @@ function actionsOf__Task_Open({
           label: "Stop"
         }
       ],
-    ...task_Board.count_Conflicts + task_Board.count_Undecided + task_Board.count_Staged + task_Board.count_Running > 0
+    ...task_Board.count_Conflicts + task_Board.count_Undecided + task_Board.count_Staged + task_Board.count_Running + task_Board.count_Waiting > 0
       ? []
       : [
         {

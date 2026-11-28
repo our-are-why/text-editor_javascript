@@ -9,7 +9,7 @@ function taskOf(
   state: _State_Task_,
   more: Partial<_Task_Board_>
 ): _Task_Board_ {
-  return { id, name: `Task ${id}`, state, paths: [], count_Undecided: 0, count_Conflicts: 0, count_Running: 0, count_Staged: 0, count_Editors: 0, ...more }
+  return { id, name: `Task ${id}`, state, paths: [], count_Undecided: 0, count_Conflicts: 0, count_Running: 0, count_Waiting: 0, count_Staged: 0, count_Editors: 0, ...more }
 }
 
 // the project's tasks, one in every state, and open ones with every mix of

@@ -1855,12 +1855,25 @@
   }
 }
 
+/* waiting for an agent to take the work, the name still, nothing being at
+   work yet, its word shown after it, faded, as working's is where motion's
+   reduced, the header having no other way to say it */
+.htmlView_editor :is(.trigger_Task_htmlView[data-state="WAITING"] > .state_Task_htmlView, .trigger_Document_htmlView[data-state="WAITING"] > .state_Document_htmlView) {
+  position: static;
+  width: auto;
+  height: auto;
+  margin-left: 0.45rem;
+  overflow: visible;
+  clip-path: none;
+}
+
 /* the task's mark, before each task's name in the switcher's list,
    where tasks are scanned, not in the header, where the name says it; by
    where it stands: a
    draft, a dotted ring; the agent at work on it, a spinner turning, as a
    proposal being revised turns its arc, still where motion's asked to be
-   reduced; your turn, a dot, what's yours to decide; applied, a check;
+   reduced; waiting for an agent to take it, the spinner's arc, still and
+   fainter, the work about to begin; your turn, a dot, what's yours to decide; applied, a check;
    canceled, or a draft discarded, a cross, fainter than its word, as a
    withdrawn proposal's is; each in the task's ink */
 .htmlView_editor .mark_Task_htmlView {
@@ -1884,8 +1897,9 @@
    on what says it, a task's mark in the switcher and its word in a card, each carrying the
    state, `data-state`, not the part of the header holding its card,
    which, drawn again for a new state, would close the card open under the
-   pointer or the keyboard: the agent at work, the revision's plum; your
-   turn, or done, decided, the proposals' indigo; a draft, or canceled,
+   pointer or the keyboard: the agent at work, the revision's plum;
+   waiting for one, the plum, fainter; your turn, or done, decided, the
+   proposals' indigo; a draft, or canceled,
    nothing under way, the grey a withdrawn proposal's in */
 .htmlView_editor :is(.mark_Task_htmlView, .state_Card_htmlView) {
   --ink_Mark_htmlView: var(--view-state-withdrawn, var(--view-status-ink, color-mix(in srgb, CanvasText 60%, transparent)));
@@ -1893,6 +1907,10 @@
 
 .htmlView_editor :is(.mark_Task_htmlView, .state_Card_htmlView)[data-state="WORKING"] {
   --ink_Mark_htmlView: var(--view-state-revising, var(--view-status-ink, var(--accent_revision_htmlView)));
+}
+
+.htmlView_editor :is(.mark_Task_htmlView, .state_Card_htmlView)[data-state="WAITING"] {
+  --ink_Mark_htmlView: color-mix(in srgb, var(--view-state-revising, var(--view-status-ink, var(--accent_revision_htmlView))) 60%, transparent);
 }
 
 .htmlView_editor :is(.mark_Task_htmlView, .state_Card_htmlView):is([data-state="YOUR_TURN"], [data-state="DONE"], [data-state="APPLIED"]) {
@@ -1903,7 +1921,7 @@
   border: 1.5px dotted var(--ink_Mark_htmlView);
 }
 
-.htmlView_editor .mark_Task_htmlView[data-state="WORKING"]::before {
+.htmlView_editor .mark_Task_htmlView:is([data-state="WORKING"], [data-state="WAITING"])::before {
   border: 1.5px solid var(--ink_Mark_htmlView);
   border-right-color: transparent;
 }
@@ -2005,9 +2023,11 @@
    for what else a footer holds, the project's open tasks counted by what
    they're waiting on, each count after its mark, in its ink: needing you,
    the dot of your turn; conflicts, a warning, in the file's teal; at
-   work, the spinner, turning as the task's does; drafts, the dotted ring;
-   none of them, nothing; the counts in words for what reads the page
-   aloud, and as its title */
+   work, the spinner, turning as the task's does; waiting for an agent,
+   the spinner's arc, still and fainter, as the task's is; drafts, the
+   dotted ring; none of them, nothing; the counts in words for what reads
+   the page aloud, and as its title; and at its left, whether an agent's
+   listening, below */
 .htmlView_editor .footer_htmlView {
   position: sticky;
   bottom: 0;
@@ -2324,7 +2344,7 @@
   color: color-mix(in srgb, var(--accent_proposals_htmlView) 85%, CanvasText);
 }
 
-.htmlView_editor .part_Option_htmlView:is([data-kind="STAGED"], [data-kind="AGENT"]) {
+.htmlView_editor .part_Option_htmlView:is([data-kind="STAGED"], [data-kind="AGENT"], [data-kind="WAITING"]) {
   color: color-mix(in srgb, var(--accent_revision_htmlView) 85%, CanvasText);
 }
 
@@ -2379,6 +2399,10 @@
   --ink_Count_htmlView: var(--view-state-revising, var(--view-status-ink, var(--accent_revision_htmlView)));
 }
 
+.htmlView_editor .count_Footer_htmlView[data-kind="WAITING"] {
+  --ink_Count_htmlView: color-mix(in srgb, var(--view-state-revising, var(--view-status-ink, var(--accent_revision_htmlView))) 60%, transparent);
+}
+
 .htmlView_editor .mark_Count_htmlView {
   display: flex;
   flex: none;
@@ -2421,8 +2445,48 @@
   }
 }
 
+.htmlView_editor [data-kind="WAITING"] > .mark_Count_htmlView::before {
+  border: 1.5px solid var(--ink_Count_htmlView);
+  border-right-color: transparent;
+}
+
 .htmlView_editor [data-kind="DRAFTS"] > .mark_Count_htmlView::before {
   border: 1.5px dotted var(--ink_Count_htmlView);
+}
+
+/* whether an agent's listening, at the footer's start, said whenever
+   there are tasks, so a Start that's waiting says why nothing's moving:
+   an agent having called within the minute, its dot filled, none having,
+   a ring; muted, as the header's counts are, and plain words, not a
+   button, as there's nothing to press */
+.htmlView_editor .agent_Footer_htmlView {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  margin-right: auto;
+  color: var(--view-placeholder-ink, color-mix(in srgb, CanvasText 58%, transparent));
+}
+
+.htmlView_editor .mark_Agent_htmlView {
+  display: flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: 1em;
+  height: 1em;
+}
+
+.htmlView_editor .mark_Agent_htmlView::before {
+  content: "";
+  box-sizing: border-box;
+  width: 0.5em;
+  height: 0.5em;
+  border: 1.5px solid currentColor;
+  border-radius: 50%;
+}
+
+.htmlView_editor .agent_Footer_htmlView[data-listening] > .mark_Agent_htmlView::before {
+  background: currentColor;
 }
 
 .htmlView_editor .words_Footer_htmlView {
