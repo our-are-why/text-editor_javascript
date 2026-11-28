@@ -52,6 +52,8 @@ export {
   type _Api___unframedOf__Changes_,
   isFramed__Lines,
   type _Api___isFramed__Lines_,
+  indexIn__Copy,
+  type _Api___indexIn__Copy_,
   framesOf__Copy,
   type _Api___framesOf__Copy_,
   movedOf__Changes,
@@ -629,6 +631,35 @@ function isFramed__Lines({
   return line > last
 }
 
+interface _Api___indexIn__Copy_ {
+  given: _Given_Job_
+  segments: Array<_Segment_Given_>
+  index_Document: number
+}
+
+function indexIn__Copy({
+  given,
+  segments,
+  index_Document
+}: _Api___indexIn__Copy_): number {
+  const indexIn__Document = (position: _Position_Text_) => indexOf__Position({
+    text_Model: given.text_Document,
+    position
+  })
+  for (const segment of segments) {
+    const piece = segment.piece
+    if (piece.kind !== "DOCUMENT") continue
+    const from = indexIn__Document(piece.range.from)
+    if (from <= index_Document && index_Document <= indexIn__Document(piece.range.to)) return segment.from + index_Document - from
+  }
+  for (const segment of segments) {
+    const piece = segment.piece
+    const range = piece.kind === "CHANGE" ? given.proposed.find((changes_Source) => changes_Source.source === piece.source)?.changes[piece.index]?.range : undefined
+    if (range !== undefined && indexIn__Document(range.from) <= index_Document && index_Document <= indexIn__Document(range.to)) return segment.from
+  }
+  return 0
+}
+
 interface _Api___framesOf__Copy_ {
   givens: Array<_Given_Job_>
 }
@@ -644,23 +675,13 @@ function framesOf__Copy({
       text_Model: given.text_Document,
       position
     })
-    const indexIn__Given = (index_Document: number) => {
-      for (const segment of segments) {
-        const piece = segment.piece
-        if (piece.kind !== "DOCUMENT") continue
-        const from = indexIn__Document(piece.range.from)
-        if (from <= index_Document && index_Document <= indexIn__Document(piece.range.to)) return segment.from + index_Document - from
-      }
-      for (const segment of segments) {
-        const piece = segment.piece
-        const range = piece.kind === "CHANGE" ? given.proposed.find((changes_Source) => changes_Source.source === piece.source)?.changes[piece.index]?.range : undefined
-        if (range !== undefined && indexIn__Document(range.from) <= index_Document && index_Document <= indexIn__Document(range.to)) return segment.from
-      }
-      return 0
-    }
     const lineOf = (index_Document: number) => positionOf__Index({
       text_Model: given.text,
-      index: indexIn__Given(index_Document)
+      index: indexIn__Copy({
+        given,
+        segments,
+        index_Document
+      })
     }).line + 1
     return given.frames.map((frame) => ({
       path: given.path,

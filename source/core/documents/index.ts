@@ -67,6 +67,17 @@ import {
   indexOf__Position,
   positionOf__Index
 } from "./Model_TextEditor.ts"
+import {
+  framesOf__Changes,
+  linesOf__Span,
+  linesOf__Landing,
+  lineOf__Point,
+  type _Sourced_Change_,
+  type _Frame_Drawn_,
+  type _End_Drawn_,
+  type _Kind_End_Drawn_,
+  type _Lines_End_
+} from "./Frames_TextEditor.ts"
 
 export {
   _Documents_,
@@ -131,5 +142,14 @@ export {
   type _Kind_Run_,
   keysOf__Text,
   indexOf__Position,
-  positionOf__Index
+  positionOf__Index,
+  framesOf__Changes,
+  linesOf__Span,
+  linesOf__Landing,
+  lineOf__Point,
+  type _Sourced_Change_,
+  type _Frame_Drawn_,
+  type _End_Drawn_,
+  type _Kind_End_Drawn_,
+  type _Lines_End_
 }

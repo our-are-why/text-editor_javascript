@@ -4,7 +4,7 @@ import { _Documents_, parseTexts_Line, flatOf__Text, textWith__Sources, refusals
 import { _Host_ } from "../source/ui/host/index.ts"
 import { viewModelOf__Model, MODULE_PLAINTEXT } from "../source/ui/editor/index.ts"
 import { MODULE_READING_TEXT } from "../source/ui/editor/readings/text.ts"
-import { _Shell_, changesOf__Copy, stampOf__Changes, landingOf__Grouping, movedOf__Changes, framesOf__Copy, LANDING_NONE, type _Grouping_Job_, type _Job_Shell_, type _Landing_Handed_, type _File_Copy_, type _Given_Job_, type _Move_Grouped_, type _Proposal_Grouped_ } from "../source/core/shell/index.ts"
+import { _Shell_, changesOf__Copy, stampOf__Changes, landingOf__Grouping, movedOf__Changes, framesOf__Copy, previewOf__Landing, LANDING_NONE, type _Grouping_Job_, type _Job_Shell_, type _Landing_Handed_, type _File_Copy_, type _Given_Job_, type _Move_Grouped_, type _Proposal_Grouped_ } from "../source/core/shell/index.ts"
 
 // an agent's working copy as the core sees it: what it's given, each file
 // of its task as the task has it; what it changed, numbered, narrowed to
@@ -198,8 +198,9 @@ const movesLanded = (text_Before: string, text_After: string, sides: (changes: A
   const clashes = checked.issues.length > 0 ? [] : shell.clashesOf({ id_Task: "T-1", landing: checked.landing })
   if (checked.issues.length === 0 && clashes.length === 0) shell.handle({ kind: "HAND_BACK", id_Job: "j-1", landing: checked.landing, note: "" })
   const head = shell.taskOf("T-1")?.heads.find((head_Each) => head_Each.path === "moves.js")
+  const preview = previewOf__Landing({ task: shell.taskOf("T-1")!, job_Shell, files, landing: checked.landing })
   const textWith = (sources: Array<string>) => flatOf__Text(textWith__Sources({ model_TextEditor: { document: shell.documentOf("moves.js").text, proposed: head?.proposed ?? [] }, sources }))
-  return { shell, changes, moved, checked, clashes, head, textWith }
+  return { shell, changes, moved, checked, clashes, head, preview, textWith }
 }
 const sidesOf = (changes: Array<{ number: number, before: string, after: string }>): Array<_Move_Grouped_> => {
   const removal = changes.filter((change) => change.after === "").toSorted((change, change_Other) => change_Other.before.length - change.before.length)[0]
@@ -313,6 +314,45 @@ test("an agent's change on lines no frame holds refused till it frames it, in it
   expect(frames_Second).toEqual([{ first: 0, last: 3 }])
   expect(framesOf(shell)).toEqual([{ first: 0, last: 4 }])
   expect([update_Host.ranges_Frame, viewModel.blocks.flatMap((block) => block.kind === "FRAME" ? [block.range] : [])]).toEqual([[{ first: 1, last: 5 }], [{ first: 1, last: 5 }]])
+})
+
+test("a preview, how a hand back will be drawn: each file's frames its proposals are in, in the copy's lines, each frame's proposals, the person's edits and the task's beside the agent's, and each change, what becomes what, what's put in or taken out, what moves where and lands from where, and whose change it's inside", () => {
+  const shell = shellMade()
+  shell.handle({ kind: "DRAFT", request: madeOf("r-1", "Tidy it."), isStarting: false, path: "retry.js" })
+  yoursBy(shell, [replaceOf(0, 0, 0, "// top\n")])
+  const job = jobFor(shell, "r-2")
+  const given = job.givens[0]!
+  const files: Array<_File_Copy_> = [{ given, effect: "CHANGE", text_Copy: textOf(flatOf__Text(given.text).replace("= 5;", "= 3;").replace("export function retry() {}\n", "")) }]
+  const changes = changesOf__Copy({ files })
+  const checked = landingOf__Grouping({ task: shell.taskOf("T-1")!, job_Shell: job.job_Shell, files, unplaceables: [], grouping: { stamp: stampOf__Changes({ changes }), moves: [], frames: [{ path: "retry.js", first: 2, last: 3 }, { path: "retry.js", first: 4, last: 5 }], proposals: [{ aim: { kind: "NEW" }, title: "Fewer attempts", why: "Why.", numbers: [1], ids_Request: ["r-2"] }, { aim: { kind: "NEW" }, title: "Drop retry", why: "Why.", numbers: [2], ids_Request: ["r-2"] }], nothings: [] } })
+  const preview = previewOf__Landing({ task: shell.taskOf("T-1")!, job_Shell: job.job_Shell, files, landing: checked.landing })
+  const shell_Open = shellMade()
+  shell_Open.handle({ kind: "DRAFT", request: madeOf("r-1", "Tidy it."), isStarting: true, path: "retry.js" })
+  landedBy(shell_Open, "j-1", "p", [replaceOf(0, 6, 18, "TRIES = 3")])
+  const job_Open = jobFor(shell_Open, "r-2")
+  const files_Open: Array<_File_Copy_> = [{ given: job_Open.givens[0]!, effect: "CHANGE", text_Copy: textOf(TEXT.replace("ATTEMPTS =", "RETRIES =")) }]
+  const changes_Open = changesOf__Copy({ files: files_Open })
+  const checked_Open = landingOf__Grouping({ task: shell_Open.taskOf("T-1")!, job_Shell: job_Open.job_Shell, files: files_Open, unplaceables: [], grouping: { stamp: stampOf__Changes({ changes: changes_Open }), moves: [], frames: framesWholeOf(files_Open), proposals: [{ aim: { kind: "NEW" }, title: "Say retries", why: "Why.", numbers: [1], ids_Request: ["r-2"] }], nothings: [] } })
+  const preview_Open = previewOf__Landing({ task: shell_Open.taskOf("T-1")!, job_Shell: job_Open.job_Shell, files: files_Open, landing: checked_Open.landing })
+  const helper = "const x = 1\n\nfunction helper() {\n  return x\n}\n\nexport function main() {\n  return helper()\n}\n"
+  const helper_Moved = "const x = 1\n\nexport function main() {\n  return helper()\n}\n\nfunction helper() {\n  return x\n}\n"
+  const down = movesLanded(helper, helper_Moved, sidesOf, (moves) => [{ title: "Helpers after", numbers: moves.flatMap((move) => move.numbers) }])
+  const linesOf = (first: number, last: number) => ({ first, last })
+  expect([checked.issues, checked_Open.issues, down.checked.issues]).toEqual([[], [], []])
+  expect(preview).toEqual([{ path: "retry.js", frames: [
+    { lines: linesOf(2, 3), items: [
+      { source: "yours", title: "Your edits", whose: "YOURS", effect: "CHANGE", changes: [{ kind: "REPLACE", lines: linesOf(2, 1), before: "", after: "// top\n", titles_Around: [] }] },
+      { source: "j-1.1", title: "Fewer attempts", whose: "NEW", effect: "CHANGE", changes: [{ kind: "REPLACE", lines: linesOf(2, 2), before: "5", after: "3", titles_Around: [] }] }
+    ] },
+    { lines: linesOf(4, 5), items: [{ source: "j-1.2", title: "Drop retry", whose: "NEW", effect: "CHANGE", changes: [{ kind: "REPLACE", lines: linesOf(4, 5), before: "\nexport function retry() {}", after: "", titles_Around: [] }] }] }
+  ] }])
+  expect(preview_Open).toEqual([{ path: "retry.js", frames: [{ lines: linesOf(1, 5), items: [
+    { source: "p", title: "p", whose: "OPEN", effect: "CHANGE", changes: [{ kind: "REPLACE", lines: linesOf(1, 1), before: "ATTEMPTS = 5", after: "TRIES = 3", titles_Around: [] }] },
+    { source: "j-2.1", title: "Say retries", whose: "NEW", effect: "CHANGE", changes: [{ kind: "REPLACE", lines: linesOf(1, 1), before: "ATTEMPTS", after: "RETRIES", titles_Around: ["p"] }] }
+  ] }] }])
+  expect(down.preview).toEqual([{ path: "moves.js", frames: [{ lines: linesOf(1, 10), items: [
+    { source: "j-1.1", title: "Helpers after", whose: "NEW", effect: "CHANGE", changes: [{ kind: "MOVE", lines: linesOf(2, 5), lines_At: linesOf(10, 9) }, { kind: "LANDING", lines: linesOf(10, 9), lines_From: linesOf(2, 5) }] }
+  ] }] }])
 })
 
 test("a frame said wrong, each said: on a file the job wasn't given and didn't change, and on lines that aren't the file's", () => {

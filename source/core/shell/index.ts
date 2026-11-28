@@ -50,6 +50,15 @@ import {
   type _Proposal_Handed_,
   type _Nothing_Handed_
 } from "./Copy_Shell.ts"
+import {
+  previewOf__Landing,
+  type _File_Preview_,
+  type _Frame_Preview_,
+  type _Item_Preview_,
+  type _Whose_Preview_,
+  type _Change_Preview_,
+  type _Lines_Preview_
+} from "./Preview_Shell.ts"
 import type {
   _Message_Page_,
   __BASE_Message_Page_,
@@ -107,5 +116,12 @@ export {
   type _Message_Page_,
   type __BASE_Message_Page_,
   type _Message_Shell_,
-  type _STATE_Message_Shell_
+  type _STATE_Message_Shell_,
+  previewOf__Landing,
+  type _File_Preview_,
+  type _Frame_Preview_,
+  type _Item_Preview_,
+  type _Whose_Preview_,
+  type _Change_Preview_,
+  type _Lines_Preview_
 }

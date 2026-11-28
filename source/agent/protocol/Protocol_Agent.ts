@@ -1,5 +1,6 @@
 import {
   changesOf__Copy,
+  previewOf__Landing,
   movedOf__Changes,
   framesOf__Copy,
   givensOf__Copy,
@@ -19,7 +20,12 @@ import {
   type _Proposal_Grouped_,
   type _Nothing_Grouped_,
   type _Checked_Landing_,
-  type _Landing_Handed_
+  type _Landing_Handed_,
+  type _File_Preview_,
+  type _Item_Preview_,
+  type _Whose_Preview_,
+  type _Change_Preview_,
+  type _Lines_Preview_
 } from "../../core/shell/index.ts"
 import type {
   _Task_Tasks_,
@@ -199,7 +205,7 @@ function answerOf__Offer({
   }
 }
 
-type _Answer_Agent_ = _JOB_Answer_Agent_ | _NOTHING_YET__Answer_Agent_ | _CLOSED_Answer_Agent_ | _TAKEN_Answer_Agent_ | _STILL_ON__Answer_Agent_ | _CHANGES_Answer_Agent_ | _VERIFIED_Answer_Agent_ | _STOPPED_Answer_Agent_ | _LAPSED_Answer_Agent_ | _HANDED_BACK__Answer_Agent_ | _REFUSED_Answer_Agent_
+type _Answer_Agent_ = _JOB_Answer_Agent_ | _NOTHING_YET__Answer_Agent_ | _CLOSED_Answer_Agent_ | _TAKEN_Answer_Agent_ | _STILL_ON__Answer_Agent_ | _CHANGES_Answer_Agent_ | _VERIFIED_Answer_Agent_ | _PREVIEW_Answer_Agent_ | _STOPPED_Answer_Agent_ | _LAPSED_Answer_Agent_ | _HANDED_BACK__Answer_Agent_ | _REFUSED_Answer_Agent_
 
 interface __BASE_Answer_Agent_<Kind extends string> {
   kind: Kind
@@ -247,6 +253,28 @@ interface _VERIFIED_Answer_Agent_ extends __BASE_Answer_Agent_<"VERIFIED"> {
   reports: Array<string>
 }
 
+interface _PREVIEW_Answer_Agent_ extends __BASE_Answer_Agent_<"PREVIEW"> {
+  issues: Array<string>
+  files: Array<_File_Said_>
+}
+
+interface _File_Said_ {
+  path: string
+  frames: Array<_Frame_Said_>
+}
+
+interface _Frame_Said_ {
+  lines: string
+  proposals: Array<_Proposal_Said_Preview_>
+}
+
+interface _Proposal_Said_Preview_ {
+  proposal: string
+  whose: string
+  file: string
+  changes: Array<string>
+}
+
 interface _STOPPED_Answer_Agent_ extends __BASE_Answer_Agent_<"STOPPED"> {}
 
 interface _LAPSED_Answer_Agent_ extends __BASE_Answer_Agent_<"LAPSED"> {}
@@ -259,7 +287,7 @@ interface _REFUSED_Answer_Agent_ extends __BASE_Answer_Agent_<"REFUSED"> {
   issues: Array<string>
 }
 
-type _Kind_Call_ = "CHECK" | "CHANGES" | "VERIFY" | "DONE"
+type _Kind_Call_ = "CHECK" | "CHANGES" | "VERIFY" | "PREVIEW" | "DONE"
 
 type _AnswerMaps__Call_ = {
   [Kind in _Kind_Call_]: _AnswerMap__Standing_Job_
@@ -465,8 +493,8 @@ const VERIFYMAP__STANDING_JOB: _AnswerMap__Standing_Job_ = {
           issues,
           reports: checked.reports,
           next: issues.length === 0
-            ? `It's good to hand back: run \`${command_Agent} done ${job_Shell.id} "<a note on the job as a whole>" <the same file>\`.`
-            : `Fix each issue, in your copy or in your proposals, then verify again; ask \`${command_Agent} changes ${job_Shell.id}\` again if you've changed the copy since, as its numbers and stamp move with it.`
+            ? `It's good to hand back: see how it'll be drawn for review with \`${command_Agent} preview ${job_Shell.id} <the same file>\` if you like, then run \`${command_Agent} done ${job_Shell.id} "<a note on the job as a whole>" <the same file>\`.`
+            : `Fix each issue, in your copy or in your proposals, then verify again, or preview how they'll be drawn with \`${command_Agent} preview ${job_Shell.id} <file>\`; ask \`${command_Agent} changes ${job_Shell.id}\` again if you've changed the copy since, as its numbers and stamp move with it.`
         }
       }
     }
@@ -610,10 +638,146 @@ const DONEMAP__STANDING_JOB: _AnswerMap__Standing_Job_ = {
   })
 }
 
+const PREVIEWMAP__STANDING_JOB: _AnswerMap__Standing_Job_ = {
+  QUEUED: CHECKMAP__STANDING_JOB.QUEUED,
+  OFFERED: CHANGESMAP__STANDING_JOB.OFFERED,
+  BEING_WORKED_ON: ({
+    task,
+    job_Shell,
+    said,
+    copy,
+    clashesOf,
+    command_Agent
+  }) => answeredOf__Copy({
+    task,
+    job_Shell,
+    copy,
+    command_Agent,
+    read: (copy_Made) => {
+      const said_Grouping = groupingOf__Said({
+        said
+      })
+      const checked = landingOf__Grouping({
+        task,
+        job_Shell,
+        files: copy_Made.files,
+        unplaceables: copy_Made.unplaceables,
+        grouping: said_Grouping.grouping
+      })
+      const issues = issuesOf__Checked({
+        said_Grouping,
+        checked,
+        clashesOf
+      })
+      return {
+        commands_Shell: [],
+        answer_Agent: {
+          kind: "PREVIEW",
+          issues,
+          files: previewOf__Landing({
+            task,
+            job_Shell,
+            files: copy_Made.files,
+            landing: checked.landing
+          }).map((file_Preview) => saidOf__File_Preview({
+            file_Preview
+          })),
+          next: issues.length === 0
+            ? `This is how your proposals will be drawn for review: each file's frames, the lines read together, in your copy's lines, each listing the proposals in it, yours and the task's, and what each change does. If it reads as you mean, run \`${command_Agent} done ${job_Shell.id} "<a note on the job as a whole>" <the same file>\`; if not, change your proposals or frames and preview again.`
+            : `Only the proposals with no issue are shown. Fix each issue, in your copy or in your proposals, then preview again.`
+        }
+      }
+    }
+  }),
+  DONE: CHECKMAP__STANDING_JOB.DONE,
+  CANCELLED: CHECKMAP__STANDING_JOB.CANCELLED
+}
+
+interface _Api___saidOf__File_Preview_ {
+  file_Preview: _File_Preview_
+}
+
+function saidOf__File_Preview({
+  file_Preview
+}: _Api___saidOf__File_Preview_): _File_Said_ {
+  return {
+    path: file_Preview.path,
+    frames: file_Preview.frames.map((frame_Preview) => ({
+      lines: saidOf__Lines(frame_Preview.lines),
+      proposals: frame_Preview.items.map((item_Preview) => saidOf__Item_Preview({
+        item_Preview
+      }))
+    }))
+  }
+}
+
+function saidOf__Lines(
+  lines: _Lines_Preview_
+): string {
+  return lines.last < lines.first
+    ? `before line ${lines.first}`
+    : lines.first === lines.last
+      ? `line ${lines.first}`
+      : `lines ${lines.first}–${lines.last}`
+}
+
+interface _Api___saidOf__Item_Preview_ {
+  item_Preview: _Item_Preview_
+}
+
+function saidOf__Item_Preview({
+  item_Preview
+}: _Api___saidOf__Item_Preview_): _Proposal_Said_Preview_ {
+  return {
+    proposal: item_Preview.title,
+    whose: SAIDMAP__WHOSE_PREVIEW[item_Preview.whose],
+    file: SAIDMAP__EFFECT[item_Preview.effect],
+    changes: item_Preview.changes.map((change_Preview) => saidOf__Change_Preview(change_Preview))
+  }
+}
+
+type _SaidMap__Whose_Preview_ = {
+  [Whose in _Whose_Preview_]: string
+}
+
+const SAIDMAP__WHOSE_PREVIEW: _SaidMap__Whose_Preview_ = {
+  NEW: "yours, new",
+  REVISED: "yours, revising the task's",
+  YOURS: "the person's own edits",
+  OPEN: "the task's, open",
+  ACCEPTED: "the task's, accepted",
+  REJECTED: "the task's, rejected",
+  WITHDRAWN: "the task's, withdrawn"
+}
+
+function saidOf__Change_Preview(
+  change_Preview: _Change_Preview_
+): string {
+  const lines = saidOf__Lines(change_Preview.lines)
+  if (change_Preview.kind === "MOVE") return `${lines}: moved from here to ${saidOf__Lines(change_Preview.lines_At)}`
+  if (change_Preview.kind === "LANDING") return `${lines}: moved here from ${saidOf__Lines(change_Preview.lines_From)}`
+  const around = change_Preview.titles_Around.length === 0 ? "" : `, inside ${change_Preview.titles_Around.map((title) => `"${title}"`).join(" and ")}`
+  return change_Preview.before === ""
+    ? `${lines}: puts in ${quotedOf(change_Preview.after)}${around}`
+    : change_Preview.after === ""
+      ? `${lines}: takes out ${quotedOf(change_Preview.before)}${around}`
+      : `${lines}: ${quotedOf(change_Preview.before)} becomes ${quotedOf(change_Preview.after)}${around}`
+}
+
+function quotedOf(
+  text: string
+): string {
+  const characters = Array.from(text)
+  return JSON.stringify(characters.length > COUNT_MOST__QUOTED ? `${characters.slice(0, COUNT_MOST__QUOTED - 1).join("")}…` : text)
+}
+
+const COUNT_MOST__QUOTED = 120
+
 const ANSWERMAPS__CALL: _AnswerMaps__Call_ = {
   CHECK: CHECKMAP__STANDING_JOB,
   CHANGES: CHANGESMAP__STANDING_JOB,
   VERIFY: VERIFYMAP__STANDING_JOB,
+  PREVIEW: PREVIEWMAP__STANDING_JOB,
   DONE: DONEMAP__STANDING_JOB
 }
 
@@ -916,7 +1080,7 @@ function nextOf__Grouping({
     job_Shell.sources.length > 0 ? `A change to a proposal you're revising, ${job_Shell.sources.join(", ")}, goes in its revision, with "revises" its id instead of a title, its why saying what this round changed.` : "",
     "For a request that needs nothing changed, say why under \"nothing\".",
     `Write it as JSON, to a file outside your copy: {"stamp": "<the stamp above>", "moves": [{"from": 3, "to": 7}], "frames": [{"path": "<the file>", "first": 12, "last": 30}], "proposals": [{"title": "...", "why": "...", "changes": [1, 2], "answers": ["<request id>"]}], "nothing": [{"request": "<request id>", "why": "..."}]}.`,
-    `Check it with \`${command_Agent} verify ${job_Shell.id} <file>\` as often as you like, then hand back with \`${command_Agent} done ${job_Shell.id} "<a note on the job as a whole>" <file>\`.`
+    `Check it with \`${command_Agent} verify ${job_Shell.id} <file>\` as often as you like, see how it'll be drawn for review with \`${command_Agent} preview ${job_Shell.id} <file>\`, then hand back with \`${command_Agent} done ${job_Shell.id} "<a note on the job as a whole>" <file>\`.`
   ].filter((sentence) => sentence !== "").join(" ")
 }
 

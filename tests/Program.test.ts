@@ -249,6 +249,7 @@ await Bun.write(path_Grouping, JSON.stringify({
 }))
 const ran_Changes_Said = await doctorIn(dir_Copy, "changes", "j-3", path_Grouping)
 const ran_Verified = await doctorIn(dir_Copy, "verify", "j-3", path_Grouping)
+const ran_Previewed = await doctorIn(dir_Copy, "preview", "j-3", path_Grouping)
 const ran_Landed = await doctorIn(dir_Copy, "done", "j-3", "Named its backoff.", path_Grouping)
 const landed_Copy = {
   proposals: program.shell.taskOf("T-1")?.proposals.map((proposal) => [proposal.id, proposal.effect, proposal.title]),
@@ -422,6 +423,13 @@ test("a job taken is given a working copy, a git worktree of the project outside
   ])
   expect([ran_Changes.answer["frames"], ran_Changes_Said.answer["kind"], ran_Changes_Said.answer["stamp"], ran_Changes_Said.answer["issues"]]).toEqual([[], "CHANGES", ran_Changes.answer["stamp"], []])
   expect([ran_Verified.answer["kind"], ran_Verified.answer["issues"]]).toEqual(["VERIFIED", []])
+  expect([ran_Previewed.answer["kind"], ran_Previewed.answer["issues"]]).toEqual(["PREVIEW", []])
+  expect((ran_Previewed.answer["files"] as Array<{ path: string, frames: Array<{ lines: string, proposals: Array<{ proposal: string, whose: string, file: string, changes: Array<string> }> }> }>).map((file) => [file.path, file.frames.map((frame) => [frame.lines, frame.proposals.map((proposal) => [proposal.proposal, proposal.whose, proposal.file, proposal.changes.length])])])).toEqual([
+    ["README.md", [["lines 1–44", [["Drop the README", "yours, new", "deleted", 1]]]]],
+    ["retry.js", [["lines 4–5", [["Fewer attempts", "yours, new", "changed", 1]]]]],
+    ["docs/backoff.md", [["line 1", [["Say how it backs off", "yours, new", "made", 1]]]]]
+  ])
+  expect(JSON.stringify(ran_Previewed.answer["files"])).toContain(`"line 4: \\"5\\" becomes \\"3\\""`)
   expect([ran_Landed.answer["kind"], ran_Landed.answer["reports"]]).toEqual(["HANDED_BACK", ["docs/backoff.md is in no request of this job: its changes are proposed all the same, for review", "retry.js is in no request of this job: its changes are proposed all the same, for review"]])
   expect(landed_Copy).toEqual({
     proposals: [["j-3.1", "REMOVE", "Drop the README"], ["j-3.2", "MAKE", "Say how it backs off"], ["j-3.3", "CHANGE", "Fewer attempts"]],

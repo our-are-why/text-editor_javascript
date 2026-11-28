@@ -317,8 +317,8 @@ What's built first, each a step that works on its own:
    checking how it groups them and mapping them onto the file; the agent's
    adapter answering `changes`, `verify` and `done`; proposals, new and
    revised, landed for review; nesting as the editor draws it, files made
-   or deleted, moves, and frames, the same day. Not yet: the text between
-   two ideas, the preview, and projects that aren't git's;
+   or deleted, moves, frames and the preview, the same day. Not yet: the
+   text between two ideas, and projects that aren't git's;
 5. tests spinning up a demo, as the browser tests open the playground now.
 
 ## open

@@ -387,8 +387,17 @@ into proposals and into frames, which leans on what it reads, 5, and on
    in that isn't mostly what's taken out; a change in two moves; a move's
    sides in two proposals, or an edit in it in the move's; a move in a
    revision. Two neighbours much alike, swapped, the diff reads as their
-   lines changed, not moved, so there's no move to say. Not yet: the text
-   between two ideas, and the preview.
+   lines changed, not moved, so there's no move to say. **The preview,
+   the same day:** `doctor preview <job> <file>`, the grouping checked as
+   `verify` checks it and its issues said, then each file's frames its
+   proposals land in, drawn by the editor's own rules, the frame geometry
+   moved from the editor's projection into the documents part,
+   `Frames_TextEditor.ts`, generic over the change it carries, so both
+   draw alike; each frame in the copy's lines, its proposals in it, the
+   agent's, the task's and the person's edits, whose each is, what each
+   does to its file, and each change in words, what becomes what, what's
+   put in or taken out, what moves where and lands from where, and whose
+   change it's inside. Not yet: the text between two ideas.
 
    **Decided 2026-11-26,** for frames: a task's, built up over its life,
    established rather than final. **Fixed:** a file's lines are divided

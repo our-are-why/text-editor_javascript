@@ -836,6 +836,7 @@ const CALLMAP__WORD: _CallMap__Word_ = {
   check: "CHECK",
   changes: "CHANGES",
   verify: "VERIFY",
+  preview: "PREVIEW",
   done: "DONE"
 }
 
