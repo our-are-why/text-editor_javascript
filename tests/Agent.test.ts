@@ -2,7 +2,7 @@ import { expect, test } from "bun:test"
 import { _Tasks_ } from "../source/core/tasks/index.ts"
 import { _Documents_, parseTexts_Line } from "../source/core/documents/index.ts"
 import { _Shell_ } from "../source/core/shell/index.ts"
-import { _Agent_, MS_LAPSE__OFFER, type _Answer_Agent_, type _From_Wait_ } from "../source/agent/protocol/index.ts"
+import { _Agent_, MS_LAPSE__OFFER, type _Answer_Agent_, type _From_Wait_, type _Copy_Agent_ } from "../source/agent/protocol/index.ts"
 
 // the agent's adapter over a real core: a wait offered the job it may take,
 // an offer lapsing a minute on, and each call answered by where its job
@@ -10,6 +10,7 @@ import { _Agent_, MS_LAPSE__OFFER, type _Answer_Agent_, type _From_Wait_ } from 
 // it; the core holding the jobs, the adapter only its offers
 
 const COMMAND = "doctor"
+const COPY_NONE: _Copy_Agent_ = { kind: "NONE", why: "these tests make no copies" }
 const wired = () => {
   let agent: _Agent_ | undefined
   const shell = new _Shell_({
@@ -25,7 +26,7 @@ const wired = () => {
 const madeOf = (notes: string) => ({ id: `r-${notes}`, notes, aim: { kind: "DOCUMENT" as const, path: "README.md", words: { kind: "ALL" as const } } })
 const ANY: _From_Wait_ = { kind: "ANY" }
 const offered = (agent: _Agent_, from: _From_Wait_, at: number) => {
-  const answer: _Answer_Agent_ | undefined = agent.offeredOf({ from, at, command_Agent: COMMAND, command_Wait: `${COMMAND} wait` })
+  const answer: _Answer_Agent_ | undefined = agent.offeredOf({ from, at, copyOf: () => COPY_NONE, command_Agent: COMMAND, command_Wait: `${COMMAND} wait` })
   return answer === undefined ? "none" : answer.kind === "JOB" ? answer.job.id : answer.kind
 }
 
@@ -43,7 +44,7 @@ test("a wait's offered the first job it may take, of any task, one at a time wit
 
 test("a check-in on a job offered takes it in the core, later ones keeping it heard of; handed back, it's done, its request addressed with the agent's note; once done, refused; an offer lapsed is told so; a job stopped is answered stopped, what it hands back refused; a job that isn't, refused", () => {
   const { shell, agent } = wired()
-  const called = (kind_Call: "CHECK" | "DONE", id_Job: string, note: string, at: number) => agent.called({ kind_Call, id_Job, note, at, command_Agent: COMMAND }).kind
+  const called = (kind_Call: "CHECK" | "DONE", id_Job: string, note: string, at: number) => agent.called({ kind_Call, id_Job, note, said: {}, copy: COPY_NONE, clashesOf: () => [], at, command_Agent: COMMAND }).kind
   shell.handle({ kind: "DRAFT", request: madeOf("a"), isStarting: true, path: "README.md" })
   offered(agent, ANY, 0)
   const answers_Worked = [called("CHECK", "j-1", "starting", 10), called("CHECK", "j-1", "reading README.md", 20)]
@@ -56,7 +57,7 @@ test("a check-in on a job offered takes it in the core, later ones keeping it he
   shell.handle({ kind: "STOP", id_Task: "T-1", scope: { kind: "TASK" } })
   const answers_Stopped = [called("CHECK", "j-2", "still reading", 200), called("DONE", "j-2", "Did it anyway.", 210), called("CHECK", "j-9", "", 220)]
   expect(answers_Worked).toEqual(["TAKEN", "STILL_ON"])
-  expect(state_Worked).toEqual({ kind: "BEING_WORKED_ON", taken: expect.any(Number), heard: expect.any(Number), note: "reading README.md" })
+  expect(state_Worked).toEqual({ kind: "BEING_WORKED_ON", taken: expect.any(Number), heard: expect.any(Number), note: "reading README.md", givens: expect.any(Array) })
   expect(answers_Done).toEqual(["HANDED_BACK", "REFUSED"])
   expect([status_Done?.kind, JSON.stringify(status_Done)]).toEqual(["ADDRESSED", expect.stringContaining("Nothing needs to change.")])
   expect(answer_Lapsed).toBe("LAPSED")
@@ -68,6 +69,6 @@ test("done on a job offered and never checked in on takes it and hands it back a
   const { shell, agent } = wired()
   shell.handle({ kind: "DRAFT", request: madeOf("a"), isStarting: true, path: "README.md" })
   offered(agent, ANY, 0)
-  const answer = agent.called({ kind_Call: "DONE", id_Job: "j-1", note: "Nothing needs to change.", at: 10, command_Agent: COMMAND })
+  const answer = agent.called({ kind_Call: "DONE", id_Job: "j-1", note: "Nothing needs to change.", said: {}, copy: COPY_NONE, clashesOf: () => [], at: 10, command_Agent: COMMAND })
   expect([answer.kind, shell.jobOf("j-1")?.state.kind]).toEqual(["HANDED_BACK", "DONE"])
 })

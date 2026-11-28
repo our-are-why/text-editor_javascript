@@ -6,7 +6,8 @@ import {
   pathFirstOf__Files,
   openedOf__Program,
   addressesOf__Program,
-  endpointOf__Folder
+  endpointOf__Folder,
+  dirOf__Copies
 } from "./index.ts"
 
 const COMMAND_DOCTOR = commandOf__Doctor()
@@ -20,10 +21,17 @@ const USAGE = `doctor, the agent's side. Working through it is a loop: run \`${C
   ${COMMAND_DOCTOR} take [--task <id>]
       take a job now, if one's queued
   ${COMMAND_DOCTOR} check <job> ["<note>"]
-      take a job you're offered, then check in on it between big steps: says
-      if it's been stopped; the note, what you're doing
-  ${COMMAND_DOCTOR} done <job> "<note>"
-      hand a job back, with what you did
+      take a job you're offered, which gives you a working copy of the project
+      to change, then check in on it between big steps: says if it's been
+      stopped; the note, what you're doing
+  ${COMMAND_DOCTOR} changes <job>
+      what you've changed in your copy, numbered, and how to hand it back
+  ${COMMAND_DOCTOR} verify <job> <file>
+      check how you've grouped your changes into proposals, written as JSON
+      to a file outside your copy, or - to read it from standard input
+  ${COMMAND_DOCTOR} done <job> "<note>" [<file>]
+      hand a job back: its changes grouped as in the file, checked again, or,
+      with nothing changed, only the note, for each request why nothing needs to
 
 Every answer is one line of JSON with "next", the step to take.
 
@@ -54,8 +62,10 @@ const {
 const [
   command,
   first,
-  second
+  second,
+  third
 ] = positionals
+const isJob = first !== undefined && (command === "check" || command === "changes" || (command === "verify" && second !== undefined) || (command === "done" && second !== undefined))
 
 if (command === "open") {
   const dir_Project = resolve(first ?? ".")
@@ -73,6 +83,9 @@ if (command === "open") {
     dir_Project,
     files,
     path_First: path_Shown,
+    dir_Copies: dirOf__Copies({
+      dir_Project
+    }),
     port: Number(values.port ?? "0")
   })
   const addresses = addressesOf__Program({
@@ -93,7 +106,7 @@ if (command === "open") {
       program.stop().then(() => process.exit(0))
     }
   )
-} else if (command === "wait" || command === "take" || (command === "check" && first !== undefined) || (command === "done" && first !== undefined && second !== undefined)) {
+} else if (command === "wait" || command === "take" || isJob) {
   const endpoint = await endpointOf__Folder({
     dir: process.cwd()
   })
@@ -117,7 +130,26 @@ if (command === "open") {
       values.task
     )
   }
-  const isPosted = command === "check" || command === "done"
+  const path_Grouping = command === "verify" ? second : command === "done" ? third : undefined
+  const text_Grouping = path_Grouping === undefined ? undefined : path_Grouping === "-" ? await Bun.stdin.text() : await Bun.file(path_Grouping).text().catch(() => undefined)
+  if (path_Grouping !== undefined && text_Grouping === undefined) {
+    console.log(JSON.stringify({
+      kind: "REFUSED",
+      issues: [`there's no file ${path_Grouping}`],
+      next: "Write your proposals as JSON to a file outside your copy, and give its path."
+    }))
+    process.exit(1)
+  }
+  const grouping: unknown = text_Grouping === undefined ? {} : await Promise.resolve().then(() => JSON.parse(text_Grouping)).catch(() => undefined)
+  if (grouping === undefined || typeof grouping !== "object" || grouping === null || Array.isArray(grouping)) {
+    console.log(JSON.stringify({
+      kind: "REFUSED",
+      issues: [`${path_Grouping} isn't a JSON object`],
+      next: `Write your proposals as one JSON object, as \`${COMMAND_DOCTOR} changes <job>\` says, and try again.`
+    }))
+    process.exit(1)
+  }
+  const isPosted = isJob
   const path = isPosted ? `agent/job/${encodeURIComponent(first ?? "")}/${command}` : `agent/${command}?${query}`
   try {
     const response = await fetch(
@@ -132,7 +164,8 @@ if (command === "open") {
         ...isPosted
           ? {
             body: JSON.stringify({
-              note: second ?? ""
+              ...grouping,
+              note: command === "check" || command === "done" ? second ?? "" : ""
             })
           }
           : {}

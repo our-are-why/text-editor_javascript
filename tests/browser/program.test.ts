@@ -42,6 +42,7 @@ const program = await openedOf__Program({
   dir_Project: dir_Demo,
   files,
   path_First: "README.md",
+  dir_Copies: join(dir_Demos, "copies"),
   port: 0
 })
 const addresses = addressesOf__Program({

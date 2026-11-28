@@ -223,99 +223,141 @@ its own, as soon as a job's settled; and how what it writes is grouped,
 into proposals and into frames, which leans on what it reads, 5, and on
 `TASKS.md`'s joining and splitting frames by hand. Waits on 1.
 
-3. **The text an agent writes: a working copy.** Our changes are ranges
-   and moves on a version; agents write best by editing files with their
-   own tools. **Decided 2026-11-26:** taking a job, the agent's given a
-   working copy of the files in its scope, as the task has them, the file
-   with the task's accepted changes and your edits applied, and, revising
-   a proposal, that proposal's text in place; it edits the copy as it
-   edits any file; and a deterministic pipeline here makes what it did
-   into changes, comparing the copy with what it was given by the
-   documents part's comparison, narrowed to the words that differ, as a
-   conflict's are, stated against the version the copy was made from, so
-   the documents part carries them across whatever moved the file
-   meanwhile, as any round's. The pipeline's dumb, and stays so: it
-   compares texts and nothing more, knowing nothing of a file's kind, of
-   moves, or of what an edit meant, so it's the same for every file and
-   never guesses; what an edit meant is the agent's to say, 4. The agent
-   never writes this system's structures, nor quotes what it means to
-   replace. Still to design: a revision's next version compared with the
-   file without the proposal, and what this round changed compared with
-   its last; where the copy lives, a folder per job or something like
-   a worktree per task, for the spike to try. Later, with a file edited as
-   something other than how it's stored, as `TASKS.md` notes under the
-   documents part: the copy in the form edited, by default, a module free
-   to offer the stored form where agents handle it better. A request
-   answered with nothing to change says why. Summaries of the task and of
-   each document, as the prototype's, the agent's voice in the header and the
-   cards.
+3. **The text an agent writes: a working copy.** Our changes are ranges and
+   moves on a version; agents write best by editing files with their own
+   tools. **Decided 2026-11-26:** taking a job, the agent's given a working
+   copy of the files in its scope, as the task has them, the file with the
+   task's accepted changes and your edits applied, and, revising a proposal,
+   that proposal's text in place; it edits the copy as it edits any file;
+   and a deterministic pipeline here makes what it did into changes,
+   comparing the copy with what it was given by the documents part's
+   comparison, narrowed to the words that differ, as a conflict's are,
+   stated against the version the copy was made from, so the documents part
+   carries them across whatever moved the file meanwhile, as any round's.
+   The pipeline's dumb, and stays so: it compares texts and nothing more,
+   knowing nothing of a file's kind, of moves, or of what an edit meant, so
+   it's the same for every file and never guesses; what an edit meant is the
+   agent's to say, 4. The agent never writes this system's structures, nor
+   quotes what it means to replace. Still to design: a revision's next
+   version compared with the file without the proposal, and what this round
+   changed compared with its last; where the copy lives, a folder per job or
+   something like a worktree per task, for the spike to try. Later, with a
+   file edited as something other than how it's stored, as `TASKS.md` notes
+   under the documents part: the copy in the form edited, by default, a
+   module free to offer the stored form where agents handle it better. A
+   request answered with nothing to change says why. Summaries of the task
+   and of each document, as the prototype's, the agent's voice in the header
+   and the cards. **Built 2026-11-28, the first of it,** Linux only, for a
+   git project opened at its repository's root: a copy per task, not per
+   job, as a task's jobs run one at a time, a git worktree of the project in
+   the user's cache, `~/.cache/doctor/<project>-<hash>/<task>`, outside the
+   project so its tools never find it, sharing git's objects so it's quick
+   however big the project; made, or refreshed, as a job's taken: the
+   project's HEAD checked out, its uncommitted and untracked files written
+   over it, the task's files as the task has them, recorded in the core with
+   the version each was given at, its node_modules linked in, doctor's
+   endpoint in it so the command works from inside, all committed as given,
+   so the agent's own git diff shows only its changes; taken away as the
+   task ends. A project that isn't one has no copy, its agent answering in
+   words as before. The pipeline the core's, the shell's, plain: the copy
+   compared with what was given, by the documents part's comparison narrowed
+   to the words that differ, numbered across files and stamped; each change
+   mapped back through the pieces of the text given onto the file's own
+   text, past your edits and accepted changes; a revision's next version the
+   file without its proposal compared with the file with the revision's
+   changes, as decided. **Nesting as the editor draws it, the same day:** a
+   change inside or around another's span on the file lands nested, as the
+   editor nests a rename inside a removal: inside an open proposal's span,
+   its words the file's in the copy, applying only if it's rejected; inside
+   the text a move carries, carried by it; and around your edits and
+   accepted changes, taking in all they put in, theirs nested in it. Refused
+   by the checker, by the editor's own rules, against the task as it is at
+   hand back, so what lands always draws: a change sharing another's span,
+   or crossing its edge; and a change in part of the text another put in,
+   which the editor has no way to nest either, typing there editing that
+   change itself. Not yet: files made or taken away in the copy; projects
+   that aren't git's; the form edited, for files stored otherwise.
 
-4. **How it's grouped: proposals, and frames.** Two groupings, kept apart.
-   A proposal is what's decided together, one idea, what you accept,
-   reject or revise whole, its places in as many frames as it reaches; a
-   frame is what's read together, lines shown together for review.
-   **Decided 2026-11-26,** for proposals: a dumb diff, the agent saying
-   what it meant, and a checker. The agent edits its copy freely, all of
-   it at once, as agents do; asks what it changed, and the pipeline
-   answers with the changes it found, numbered, ungrouped, belonging to no
-   proposal, each where it is, what was there and what's there now; and
-   says what they mean: **which go together,** grouped by number into
-   proposals, each its title, why, the requests it answers, and,
-   revising, what this round changed, a change made to a proposal being
-   revised counting as its next version; **which are moves,** a removal
-   and an insertion said to be one text moved, edits inside the moved
-   text staying changes of their own, grouped with the move or apart, and
-   apart carried wherever it lands; and, rarely, **what came between,**
-   for one stretch two ideas changed. So it groups seeing all it did,
-   holistically, as a job's given whole. Edits apart from each other
-   are changes apart, whatever they're for: a rename of `DELAY_MS` and
-   one of `n` in `DELAY_MS * 2 ** (n - 1)` two changes; `retry` made
-   `**retries**` in Markdown three, the `**` before, `retry` made
-   `retries`, the `**` after, a look being text there, so the agent
-   keeps the word and its bold in one proposal or puts them in two.
-   **Two ideas on the same characters, first class:** `return delay +
-   Math.random() * (delay / 2);` made `return capped +
-   jitterOf(capped);` by capping the delay, `delay` named `capped`,
-   and by naming the jitter, its expression made `jitterOf(…)`, the
-   `capped` inside `jitterOf(capped)` the first's work inside the
-   second's, one changed stretch to any comparison, as how it came about
-   isn't in the text. The agent says the text between, `Math.random() *
-   (capped / 2)` once the delay's capped, and the pipeline's deterministic
-   again: the first proposal's change the text before to the text
-   between, the second's the text between to the text after, stated on
-   the first's text, so it's drawn nested in it and applies only with it;
-   nothing edited again. The editor nests changes already, yours in a
-   proposal's words, one carried by a move, a rename inside a removal; one
-   proposal's change on another's text is the case to confirm when it's
-   built. **The checker:** deterministic feedback the agent asks for
-   whenever it likes, not only at the end, as a list of what's wrong: a
-   change in no proposal, or in two; a proposal without its title or why,
-   or answering a request the task hasn't got; a move whose two sides
-   don't match, apart from the edits inside it; a text between that isn't
-   between; and, where the file's kind's module offers one, a file no
-   longer valid of its kind, JSON that doesn't parse. Handing back runs
-   it, and is refused with the same list, as the prototype's refusals were,
-   `{ "issues": [...] }`; and a preview shows how the proposals will be
-   drawn before they're handed back. **Reported, never refused,** decided
-   2026-11-26 under 5: what reaches beyond the job, a change on lines
-   another proposal changes, a file no request in the job is on, a
-   request outside it answered, so the agent knows it's gone further, and
-   goes on if it means to; what you review decides it, as every change
-   becomes a proposal, so reaching further is never fenced off, only
-   seen. So what's meant is the agent's, every rule the agent's held to
-   is deterministic, and it never guesses at them. **Moves, no hints:**
-   the agent made its moves, so it knows them, and says them all, edited
-   or not, every answer of what it changed reminding it to. Found and let
-   go 2026-11-26: the diff marking moves found whole, which the documents
-   part will find for reading a file changed outside anyway, as it would
-   say some moves and not others, and an agent, shown the whole ones,
-   would read no mark as no move and miss those with edits inside. If
-   ever helped, asked, not hinted: the checker listing each removal and
-   insertion sharing much of their text, edited or not, and the agent
-   answering each, a move or not. Tried first, and let go: proposing as a
-   checkpoint, as a commit is, everything changed since the last one a
-   proposal, which merged two ideas edited before a checkpoint, and could
-   never regroup them.
+4. **How it's grouped: proposals, and frames.** Two groupings, kept apart. A
+   proposal is what's decided together, one idea, what you accept, reject or
+   revise whole, its places in as many frames as it reaches; a frame is
+   what's read together, lines shown together for review. **Decided
+   2026-11-26,** for proposals: a dumb diff, the agent saying what it meant,
+   and a checker. The agent edits its copy freely, all of it at once, as
+   agents do; asks what it changed, and the pipeline answers with the
+   changes it found, numbered, ungrouped, belonging to no proposal, each
+   where it is, what was there and what's there now; and says what they
+   mean: **which go together,** grouped by number into proposals, each its
+   title, why, the requests it answers, and, revising, what this round
+   changed, a change made to a proposal being revised counting as its next
+   version; **which are moves,** a removal and an insertion said to be one
+   text moved, edits inside the moved text staying changes of their own,
+   grouped with the move or apart, and apart carried wherever it lands; and,
+   rarely, **what came between,** for one stretch two ideas changed. So it
+   groups seeing all it did, holistically, as a job's given whole. Edits
+   apart from each other are changes apart, whatever they're for: a rename
+   of `DELAY_MS` and one of `n` in `DELAY_MS * 2 ** (n - 1)` two changes;
+   `retry` made `**retries**` in Markdown three, the `**` before, `retry`
+   made `retries`, the `**` after, a look being text there, so the agent
+   keeps the word and its bold in one proposal or puts them in two. **Two
+   ideas on the same characters, first class:** `return delay +
+   Math.random() * (delay / 2);` made `return capped + jitterOf(capped);` by
+   capping the delay, `delay` named `capped`, and by naming the jitter, its
+   expression made `jitterOf(…)`, the `capped` inside `jitterOf(capped)` the
+   first's work inside the second's, one changed stretch to any comparison,
+   as how it came about isn't in the text. The agent says the text between,
+   `Math.random() * (capped / 2)` once the delay's capped, and the
+   pipeline's deterministic again: the first proposal's change the text
+   before to the text between, the second's the text between to the text
+   after, stated on the first's text, so it's drawn nested in it and applies
+   only with it; nothing edited again. The editor nests changes already,
+   yours in a proposal's words, one carried by a move, a rename inside a
+   removal; one proposal's change on another's text is the case to confirm
+   when it's built. **The checker:** deterministic feedback the agent asks
+   for whenever it likes, not only at the end, as a list of what's wrong: a
+   change in no proposal, or in two; a proposal without its title or why, or
+   answering a request the task hasn't got; a move whose two sides don't
+   match, apart from the edits inside it; a text between that isn't between;
+   and, where the file's kind's module offers one, a file no longer valid of
+   its kind, JSON that doesn't parse. Handing back runs it, and is refused
+   with the same list, as the prototype's refusals were, `{ "issues": [...]
+   }`; and a preview shows how the proposals will be drawn before they're
+   handed back. **Reported, never refused,** decided 2026-11-26 under 5:
+   what reaches beyond the job, a change on lines another proposal changes,
+   a file no request in the job is on, a request outside it answered, so the
+   agent knows it's gone further, and goes on if it means to; what you
+   review decides it, as every change becomes a proposal, so reaching
+   further is never fenced off, only seen. So what's meant is the agent's,
+   every rule the agent's held to is deterministic, and it never guesses at
+   them. **Moves, no hints:** the agent made its moves, so it knows them,
+   and says them all, edited or not, every answer of what it changed
+   reminding it to. Found and let go 2026-11-26: the diff marking moves
+   found whole, which the documents part will find for reading a file
+   changed outside anyway, as it would say some moves and not others, and an
+   agent, shown the whole ones, would read no mark as no move and miss those
+   with edits inside. If ever helped, asked, not hinted: the checker listing
+   each removal and insertion sharing much of their text, edited or not, and
+   the agent answering each, a move or not. Tried first, and let go:
+   proposing as a checkpoint, as a commit is, everything changed since the
+   last one a proposal, which merged two ideas edited before a checkpoint,
+   and could never regroup them. **Built 2026-11-28, the first of it, for
+   proposals:** `doctor changes <job>`, the numbered changes and their
+   stamp; proposals grouped by number, as JSON in a file outside the copy,
+   each a title, why, its changes and the requests it answers, or a revision
+   of a proposal the job revises, `revises` its id; a request needing
+   nothing said why under `nothing`; `doctor verify <job> <file>`, the
+   checker, as often as the agent likes, and `doctor done <job> "<note>"
+   <file>`, handing back, refused with the same list: a stamp not the
+   changes', a change in no proposal or two, a request unanswered or that
+   isn't, a proposal without its title or why, more than one file in a
+   proposal, a file it can't place, a change in part of another's text, or
+   across a move's edge, or sharing another's span, or crossing its edge;
+   reported, never refused: a request outside the job answered, a file no
+   request in the job is on. Each proposal landed on the task's head for
+   review, its requests answered by it, the file untouched till you decide;
+   done in words, as before, while the copy's unchanged, and refused with
+   changes in it, so none's dropped. Not yet: moves, the text between two
+   ideas, the preview, and frames.
 
    **Decided 2026-11-26,** for frames: a task's, built up over its life,
    established rather than final. **Fixed:** a file's lines are divided
@@ -364,41 +406,43 @@ how much a job gives; found 2026-11-26 to be one question, what it
 remembers being the harness's and yours, not this system's. Decided
 2026-11-26. Waits on 1 and 2.
 
-5. **What an agent reads: the whole task, its job foremost.** Models
-   thrive on context, and harnesses keep improving at managing it, so it's
-   given generously, never kept lean, and nothing here stands in its way.
-   **Decided 2026-11-26:** taking a job, an agent's given its working
-   copy, made then, when it takes it, not when you pressed Start, as a
-   job can wait a while and should never begin stale; and the whole task
-   model: the task, its name and summary; every request, the job's marked
-   as its, each one's words found in the copy; every proposal, in every
-   file, its title, state, rationale, what you asked of it, your notes on
-   its words, and why a decided one was decided; the frames, yours marked;
-   what the file did since a stale round was written; **what's changed
-   since the task last looked,** for each file in it, the edits since the
-   version its last job was taken on, as a diff, each where it came from
-   when that's known, you in No task, another task applied, read from
-   outside, marked as the file's, as the editor marks the file's in teal,
-   so a name renamed elsewhere in a file isn't news to it; and the next
-   step. Beyond the task's files, the project as it's changed the agent
-   finds out for itself, by git or as it likes, the manifest saying so.
-   Asks of the documents part: keeping, for each open task, the version its
-   last job was taken on and the edits since, let go when it takes its
-   next job, or ends. And the same model shown more than one way, as it
-   digests best, redundant on purpose: as data, as a digest to read, and
-   each file with its requests and proposals marked, every view asked for
-   again whenever it likes. **Focused by framing, not fenced:** the
-   manifest and the next step say plainly which requests are its job, the
-   rest there to inform it, as you'd brief someone; what's truly in scope
-   is hard to say from here, so when it reaches further, into other
-   proposals, other requests, or files no request names, the checker
-   reports it, never refuses it, and you decide it in review, as every
-   change becomes a proposal; perhaps it's for the best. The rest of the
-   project it reads as it likes, from disk, as it is; a file it means to
-   edit that isn't in its copy is added on asking, as the task has it,
-   never refused. For the spike to try too: the copy a whole copy of the
-   project as the task has it, something like a worktree, so the agent can
-   run its tests and builds, not only the files its job names.
+5. **What an agent reads: the whole task, its job foremost.** Models thrive
+   on context, and harnesses keep improving at managing it, so it's given
+   generously, never kept lean, and nothing here stands in its way.
+   **Decided 2026-11-26:** taking a job, an agent's given its working copy,
+   made then, when it takes it, not when you pressed Start, as a job can
+   wait a while and should never begin stale; and the whole task model: the
+   task, its name and summary; every request, the job's marked as its, each
+   one's words found in the copy; every proposal, in every file, its title,
+   state, rationale, what you asked of it, your notes on its words, and why
+   a decided one was decided; the frames, yours marked; what the file did
+   since a stale round was written; **what's changed since the task last
+   looked,** for each file in it, the edits since the version its last job
+   was taken on, as a diff, each where it came from when that's known, you
+   in No task, another task applied, read from outside, marked as the
+   file's, as the editor marks the file's in teal, so a name renamed
+   elsewhere in a file isn't news to it; and the next step. Beyond the
+   task's files, the project as it's changed the agent finds out for itself,
+   by git or as it likes, the manifest saying so. Asks of the documents
+   part: keeping, for each open task, the version its last job was taken on
+   and the edits since, let go when it takes its next job, or ends. And the
+   same model shown more than one way, as it digests best, redundant on
+   purpose: as data, as a digest to read, and each file with its requests
+   and proposals marked, every view asked for again whenever it likes.
+   **Focused by framing, not fenced:** the manifest and the next step say
+   plainly which requests are its job, the rest there to inform it, as you'd
+   brief someone; what's truly in scope is hard to say from here, so when it
+   reaches further, into other proposals, other requests, or files no
+   request names, the checker reports it, never refuses it, and you decide
+   it in review, as every change becomes a proposal; perhaps it's for the
+   best. The rest of the project it reads as it likes, from disk, as it is;
+   a file it means to edit that isn't in its copy is added on asking, as the
+   task has it, never refused. For the spike to try too: the copy a whole
+   copy of the project as the task has it, something like a worktree, so the
+   agent can run its tests and builds, not only the files its job names.
+   **The copy a whole copy of the project, decided and built 2026-11-28,**
+   under 3, a git worktree per task, so it runs the project's tests and
+   tries things as it likes.
 
 6. **A harness's own session: not this system's.** Whether a task's
    jobs go on one conversation or each begins fresh. **Decided

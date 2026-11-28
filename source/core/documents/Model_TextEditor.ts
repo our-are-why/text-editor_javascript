@@ -25,6 +25,7 @@ export {
   type _PARSED_Result_Parse_,
   type _REFUSED_Result_Parse_,
   type _Refusal_Parse_,
+  refusalsAcross__Sources,
   parseTexts_Line,
   flatOf__Text,
   applied__Transaction,

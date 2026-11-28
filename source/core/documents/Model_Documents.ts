@@ -57,6 +57,8 @@ export {
   pairOf__Stale,
   type _Api___pairOf__Stale_,
   type _Pair_Stale_,
+  narrowedOf__Run,
+  type _Api___narrowedOf__Run_,
   settledOf__Head,
   type _Api___settledOf__Head_,
   type _Way_Settle_

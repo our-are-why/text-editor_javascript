@@ -2,7 +2,10 @@ import type {
   _Scope_Tasks_,
   _Request_Tasks_
 } from "../tasks/index.ts"
-import type { _Changes_Source_ } from "../documents/index.ts"
+import type {
+  _Changes_Source_,
+  _Text_Model_
+} from "../documents/index.ts"
 
 export {
   jobsAfter__Command,
@@ -12,6 +15,7 @@ export {
   type __BASE_State_Job_,
   type _QUEUED_State_Job_,
   type _BEING_WORKED_ON__State_Job_,
+  type _Given_Job_,
   type _DONE_State_Job_,
   type _CANCELLED_State_Job_,
   type _Command_Jobs_,
@@ -77,6 +81,16 @@ interface _BEING_WORKED_ON__State_Job_ extends __BASE_State_Job_<"BEING_WORKED_O
   taken: number
   heard: number
   note: string
+  givens: Array<_Given_Job_>
+}
+
+interface _Given_Job_ {
+  path: string
+  version: string
+  text_Document: _Text_Model_
+  proposed: Array<_Changes_Source_>
+  sources: Array<string>
+  text: _Text_Model_
 }
 
 interface _DONE_State_Job_ extends __BASE_State_Job_<"DONE"> {
@@ -100,6 +114,7 @@ interface _QUEUE_Command_Jobs_ extends __BASE_Command_Jobs_<"QUEUE"> {
 interface _TAKE_Command_Jobs_ extends __BASE_Command_Jobs_<"TAKE"> {
   id_Job: string
   note: string
+  givens: Array<_Given_Job_>
   at: number
 }
 
@@ -149,7 +164,8 @@ const HANDLERMAP__JOBS: _HandlerMap__Jobs_ = {
           kind: "BEING_WORKED_ON",
           taken: command.at,
           heard: command.at,
-          note: command.note
+          note: command.note,
+          givens: command.givens
         }
       }
       : job

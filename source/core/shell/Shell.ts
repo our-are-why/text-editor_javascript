@@ -1,5 +1,6 @@
 import {
   isOwn__Source,
+  pathsOf__Task,
   type _Tasks_,
   type _Task_Tasks_,
   type _Model_Tasks_,
@@ -14,6 +15,8 @@ import {
 } from "../tasks/index.ts"
 import {
   carriedOf__Head,
+  textWith__Sources,
+  refusalsAcross__Sources,
   checkedOf__Head,
   settledOf__Head,
   type _Documents_,
@@ -29,8 +32,10 @@ import {
   jobOf__Request,
   isLive__Job,
   type _Job_Shell_,
+  type _Given_Job_,
   type _Command_Jobs_
 } from "./Jobs_Shell.ts"
+import type { _Landing_Handed_ } from "./Copy_Shell.ts"
 
 export {
   _Shell_,
@@ -200,6 +205,113 @@ class _Shell_ {
     return this.jobs.find((job) => job.id === id_Job)
   }
 
+  clashesOf({
+    id_Task,
+    landing
+  }: _Api___clashesOf__Shell_): Array<string> {
+    const task = this.taskOf(id_Task)
+    if (task === undefined) return []
+    const carrieds = landing.proposals.flatMap((proposal) => this.isKept(proposal.path)
+      ? carriedOf__Head({
+        document: this.documentOf(proposal.path),
+        head: {
+          path: proposal.path,
+          version: proposal.version,
+          proposed: [
+            {
+              source: proposal.id,
+              changes: proposal.changes
+            }
+          ],
+          stale: []
+        }
+      }).proposed.map((changes_Source) => ({
+        proposal,
+        changes_Source
+      }))
+      : [])
+    return [...new Set(carrieds.map((carried) => carried.proposal.path))].flatMap((path) => {
+      const head = this.headOf({
+        task,
+        path
+      })
+      const carrieds_Path = carrieds.filter((carried) => carried.proposal.path === path)
+      const ids_Landing = carrieds_Path.map((carried) => carried.proposal.id)
+      const proposed_Task = head === undefined
+        ? []
+        : carriedOf__Head({
+          document: this.documentOf(path),
+          head
+        }).proposed.filter((changes_Source) => !ids_Landing.includes(changes_Source.source))
+      const refusals_Before = new Set(refusalsAcross__Sources(proposed_Task).map((refusal) => JSON.stringify(refusal)))
+      return refusalsAcross__Sources([
+        ...proposed_Task,
+        ...carrieds_Path.map((carried) => carried.changes_Source)
+      ])
+        .filter((refusal) => !refusals_Before.has(JSON.stringify(refusal)))
+        .map((refusal) => {
+          const isIn = (source: string) => source === refusal.source || refusal.reason.includes(`${source}'s`)
+          const carried = carrieds_Path.find((each) => isIn(each.proposal.id))
+          const source_Other = proposed_Task.find((changes_Source) => isIn(changes_Source.source))?.source
+          const proposal_Other = task.proposals.find((proposal) => proposal.id === source_Other)
+          const name_Other = source_Other === undefined
+            ? "another of its own changes"
+            : proposal_Other === undefined
+              ? "the person's own edits"
+              : `proposal "${proposal_Other.title}"`
+          return `${carried === undefined ? "a proposal" : `proposal "${carried.proposal.title}"`} can't be drawn with ${name_Other} on ${path}: one of its changes shares the span of one of theirs, or crosses its edge; a change has to take in another's whole span, or stay apart from it`
+        })
+    })
+  }
+
+  givensOf(
+    job_Shell: _Job_Shell_
+  ): Array<_Given_Job_> {
+    const task = this.taskOf(job_Shell.id_Task)
+    if (task === undefined) return []
+    const paths = [
+      ...new Set([
+        job_Shell.path,
+        ...pathsOf__Task({
+          task
+        })
+      ])
+    ].filter((path) => this.isKept(path))
+    return paths.map((path) => {
+      const document = this.documentOf(path)
+      const head = this.headOf({
+        task,
+        path
+      })
+      const proposed = head === undefined
+        ? []
+        : carriedOf__Head({
+          document,
+          head
+        }).proposed
+      const sources = proposed.flatMap((changes_Source) => isOwn__Source({
+        task,
+        source: changes_Source.source
+      }) || job_Shell.sources.includes(changes_Source.source)
+        ? [changes_Source.source]
+        : [])
+      return {
+        path,
+        version: document.version,
+        text_Document: document.text,
+        proposed,
+        sources,
+        text: textWith__Sources({
+          model_TextEditor: {
+            document: document.text,
+            proposed
+          },
+          sources
+        })
+      }
+    })
+  }
+
   jobsHandled(
     command_Jobs: _Command_Jobs_
   ): void {
@@ -211,7 +323,7 @@ class _Shell_ {
 
   landed({
     job_Shell,
-    proposed,
+    landing,
     note
   }: _Api___landed__Shell_): _Landing_Job_ {
     const id_Task = job_Shell.id_Task
@@ -223,49 +335,61 @@ class _Shell_ {
       task: this.taskOf(id_Task)
     }).includes(id)
     const ids_Current = job_Shell.requests.flatMap((request) => isCurrent(request.id) ? [request.id] : [])
-    const idsOf = (source: string) => job_Shell.requests.flatMap((request) => request.aim.kind === "PROPOSAL" && request.aim.id_Proposal === source && ids_Current.includes(request.id) ? [request.id] : [])
-    const sources_Landing = job_Shell.sources.filter((source) => idsOf(source).length > 0 && proposed.some((changes_Source) => changes_Source.source === source))
-    const ids_Addressed = job_Shell.requests.flatMap((request) => ids_Current.includes(request.id) && !(request.aim.kind === "PROPOSAL" && sources_Landing.includes(request.aim.id_Proposal)) ? [request.id] : [])
-    if (sources_Landing.length + ids_Addressed.length === 0) {
-      return {
-        job_Shell,
-        sources: [],
-        ids_Addressed: []
-      }
-    }
-    for (const source of sources_Landing) {
+    for (const proposal of landing.proposals) {
       this.tasks.handle({
-        kind: "ADDRESS",
+        kind: "PROPOSE",
         id_Task,
-        ids_Request: idsOf(source),
-        answer: {
-          kind: "PROPOSALS",
-          ids_Proposal: [source]
-        }
+        proposal: {
+          id: proposal.id,
+          path: proposal.path,
+          title: proposal.title,
+          rationale: proposal.rationale
+        },
+        stamp: stampOf({
+          by: "AGENT"
+        })
       })
       this.landedOn({
         id_Task,
-        source,
-        path: job_Shell.path,
-        version: job_Shell.version,
-        proposed: proposed.filter((changes_Source) => changes_Source.source === source)
+        source: proposal.id,
+        path: proposal.path,
+        version: proposal.version,
+        proposed: [
+          {
+            source: proposal.id,
+            changes: proposal.changes
+          }
+        ]
       })
     }
-    if (ids_Addressed.length > 0) {
+    const ids_Proposed = ids_Current.filter((id) => landing.proposals.some((proposal) => proposal.ids_Request.includes(id)))
+    for (const id of ids_Proposed) {
       this.tasks.handle({
         kind: "ADDRESS",
         id_Task,
-        ids_Request: ids_Addressed,
+        ids_Request: [id],
+        answer: {
+          kind: "PROPOSALS",
+          ids_Proposal: landing.proposals.flatMap((proposal) => proposal.ids_Request.includes(id) ? [proposal.id] : [])
+        }
+      })
+    }
+    const ids_Nothing = ids_Current.filter((id) => !ids_Proposed.includes(id))
+    for (const id of ids_Nothing) {
+      this.tasks.handle({
+        kind: "ADDRESS",
+        id_Task,
+        ids_Request: [id],
         answer: {
           kind: "NOTHING",
-          note: note
+          note: landing.nothings.find((nothing) => nothing.id_Request === id)?.note ?? note
         }
       })
     }
     return {
       job_Shell,
-      sources: sources_Landing,
-      ids_Addressed
+      sources: landing.proposals.map((proposal) => proposal.id),
+      ids_Addressed: ids_Nothing
     }
   }
 
@@ -346,10 +470,15 @@ class _Shell_ {
 
   released(): void {
     for (const document of this.documents.model_Documents.documents) {
-      const versions = [...this.bases_Round.values()].flatMap((base_Round) => {
-        const isRunning = (this.taskOf(base_Round.id_Task)?.requests ?? []).some((request) => request.status.kind === "WITH_AGENT" && request.aim.kind === "PROPOSAL" && request.aim.id_Proposal === base_Round.source)
-        return isRunning && base_Round.path === document.path ? [base_Round.version] : []
-      })
+      const versions = [
+        ...[...this.bases_Round.values()].flatMap((base_Round) => {
+          const isRunning = (this.taskOf(base_Round.id_Task)?.requests ?? []).some((request) => request.status.kind === "WITH_AGENT" && request.aim.kind === "PROPOSAL" && request.aim.id_Proposal === base_Round.source)
+          return isRunning && base_Round.path === document.path ? [base_Round.version] : []
+        }),
+        ...this.jobs.flatMap((job) => job.state.kind === "BEING_WORKED_ON"
+          ? job.state.givens.flatMap((given) => given.path === document.path ? [given.version] : [])
+          : [])
+      ]
       this.documents.handle({
         kind: "RELEASE",
         path: document.path,
@@ -384,7 +513,12 @@ class _Shell_ {
         ...head,
         proposed: changes_Round === undefined
           ? head.proposed
-          : head.proposed.map((changes_Source) => changes_Source.source === source ? changes_Round : changes_Source),
+          : head.proposed.some((changes_Source) => changes_Source.source === source)
+            ? head.proposed.map((changes_Source) => changes_Source.source === source ? changes_Round : changes_Source)
+            : [
+              ...head.proposed,
+              changes_Round
+            ],
         stale: [
           ...head.stale.filter((stale_Source) => stale_Source.source !== source),
           ...head_Round.stale
@@ -682,9 +816,14 @@ interface _Api___headOf__Shell_ {
   path: string
 }
 
+interface _Api___clashesOf__Shell_ {
+  id_Task: string
+  landing: _Landing_Handed_
+}
+
 interface _Api___landed__Shell_ {
   job_Shell: _Job_Shell_
-  proposed: Array<_Changes_Source_>
+  landing: _Landing_Handed_
   note: string
 }
 
@@ -869,7 +1008,7 @@ interface _CHECK_IN__Command_Shell_ extends __BASE_Command_Shell_<"CHECK_IN"> {
 
 interface _HAND_BACK__Command_Shell_ extends __BASE_Command_Shell_<"HAND_BACK"> {
   id_Job: string
-  proposed: Array<_Changes_Source_>
+  landing: _Landing_Handed_
   note: string
 }
 
@@ -1090,12 +1229,17 @@ const HANDLERMAP__SHELL: _HandlerMap__Shell_ = {
   TAKE: ({
     shell,
     command_Shell
-  }) => shell.jobsHandled({
-    kind: "TAKE",
-    id_Job: command_Shell.id_Job,
-    note: command_Shell.note,
-    at: Date.now()
-  }),
+  }) => {
+    const job_Shell = shell.jobOf(command_Shell.id_Job)
+    if (job_Shell === undefined) return
+    shell.jobsHandled({
+      kind: "TAKE",
+      id_Job: job_Shell.id,
+      note: command_Shell.note,
+      givens: shell.givensOf(job_Shell),
+      at: Date.now()
+    })
+  },
   CHECK_IN: ({
     shell,
     command_Shell
@@ -1118,7 +1262,7 @@ const HANDLERMAP__SHELL: _HandlerMap__Shell_ = {
     })
     const landing_Job = shell.landed({
       job_Shell,
-      proposed: command_Shell.proposed,
+      landing: command_Shell.landing,
       note: command_Shell.note
     })
     for (const observer of shell.observers) observer.landed(landing_Job)

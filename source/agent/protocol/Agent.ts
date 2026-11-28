@@ -1,7 +1,9 @@
 import {
   isTakeable__Job,
   type _State_Shell_,
-  type _Command_Shell_
+  type _Job_Shell_,
+  type _Command_Shell_,
+  type _Landing_Handed_
 } from "../../core/shell/index.ts"
 import {
   isFrom__Job,
@@ -10,6 +12,7 @@ import {
   answerOf__Refused,
   ANSWERMAPS__CALL,
   type _From_Wait_,
+  type _Copy_Agent_,
   type _Answer_Agent_,
   type _Kind_Call_
 } from "./Protocol_Agent.ts"
@@ -49,6 +52,7 @@ class _Agent_ {
   offeredOf({
     from,
     at,
+    copyOf,
     command_Agent,
     command_Wait
   }: _Api___offeredOf__Agent_): _Answer_Agent_ | undefined {
@@ -76,6 +80,7 @@ class _Agent_ {
         task,
         ids_Request: job_Shell.requests.map((request) => request.id)
       }),
+      copy: copyOf(job_Shell),
       command_Agent,
       command_Wait
     })
@@ -85,11 +90,15 @@ class _Agent_ {
     kind_Call,
     id_Job,
     note,
+    said,
+    copy,
+    clashesOf,
     at,
     command_Agent
   }: _Api___called__Agent_): _Answer_Agent_ {
     const job_Shell = this.state_Shell.jobs.find((job) => job.id === id_Job)
-    if (job_Shell === undefined) {
+    const task = this.state_Shell.model_Tasks.tasks.find((task_Each) => task_Each.id === job_Shell?.id_Task)
+    if (job_Shell === undefined || task === undefined) {
       return answerOf__Refused({
         issues: [`there's no job ${id_Job}`],
         command_Agent
@@ -101,8 +110,12 @@ class _Agent_ {
       at
     })]
     const answered_Call = answered({
-      id_Job,
+      task,
+      job_Shell,
       note,
+      said,
+      copy,
+      clashesOf,
       command_Agent
     })
     for (const command_Shell of answered_Call.commands_Shell) {
@@ -124,6 +137,7 @@ interface _Observer_Agent_ {
 interface _Api___offeredOf__Agent_ {
   from: _From_Wait_
   at: number
+  copyOf: (job_Shell: _Job_Shell_) => _Copy_Agent_
   command_Agent: string
   command_Wait: string
 }
@@ -132,6 +146,9 @@ interface _Api___called__Agent_ {
   kind_Call: _Kind_Call_
   id_Job: string
   note: string
+  said: unknown
+  copy: _Copy_Agent_
+  clashesOf: (landing: _Landing_Handed_) => Array<string>
   at: number
   command_Agent: string
 }

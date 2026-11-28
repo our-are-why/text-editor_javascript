@@ -2,7 +2,7 @@ import { expect, test } from "bun:test"
 import fc from "fast-check"
 import { _Tasks_ } from "../source/core/tasks/index.ts"
 import { _Documents_, parseTexts_Line } from "../source/core/documents/index.ts"
-import { _Shell_, type _Job_Shell_, type _Stop_Shell_, type _Landing_Job_ } from "../source/core/shell/index.ts"
+import { _Shell_, LANDING_NONE, type _Job_Shell_, type _Stop_Shell_, type _Landing_Job_ } from "../source/core/shell/index.ts"
 import { jobsAfter__Command, isTakeable__Job, jobOf__Request, type _Command_Jobs_ } from "../source/core/shell/Jobs_Shell.ts"
 
 // the core's jobs, what a Start sets going and where each stands, whoever
@@ -43,8 +43,8 @@ test("a job queued is the core's, as a Start made it; queued again with the same
 test("a job may be taken only queued, the first of its task's still queued, none of its task's being worked on: one at a time within a task, in the order they were made, at once across tasks", () => {
   const jobs = after([], queue("j-1", "T-1", ["r-1"], 100), queue("j-2", "T-1", ["r-2"], 200), queue("j-3", "T-2", ["r-3"], 300))
   expect(takeableIn(jobs)).toEqual(["j-1", "j-3"])
-  expect(after(jobs, { kind: "TAKE", id_Job: "j-2", note: "", at: 400 })).toBe(jobs)
-  const taken = after(jobs, { kind: "TAKE", id_Job: "j-1", note: "starting", at: 400 })
+  expect(after(jobs, { kind: "TAKE", id_Job: "j-2", note: "", givens: [], at: 400 })).toBe(jobs)
+  const taken = after(jobs, { kind: "TAKE", id_Job: "j-1", note: "starting", givens: [], at: 400 })
   expect(takeableIn(taken)).toEqual(["j-3"])
   expect(takeableIn(after(taken, { kind: "HAND_BACK", id_Job: "j-1", at: 500 }))).toEqual(["j-2", "j-3"])
   expect(takeableIn(after(jobs, { kind: "CANCEL", id_Job: "j-1", at: 500 }))).toEqual(["j-2", "j-3"])
@@ -52,21 +52,21 @@ test("a job may be taken only queued, the first of its task's still queued, none
 
 test("taken, a job's being worked on, its check-ins keeping it heard of, a note kept till another's given; handed back, it's done; one never taken can't be handed back, and a job done or cancelled stays so", () => {
   const jobs = after([], queue("j-1", "T-1", ["r-1"], 100))
-  const taken = after(jobs, { kind: "TAKE", id_Job: "j-1", note: "starting", at: 210 })
-  expect(jobIn(taken, "j-1").state).toEqual({ kind: "BEING_WORKED_ON", taken: 210, heard: 210, note: "starting" })
+  const taken = after(jobs, { kind: "TAKE", id_Job: "j-1", note: "starting", givens: [], at: 210 })
+  expect(jobIn(taken, "j-1").state).toEqual({ kind: "BEING_WORKED_ON", taken: 210, heard: 210, note: "starting", givens: [] })
   const heard = after(taken, { kind: "CHECK_IN", id_Job: "j-1", note: "reading the editor's files", at: 300 }, { kind: "CHECK_IN", id_Job: "j-1", note: "", at: 400 })
-  expect(jobIn(heard, "j-1").state).toEqual({ kind: "BEING_WORKED_ON", taken: 210, heard: 400, note: "reading the editor's files" })
+  expect(jobIn(heard, "j-1").state).toEqual({ kind: "BEING_WORKED_ON", taken: 210, heard: 400, note: "reading the editor's files", givens: [] })
   const done = after(heard, { kind: "HAND_BACK", id_Job: "j-1", at: 500 })
   expect(jobIn(done, "j-1").state).toEqual({ kind: "DONE", done: 500 })
   expect(after(jobs, { kind: "HAND_BACK", id_Job: "j-1", at: 250 }, { kind: "CHECK_IN", id_Job: "j-1", note: "here", at: 260 })).toBe(jobs)
-  expect(after(done, { kind: "TAKE", id_Job: "j-1", note: "again", at: 600 }, { kind: "CHECK_IN", id_Job: "j-1", note: "again", at: 600 }, { kind: "CANCEL", id_Job: "j-1", at: 600 }, { kind: "HAND_BACK", id_Job: "j-1", at: 600 })).toBe(done)
+  expect(after(done, { kind: "TAKE", id_Job: "j-1", note: "again", givens: [], at: 600 }, { kind: "CHECK_IN", id_Job: "j-1", note: "again", at: 600 }, { kind: "CANCEL", id_Job: "j-1", at: 600 }, { kind: "HAND_BACK", id_Job: "j-1", at: 600 })).toBe(done)
 })
 
 test("cancelled, a job queued or being worked on is so, and nothing after changes it", () => {
-  const jobs = after([], queue("j-1", "T-1", ["r-1"], 100), queue("j-2", "T-2", ["r-2"], 110), { kind: "TAKE", id_Job: "j-2", note: "starting", at: 210 })
+  const jobs = after([], queue("j-1", "T-1", ["r-1"], 100), queue("j-2", "T-2", ["r-2"], 110), { kind: "TAKE", id_Job: "j-2", note: "starting", givens: [], at: 210 })
   const stopped = after(jobs, { kind: "CANCEL", id_Job: "j-1", at: 300 }, { kind: "CANCEL", id_Job: "j-2", at: 300 })
   expect(statesIn(stopped)).toEqual(["j-1 CANCELLED", "j-2 CANCELLED"])
-  expect(after(stopped, { kind: "TAKE", id_Job: "j-1", note: "", at: 310 }, { kind: "CHECK_IN", id_Job: "j-2", note: "still reading", at: 310 }, { kind: "HAND_BACK", id_Job: "j-2", at: 320 })).toBe(stopped)
+  expect(after(stopped, { kind: "TAKE", id_Job: "j-1", note: "", givens: [], at: 310 }, { kind: "CHECK_IN", id_Job: "j-2", note: "still reading", at: 310 }, { kind: "HAND_BACK", id_Job: "j-2", at: 320 })).toBe(stopped)
 })
 
 test("a request's job is the latest of its task it was started in, a request stopped and started again found in its new job", () => {
@@ -93,8 +93,10 @@ test("over any sequence of moves: a task never has more than one job being worke
           ? queue(`j-${count++}`, `T-${each.task}`, [`r-${count}`], at)
           : ids.length === 0
             ? undefined
-            : each.kind === "TAKE" || each.kind === "CHECK_IN"
-              ? { kind: each.kind, id_Job: ids[each.job % ids.length]!, note: "", at }
+            : each.kind === "TAKE"
+              ? { kind: "TAKE", id_Job: ids[each.job % ids.length]!, note: "", givens: [], at }
+              : each.kind === "CHECK_IN"
+              ? { kind: "CHECK_IN", id_Job: ids[each.job % ids.length]!, note: "", at }
               : { kind: each.kind, id_Job: ids[each.job % ids.length]!, at }
         if (command === undefined) continue
         const before = jobs
@@ -142,8 +144,8 @@ test("in the shell, a Start is a job, in the core's state, with the requests it 
   const requests_Job = shell.jobOf("j-3")?.requests.map((request) => request.id)
   shell.handle({ kind: "STOP", id_Task: "T-1", scope: { kind: "REQUESTS", ids_Request: ["r-three"] } })
   const status_Rest = requestIn(shell, "four")?.status.kind
-  shell.handle({ kind: "HAND_BACK", id_Job: "j-2", proposed: [], note: "Not taken." })
-  shell.handle({ kind: "HAND_BACK", id_Job: "j-1", proposed: [], note: "Nothing needs to change." })
+  shell.handle({ kind: "HAND_BACK", id_Job: "j-2", landing: LANDING_NONE, note: "Not taken." })
+  shell.handle({ kind: "HAND_BACK", id_Job: "j-1", landing: LANDING_NONE, note: "Nothing needs to change." })
   const status_Done = requestIn(shell, "one")?.status
   shell.handle({ kind: "END", id_Task: "T-1", kind_End: "CANCEL" })
   expect(state_Queued).toEqual(["j-1 QUEUED", "j-2 QUEUED"])

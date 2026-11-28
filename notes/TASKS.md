@@ -703,9 +703,10 @@ playground's host, `playground/host.ts`, plays all four for now, faked.
   and the latest job a request's in, `jobOf__Request`; `_Agent_` holding
   them; tested by examples, and by a property over any sequence of moves.
   The endpoint and the command, `doctor wait|take|check|done`, built
-  2026-11-27 with the shell's core, in `SHELL.md`. Not yet: working
-  copies, the checker, questions, and a job gone quiet drawn, what's
-  waiting for an agent drawn since, under 13 in `AGENT.md`. **Its jobs
+  2026-11-27 with the shell's core, in `SHELL.md`. Not yet: questions;
+  working copies and the checker begun 2026-11-28, their first slice,
+  under 3 and 4 in `AGENT.md`; what's waiting for an agent and a job gone
+  quiet drawn since, under 13. **Its jobs
   moved into the core 2026-11-27,** the shell's,
   as the parts were found to be in layers, in `SHELL.md`: the agent part
   left the agent's adapter, the offers it's made and their lapse, the

@@ -25,7 +25,10 @@ import {
   type _State_Shell_,
   type _Message_Page_,
   type __BASE_Message_Page_,
-  type _Message_Shell_
+  type _Message_Shell_,
+  type _Job_Shell_,
+  type _File_Copy_,
+  type _Unplaceable_Copy_
 } from "../core/shell/index.ts"
 import {
   _Agent_,
@@ -38,8 +41,15 @@ import {
   SECONDS_WAIT_MOST,
   type _From_Wait_,
   type _Kind_Call_,
+  type _Copy_Agent_,
   type _Answer_Agent_
 } from "../agent/protocol/index.ts"
+import {
+  isGit__Project,
+  copiedOf__Job,
+  readOf__Copy,
+  removedOf__Copy
+} from "./Copy_Program.ts"
 
 export {
   _Program_,
@@ -87,6 +97,9 @@ class _Program_ {
   token_Page: string
   token_Agent: string
   command_Agent: string
+  isGit: boolean
+  dir_Copies: string
+  ids_Copied: Set<string>
   texts_Written: Map<string, string>
   writing: Promise<void>
   documents: _Documents_
@@ -109,6 +122,8 @@ class _Program_ {
     token_Page,
     token_Agent,
     command_Agent,
+    isGit,
+    dir_Copies,
     port
   }: _Api__Program_) {
     this.dir_Project = dir_Project
@@ -117,6 +132,9 @@ class _Program_ {
     this.token_Page = token_Page
     this.token_Agent = token_Agent
     this.command_Agent = command_Agent
+    this.isGit = isGit
+    this.dir_Copies = dir_Copies
+    this.ids_Copied = new Set()
     this.texts_Written = new Map()
     this.writing = Promise.resolve()
     this.documents = new _Documents_({
@@ -277,12 +295,13 @@ class _Program_ {
         status: 200
       })
     }
-    const call = url.pathname.match(/^\/agent\/job\/([^/]+)\/(check|done)$/)
-    if (request.method === "POST" && call !== null) {
+    const call = url.pathname.match(/^\/agent\/job\/([^/]+)\/([a-z]+)$/)
+    const kind_Call = CALLMAP__WORD[call?.[2] ?? ""]
+    if (request.method === "POST" && call !== null && kind_Call !== undefined) {
       return this.called({
         request,
         id_Job: call[1] ?? "",
-        kind_Call: call[2] === "done" ? "DONE" : "CHECK"
+        kind_Call
       })
     }
     return responseOf__Answer({
@@ -404,6 +423,7 @@ class _Program_ {
     const answer_Agent = this.agent.offeredOf({
       from,
       at: Date.now(),
+      copyOf: (job_Shell) => this.copyOf(job_Shell),
       command_Agent: this.command_Agent,
       command_Wait
     })
@@ -423,17 +443,124 @@ class _Program_ {
   }: _Api___called__Program_): Promise<Response> {
     const body: unknown = await request.json().catch(() => ({}))
     const note = typeof body === "object" && body !== null && "note" in body && typeof body.note === "string" ? body.note : ""
-    const answer_Agent = this.agent.called({
+    const job_Shell = this.shell.jobOf(id_Job)
+    const copy = job_Shell === undefined
+      ? COPY_UNKNOWN
+      : kind_Call !== "CHECK" && job_Shell.state.kind === "BEING_WORKED_ON" && this.isGit
+        ? await this.read(job_Shell)
+        : this.copyOf(job_Shell)
+    const answered = this.agent.called({
       kind_Call,
       id_Job,
       note,
+      said: body,
+      copy,
+      clashesOf: (landing) => job_Shell === undefined
+        ? []
+        : this.shell.clashesOf({
+          id_Task: job_Shell.id_Task,
+          landing
+        }),
       at: Date.now(),
       command_Agent: this.command_Agent
     })
+    const answer_Agent = answered.kind === "TAKEN" && copy.kind === "MADE"
+      ? await this.copied(id_Job).then(
+        () => answered,
+        (error: unknown): _Answer_Agent_ => ({
+          kind: "TAKEN",
+          copy: "",
+          next: `Job ${id_Job}'s yours, but doctor couldn't make your working copy: ${error instanceof Error ? error.message : String(error)}. Change no file; check in between big steps, and when it's done run \`${this.command_Agent} done ${id_Job} "<for each request, what you'd change and why, or why nothing needs to>"\`.`
+        })
+      )
+      : answered
     return responseOf__Answer({
       answer_Agent,
       status: answer_Agent.kind === "REFUSED" ? 409 : 200
     })
+  }
+
+  copyOf(
+    job_Shell: _Job_Shell_
+  ): _Copy_Agent_ {
+    return this.isGit
+      ? {
+        kind: "MADE",
+        path: join(this.dir_Copies, job_Shell.id_Task),
+        files: [],
+        unplaceables: []
+      }
+      : {
+        kind: "NONE",
+        why: "doctor makes working copies of git projects for now, opened at their repository's root, with a commit"
+      }
+  }
+
+  async copied(
+    id_Job: string
+  ): Promise<void> {
+    const job_Shell = this.shell.jobOf(id_Job)
+    if (job_Shell === undefined || job_Shell.state.kind !== "BEING_WORKED_ON") return
+    this.ids_Copied.add(job_Shell.id_Task)
+    await copiedOf__Job({
+      dir_Project: this.dir_Project,
+      dir_Copy: join(this.dir_Copies, job_Shell.id_Task),
+      givens: job_Shell.state.givens,
+      id_Job,
+      text_Endpoint: await Bun.file(join(this.dir_Project, DIR_DOCTOR, NAME_ENDPOINT)).text()
+    })
+  }
+
+  async read(
+    job_Shell: _Job_Shell_
+  ): Promise<_Copy_Agent_> {
+    const givens = job_Shell.state.kind === "BEING_WORKED_ON" ? job_Shell.state.givens : []
+    const dir_Copy = join(this.dir_Copies, job_Shell.id_Task)
+    const read_Copy = await readOf__Copy({
+      dir_Copy
+    })
+    const files: Array<_File_Copy_> = []
+    const unplaceables: Array<_Unplaceable_Copy_> = [...read_Copy.unplaceds]
+    for (const changed of read_Copy.changeds) {
+      const text_Copy = {
+        lines: parseTexts_Line(changed.text_Copy),
+        marks: []
+      }
+      const given = givens.find((given_Each) => given_Each.path === changed.path)
+      if (given !== undefined) {
+        files.push({
+          given,
+          text_Copy
+        })
+        continue
+      }
+      if (this.files.includes(changed.path)) await this.kept(changed.path)
+      const document = this.shell.isKept(changed.path) ? this.shell.documentOf(changed.path) : undefined
+      if (document === undefined || flatOf__Text(document.text) !== changed.text_Given) {
+        unplaceables.push({
+          path: changed.path,
+          why: document === undefined ? "isn't one of the files doctor lists for the project" : "has changed in the project since your copy was made: doctor can't place your changes on it"
+        })
+        continue
+      }
+      files.push({
+        given: {
+          path: changed.path,
+          version: document.version,
+          text_Document: document.text,
+          proposed: [],
+          sources: [],
+          text: document.text
+        },
+        text_Copy
+      })
+    }
+    return {
+      kind: "MADE",
+      path: dir_Copy,
+      files,
+      unplaceables
+    }
   }
 
   woken(): void {
@@ -494,6 +621,14 @@ class _Program_ {
   ): void {
     this.agent.heard(state_Shell)
     this.woken()
+    for (const id_Task of [...this.ids_Copied]) {
+      if (state_Shell.model_Tasks.tasks.some((task) => task.id === id_Task && task.kind === "OPEN")) continue
+      this.ids_Copied.delete(id_Task)
+      removedOf__Copy({
+        dir_Project: this.dir_Project,
+        dir_Copy: join(this.dir_Copies, id_Task)
+      }).catch((error: unknown) => console.error(`doctor couldn't take away ${id_Task}'s copy:`, error))
+    }
     for (const socket of this.sockets) {
       this.sent({
         socket,
@@ -561,6 +696,8 @@ interface _Api__Program_ {
   token_Page: string
   token_Agent: string
   command_Agent: string
+  isGit: boolean
+  dir_Copies: string
   port: number
 }
 
@@ -637,6 +774,22 @@ interface _Api___called__Program_ {
   request: Request
   id_Job: string
   kind_Call: _Kind_Call_
+}
+
+interface _CallMap__Word_ {
+  [word: string]: _Kind_Call_
+}
+
+const CALLMAP__WORD: _CallMap__Word_ = {
+  check: "CHECK",
+  changes: "CHANGES",
+  verify: "VERIFY",
+  done: "DONE"
+}
+
+const COPY_UNKNOWN: _Copy_Agent_ = {
+  kind: "NONE",
+  why: "there's no such job"
 }
 
 interface _Api___responseOf__Answer_ {
@@ -721,6 +874,7 @@ interface _Api___openedOf__Program_ {
   dir_Project: string
   files: Array<string>
   path_First: string
+  dir_Copies: string
   port: number
 }
 
@@ -728,6 +882,7 @@ async function openedOf__Program({
   dir_Project,
   files,
   path_First,
+  dir_Copies,
   port
 }: _Api___openedOf__Program_): Promise<_Program_> {
   if (!files.includes(path_First)) throw new Error(`${path_First} isn't one of the project's files`)
@@ -741,6 +896,10 @@ async function openedOf__Program({
     token_Page: tokenOf(),
     token_Agent: tokenOf(),
     command_Agent: commandOf__Doctor(),
+    isGit: await isGit__Project({
+      dir_Project
+    }),
+    dir_Copies,
     port
   })
   await mkdir(

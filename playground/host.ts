@@ -19,7 +19,9 @@ import { _Tasks_ } from "../source/core/tasks/index.ts"
 import {
   stampOf,
   _Shell_,
-  isTakeable__Job
+  isTakeable__Job,
+  landingOf__Base,
+  LANDING_NONE
 } from "../source/core/shell/index.ts"
 import {
   _Host_,
@@ -162,12 +164,20 @@ function hostedOf__Editor<State>({
                 note: ""
               })
               setTimeout(
-                () => shell.handle({
-                  kind: "HAND_BACK",
-                  id_Job: job_Shell.id,
-                  proposed: job_Shell.proposed,
-                  note: ""
-                }),
+                () => {
+                  const task = shell.taskOf(job_Shell.id_Task)
+                  shell.handle({
+                    kind: "HAND_BACK",
+                    id_Job: job_Shell.id,
+                    landing: task === undefined
+                      ? LANDING_NONE
+                      : landingOf__Base({
+                        task,
+                        job_Shell
+                      }),
+                    note: ""
+                  })
+                },
                 Math.max(
                   0,
                   (ats_Done.get(job_Shell.id) ?? Date.now() + delayOf(job_Shell.id_Task)) - Date.now()

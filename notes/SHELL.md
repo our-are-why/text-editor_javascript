@@ -313,7 +313,14 @@ What's built first, each a step that works on its own:
    gone; the playground's stand-in taking each job from the core and
    handing it back, as an agent does, with no server;
 4. working copies, the diff and the checker, an agent's work landing as
-   proposals;
+   proposals. **Begun 2026-11-28,** the first slice built, in `AGENT.md`
+   under 3 and 4: working copies, a git worktree per task in the user's
+   cache, made as a job's taken, the program's, `Copy_Program.ts`; the
+   core's pipeline, `Copy_Shell.ts`, numbering an agent's changes,
+   checking how it groups them and mapping them onto the file; the agent's
+   adapter answering `changes`, `verify` and `done`; proposals, new and
+   revised, landed for review. Not yet: moves, the text between two ideas,
+   the preview, frames, nesting, and projects that aren't git's;
 5. tests spinning up a demo, as the browser tests open the playground now.
 
 ## open

@@ -531,7 +531,8 @@ function jobsOf__Seed({
           kind: "BEING_WORKED_ON",
           taken: heardOf(request.id),
           heard: heardOf(request.id),
-          note: ""
+          note: "",
+          givens: []
         }
       })),
     ...requests_Waiting.length === 0 ? [] : [jobOf__Seed({

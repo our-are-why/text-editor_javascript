@@ -26,7 +26,11 @@ import type {
 // agent's note; a job stopped, the agent told so, what it hands back
 // refused; a caller that's gone never given a job; a wait kept to another
 // task given none; a call without the agent's token refused; a project with
-// no doctor open said so; the project's files listed for the page's token,
+// no doctor open said so; a job taken given a working copy, a git worktree
+// of the project, outside it, as the task has it, the agent's edit in it
+// numbered, its grouping verified and handed back, a proposal landed for
+// review, the file itself as it was, and the copy taken away once the task
+// ends; the project's files listed for the page's token,
 // as VS Code's adapter asks them; two pages told the core's state alike, a
 // request made through one seen by the other, the core knowing nothing of
 // either; and a wait answered closed as doctor stops
@@ -42,6 +46,7 @@ const program = await openedOf__Program({
     dir_Project: dir_Demo
   }),
   path_First: "README.md",
+  dir_Copies: join(dir_Demos, "copies"),
   port: 0
 })
 
@@ -182,6 +187,45 @@ const status_Unasked = (await fetch(`${program.server.url}agent/take`)).status
 const ran_Nowhere = await doctorIn(dir_Demos, "wait", "--for", "1")
 const ran_Help = await Bun.$`bun ${join(import.meta.dir, "..", "source", "program", "doctor.ts")} help`.cwd(dir_Demo).quiet()
 
+await doctor("take")
+const ran_Copied = await doctor("check", "j-3", "starting")
+const dir_Copy = String(ran_Copied.answer["copy"])
+const text_README = await Bun.file(join(dir_Demo, "README.md")).text()
+const copy_Given = {
+  isOutside: !dir_Copy.startsWith(dir_Demo),
+  isAsGiven: await Bun.file(join(dir_Copy, "README.md")).text() === text_README,
+  diff: (await Bun.$`git -C ${dir_Copy} status --porcelain`.quiet().text()).trim(),
+  worktrees: (await Bun.$`git -C ${dir_Demo} worktree list --porcelain`.quiet().text()).includes(dir_Copy)
+}
+await Bun.write(join(dir_Copy, "README.md"), text_README.replace("# retry", "# retry, with backoff"))
+const ran_Changes = await doctorIn(dir_Copy, "changes", "j-3")
+const path_Grouping = join(dir_Demos, "grouping.json")
+await Bun.write(path_Grouping, JSON.stringify({
+  stamp: ran_Changes.answer["stamp"],
+  proposals: [
+    {
+      title: "Say it backs off",
+      why: "Its title says what it does.",
+      changes: [1],
+      answers: ["request-Wait for an agent that's here."]
+    }
+  ]
+}))
+const ran_Verified = await doctorIn(dir_Copy, "verify", "j-3", path_Grouping)
+const ran_Landed = await doctorIn(dir_Copy, "done", "j-3", "Named its backoff.", path_Grouping)
+const landed_Copy = {
+  proposals: program.shell.taskOf("T-1")?.proposals.map((proposal) => [proposal.id, proposal.title]),
+  status: requestOf("Wait for an agent that's here.")?.status,
+  isUnchanged: await Bun.file(join(dir_Demo, "README.md")).text() === text_README
+}
+program.shell.handle({
+  kind: "END",
+  id_Task: "T-1",
+  kind_End: "CANCEL"
+})
+await Bun.sleep(1500)
+const isCopy_Gone = !(await Bun.file(join(dir_Copy, "README.md")).exists())
+
 const listedFor = (token: string) => fetch(
   `${program.server.url}page/files`,
   {
@@ -304,7 +348,20 @@ test("every state a page is told carries the program's clock, so a page anywhere
 
 test("help says the loop, each of the agent's commands, and the person's", () => {
   const help = ran_Help.stdout.toString()
-  for (const command of ["wait [--for <seconds>] [--task <id>]", "take [--task <id>]", "check <job>", "done <job>", "open [folder]"]) expect(help).toContain(command)
+  for (const command of ["wait [--for <seconds>] [--task <id>]", "take [--task <id>]", "check <job>", "changes <job>", "verify <job> <file>", "done <job>", "open [folder]"]) expect(help).toContain(command)
+})
+
+test("a job taken is given a working copy, a git worktree of the project outside it, its files as given, nothing changed in it to git, doctor found from inside it; an edit there numbered, its grouping verified and handed back, a proposal landed for review, its request answered by it, the file itself unchanged; the copy taken away once the task ends", () => {
+  expect([ran_Copied.answer["kind"], copy_Given]).toEqual(["TAKEN", { isOutside: true, isAsGiven: true, diff: "", worktrees: true }])
+  expect(ran_Changes.answer["changes"]).toEqual([{ number: 1, path: "README.md", lines: "1", before: "", after: ", with backoff" }])
+  expect([ran_Verified.answer["kind"], ran_Verified.answer["issues"]]).toEqual(["VERIFIED", []])
+  expect([ran_Landed.answer["kind"], ran_Landed.answer["reports"]]).toEqual(["HANDED_BACK", []])
+  expect(landed_Copy).toEqual({
+    proposals: [["j-3.1", "Say it backs off"]],
+    status: { kind: "ADDRESSED", answer: { kind: "PROPOSALS", ids_Proposal: ["j-3.1"] } },
+    isUnchanged: true
+  })
+  expect(isCopy_Gone).toBe(true)
 })
 
 test("the project's files are listed for the page's token, as VS Code's adapter asks them, never for another's", () => {

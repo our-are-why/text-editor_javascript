@@ -13,6 +13,7 @@ import {
   DIR_DOCTOR,
   NAME_ENDPOINT
 } from "./Program.ts"
+import { dirOf__Copies } from "./Copy_Program.ts"
 
 export {
   _Program_,
@@ -26,6 +27,7 @@ export {
   type _Addresses_Program_,
   commandOf__Doctor,
   endpointOf__Folder,
+  dirOf__Copies,
   DIR_DOCTOR,
   NAME_ENDPOINT
 }
