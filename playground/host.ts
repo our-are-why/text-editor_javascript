@@ -146,6 +146,7 @@ function hostedOf__Editor<State>({
             state_Shell,
             files,
             isListening_Agent,
+            at: Date.now(),
             count_Edit: host.count_Sent
           })
           if (!isListening_Agent) return
@@ -219,6 +220,7 @@ function hostedOf__Editor<State>({
     },
     files,
     isListening_Agent,
+    at: Date.now(),
     attributes: seed.attributes_Own,
     state_Shell: shell.state(),
     suffix_Id: "",
@@ -233,6 +235,12 @@ function hostedOf__Editor<State>({
       }
     ]
   })
+  // a job gone quiet as time passes, with nothing in the core changing,
+  // looked for again every few seconds
+  setInterval(
+    () => host.ticked(),
+    15_000
+  )
   const shown_Host = host.showing()
   if (shown_Host === undefined) throw new Error(`${name_Document} isn't kept`)
   const editor: _TextEditor_<State> = new _TextEditor_({

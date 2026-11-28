@@ -511,6 +511,7 @@ class _Program_ {
       state_Shell,
       files: this.files,
       isListening_Agent: this.isListening_Agent,
+      at: Date.now(),
       path_First: this.path_First,
       count_Edit: socket.data.count_Edit
     }

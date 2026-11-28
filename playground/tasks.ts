@@ -40,7 +40,8 @@ export {
   type _Other_Task_,
   type _Resolved_Task_,
   type _Seed_Tasks_,
-  type _Seeded_Task_
+  type _Seeded_Task_,
+  type _Quiet_Seed_
 }
 
 interface _Api___seededOf__Example_ {
@@ -110,7 +111,8 @@ interface _Seed_Tasks_ {
 // shown its head there, stated against the document's version, what landed
 // on it written before your edits stale; each resolved one, as it ended;
 // each request's words where it was sent on them, in the task; the jobs
-// its requests with the agent are in where any of them wait, as below; and
+// its requests with the agent are in where any of them wait, or have gone
+// quiet, as below; and
 // what only the editor draws of the task the playground's on, its
 // proposals' attributes
 function seededOf__Example({
@@ -202,6 +204,12 @@ interface _Api___taskOf__Content_ {
 interface _Seeded_Task_ {
   task: _Task_Tasks_
   ids_Waiting: Array<string>
+  quiets: Array<_Quiet_Seed_>
+}
+
+interface _Quiet_Seed_ {
+  id_Request: string
+  minutes_Quiet: number
 }
 
 // an open task as the tasks part holds it, from what the example says it
@@ -209,7 +217,8 @@ interface _Seeded_Task_ {
 // its own requests, on the document shown or the task, each where it
 // stands; what the example counts it has elsewhere, made into as many
 // proposals and requests; and its changes, its heads; with which of its
-// requests with the agent are waiting for one, for their jobs
+// requests with the agent are waiting for one, and which have gone quiet,
+// and how long since, for their jobs
 function taskOf__Content({
   id,
   name,
@@ -229,10 +238,11 @@ function taskOf__Content({
     counts_Requests: elsewhere_Task.counts_Requests,
     stamp
   }))
-  const ids_Waiting = [
+  const requests_Said = [
     ...proposals.flatMap((proposal_Host) => proposal_Host.requests),
     ...requests
-  ].flatMap((request) => request.status === "WAITING" ? [request.id] : [])
+  ]
+  const ids_Waiting = requests_Said.flatMap((request) => request.status === "WAITING" ? [request.id] : [])
   const task: _Task_Tasks_ = {
     kind: "OPEN",
     id,
@@ -317,7 +327,15 @@ function taskOf__Content({
     ids_Waiting: [
       ...ids_Waiting,
       ...elsewhere.flatMap((counted) => counted.ids_Waiting)
-    ]
+    ],
+    quiets: requests_Said.flatMap((request) => request.status === "QUIET"
+      ? [
+        {
+          id_Request: request.id,
+          minutes_Quiet: request.minutes_Quiet
+        }
+      ]
+      : [])
   }
 }
 
@@ -328,7 +346,8 @@ interface _Api___statusOf__Host_ {
 }
 
 // where a request the editor's told of stands, as the tasks part holds it:
-// running, or waiting for an agent, with the agent, its job saying which;
+// running, waiting for an agent, or gone quiet, with the agent, its job
+// saying which;
 // addressed, by the proposals that answer it, or with nothing needing to
 // change
 function statusOf__Host({
@@ -340,7 +359,7 @@ function statusOf__Host({
     ? {
       kind: "STAGED"
     }
-    : request_Host.status === "RUNNING" || request_Host.status === "WAITING"
+    : request_Host.status === "RUNNING" || request_Host.status === "WAITING" || request_Host.status === "QUIET"
       ? {
         kind: "WITH_AGENT",
         stamp
@@ -478,12 +497,14 @@ interface _Api___jobsOf__Seed_ {
   at: number
 }
 
-// the jobs of a task the example seeds with requests waiting for an agent:
-// its running ones each a job of its own being worked on, never handed
-// back, and those waiting one job queued behind them, so they wait, as
-// they would behind an agent at work, till those are stopped; a task with
-// none waiting none, its running requests jobless, as a seed's always
-// were, so what's started in it runs at once, as it did
+// the jobs of a task the example seeds with requests waiting for an agent,
+// or gone quiet: its running ones each a job of its own being worked on,
+// never handed back, those gone quiet each one too, last heard of as many
+// minutes ago as the example says, and those waiting one job queued behind
+// them, so they wait, as they would behind an agent at work, till those
+// are stopped; a task with none waiting or quiet none, its running requests
+// jobless, as a seed's always were, so what's started in it runs at once,
+// as it did
 function jobsOf__Seed({
   seeded_Task,
   name_Document,
@@ -492,9 +513,10 @@ function jobsOf__Seed({
 }: _Api___jobsOf__Seed_): Array<_Job_Shell_> {
   const task = seeded_Task.task
   const ids_Waiting = seeded_Task.ids_Waiting
-  if (ids_Waiting.length === 0) return []
+  if (ids_Waiting.length + seeded_Task.quiets.length === 0) return []
   const requests_With = task.requests.filter((request) => request.status.kind === "WITH_AGENT")
   const requests_Waiting = requests_With.filter((request) => ids_Waiting.includes(request.id))
+  const heardOf = (id_Request: string) => at - (seeded_Task.quiets.find((quiet) => quiet.id_Request === id_Request)?.minutes_Quiet ?? 0) * 60_000
   return [
     ...requests_With
       .filter((request) => !ids_Waiting.includes(request.id))
@@ -507,12 +529,12 @@ function jobsOf__Seed({
         at,
         state: {
           kind: "BEING_WORKED_ON",
-          taken: at,
-          heard: at,
+          taken: heardOf(request.id),
+          heard: heardOf(request.id),
           note: ""
         }
       })),
-    jobOf__Seed({
+    ...requests_Waiting.length === 0 ? [] : [jobOf__Seed({
       id: `j-seed ${task.id} waiting`,
       task,
       requests: requests_Waiting,
@@ -522,7 +544,7 @@ function jobsOf__Seed({
       state: {
         kind: "QUEUED"
       }
-    })
+    })]
   ]
 }
 

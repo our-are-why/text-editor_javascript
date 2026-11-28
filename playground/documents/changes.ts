@@ -1295,5 +1295,5 @@ function requestOf({
   text,
   side
 }: _Api___requestOf_): _Request_Host_ {
-  return { id, notes, reference: { pieces, text, side }, status: "STAGED" }
+  return { minutes_Quiet: 0, id, notes, reference: { pieces, text, side }, status: "STAGED" }
 }

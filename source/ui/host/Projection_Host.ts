@@ -47,8 +47,13 @@ export {
   type _Counts_Agent_,
   statusHostOf__Request,
   type _Api___statusHostOf__Request_,
-  type _StatusMap__Status_Request_Tasks_,
-  STATUSMAP__STATUS_REQUEST_TASKS,
+  type _Standing_Request_,
+  standingHostOf__Request,
+  type _StandingMap__Status_Request_Tasks_,
+  STANDINGMAP__STATUS_REQUEST_TASKS,
+  standingWithAgentOf__Job,
+  type _Api___standingWithAgentOf__Job_,
+  MS_QUIET__JOB,
   type _Api___taskHostOf__Task_,
   referenceOf__Words,
   type _Api___referenceOf__Words_,
@@ -88,12 +93,14 @@ interface _Api___taskHostOf__Task_ {
   task: _Task_Tasks_
   name_Document: string
   jobs: Array<_Job_Shell_>
+  at: number
 }
 
 function taskHostOf__Task({
   task,
   name_Document,
-  jobs
+  jobs,
+  at
 }: _Api___taskHostOf__Task_): _Task_Host_ {
   const paths = pathsOf__Task({
     task
@@ -121,7 +128,8 @@ function taskHostOf__Task({
     name: task.name,
     state: stateHostOf__Task({
       task,
-      jobs
+      jobs,
+      at
     }),
     summary: task.summary,
     reason: "",
@@ -134,7 +142,8 @@ function taskHostOf__Task({
       counts_Requests: countsOf__Requests_Path({
         task,
         path,
-        jobs
+        jobs,
+        at
       }),
       isShown: path === name_Document,
       actions: count_Waiting(path) === 0
@@ -159,10 +168,11 @@ function taskHostOf__Task({
               words: request.aim.words
             })
           },
-          status: statusHostOf__Request({
+          ...standingHostOf__Request({
             task,
             request,
-            jobs
+            jobs,
+            at
           }),
           sources_Answering: request.status.kind === "ADDRESSED" && request.status.answer.kind === "PROPOSALS" ? request.status.answer.ids_Proposal : []
         }
@@ -192,45 +202,56 @@ function taskHostOf__Task({
 interface _Api___stateHostOf__Task_ {
   task: _Task_Tasks_
   jobs: Array<_Job_Shell_>
+  at: number
 }
 
 function stateHostOf__Task({
   task,
-  jobs
+  jobs,
+  at
 }: _Api___stateHostOf__Task_): _State_Task_ {
   const state = stateOf__Task({
     task
   })
   if (state !== "WORKING") return state
-  return countsAgentOf__Task({
+  const counts_Agent = countsAgentOf__Task({
     task,
-    jobs
-  }).count_Running > 0
+    jobs,
+    at
+  })
+  return counts_Agent.count_Running > 0
     ? "WORKING"
-    : "WAITING"
+    : counts_Agent.count_Quiet > 0
+      ? "QUIET"
+      : "WAITING"
 }
 
 interface _Api___countsAgentOf__Task_ {
   task: _Task_Tasks_
   jobs: Array<_Job_Shell_>
+  at: number
 }
 
 interface _Counts_Agent_ {
   count_Running: number
+  count_Quiet: number
   count_Waiting: number
 }
 
 function countsAgentOf__Task({
   task,
-  jobs
+  jobs,
+  at
 }: _Api___countsAgentOf__Task_): _Counts_Agent_ {
   const statuses = task.requests.map((request) => statusHostOf__Request({
     task,
     request,
-    jobs
+    jobs,
+    at
   }))
   return {
     count_Running: statuses.filter((status) => status === "RUNNING").length,
+    count_Quiet: statuses.filter((status) => status === "QUIET").length,
     count_Waiting: statuses.filter((status) => status === "WAITING").length
   }
 }
@@ -239,40 +260,99 @@ interface _Api___statusHostOf__Request_ {
   task: _Task_Tasks_
   request: _Request_Tasks_
   jobs: Array<_Job_Shell_>
+  at: number
 }
 
 function statusHostOf__Request({
   task,
   request,
-  jobs
+  jobs,
+  at
 }: _Api___statusHostOf__Request_): _Status_Request_ {
-  const statusOf = STATUSMAP__STATUS_REQUEST_TASKS[request.status.kind]
-  return statusOf({
+  return standingHostOf__Request({
     task,
     request,
-    jobs
+    jobs,
+    at
+  }).status
+}
+
+interface _Standing_Request_ {
+  status: _Status_Request_
+  minutes_Quiet: number
+}
+
+function standingHostOf__Request({
+  task,
+  request,
+  jobs,
+  at
+}: _Api___statusHostOf__Request_): _Standing_Request_ {
+  const standingOf = STANDINGMAP__STATUS_REQUEST_TASKS[request.status.kind]
+  return standingOf({
+    task,
+    request,
+    jobs,
+    at
   })
 }
 
-type _StatusMap__Status_Request_Tasks_ = {
-  [Kind in _Status_Request_Tasks_["kind"]]: (api_Status: _Api___statusHostOf__Request_) => _Status_Request_
+type _StandingMap__Status_Request_Tasks_ = {
+  [Kind in _Status_Request_Tasks_["kind"]]: (api_Standing: _Api___statusHostOf__Request_) => _Standing_Request_
 }
 
-const STATUSMAP__STATUS_REQUEST_TASKS: _StatusMap__Status_Request_Tasks_ = {
-  STAGED: () => "STAGED",
+const STANDINGMAP__STATUS_REQUEST_TASKS: _StandingMap__Status_Request_Tasks_ = {
+  STAGED: () => ({
+    status: "STAGED",
+    minutes_Quiet: 0
+  }),
   WITH_AGENT: ({
     task,
     request,
-    jobs
-  }) => jobOf__Request({
     jobs,
-    id_Task: task.id,
-    id_Request: request.id
-  })?.state.kind === "QUEUED"
-    ? "WAITING"
-    : "RUNNING",
-  ADDRESSED: () => "ADDRESSED"
+    at
+  }) => standingWithAgentOf__Job({
+    job_Shell: jobOf__Request({
+      jobs,
+      id_Task: task.id,
+      id_Request: request.id
+    }),
+    at
+  }),
+  ADDRESSED: () => ({
+    status: "ADDRESSED",
+    minutes_Quiet: 0
+  })
 }
+
+interface _Api___standingWithAgentOf__Job_ {
+  job_Shell: _Job_Shell_ | undefined
+  at: number
+}
+
+function standingWithAgentOf__Job({
+  job_Shell,
+  at
+}: _Api___standingWithAgentOf__Job_): _Standing_Request_ {
+  if (job_Shell?.state.kind === "QUEUED") {
+    return {
+      status: "WAITING",
+      minutes_Quiet: 0
+    }
+  }
+  const ms_Quiet = job_Shell?.state.kind === "BEING_WORKED_ON" ? at - job_Shell.state.heard : 0
+  return ms_Quiet < MS_QUIET__JOB
+    ? {
+      status: "RUNNING",
+      minutes_Quiet: 0
+    }
+    : {
+      status: "QUIET",
+      minutes_Quiet: Math.floor(ms_Quiet / 60_000)
+    }
+}
+
+const MS_QUIET__JOB = 5 * 60_000
 
 interface _Api___referenceOf__Words_ {
   words: _Words_Aim_
@@ -324,12 +404,14 @@ interface _Api___countsOf__Requests_Path_ {
   task: _Task_Tasks_
   path: string
   jobs: Array<_Job_Shell_>
+  at: number
 }
 
 function countsOf__Requests_Path({
   task,
   path,
-  jobs
+  jobs,
+  at
 }: _Api___countsOf__Requests_Path_): _Counts_Requests_ {
   const statuses = task.requests
     .filter((request) => pathOf__Request({
@@ -339,12 +421,14 @@ function countsOf__Requests_Path({
     .map((request) => statusHostOf__Request({
       task,
       request,
-      jobs
+      jobs,
+      at
     }))
   return {
     STAGED: statuses.filter((status) => status === "STAGED").length,
     WAITING: statuses.filter((status) => status === "WAITING").length,
-    RUNNING: statuses.filter((status) => status === "RUNNING").length
+    RUNNING: statuses.filter((status) => status === "RUNNING").length,
+    QUIET: statuses.filter((status) => status === "QUIET").length
   }
 }
 
@@ -370,13 +454,15 @@ interface _Api___proposalsHostOf__Task_ {
   content: _Content_Task_
   name_Document: string
   jobs: Array<_Job_Shell_>
+  at: number
 }
 
 function proposalsHostOf__Task({
   task,
   content,
   name_Document,
-  jobs
+  jobs,
+  at
 }: _Api___proposalsHostOf__Task_): Array<_Proposal_Host_> {
   return [
     PROPOSAL_YOURS,
@@ -396,10 +482,11 @@ function proposalsHostOf__Task({
               reference: referenceOf__Words({
                 words: request.aim.words
               }),
-              status: statusHostOf__Request({
+              ...standingHostOf__Request({
                 task,
                 request,
-                jobs
+                jobs,
+                at
               })
             }
           ]
@@ -492,26 +579,30 @@ interface _Api___standingOf__Tasks_ {
   task: _Task_Tasks_
   name_Document: string
   jobs: Array<_Job_Shell_>
+  at: number
 }
 
 function standingOf__Tasks({
   task,
   name_Document,
-  jobs
+  jobs,
+  at
 }: _Api___standingOf__Tasks_): _Standing_Task_ {
   const counts = countsOf__Task({
     task
   })
   const counts_Agent = countsAgentOf__Task({
     task,
-    jobs
+    jobs,
+    at
   })
   return {
     id: task.id,
     name: task.name,
     state: stateHostOf__Task({
       task,
-      jobs
+      jobs,
+      at
     }),
     isOnDocument: pathsOf__Task({
       task
@@ -520,6 +611,7 @@ function standingOf__Tasks({
     count_Conflicts: counts.count_Conflicts,
     count_Staged: counts.count_Staged,
     count_Running: counts_Agent.count_Running,
+    count_Quiet: counts_Agent.count_Quiet,
     count_Waiting: counts_Agent.count_Waiting
   }
 }
@@ -528,19 +620,22 @@ interface _Api___boardedOf__Tasks_ {
   task: _Task_Tasks_
   count_Editors: number
   jobs: Array<_Job_Shell_>
+  at: number
 }
 
 function boardedOf__Tasks({
   task,
   count_Editors,
-  jobs
+  jobs,
+  at
 }: _Api___boardedOf__Tasks_): _Task_Board_ {
   const counts = countsOf__Task({
     task
   })
   const counts_Agent = countsAgentOf__Task({
     task,
-    jobs
+    jobs,
+    at
   })
   const isOpen = task.kind === "OPEN"
   return {
@@ -548,7 +643,8 @@ function boardedOf__Tasks({
     name: task.name,
     state: stateHostOf__Task({
       task,
-      jobs
+      jobs,
+      at
     }),
     paths: isOpen
       ? pathsOf__Task({
@@ -558,6 +654,7 @@ function boardedOf__Tasks({
     count_Undecided: isOpen ? counts.count_Undecided : 0,
     count_Conflicts: isOpen ? counts.count_Conflicts : 0,
     count_Running: isOpen ? counts_Agent.count_Running : 0,
+    count_Quiet: isOpen ? counts_Agent.count_Quiet : 0,
     count_Waiting: isOpen ? counts_Agent.count_Waiting : 0,
     count_Staged: isOpen ? counts.count_Staged : 0,
     count_Editors

@@ -3514,9 +3514,10 @@ test("a conflict settled from its item: each says what the file did and offers i
 // switched to it, the one at work said running, the one waiting said
 // waiting; the one at work stopped, the one waiting taken, said running,
 // and a moment later done with, as an agent would. The Markdown example's
-// with no agent listening, the footer saying so: its task, and its other,
-// Waiting, its proposal's revision waiting, and its own request, started,
-// still waiting a while on
+// with no agent listening, the footer saying so: its task Waiting, its
+// proposal's revision waiting, and its own request, started, still waiting
+// a while on; its other task's agent gone quiet, nothing heard from it for
+// 14 minutes, the task Quiet, its request said quiet and for how long
 const pressedVia = async (page: Awaited<ReturnType<typeof openExample>>["page"], control: ReturnType<Awaited<ReturnType<typeof openExample>>["page"]["locator"]>) => {
   const box_More = await control.locator("xpath=ancestor::*[contains(concat(' ', @class, ' '), ' fold_Action_htmlView ')][1]").locator(":scope > .more_htmlView").boundingBox()
   if (box_More !== null) await page.mouse.move(box_More.x + box_More.width / 2, box_More.y + box_More.height / 2)
@@ -3567,6 +3568,16 @@ await pressedVia(opened_Away.page, opened_Away.page.locator(".card_Document_html
 await opened_Away.page.mouse.move(5, 5)
 await opened_Away.page.waitForTimeout(2000)
 const said_Away = await opened_Away.page.evaluate(() => [...new Set([...document.querySelectorAll(".card_Document_htmlView .said_htmlView .progress_Said_htmlView")].map((progress) => progress.textContent))])
+await opened_Away.page.hover(".trigger_Switcher_htmlView")
+await opened_Away.page.waitForTimeout(300)
+const option_Quiet = await opened_Away.page.evaluate(() => [...document.querySelectorAll(".choice_Switcher_htmlView[data-id=\"T-12\"] .part_Option_htmlView")].map((part) => `${part.getAttribute("data-kind")} ${part.textContent}`))
+await opened_Away.page.click(".choice_Switcher_htmlView[data-switch=\"TASK\"][data-id=\"T-12\"]")
+await opened_Away.page.mouse.move(5, 5)
+await opened_Away.page.waitForTimeout(500)
+const quiet_Switched = await opened_Away.page.evaluate(() => ({
+  task: [document.querySelector(".trigger_Task_htmlView")?.getAttribute("data-state") ?? null, document.querySelector(".trigger_Task_htmlView .state_Task_htmlView")?.textContent ?? null],
+  said: [...new Set([...document.querySelectorAll(".card_Task_htmlView .said_htmlView")].map((said) => `${said.querySelector(".notes_Said_htmlView")?.textContent ?? ""} | ${said.querySelector(".progress_Said_htmlView")?.textContent ?? ""}`))]
+}))
 await opened_Away.close()
 
 test("the JavaScript example's agent is always listening, the footer saying so; switched to Log each retry, its request at work's said running, the one waiting behind it waiting; the one at work stopped, the one waiting's taken, running, and a moment later done with", () => {
@@ -3578,13 +3589,18 @@ test("the JavaScript example's agent is always listening, the footer saying so; 
   expect(opened_Agent.errors).toEqual([])
 })
 
-test("the Markdown example has no agent listening, the footer saying so: its task Waiting, said after its name, its other task waiting too, its proposal's revision waiting; its own request, started, still waiting a while on", () => {
+test("the Markdown example has no agent listening, the footer saying so: its task Waiting, said after its name, its proposal's revision waiting; its own request, started, still waiting a while on; its other task's agent gone quiet, the task Quiet, counted apart in the footer and the switcher, its request said quiet for 14 minutes", () => {
   expect(away_Opened).toEqual({
     footer: "No agent listening",
-    counts: "2 tasks: 2 need you, 2 waiting",
+    counts: "2 tasks: 2 need you, 1 quiet, 1 waiting",
     task: ["WAITING", "Waiting"],
     revision: "waiting"
   })
   expect(said_Away).toEqual(["waiting"])
+  expect(option_Quiet).toEqual(["YOURS 14 to decide", "QUIET 1 quiet", "WAITING 3 waiting"])
+  expect(quiet_Switched).toEqual({
+    task: ["QUIET", "Quiet"],
+    said: ["Say in the README what the cap is, and why. | quiet · 14 min"]
+  })
   expect(opened_Away.errors).toEqual([])
 })

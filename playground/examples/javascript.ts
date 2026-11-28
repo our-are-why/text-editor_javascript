@@ -286,12 +286,14 @@ const proposal_Cap: _Proposal_Host_ = {
   rationale: "A caller passing many attempts waits minutes by the tenth; capped, a long outage never goes quiet for longer than half a minute.",
   requests: [
     {
+      minutes_Quiet: 0,
       id: "cap-0",
       notes: "make the cap an option, 30 seconds unless the caller gives another.",
       reference: null,
       status: "STAGED"
     },
     {
+      minutes_Quiet: 0,
       id: "cap-1",
       notes: "Name it MAX_DELAY_MS, up with the other constants.",
       reference: wordsIn("cap", "30_000"),
@@ -314,12 +316,14 @@ const proposal_Timeout: _Proposal_Host_ = {
   rationale: "A 408 means the server stopped waiting for the request, not that the request failed: sent again, it usually goes through.",
   requests: [
     {
+      minutes_Quiet: 0,
       id: "timeout-0",
       notes: "only when the request is safe to send twice, a GET or a PUT.",
       reference: null,
       status: "RUNNING"
     },
     {
+      minutes_Quiet: 0,
       id: "timeout-1",
       notes: "Say timed out, as the status means, not before any answer.",
       reference: wordsIn("timeout", "before any answer"),
@@ -458,6 +462,7 @@ const edits_retry: Array<_Edit_Example_> = [
 // and one asked of the task as a whole
 const requests_retry: Array<_Request_Task_> = [
   {
+    minutes_Quiet: 0,
     id: "asked-1",
     notes: "Count the errors too, for the message.",
     aim: { kind: "DOCUMENT", reference: wordsOf(quoteOf(20, "lastError = error;", 0)) },
@@ -465,6 +470,7 @@ const requests_retry: Array<_Request_Task_> = [
     sources_Answering: []
   },
   {
+    minutes_Quiet: 0,
     id: "asked-2",
     notes: "Say which round it gives up at.",
     aim: { kind: "DOCUMENT", reference: wordsOf(quoteOf(21, "n === attempts", 0)) },
@@ -472,6 +478,7 @@ const requests_retry: Array<_Request_Task_> = [
     sources_Answering: []
   },
   {
+    minutes_Quiet: 0,
     id: "asked-3",
     notes: "Give up on an error that can't be retried before the count's checked.",
     aim: { kind: "DOCUMENT", reference: wordsOf(quoteOf(21, "attempts || !isRetryable(error)", 0)) },
@@ -479,6 +486,7 @@ const requests_retry: Array<_Request_Task_> = [
     sources_Answering: []
   },
   {
+    minutes_Quiet: 0,
     id: "asked-4",
     notes: "Say why half a delay at random, not a whole one.",
     aim: { kind: "DOCUMENT", reference: wordsOf({ from: { line: 28, offset: 0 }, to: { line: 29, offset: (texts_retry[29] ?? "").length } }) },
@@ -486,6 +494,7 @@ const requests_retry: Array<_Request_Task_> = [
     sources_Answering: []
   },
   {
+    minutes_Quiet: 0,
     id: "asked-5",
     notes: "Say what this throws: https://developer.mozilla.org/en-US/docs/Web/API/AbortSignal/throwIfAborted",
     aim: { kind: "DOCUMENT", reference: wordsOf(quoteOf(16, "signal?.throwIfAborted();", 0)) },
@@ -493,6 +502,7 @@ const requests_retry: Array<_Request_Task_> = [
     sources_Answering: []
   },
   {
+    minutes_Quiet: 0,
     id: "asked-6",
     notes: "Keep every error the attempts throw, not only the last.",
     aim: { kind: "DOCUMENT", reference: null },
@@ -500,6 +510,7 @@ const requests_retry: Array<_Request_Task_> = [
     sources_Answering: ["errors"]
   },
   {
+    minutes_Quiet: 0,
     id: "asked-7",
     notes: "Check the doc comment still says what retry takes.",
     aim: { kind: "DOCUMENT", reference: null },
@@ -507,6 +518,7 @@ const requests_retry: Array<_Request_Task_> = [
     sources_Answering: []
   },
   {
+    minutes_Quiet: 0,
     id: "asked-8",
     notes: "Say in the README that onRetry is gone.",
     aim: { kind: "TASK", reference: null },
@@ -545,8 +557,8 @@ const task_Log: _Other_Task_ = {
   name: "Log each retry",
   isStarted: true,
   requests: [
-    { id: "T-13 a", notes: "Log each attempt that fails, with its error and which round it was.", aim: { kind: "DOCUMENT", reference: wordsOf(quoteOf(19, "} catch (error) {", 0)) }, status: "RUNNING", sources_Answering: [] },
-    { id: "T-13 b", notes: "Say in the README what's logged, and where.", aim: { kind: "TASK", reference: null }, status: "WAITING", sources_Answering: [] }
+    { minutes_Quiet: 0, id: "T-13 a", notes: "Log each attempt that fails, with its error and which round it was.", aim: { kind: "DOCUMENT", reference: wordsOf(quoteOf(19, "} catch (error) {", 0)) }, status: "RUNNING", sources_Answering: [] },
+    { minutes_Quiet: 0, id: "T-13 b", notes: "Say in the README what's logged, and where.", aim: { kind: "TASK", reference: null }, status: "WAITING", sources_Answering: [] }
   ],
   documents_Elsewhere: []
 }
@@ -562,7 +574,7 @@ const task_Promises: _Other_Task_ = {
     {
       name: "README.md",
       counts_Proposals: { OPEN: 0, REQUESTED: 0, REVISING: 0, ACCEPTED: 2, REJECTED: 0, WITHDRAWN: 0 },
-      counts_Requests: { WAITING: 0, STAGED: 0, RUNNING: 0 }
+      counts_Requests: { QUIET: 0, WAITING: 0, STAGED: 0, RUNNING: 0 }
     }
   ]
 }
@@ -573,7 +585,7 @@ const task_Tries: _Other_Task_ = {
   name: "Rename attempts to tries",
   isStarted: true,
   requests: [
-    { id: "T-15 a", notes: "Call attempts tries, the option and the constant both.", aim: { kind: "DOCUMENT", reference: wordsOf(quoteOf(13, "attempts = ATTEMPTS", 0)) }, status: "STAGED", sources_Answering: [] }
+    { minutes_Quiet: 0, id: "T-15 a", notes: "Call attempts tries, the option and the constant both.", aim: { kind: "DOCUMENT", reference: wordsOf(quoteOf(13, "attempts = ATTEMPTS", 0)) }, status: "STAGED", sources_Answering: [] }
   ],
   documents_Elsewhere: []
 }
@@ -585,8 +597,8 @@ const task_Options: _Other_Task_ = {
   name: "Name the retry options",
   isStarted: true,
   requests: [
-    { id: "T-17 a", notes: "Name the options' type RetryOptions, in a typedef of its own.", aim: { kind: "DOCUMENT", reference: wordsOf(quoteOf(10, "{{ attempts?: number, signal?: AbortSignal, onRetry?: (error: unknown, n: number) => void }}", 0)) }, status: "STAGED", sources_Answering: [] },
-    { id: "T-17 b", notes: "Take the options whole, as options, and take them apart in the body.", aim: { kind: "DOCUMENT", reference: wordsOf(quoteOf(13, "{ attempts = ATTEMPTS, signal, onRetry } = {}", 0)) }, status: "STAGED", sources_Answering: [] }
+    { minutes_Quiet: 0, id: "T-17 a", notes: "Name the options' type RetryOptions, in a typedef of its own.", aim: { kind: "DOCUMENT", reference: wordsOf(quoteOf(10, "{{ attempts?: number, signal?: AbortSignal, onRetry?: (error: unknown, n: number) => void }}", 0)) }, status: "STAGED", sources_Answering: [] },
+    { minutes_Quiet: 0, id: "T-17 b", notes: "Take the options whole, as options, and take them apart in the body.", aim: { kind: "DOCUMENT", reference: wordsOf(quoteOf(13, "{ attempts = ATTEMPTS, signal, onRetry } = {}", 0)) }, status: "STAGED", sources_Answering: [] }
   ],
   documents_Elsewhere: []
 }
@@ -598,8 +610,8 @@ const task_Timeout: _Other_Task_ = {
   name: "Add a timeout option",
   isStarted: false,
   requests: [
-    { id: "T-16 a", notes: "Take a timeout, in milliseconds, and give up once it's passed.", aim: { kind: "DOCUMENT", reference: wordsOf(quoteOf(13, "signal", 0)) }, status: "STAGED", sources_Answering: [] },
-    { id: "T-16 b", notes: "Say in the doc comment what timeout does.", aim: { kind: "DOCUMENT", reference: wordsOf(quoteOf(10, "signal?: AbortSignal", 0)) }, status: "STAGED", sources_Answering: [] }
+    { minutes_Quiet: 0, id: "T-16 a", notes: "Take a timeout, in milliseconds, and give up once it's passed.", aim: { kind: "DOCUMENT", reference: wordsOf(quoteOf(13, "signal", 0)) }, status: "STAGED", sources_Answering: [] },
+    { minutes_Quiet: 0, id: "T-16 b", notes: "Say in the doc comment what timeout does.", aim: { kind: "DOCUMENT", reference: wordsOf(quoteOf(10, "signal?: AbortSignal", 0)) }, status: "STAGED", sources_Answering: [] }
   ],
   documents_Elsewhere: []
 }
@@ -659,6 +671,7 @@ const javascript: _Example_ = {
               WITHDRAWN: 0
             },
             counts_Requests: {
+              QUIET: 0,
               WAITING: 0,
               STAGED: 0,
               RUNNING: 1

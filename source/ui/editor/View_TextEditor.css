@@ -1145,6 +1145,12 @@
   font-style: italic;
 }
 
+/* gone quiet, its job heard of by nothing a while, muted, its minutes after
+   it, never shimmering */
+.htmlView_editor .progress_Said_htmlView[data-status="QUIET"] {
+  color: var(--view-placeholder-ink, color-mix(in srgb, CanvasText 58%, transparent));
+}
+
 .htmlView_editor :is(.stop_Said_htmlView, .edit_Said_htmlView, .start_Said_htmlView, .dismiss_Said_htmlView, .remove_htmlView):hover {
   text-decoration: underline;
 }
@@ -1855,10 +1861,11 @@
   }
 }
 
-/* waiting for an agent to take the work, the name still, nothing being at
-   work yet, its word shown after it, faded, as working's is where motion's
-   reduced, the header having no other way to say it */
-.htmlView_editor :is(.trigger_Task_htmlView[data-state="WAITING"] > .state_Task_htmlView, .trigger_Document_htmlView[data-state="WAITING"] > .state_Document_htmlView) {
+/* waiting for an agent to take the work, or the work gone quiet, the name
+   still, nothing known to be at work, its word shown after it, faded, as
+   working's is where motion's reduced, the header having no other way to
+   say it */
+.htmlView_editor :is(.trigger_Task_htmlView:is([data-state="WAITING"], [data-state="QUIET"]) > .state_Task_htmlView, .trigger_Document_htmlView:is([data-state="WAITING"], [data-state="QUIET"]) > .state_Document_htmlView) {
   position: static;
   width: auto;
   height: auto;
@@ -1873,7 +1880,8 @@
    draft, a dotted ring; the agent at work on it, a spinner turning, as a
    proposal being revised turns its arc, still where motion's asked to be
    reduced; waiting for an agent to take it, the spinner's arc, still and
-   fainter, the work about to begin; your turn, a dot, what's yours to decide; applied, a check;
+   fainter, the work about to begin; gone quiet, the agent on it heard of
+   by nothing a while, the arc, still, in grey; your turn, a dot, what's yours to decide; applied, a check;
    canceled, or a draft discarded, a cross, fainter than its word, as a
    withdrawn proposal's is; each in the task's ink */
 .htmlView_editor .mark_Task_htmlView {
@@ -1898,8 +1906,9 @@
    state, `data-state`, not the part of the header holding its card,
    which, drawn again for a new state, would close the card open under the
    pointer or the keyboard: the agent at work, the revision's plum;
-   waiting for one, the plum, fainter; your turn, or done, decided, the
-   proposals' indigo; a draft, or canceled,
+   waiting for one, the plum, fainter; gone quiet, the grey, as nothing's
+   known to be under way; your turn, or done, decided, the proposals'
+   indigo; a draft, or canceled,
    nothing under way, the grey a withdrawn proposal's in */
 .htmlView_editor :is(.mark_Task_htmlView, .state_Card_htmlView) {
   --ink_Mark_htmlView: var(--view-state-withdrawn, var(--view-status-ink, color-mix(in srgb, CanvasText 60%, transparent)));
@@ -1921,7 +1930,7 @@
   border: 1.5px dotted var(--ink_Mark_htmlView);
 }
 
-.htmlView_editor .mark_Task_htmlView:is([data-state="WORKING"], [data-state="WAITING"])::before {
+.htmlView_editor .mark_Task_htmlView:is([data-state="WORKING"], [data-state="WAITING"], [data-state="QUIET"])::before {
   border: 1.5px solid var(--ink_Mark_htmlView);
   border-right-color: transparent;
 }
@@ -2024,7 +2033,8 @@
    they're waiting on, each count after its mark, in its ink: needing you,
    the dot of your turn; conflicts, a warning, in the file's teal; at
    work, the spinner, turning as the task's does; waiting for an agent,
-   the spinner's arc, still and fainter, as the task's is; drafts, the
+   the spinner's arc, still and fainter, as the task's is; gone quiet,
+   the arc, still, in grey, nothing heard of it a while; drafts, the
    dotted ring; none of them, nothing; the counts in words for what reads
    the page aloud, and as its title; and at its left, whether an agent's
    listening, below */
@@ -2445,7 +2455,7 @@
   }
 }
 
-.htmlView_editor [data-kind="WAITING"] > .mark_Count_htmlView::before {
+.htmlView_editor :is([data-kind="WAITING"], [data-kind="QUIET"]) > .mark_Count_htmlView::before {
   border: 1.5px solid var(--ink_Count_htmlView);
   border-right-color: transparent;
 }

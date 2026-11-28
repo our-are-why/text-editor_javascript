@@ -135,6 +135,7 @@ await Bun.sleep(200)
 const listening_Before = page_Listening.messages.map((message) => message.isListening_Agent)
 const ran_Nothing = await doctor("wait", "--for", "1")
 const listening_After = page_Listening.messages.map((message) => message.isListening_Agent)
+const isClocked = page_Listening.messages.every((message) => Math.abs(message.at - Date.now()) < 10_000)
 page_Listening.socket.close()
 const waiting = doctor("wait", "--for", "20")
 await Bun.sleep(600)
@@ -295,6 +296,10 @@ test("a call without the agent's token is refused, and the command run where no 
 test("a page is told whether an agent's listening: no agent having called, none is; a wait open, one is, told at once; and still, the wait answered, an agent having called within the minute", () => {
   expect(listening_Before).toEqual([false])
   expect(listening_After).toEqual([false, true])
+})
+
+test("every state a page is told carries the program's clock, so a page anywhere measures how long a job's been quiet by it", () => {
+  expect(isClocked).toBe(true)
 })
 
 test("help says the loop, each of the agent's commands, and the person's", () => {

@@ -34,6 +34,7 @@ interface _Task_Board_ {
   count_Undecided: number
   count_Conflicts: number
   count_Running: number
+  count_Quiet: number
   count_Waiting: number
   count_Staged: number
   count_Editors: number
@@ -101,6 +102,7 @@ const KINDMAP__STATE_TASK: _KindMap__State_Task_ = {
   DRAFT: () => "DRAFTS",
   WAITING: (task_Board) => kindOf__Task_Open(task_Board),
   WORKING: (task_Board) => kindOf__Task_Open(task_Board),
+  QUIET: (task_Board) => kindOf__Task_Open(task_Board),
   YOUR_TURN: (task_Board) => kindOf__Task_Open(task_Board),
   APPLIED: () => "RESOLVED",
   CANCELED: () => "RESOLVED",
@@ -161,6 +163,10 @@ const MOREMAP__STATE_TASK: _ActionsMap__State_Task_ = {
     task_Board,
     kind_Cancel: "CANCEL"
   }),
+  QUIET: (task_Board) => actionsOf__Task_Open({
+    task_Board,
+    kind_Cancel: "CANCEL"
+  }),
   YOUR_TURN: (task_Board) => actionsOf__Task_Open({
     task_Board,
     kind_Cancel: "CANCEL"
@@ -188,7 +194,7 @@ function actionsOf__Task_Open({
           label: `Start all (${task_Board.count_Staged})`
         }
       ],
-    ...task_Board.count_Running + task_Board.count_Waiting === 0
+    ...task_Board.count_Running + task_Board.count_Quiet + task_Board.count_Waiting === 0
       ? []
       : [
         {
@@ -196,7 +202,7 @@ function actionsOf__Task_Open({
           label: "Stop"
         }
       ],
-    ...task_Board.count_Conflicts + task_Board.count_Undecided + task_Board.count_Staged + task_Board.count_Running + task_Board.count_Waiting > 0
+    ...task_Board.count_Conflicts + task_Board.count_Undecided + task_Board.count_Staged + task_Board.count_Running + task_Board.count_Quiet + task_Board.count_Waiting > 0
       ? []
       : [
         {

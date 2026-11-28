@@ -330,7 +330,7 @@ test("what's asked of a proposal: each request listed on its item, the words it 
     isListening_Agent: false,
     model_TextEditor: parsed.model_TextEditor,
     name_Document: "notes/digits.txt",
-    proposals: [{ source: "digit", title: "Write two as a digit", state, status, rationale: "", requests: [{ id: "both", notes: "Both.", reference, status: statuses[0] }, { id: "this", notes: "And this.", reference: null, status: statuses[1] }], actions: ACTIONS_REVIEW, attributes: {} }],
+    proposals: [{ source: "digit", title: "Write two as a digit", state, status, rationale: "", requests: [{ minutes_Quiet: 0, id: "both", notes: "Both.", reference, status: statuses[0] }, { minutes_Quiet: 0, id: "this", notes: "And this.", reference: null, status: statuses[1] }], actions: ACTIONS_REVIEW, attributes: {} }],
     source_Yours: "yours",
     rounds_Landed: [],
     mode: { kind: "MANUAL" },
@@ -362,7 +362,7 @@ test("the header over the document: how many of its proposals are decided, how m
     ]
   })
   if (parsed.kind === "REFUSED") throw new Error("refused")
-  const task = (state: _State_Task_): _Task_Host_ => ({ id: "tidy", name: "Tidy", state, summary: "Tidies it.", reason: state === "CANCELED" ? "Not needed." : "", documents: [{ name: "digits.txt", counts_Proposals: { OPEN: 0, REQUESTED: 0, REVISING: 0, ACCEPTED: 0, REJECTED: 0, WITHDRAWN: 0 }, counts_Requests: { WAITING: 0, STAGED: 0, RUNNING: 0 }, isShown: true, actions: [] }, { name: "README.md", counts_Proposals: { OPEN: 2, REQUESTED: 1, REVISING: 0, ACCEPTED: 1, REJECTED: 1, WITHDRAWN: 0 }, counts_Requests: { WAITING: 0, STAGED: 1, RUNNING: 0 }, isShown: false, actions: [] }], summary_Document: "Here, the digits.", requests: [], actions: [], actions_Document: [{ command: "accept-here", label: "Accept the ones waiting here", section: "PROPOSALS" }] })
+  const task = (state: _State_Task_): _Task_Host_ => ({ id: "tidy", name: "Tidy", state, summary: "Tidies it.", reason: state === "CANCELED" ? "Not needed." : "", documents: [{ name: "digits.txt", counts_Proposals: { OPEN: 0, REQUESTED: 0, REVISING: 0, ACCEPTED: 0, REJECTED: 0, WITHDRAWN: 0 }, counts_Requests: { QUIET: 0, WAITING: 0, STAGED: 0, RUNNING: 0 }, isShown: true, actions: [] }, { name: "README.md", counts_Proposals: { OPEN: 2, REQUESTED: 1, REVISING: 0, ACCEPTED: 1, REJECTED: 1, WITHDRAWN: 0 }, counts_Requests: { QUIET: 0, WAITING: 0, STAGED: 1, RUNNING: 0 }, isShown: false, actions: [] }], summary_Document: "Here, the digits.", requests: [], actions: [], actions_Document: [{ command: "accept-here", label: "Accept the ones waiting here", section: "PROPOSALS" }] })
   const header_Task = (state: _State_Task_, label_State: string, figure_Task: { value: string, more: string }, here: { value: string, more: string }) => ({ id: "tidy", name: "Tidy", state, label_State, ends: state === "DRAFT" ? [{ kind: "DISCARD" as const, label: "Cancel", title: "Lets the draft go, its requests and any edits made in it" }] : state === "CANCELED" ? [] : [{ kind: "CANCEL" as const, label: "Cancel", title: "Lets the task go, what's accepted in it and your edits in it, stopping what's running" }], summary: "Tidies it.", reason: state === "CANCELED" ? "Not needed." : "", proposals: { figure: figure_Task, documents: [{ path: "digits.txt", folder: "", name: "digits.txt", ...here, isShown: true, isDecided: false, label_Open: "Open here", actions: [] }, { path: "README.md", folder: "", name: "README.md", value: "2 of 5 decided", more: "2 to review · 1 revision requested · 1 accepted · 1 rejected", isShown: false, isDecided: false, label_Open: "Open here", actions: [] }], actions: [] }, revisions_Scope: { figure: { value: "1 staged", more: "" }, start_All: { label: "Start all (1)", title: "Starts everything staged in the task, in every file it touches" }, stop_All: null, actions: [] }, revisions_Level: { requests: [], isStartable_Requests: false, isStoppable_Requests: false, ask: { label: "Revise", label_Form: "Revise the task" } } })
   const header_Document = (figure_Here: { value: string, more: string }, value_Revisions: string | null, count_Startable: number, count_Running: number, isTasked: boolean, state: "YOUR_TURN" | "WORKING", label_State: string) => ({ folder: "notes/", name: "digits.txt", state, label_State, summary: isTasked ? "Here, the digits." : "", proposals: { figure: figure_Here, documents: [], actions: isTasked ? [{ command: "accept-here", label: "Accept the ones waiting here", section: "PROPOSALS" as const }] : [] }, revisions_Scope: { figure: value_Revisions === null ? null : { value: value_Revisions, more: "" }, start_All: count_Startable === 0 ? null : { label: `Start all (${count_Startable})`, title: `Starts all ${count_Startable} requests staged in this file, its own and its proposals'` }, stop_All: count_Running === 0 ? null : { label: `Stop all (${count_Running})`, title: `Stops all ${count_Running} with the agent in this file, its own and its proposals', staging them again` }, actions: [] }, revisions_Level: { requests: [], isStartable_Requests: false, isStoppable_Requests: false, ask: { label: "Revise", label_Form: "Revise this file" } } })
   const MANUAL: _Mode_Host_ = { kind: "MANUAL" }
@@ -380,9 +380,9 @@ test("the header over the document: how many of its proposals are decided, how m
     model_TextEditor: parsed.model_TextEditor,
     name_Document: "notes/digits.txt",
     proposals: [
-      { source: "digit", title: "Write two as a digit", state: "OPEN", status: "", rationale: "", requests: statuses_Digit.map((status, index) => ({ id: `digit-${index}`, notes: "Say it.", reference: null, status })), actions: ACTIONS_REVIEW, attributes: {} },
+      { source: "digit", title: "Write two as a digit", state: "OPEN", status: "", rationale: "", requests: statuses_Digit.map((status, index) => ({ id: `digit-${index}`, notes: "Say it.", reference: null, status, minutes_Quiet: 0 })), actions: ACTIONS_REVIEW, attributes: {} },
       { source: "first", title: "Write one as a digit", state: decision_First, status: "", rationale: "", requests: [], actions: ACTIONS_REVIEW, attributes: {} },
-      { source: "unseen", title: "Nothing here", state: "OPEN", status: "", rationale: "", requests: [{ id: "unseen-0", notes: "Never drawn.", reference: null, status: "STAGED" }], actions: ACTIONS_REVIEW, attributes: {} }
+      { source: "unseen", title: "Nothing here", state: "OPEN", status: "", rationale: "", requests: [{ minutes_Quiet: 0, id: "unseen-0", notes: "Never drawn.", reference: null, status: "STAGED" }], actions: ACTIONS_REVIEW, attributes: {} }
     ],
     mode: mode_Host,
     tasks: [],
@@ -404,22 +404,22 @@ test("the header over the document: how many of its proposals are decided, how m
   const parsed_Unproposed = parseModel_TextEditor({ multilineText: "one two three", marks: [], proposed: [] })
   if (parsed_Unproposed.kind === "REFUSED") throw new Error("refused")
   const headerOf_Unproposed = (mode_Host: _Mode_Host_) => viewModelOf__Model({ isListening_Agent: false, model_TextEditor: parsed_Unproposed.model_TextEditor, name_Document: "notes/digits.txt", proposals: [], mode: mode_Host, tasks: [], files: [], source_Yours: "yours", rounds_Landed: [], ranges_Frame: [], module_Language: MODULE_PLAINTEXT, module_Reading: MODULE_READING_TEXT }).header
-  const header_Draft = headerOf_Unproposed(inTask({ ...task("DRAFT"), documents: [{ name: "notes/digits.txt", counts_Proposals: { OPEN: 0, REQUESTED: 0, REVISING: 0, ACCEPTED: 0, REJECTED: 0, WITHDRAWN: 0 }, counts_Requests: { WAITING: 0, STAGED: 0, RUNNING: 0 }, isShown: true, actions: [] }] }))
+  const header_Draft = headerOf_Unproposed(inTask({ ...task("DRAFT"), documents: [{ name: "notes/digits.txt", counts_Proposals: { OPEN: 0, REQUESTED: 0, REVISING: 0, ACCEPTED: 0, REJECTED: 0, WITHDRAWN: 0 }, counts_Requests: { QUIET: 0, WAITING: 0, STAGED: 0, RUNNING: 0 }, isShown: true, actions: [] }] }))
   expect([taskIn(header_Draft).revisions_Level.ask, header_Draft.document.revisions_Level.ask, headerOf_Unproposed(MANUAL).document.revisions_Level.ask]).toEqual([
     { label: "Add a request", label_Form: "Add a request to the task" },
     { label: "Add a request", label_Form: "Request a change to this file" },
     { label: "Add a request", label_Form: "Request a change to this file" }
   ])
-  const header_Elsewhere = headerOf_Unproposed(inTask({ ...task("YOUR_TURN"), documents: [{ name: "notes/digits.txt", counts_Proposals: { OPEN: 0, REQUESTED: 0, REVISING: 0, ACCEPTED: 0, REJECTED: 0, WITHDRAWN: 0 }, counts_Requests: { WAITING: 0, STAGED: 0, RUNNING: 0 }, isShown: true, actions: [] }, { name: "README.md", counts_Proposals: { OPEN: 1, REQUESTED: 0, REVISING: 0, ACCEPTED: 0, REJECTED: 0, WITHDRAWN: 0 }, counts_Requests: { WAITING: 0, STAGED: 0, RUNNING: 0 }, isShown: false, actions: [] }] }))
+  const header_Elsewhere = headerOf_Unproposed(inTask({ ...task("YOUR_TURN"), documents: [{ name: "notes/digits.txt", counts_Proposals: { OPEN: 0, REQUESTED: 0, REVISING: 0, ACCEPTED: 0, REJECTED: 0, WITHDRAWN: 0 }, counts_Requests: { QUIET: 0, WAITING: 0, STAGED: 0, RUNNING: 0 }, isShown: true, actions: [] }, { name: "README.md", counts_Proposals: { OPEN: 1, REQUESTED: 0, REVISING: 0, ACCEPTED: 0, REJECTED: 0, WITHDRAWN: 0 }, counts_Requests: { QUIET: 0, WAITING: 0, STAGED: 0, RUNNING: 0 }, isShown: false, actions: [] }] }))
   expect([taskIn(header_Elsewhere).revisions_Level.ask.label, header_Elsewhere.document.revisions_Level.ask.label]).toEqual(["Revise", "Revise"])
-  const task_Here: _Task_Host_ = { ...task("YOUR_TURN"), documents: [{ name: "digits.txt", counts_Proposals: { OPEN: 0, REQUESTED: 0, REVISING: 0, ACCEPTED: 0, REJECTED: 0, WITHDRAWN: 0 }, counts_Requests: { WAITING: 0, STAGED: 0, RUNNING: 0 }, isShown: true, actions: [] }] }
+  const task_Here: _Task_Host_ = { ...task("YOUR_TURN"), documents: [{ name: "digits.txt", counts_Proposals: { OPEN: 0, REQUESTED: 0, REVISING: 0, ACCEPTED: 0, REJECTED: 0, WITHDRAWN: 0 }, counts_Requests: { QUIET: 0, WAITING: 0, STAGED: 0, RUNNING: 0 }, isShown: true, actions: [] }] }
   expect([taskIn(headerOf([], "OPEN", inTask(task_Here))).proposals.figure, taskIn(headerOf([], "OPEN", inTask(task_Here))).proposals.documents]).toEqual([{ value: "0 of 2 decided", more: "2 to review" }, []])
   const task_Spread: _Task_Host_ = {
     ...task("YOUR_TURN"),
     documents: [
-      { name: "docs/guide/retries.md", counts_Proposals: { OPEN: 0, REQUESTED: 0, REVISING: 0, ACCEPTED: 2, REJECTED: 1, WITHDRAWN: 1 }, counts_Requests: { WAITING: 0, STAGED: 0, RUNNING: 0 }, isShown: false, actions: [] },
-      { name: "source/numbers/digits.txt", counts_Proposals: { OPEN: 0, REQUESTED: 0, REVISING: 0, ACCEPTED: 0, REJECTED: 0, WITHDRAWN: 0 }, counts_Requests: { WAITING: 0, STAGED: 0, RUNNING: 0 }, isShown: true, actions: [] },
-      { name: "CHANGELOG.md", counts_Proposals: { OPEN: 1, REQUESTED: 0, REVISING: 0, ACCEPTED: 0, REJECTED: 0, WITHDRAWN: 0 }, counts_Requests: { WAITING: 0, STAGED: 0, RUNNING: 0 }, isShown: false, actions: [] }
+      { name: "docs/guide/retries.md", counts_Proposals: { OPEN: 0, REQUESTED: 0, REVISING: 0, ACCEPTED: 2, REJECTED: 1, WITHDRAWN: 1 }, counts_Requests: { QUIET: 0, WAITING: 0, STAGED: 0, RUNNING: 0 }, isShown: false, actions: [] },
+      { name: "source/numbers/digits.txt", counts_Proposals: { OPEN: 0, REQUESTED: 0, REVISING: 0, ACCEPTED: 0, REJECTED: 0, WITHDRAWN: 0 }, counts_Requests: { QUIET: 0, WAITING: 0, STAGED: 0, RUNNING: 0 }, isShown: true, actions: [] },
+      { name: "CHANGELOG.md", counts_Proposals: { OPEN: 1, REQUESTED: 0, REVISING: 0, ACCEPTED: 0, REJECTED: 0, WITHDRAWN: 0 }, counts_Requests: { QUIET: 0, WAITING: 0, STAGED: 0, RUNNING: 0 }, isShown: false, actions: [] }
     ]
   }
   expect(taskIn(headerOf([], "OPEN", inTask(task_Spread))).proposals.documents.map((document_Card) => [document_Card.folder, document_Card.name, document_Card.value, document_Card.isShown, document_Card.isDecided])).toEqual([
@@ -436,18 +436,18 @@ test("a task's own actions, at the end of its card's heading, the ways it ends: 
   const counts_None: _Counts_Proposals_ = { OPEN: 0, REQUESTED: 0, REVISING: 0, ACCEPTED: 0, REJECTED: 0, WITHDRAWN: 0 }
   const taskOf = (state: _State_Task_, counts_Proposals: _Counts_Proposals_, counts_Requests: _Counts_Requests_): _Task_Host_ => ({ id: "tidy", name: "Tidy", state, summary: "", reason: "", documents: [{ name: "README.md", counts_Proposals, counts_Requests, isShown: false, actions: [] }], summary_Document: "", requests: [], actions: [], actions_Document: [] })
   const headOf = (task_Host: _Task_Host_, count_Conflicts: number) => {
-    const header = viewModelOf__Model({ isListening_Agent: false, model_TextEditor: parsed.model_TextEditor, name_Document: "notes/digits.txt", proposals: [], mode: { kind: "TASK", task: task_Host }, tasks: [{ count_Waiting: 0, id: "tidy", name: "Tidy", state: task_Host.state, isOnDocument: false, count_Undecided: 0, count_Conflicts, count_Staged: 0, count_Running: 0 }], files: [], source_Yours: "yours", rounds_Landed: [], ranges_Frame: [], module_Language: MODULE_PLAINTEXT, module_Reading: MODULE_READING_TEXT }).header
+    const header = viewModelOf__Model({ isListening_Agent: false, model_TextEditor: parsed.model_TextEditor, name_Document: "notes/digits.txt", proposals: [], mode: { kind: "TASK", task: task_Host }, tasks: [{ count_Quiet: 0, count_Waiting: 0, id: "tidy", name: "Tidy", state: task_Host.state, isOnDocument: false, count_Undecided: 0, count_Conflicts, count_Staged: 0, count_Running: 0 }], files: [], source_Yours: "yours", rounds_Landed: [], ranges_Frame: [], module_Language: MODULE_PLAINTEXT, module_Reading: MODULE_READING_TEXT }).header
     if (header.mode.kind !== "TASK") throw new Error("not in a task")
     return [...header.mode.task.ends.map((end_Task) => `${end_Task.label} ${end_Task.kind}`), header.mode.task.revisions_Scope.start_All?.label ?? null]
   }
-  expect(headOf(taskOf("DRAFT", counts_None, { WAITING: 0, STAGED: 2, RUNNING: 0 }), 0)).toEqual(["Cancel DISCARD", "Start all (2)"])
-  expect(headOf(taskOf("DRAFT", counts_None, { WAITING: 0, STAGED: 0, RUNNING: 0 }), 0)).toEqual(["Apply APPLY", "Cancel DISCARD", null])
-  expect(headOf(taskOf("YOUR_TURN", counts_None, { WAITING: 0, STAGED: 2, RUNNING: 0 }), 0)).toEqual(["Cancel CANCEL", "Start all (2)"])
-  expect(headOf(taskOf("YOUR_TURN", { ...counts_None, OPEN: 1, ACCEPTED: 1 }, { WAITING: 0, STAGED: 0, RUNNING: 0 }), 0)).toEqual(["Cancel CANCEL", null])
-  expect(headOf(taskOf("WORKING", { ...counts_None, REVISING: 1 }, { WAITING: 0, STAGED: 0, RUNNING: 1 }), 0)).toEqual(["Cancel CANCEL", null])
-  expect(headOf(taskOf("YOUR_TURN", { ...counts_None, ACCEPTED: 2, REJECTED: 1, WITHDRAWN: 1 }, { WAITING: 0, STAGED: 0, RUNNING: 0 }), 0)).toEqual(["Apply APPLY", "Cancel CANCEL", null])
-  expect(headOf(taskOf("YOUR_TURN", { ...counts_None, ACCEPTED: 2 }, { WAITING: 0, STAGED: 0, RUNNING: 0 }), 1)).toEqual(["Cancel CANCEL", null])
-  expect(headOf(taskOf("APPLIED", counts_None, { WAITING: 0, STAGED: 0, RUNNING: 0 }), 0)).toEqual([null])
+  expect(headOf(taskOf("DRAFT", counts_None, { QUIET: 0, WAITING: 0, STAGED: 2, RUNNING: 0 }), 0)).toEqual(["Cancel DISCARD", "Start all (2)"])
+  expect(headOf(taskOf("DRAFT", counts_None, { QUIET: 0, WAITING: 0, STAGED: 0, RUNNING: 0 }), 0)).toEqual(["Apply APPLY", "Cancel DISCARD", null])
+  expect(headOf(taskOf("YOUR_TURN", counts_None, { QUIET: 0, WAITING: 0, STAGED: 2, RUNNING: 0 }), 0)).toEqual(["Cancel CANCEL", "Start all (2)"])
+  expect(headOf(taskOf("YOUR_TURN", { ...counts_None, OPEN: 1, ACCEPTED: 1 }, { QUIET: 0, WAITING: 0, STAGED: 0, RUNNING: 0 }), 0)).toEqual(["Cancel CANCEL", null])
+  expect(headOf(taskOf("WORKING", { ...counts_None, REVISING: 1 }, { QUIET: 0, WAITING: 0, STAGED: 0, RUNNING: 1 }), 0)).toEqual(["Cancel CANCEL", null])
+  expect(headOf(taskOf("YOUR_TURN", { ...counts_None, ACCEPTED: 2, REJECTED: 1, WITHDRAWN: 1 }, { QUIET: 0, WAITING: 0, STAGED: 0, RUNNING: 0 }), 0)).toEqual(["Apply APPLY", "Cancel CANCEL", null])
+  expect(headOf(taskOf("YOUR_TURN", { ...counts_None, ACCEPTED: 2 }, { QUIET: 0, WAITING: 0, STAGED: 0, RUNNING: 0 }), 1)).toEqual(["Cancel CANCEL", null])
+  expect(headOf(taskOf("APPLIED", counts_None, { QUIET: 0, WAITING: 0, STAGED: 0, RUNNING: 0 }), 0)).toEqual([null])
 })
 
 test("a round that landed after your edits: open, it's stale, said under its title, written before your edits, and how many dropped, their text gone, with Run again while it's open and no round of it's under way; accepted, a conflict, what the file did said, and its ways out, Keep yours, a replacement's, Take the file's, and Run again; its stale change drawn as the line it was written on, numbered, its ring there, whole, and under it the line as it is, unnumbered, ringed for what the file did, the stale proposal's marks off its words, and in the proposed line the file's words ringed teal; the others not; none said of a round that landed clean", () => {
@@ -462,7 +462,7 @@ test("a round that landed after your edits: open, it's stale, said under its tit
     isListening_Agent: false,
     model_TextEditor: parsed.model_TextEditor,
     name_Document: "retry.js",
-    proposals: [{ source: "errors", title: "Keep every error", state, status: "", rationale: "", requests: status === null ? [] : [{ id: "again", notes: "Again.", reference: null, status }], actions: ACTIONS_REVIEW, attributes: {} }],
+    proposals: [{ source: "errors", title: "Keep every error", state, status: "", rationale: "", requests: status === null ? [] : [{ id: "again", notes: "Again.", reference: null, status, minutes_Quiet: 0 }], actions: ACTIONS_REVIEW, attributes: {} }],
     source_Yours: "yours",
     rounds_Landed: [{ source: "errors", changes_Stale: indexes_Stale.map((index) => ({ index, over })), count_Dropped }],
     mode: { kind: "MANUAL" },
@@ -541,7 +541,7 @@ test("requests' words underlined with one line however many requests are on them
     proposed: []
   })
   if (parsed.kind === "REFUSED") throw new Error("refused")
-  const requestOf = (id: string, from: number, to: number) => ({ id, notes: "Say it.", aim: { kind: "DOCUMENT" as const, reference: { pieces: [{ id_Text: { kind: "DOCUMENT" as const }, range: { from: { line: 0, offset: from }, to: { line: 0, offset: to } } }] as [_Piece_Text_, ...Array<_Piece_Text_>], text: "", side: "CURRENT" as const } }, status: "STAGED" as const, sources_Answering: [] })
+  const requestOf = (id: string, from: number, to: number) => ({ id, notes: "Say it.", aim: { kind: "DOCUMENT" as const, reference: { pieces: [{ id_Text: { kind: "DOCUMENT" as const }, range: { from: { line: 0, offset: from }, to: { line: 0, offset: to } } }] as [_Piece_Text_, ...Array<_Piece_Text_>], text: "", side: "CURRENT" as const } }, status: "STAGED" as const, minutes_Quiet: 0, sources_Answering: [] })
   const viewModel = viewModelOf__Model({
     isListening_Agent: false,
     model_TextEditor: parsed.model_TextEditor,
@@ -580,14 +580,14 @@ test("a task's own requests, on no proposal, aimed at the whole document or the 
         state: "WORKING",
         summary: "",
         requests: [
-          { id: "both", notes: "Say what they count.", aim: { kind: "DOCUMENT", reference: { pieces: [{ id_Text: { kind: "DOCUMENT" }, range: { from: { line: 0, offset: 0 }, to: { line: 0, offset: 3 } } }, { id_Text: { kind: "DOCUMENT" }, range: { from: { line: 1, offset: 0 }, to: { line: 1, offset: 4 } } }], text: "one four", side: "CURRENT" } }, status: "STAGED", sources_Answering: [] },
-          { id: "all", notes: "Number them all.", aim: { kind: "DOCUMENT", reference: null }, status: "RUNNING", sources_Answering: [] },
-          { id: "whole", notes: "Tidy it all.", aim: { kind: "TASK", reference: null }, status: "STAGED", sources_Answering: [] },
-          { id: "digit", notes: "Write two as a digit.", aim: { kind: "DOCUMENT", reference: { pieces: [{ id_Text: { kind: "DOCUMENT" }, range: { from: { line: 1, offset: 5 }, to: { line: 1, offset: 9 } } }], text: "five", side: "CURRENT" } }, status: "ADDRESSED", sources_Answering: ["digit"] },
-          { id: "none", notes: "Check the rest.", aim: { kind: "DOCUMENT", reference: null }, status: "ADDRESSED", sources_Answering: [] }
+          { minutes_Quiet: 0, id: "both", notes: "Say what they count.", aim: { kind: "DOCUMENT", reference: { pieces: [{ id_Text: { kind: "DOCUMENT" }, range: { from: { line: 0, offset: 0 }, to: { line: 0, offset: 3 } } }, { id_Text: { kind: "DOCUMENT" }, range: { from: { line: 1, offset: 0 }, to: { line: 1, offset: 4 } } }], text: "one four", side: "CURRENT" } }, status: "STAGED", sources_Answering: [] },
+          { minutes_Quiet: 0, id: "all", notes: "Number them all.", aim: { kind: "DOCUMENT", reference: null }, status: "RUNNING", sources_Answering: [] },
+          { minutes_Quiet: 0, id: "whole", notes: "Tidy it all.", aim: { kind: "TASK", reference: null }, status: "STAGED", sources_Answering: [] },
+          { minutes_Quiet: 0, id: "digit", notes: "Write two as a digit.", aim: { kind: "DOCUMENT", reference: { pieces: [{ id_Text: { kind: "DOCUMENT" }, range: { from: { line: 1, offset: 5 }, to: { line: 1, offset: 9 } } }], text: "five", side: "CURRENT" } }, status: "ADDRESSED", sources_Answering: ["digit"] },
+          { minutes_Quiet: 0, id: "none", notes: "Check the rest.", aim: { kind: "DOCUMENT", reference: null }, status: "ADDRESSED", sources_Answering: [] }
         ],
         reason: "",
-        documents: [{ name: "count.txt", counts_Proposals: { OPEN: 0, REQUESTED: 0, REVISING: 0, ACCEPTED: 0, REJECTED: 0, WITHDRAWN: 0 }, counts_Requests: { WAITING: 0, STAGED: 0, RUNNING: 0 }, isShown: true, actions: [] }],
+        documents: [{ name: "count.txt", counts_Proposals: { OPEN: 0, REQUESTED: 0, REVISING: 0, ACCEPTED: 0, REJECTED: 0, WITHDRAWN: 0 }, counts_Requests: { QUIET: 0, WAITING: 0, STAGED: 0, RUNNING: 0 }, isShown: true, actions: [] }],
         summary_Document: "Counts them here.",
         actions: [],
         actions_Document: [{ command: "accept-here", label: "Accept the ones waiting here", section: "PROPOSALS" }]
@@ -667,7 +667,7 @@ test("a task's own requests, on no proposal, aimed at the whole document or the 
 test("the tasks a host gives: in the header, a switcher listing them, the one the editor's in first, then those on its document, then the rest, then No task, each its parts, the most pressing of yours, a conflict over the rest, then the agent's, or a draft's requests; in the footer, counted by part, a task under each it has; none given, neither", () => {
   const parsed = parseModel_TextEditor({ multilineText: "one two three", marks: [], proposed: [] })
   if (parsed.kind === "REFUSED") throw new Error("refused")
-  const standing = (id: string, name: string, state: _State_Task_, isOnDocument: boolean, counts: [number, number, number, number]): _Standing_Task_ => ({ count_Waiting: 0, id, name, state, isOnDocument, count_Undecided: counts[0], count_Conflicts: counts[1], count_Staged: counts[2], count_Running: counts[3] })
+  const standing = (id: string, name: string, state: _State_Task_, isOnDocument: boolean, counts: [number, number, number, number]): _Standing_Task_ => ({ count_Quiet: 0, count_Waiting: 0, id, name, state, isOnDocument, count_Undecided: counts[0], count_Conflicts: counts[1], count_Staged: counts[2], count_Running: counts[3] })
   const tasks = [
     standing("T-14", "Say what the README promises", "YOUR_TURN", false, [3, 0, 0, 0]),
     standing("T-12", "Tidy the retry loop", "WORKING", true, [14, 0, 8, 3]),
@@ -706,8 +706,8 @@ test("the tasks a host gives: in the header, a switcher listing them, the one th
 test("a request with the agent, its job queued and no agent on it yet, waits: drawn waiting, never running, still stoppable, counted waiting in the file's figure and in its Stop; the file Waiting, and the task Waiting in the switcher, its part still; counted in the footer apart from the tasks at work; and the footer saying whether an agent's listening whenever there are tasks", () => {
   const parsed = parseModel_TextEditor({ multilineText: "one two three", marks: [], proposed: [] })
   if (parsed.kind === "REFUSED") throw new Error("refused")
-  const task_Here: _Task_Host_ = { id: "T-1", name: "Say it", state: "WAITING", summary: "", reason: "", documents: [], summary_Document: "", requests: [{ id: "r-1", notes: "Say it.", aim: { kind: "DOCUMENT", reference: null }, status: "WAITING", sources_Answering: [] }], actions: [], actions_Document: [] }
-  const standing_Here: _Standing_Task_ = { id: "T-1", name: "Say it", state: "WAITING", isOnDocument: true, count_Undecided: 0, count_Conflicts: 0, count_Staged: 0, count_Running: 0, count_Waiting: 1 }
+  const task_Here: _Task_Host_ = { id: "T-1", name: "Say it", state: "WAITING", summary: "", reason: "", documents: [], summary_Document: "", requests: [{ minutes_Quiet: 0, id: "r-1", notes: "Say it.", aim: { kind: "DOCUMENT", reference: null }, status: "WAITING", sources_Answering: [] }], actions: [], actions_Document: [] }
+  const standing_Here: _Standing_Task_ = { count_Quiet: 0, id: "T-1", name: "Say it", state: "WAITING", isOnDocument: true, count_Undecided: 0, count_Conflicts: 0, count_Staged: 0, count_Running: 0, count_Waiting: 1 }
   const standing_Working: _Standing_Task_ = { ...standing_Here, id: "T-2", name: "Tidy", state: "WORKING", count_Running: 1, count_Waiting: 1 }
   const viewModelOf = (isListening_Agent: boolean, tasks: Array<_Standing_Task_>) => viewModelOf__Model({ isListening_Agent, model_TextEditor: parsed.model_TextEditor, name_Document: "retry.js", proposals: [], mode: { kind: "TASK", task: task_Here }, tasks, files: [], source_Yours: "yours", rounds_Landed: [], ranges_Frame: [], module_Language: MODULE_PLAINTEXT, module_Reading: MODULE_READING_TEXT })
   const viewModel = viewModelOf(false, [standing_Here, standing_Working])
@@ -727,11 +727,29 @@ test("a request with the agent, its job queued and no agent on it yet, waits: dr
   expect([viewModelOf(true, [standing_Here]).footer.agent, viewModelOf(true, []).footer.agent]).toEqual([{ isListening: true, label: "Agent listening" }, { isListening: true, label: "" }])
 })
 
+test("a request whose job's gone quiet, nothing heard of it a while: drawn quiet, its minutes after it, never running, still stoppable, counted quiet in the file's figure and in its Stop; the file Quiet, the task Quiet in the switcher, its part muted; counted in the footer apart from the tasks at work and those waiting", () => {
+  const parsed = parseModel_TextEditor({ multilineText: "one two three", marks: [], proposed: [] })
+  if (parsed.kind === "REFUSED") throw new Error("refused")
+  const task_Here: _Task_Host_ = { id: "T-1", name: "Say it", state: "QUIET", summary: "", reason: "", documents: [], summary_Document: "", requests: [{ id: "r-1", notes: "Say it.", aim: { kind: "DOCUMENT", reference: null }, status: "QUIET", minutes_Quiet: 14, sources_Answering: [] }], actions: [], actions_Document: [] }
+  const standing_Here: _Standing_Task_ = { id: "T-1", name: "Say it", state: "QUIET", isOnDocument: true, count_Undecided: 0, count_Conflicts: 0, count_Staged: 0, count_Running: 0, count_Quiet: 1, count_Waiting: 1 }
+  const standing_Waiting: _Standing_Task_ = { ...standing_Here, id: "T-2", name: "Tidy", state: "WAITING", count_Quiet: 0 }
+  const viewModel = viewModelOf__Model({ isListening_Agent: false, model_TextEditor: parsed.model_TextEditor, name_Document: "retry.js", proposals: [], mode: { kind: "TASK", task: task_Here }, tasks: [standing_Here, standing_Waiting], files: [], source_Yours: "yours", rounds_Landed: [], ranges_Frame: [], module_Language: MODULE_PLAINTEXT, module_Reading: MODULE_READING_TEXT })
+  const document_Header = viewModel.header.document
+  const item = document_Header.revisions_Level.requests[0]
+  expect([item?.status, item?.progress, item?.detail_Progress, item?.isRunning, item?.isStoppable]).toEqual(["QUIET", "quiet", "14 min", false, true])
+  expect([document_Header.state, document_Header.label_State, document_Header.revisions_Scope.figure?.value, document_Header.revisions_Scope.stop_All?.label]).toEqual(["QUIET", "Quiet", "1 quiet", "Stop all (1)"])
+  expect(viewModel.header.switcher.options.flatMap((option) => option.kind === "TASK" ? [`${option.label} | ${option.state} | ${option.parts.map((part) => `${part.kind} ${part.text}`).join(", ")}`] : [])).toEqual([
+    "Say it | QUIET | QUIET 1 quiet, WAITING 1 waiting",
+    "Tidy | WAITING | WAITING 1 waiting"
+  ])
+  expect([viewModel.footer.title, viewModel.footer.counts]).toEqual(["2 tasks: 1 quiet, 1 waiting", [{ kind: "QUIET", count: 1 }, { kind: "WAITING", count: 1 }]])
+})
+
 test("the files a host gives: in a task, the picker lists the task's files, how far each has got, the one shown here, then the project's others; in manual, the project's files; none given, and no task's, no picker", () => {
   const parsed = parseModel_TextEditor({ multilineText: "one two three", marks: [], proposed: [] })
   if (parsed.kind === "REFUSED") throw new Error("refused")
   const counts = (open: number, accepted: number) => ({ OPEN: open, REQUESTED: 0, REVISING: 0, ACCEPTED: accepted, REJECTED: 0, WITHDRAWN: 0 })
-  const task_Here: _Task_Host_ = { id: "T-12", name: "Tidy the retry loop", state: "WORKING", summary: "", reason: "", documents: [{ name: "retry.js", counts_Proposals: counts(0, 0), counts_Requests: { WAITING: 0, STAGED: 0, RUNNING: 0 }, isShown: true, actions: [] }, { name: "README.md", counts_Proposals: counts(4, 2), counts_Requests: { WAITING: 0, STAGED: 0, RUNNING: 0 }, isShown: false, actions: [] }], summary_Document: "", requests: [], actions: [], actions_Document: [] }
+  const task_Here: _Task_Host_ = { id: "T-12", name: "Tidy the retry loop", state: "WORKING", summary: "", reason: "", documents: [{ name: "retry.js", counts_Proposals: counts(0, 0), counts_Requests: { QUIET: 0, WAITING: 0, STAGED: 0, RUNNING: 0 }, isShown: true, actions: [] }, { name: "README.md", counts_Proposals: counts(4, 2), counts_Requests: { QUIET: 0, WAITING: 0, STAGED: 0, RUNNING: 0 }, isShown: false, actions: [] }], summary_Document: "", requests: [], actions: [], actions_Document: [] }
   const files_Project = ["retry.js", "README.md", "CHANGELOG.md", "source/backoff.js"]
   const pickerIn = (mode_Host: _Mode_Host_, files_Given: Array<string>) => viewModelOf__Model({ isListening_Agent: false, model_TextEditor: parsed.model_TextEditor, name_Document: "retry.js", proposals: [], mode: mode_Host, tasks: [], files: files_Given, source_Yours: "yours", rounds_Landed: [], ranges_Frame: [], module_Language: MODULE_PLAINTEXT, module_Reading: MODULE_READING_TEXT }).header.picker.sections.map((section) => [section.label, ...section.files.map((file) => `${file.folder}|${file.name}${file.figure === "" ? "" : ` ${file.figure}`}${file.isHere ? " here" : ""}`)])
   expect(pickerIn({ kind: "TASK", task: task_Here }, files_Project)).toEqual([

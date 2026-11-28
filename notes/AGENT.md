@@ -471,45 +471,45 @@ together. Decided 2026-11-26. Waits on 1 and 2.
    with the agent as running now, shimmering, which a real agent part makes
    untrue till one has it. **Decided 2026-11-26:** a job is **queued,** in
    the mailbox; **being worked on,** an agent having picked it up from
-   there, the only place an agent looks for work; **done,** handed back,
-   the checker holding it to its rules; or **cancelled,** stopped, at
-   either stage. Being worked on, a job may be **waiting on you,** its
-   agent having asked a question it can't go on without, 12, its session
-   alive and its context kept, waiting for your answer, which isn't paused,
-   nothing saved to be taken up later. No paused: a job can't be continued,
-   which no harness offers and nothing here builds, so a job stopped and
-   started again is a new one, done from scratch. No owner kept: every call
-   an agent makes about its job carries the job's id, so the job knows it's
-   being worked on, and when it was last heard of, taking it, asking what
-   it changed, checking, asking for a view, adding a file; who did it is
-   authorship, 14, kept with what it hands back. A wait isn't blind
-   polling: held open, it's answered the moment a job lands in the mailbox,
-   or, nothing in time, with nothing yet, and the agent waits again, so
-   it's told work's come as it comes. The tasks part keeps a request with
-   the agent; the shell keeps the job; and the editor draws a request
-   whose job's queued as waiting for an agent, still, not shimmering, a
-   fourth status between staged and running, and one whose job's being
-   worked on as running. **A job gone quiet,** its agent slow, or gone, a
-   session closed, which nothing tells this system: heard of by nothing for
-   a while, its requests stop shimmering and say so, muted, "quiet · 14
-   min", counted in the footer and on the board, for you to stop if you
-   think it's gone, never stopped on its own, as an agent deep in a run of
-   its tests is quiet too. Its agent coming back to it after all carries
-   on, if it hasn't been stopped; if it has, its calls are answered that
-   it's stopped, and what it hands back refused, so there's never work
-   landed for a job no longer wanted. Tried and let go: putting a quiet job
-   back in the mailbox for another agent, its batch kept, too much for now,
-   as Stop and Start again do it. **A check-in,** decided 2026-11-26, as
-   the spike found an agent deep in a long job can't otherwise learn it's
-   been stopped: `check <job>`, with a line on what it's doing if it likes,
-   "reading the editor's files", answered with the job's state, stopped or
-   not, any answer to a question it asked, and what's changed in its files
-   since; so it learns it's stopped between steps, not at the end, the
-   job's heard of, never quiet while it checks in, and its line shown as
-   the job's latest, what an agent's doing; the answer to a job taken
-   suggesting it check in between big steps. **A job given out is
-   acknowledged,** found by the spike, a job answered to a wait whose
-   caller had gone counted taken with no agent on it: **decided
+   there, the only place an agent looks for work; **done,** handed back, the
+   checker holding it to its rules; or **cancelled,** stopped, at either
+   stage. Being worked on, a job may be **waiting on you,** its agent having
+   asked a question it can't go on without, 12, its session alive and its
+   context kept, waiting for your answer, which isn't paused, nothing saved
+   to be taken up later. No paused: a job can't be continued, which no
+   harness offers and nothing here builds, so a job stopped and started
+   again is a new one, done from scratch. No owner kept: every call an agent
+   makes about its job carries the job's id, so the job knows it's being
+   worked on, and when it was last heard of, taking it, asking what it
+   changed, checking, asking for a view, adding a file; who did it is
+   authorship, 14, kept with what it hands back. A wait isn't blind polling:
+   held open, it's answered the moment a job lands in the mailbox, or,
+   nothing in time, with nothing yet, and the agent waits again, so it's
+   told work's come as it comes. The tasks part keeps a request with the
+   agent; the shell keeps the job; and the editor draws a request whose
+   job's queued as waiting for an agent, still, not shimmering, a fourth
+   status between staged and running, and one whose job's being worked on as
+   running. **A job gone quiet,** its agent slow, or gone, a session closed,
+   which nothing tells this system: heard of by nothing for a while, five
+   minutes, chosen 2026-11-27, its requests stop shimmering and say so,
+   muted, "quiet · 14 min", counted in the footer and on the board, for you
+   to stop if you think it's gone, never stopped on its own, as an agent
+   deep in a run of its tests is quiet too. Its agent coming back to it
+   after all carries on, if it hasn't been stopped; if it has, its calls are
+   answered that it's stopped, and what it hands back refused, so there's
+   never work landed for a job no longer wanted. Tried and let go: putting a
+   quiet job back in the mailbox for another agent, its batch kept, too much
+   for now, as Stop and Start again do it. **A check-in,** decided
+   2026-11-26, as the spike found an agent deep in a long job can't
+   otherwise learn it's been stopped: `check <job>`, with a line on what
+   it's doing if it likes, "reading the editor's files", answered with the
+   job's state, stopped or not, any answer to a question it asked, and
+   what's changed in its files since; so it learns it's stopped between
+   steps, not at the end, the job's heard of, never quiet while it checks
+   in, and its line shown as the job's latest, what an agent's doing; the
+   answer to a job taken suggesting it check in between big steps. **A job
+   given out is acknowledged,** found by the spike, a job answered to a wait
+   whose caller had gone counted taken with no agent on it: **decided
    2026-11-26:** a job a wait answers with is offered, not yet taken, till
    the agent's first check-in, "starting", which the answer asks for first;
    one not acknowledged within a minute queued again, at the front, so a
@@ -644,7 +644,21 @@ kinds of it, most else answered already by what's decided above.
     work and one waiting behind it, taken, and done with, once the one at
     work's stopped; the Markdown example's with no agent listening, its
     tasks Waiting, a revision waiting, and whatever's started there waiting
-    too. Not yet: a job gone quiet, next; a question waiting; agents waiting
+    too. **A job gone quiet built the same day:** one being worked on heard
+    of by nothing for five minutes quiet, worked out by the host from when
+    it was last checked in on, by the program's clock, which every state it
+    tells a page carries, so a page anywhere measures by it, and looked for
+    again every 15 seconds, as time passes with nothing changing; its
+    requests said quiet, their minutes after them, "quiet · 14 min", muted,
+    still, the minutes counting on; the task and the file Quiet, said after
+    their name, their mark the arc, still, in grey; counted apart, "1
+    quiet", in the figures, the switcher, the footer and on the board, the
+    agent's work said running, quiet, then waiting, what's at work before
+    what's yet to begin; Stop taking it in; a check-in bringing it back to
+    running at once; never stopped on its own. The Markdown example's Tidy
+    the retry loop shows it, its agent quiet for 14 minutes, its other
+    requests waiting behind it, a seed's request quiet a job being worked on
+    last heard of that long ago. Not yet: a question waiting; agents waiting
     on you.
 
 ### identity, what's kept, and faking it

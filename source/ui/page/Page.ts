@@ -24,6 +24,7 @@ export {
   _Page_,
   type _Api__Page_,
   type _Host_Page_,
+  MS_TICK__PAGE,
   type _Remembered_Editor_,
   rememberedOf__Editor,
   type _Api___rememberedOf__Editor_,
@@ -63,6 +64,7 @@ class _Page_<State> {
       target_Mode,
       files: message_Shell.files,
       isListening_Agent: message_Shell.isListening_Agent,
+      at: message_Shell.at,
       attributes: new Map(),
       state_Shell: message_Shell.state_Shell,
       suffix_Id: `-${Array.from(
@@ -128,6 +130,10 @@ class _Page_<State> {
       "close",
       () => this.closed()
     )
+    setInterval(
+      () => this.host.ticked(),
+      MS_TICK__PAGE
+    )
   }
 
   heard(
@@ -137,6 +143,7 @@ class _Page_<State> {
       state_Shell: message_Shell.state_Shell,
       files: message_Shell.files,
       isListening_Agent: message_Shell.isListening_Agent,
+      at: message_Shell.at,
       count_Edit: message_Shell.count_Edit
     })
   }
@@ -214,6 +221,8 @@ interface _Api__Page_<State> {
 }
 
 type _Host_Page_ = "ALONE" | "FRAMED"
+
+const MS_TICK__PAGE = 15_000
 
 interface _Remembered_Editor_ {
   path: string

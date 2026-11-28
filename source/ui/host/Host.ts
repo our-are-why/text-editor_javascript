@@ -55,6 +55,7 @@ class _Host_ {
   target_Mode: _Target_Switch_
   files: Array<string>
   isListening_Agent: boolean
+  offset_Clock: number
   attributes: Map<string, _Attributes_Element_>
   state_Shell: _State_Shell_
   ids_Drafting: Array<string>
@@ -73,6 +74,7 @@ class _Host_ {
     target_Mode,
     files,
     isListening_Agent,
+    at,
     attributes,
     state_Shell,
     suffix_Id,
@@ -83,6 +85,7 @@ class _Host_ {
     this.target_Mode = target_Mode
     this.files = files
     this.isListening_Agent = isListening_Agent
+    this.offset_Clock = at - Date.now()
     this.attributes = attributes
     this.state_Shell = state_Shell
     this.ids_Drafting = []
@@ -101,6 +104,7 @@ class _Host_ {
     state_Shell,
     files,
     isListening_Agent,
+    at,
     count_Edit
   }: _Heard_Host_): void {
     const isOwn = count_Edit > this.count_Acked
@@ -108,6 +112,7 @@ class _Host_ {
     this.state_Shell = state_Shell
     this.files = files
     this.isListening_Agent = isListening_Agent
+    this.offset_Clock = at - Date.now()
     for (const id_Request of this.ids_Drafting) {
       const task = this.state_Shell.model_Tasks.tasks.find((task_Each) => task_Each.kind === "OPEN" && task_Each.requests.some((request) => request.id === id_Request))
       if (task === undefined) continue
@@ -119,6 +124,14 @@ class _Host_ {
     }
     if (this.path_Wanted !== this.name_Document && this.isKept(this.path_Wanted)) this.name_Document = this.path_Wanted
     this.shown(isOwn)
+  }
+
+  ticked(): void {
+    this.shown(false)
+  }
+
+  atNow(): number {
+    return Date.now() + this.offset_Clock
   }
 
   showing(): _Shown_Host_ | undefined {
@@ -206,7 +219,8 @@ class _Host_ {
             sources_Dismissed: new Set(this.state_Shell.dismissed.find((dismissed) => dismissed.id_Task === task.id)?.sources ?? [])
           },
           name_Document: this.name_Document,
-          jobs: this.state_Shell.jobs
+          jobs: this.state_Shell.jobs,
+          at: this.atNow()
         }),
       mode: task === undefined
         ? {
@@ -217,7 +231,8 @@ class _Host_ {
           task: taskHostOf__Task({
             task,
             name_Document: this.name_Document,
-            jobs: this.state_Shell.jobs
+            jobs: this.state_Shell.jobs,
+            at: this.atNow()
           })
         },
       tasks: this.state_Shell.model_Tasks.tasks.flatMap((task_Each) => task_Each.kind === "OPEN"
@@ -225,7 +240,8 @@ class _Host_ {
           standingOf__Tasks({
             task: task_Each,
             name_Document: this.name_Document,
-            jobs: this.state_Shell.jobs
+            jobs: this.state_Shell.jobs,
+            at: this.atNow()
           })
         ]
         : []),
@@ -250,7 +266,8 @@ class _Host_ {
     ].map((task) => boardedOf__Tasks({
       task,
       count_Editors: this.target_Mode.kind === "TASK" && this.target_Mode.id === task.id ? 1 : 0,
-      jobs: this.state_Shell.jobs
+      jobs: this.state_Shell.jobs,
+      at: this.atNow()
     }))
     return {
       tasks: tasks_Board,
@@ -349,6 +366,7 @@ interface _Api__Host_ {
   target_Mode: _Target_Switch_
   files: Array<string>
   isListening_Agent: boolean
+  at: number
   attributes: Map<string, _Attributes_Element_>
   state_Shell: _State_Shell_
   suffix_Id: string
@@ -366,6 +384,7 @@ interface _Heard_Host_ {
   state_Shell: _State_Shell_
   files: Array<string>
   isListening_Agent: boolean
+  at: number
   count_Edit: number
 }
 

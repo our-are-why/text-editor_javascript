@@ -153,6 +153,7 @@ interface _Standing_Task_ {
   count_Conflicts: number
   count_Staged: number
   count_Running: number
+  count_Quiet: number
   count_Waiting: number
 }
 
@@ -285,6 +286,7 @@ function headerOf__Proposals({
   const count_Staged = requests_Counted.filter((request_Host) => request_Host.status === "STAGED").length
   const count_Waiting = requests_Counted.filter((request_Host) => request_Host.status === "WAITING").length
   const count_Running = requests_Counted.filter((request_Host) => request_Host.status === "RUNNING").length
+  const count_Quiet = requests_Counted.filter((request_Host) => request_Host.status === "QUIET").length
   const parts: Array<_Part_Header_> = mode.kind === "TASK" ? [] : [
     ...proposals_Here.length === 0
       ? []
@@ -302,20 +304,28 @@ function headerOf__Proposals({
           isBusy: false
         }
       ],
-    ...count_Waiting === 0
-      ? []
-      : [
-        {
-          text: `${count_Waiting} waiting`,
-          isBusy: false
-        }
-      ],
     ...count_Running === 0
       ? []
       : [
         {
           text: `${count_Running} running`,
           isBusy: true
+        }
+      ],
+    ...count_Quiet === 0
+      ? []
+      : [
+        {
+          text: `${count_Quiet} quiet`,
+          isBusy: false
+        }
+      ],
+    ...count_Waiting === 0
+      ? []
+      : [
+        {
+          text: `${count_Waiting} waiting`,
+          isBusy: false
         }
       ]
   ]
@@ -334,7 +344,8 @@ function headerOf__Proposals({
   const counts_Requests_Here: _Counts_Requests_ = {
     STAGED: requests_Counted_Here.filter((request_Host) => request_Host.status === "STAGED").length,
     WAITING: requests_Counted_Here.filter((request_Host) => request_Host.status === "WAITING").length,
-    RUNNING: requests_Counted_Here.filter((request_Host) => request_Host.status === "RUNNING").length
+    RUNNING: requests_Counted_Here.filter((request_Host) => request_Host.status === "RUNNING").length,
+    QUIET: requests_Counted_Here.filter((request_Host) => request_Host.status === "QUIET").length
   }
   const documents_Task = (mode.kind === "TASK" ? mode.task.documents : [])
     .map((document_Task) => ({
@@ -362,7 +373,8 @@ function headerOf__Proposals({
   const counts_Requests_Task: _Counts_Requests_ = {
     STAGED: requests_Whole.filter((request_Task) => request_Task.status === "STAGED").length + documents_Task.reduce((sum, document_Task) => sum + document_Task.counts_Requests.STAGED, 0),
     WAITING: requests_Whole.filter((request_Task) => request_Task.status === "WAITING").length + documents_Task.reduce((sum, document_Task) => sum + document_Task.counts_Requests.WAITING, 0),
-    RUNNING: requests_Whole.filter((request_Task) => request_Task.status === "RUNNING").length + documents_Task.reduce((sum, document_Task) => sum + document_Task.counts_Requests.RUNNING, 0)
+    RUNNING: requests_Whole.filter((request_Task) => request_Task.status === "RUNNING").length + documents_Task.reduce((sum, document_Task) => sum + document_Task.counts_Requests.RUNNING, 0),
+    QUIET: requests_Whole.filter((request_Task) => request_Task.status === "QUIET").length + documents_Task.reduce((sum, document_Task) => sum + document_Task.counts_Requests.QUIET, 0)
   }
   const count_Startable_Task = count_Startable_Here
     + requests_Whole.filter((request_Task) => request_Task.status === "STAGED").length
@@ -380,7 +392,7 @@ function headerOf__Proposals({
           name: mode.task.name,
           state: mode.task.state,
           label_State: LABELMAP__STATE_TASK[mode.task.state],
-          ends: ENDSMAP__STATE_TASK[mode.task.state](totalOf__Counts(counts_Task) - decidedOf__Counts(counts_Task) + counts_Requests_Task.STAGED + counts_Requests_Task.WAITING + counts_Requests_Task.RUNNING + (tasks.find((standing_Task) => standing_Task.id === mode.task.id)?.count_Conflicts ?? 0)),
+          ends: ENDSMAP__STATE_TASK[mode.task.state](totalOf__Counts(counts_Task) - decidedOf__Counts(counts_Task) + counts_Requests_Task.STAGED + countWithAgentOf__Counts(counts_Requests_Task) + (tasks.find((standing_Task) => standing_Task.id === mode.task.id)?.count_Conflicts ?? 0)),
           summary: mode.task.summary,
           reason: mode.task.reason,
           proposals: {
@@ -413,10 +425,10 @@ function headerOf__Proposals({
                 label: `Start all (${count_Startable_Task})`,
                 title: "Starts everything staged in the task, in every file it touches"
               },
-            stop_All: counts_Requests_Task.WAITING + counts_Requests_Task.RUNNING === 0
+            stop_All: countWithAgentOf__Counts(counts_Requests_Task) === 0
               ? null
               : {
-                label: `Stop all (${counts_Requests_Task.WAITING + counts_Requests_Task.RUNNING})`,
+                label: `Stop all (${countWithAgentOf__Counts(counts_Requests_Task)})`,
                 title: "Stops everything with the agent in the task, in every file it touches, staging it again"
               },
             actions: mode.task.actions.filter((action_Task) => action_Task.section === "REVISIONS")
@@ -469,11 +481,11 @@ function headerOf__Proposals({
             label: `Start all (${count_Startable_Here})`,
             title: `Starts all ${count_Startable_Here} ${count_Startable_Here === 1 ? "request" : "requests"} staged in this file, its own and its proposals'`
           },
-        stop_All: counts_Requests_Here.WAITING + counts_Requests_Here.RUNNING === 0
+        stop_All: countWithAgentOf__Counts(counts_Requests_Here) === 0
           ? null
           : {
-            label: `Stop all (${counts_Requests_Here.WAITING + counts_Requests_Here.RUNNING})`,
-            title: `Stops all ${counts_Requests_Here.WAITING + counts_Requests_Here.RUNNING} with the agent in this file, its own and its proposals', staging them again`
+            label: `Stop all (${countWithAgentOf__Counts(counts_Requests_Here)})`,
+            title: `Stops all ${countWithAgentOf__Counts(counts_Requests_Here)} with the agent in this file, its own and its proposals', staging them again`
           },
         actions: (mode.kind === "TASK" ? mode.task.actions_Document : []).filter((action_Task) => action_Task.section === "REVISIONS")
       },
@@ -557,6 +569,7 @@ const NOTEMAP__STATE_TASK: _NoteMap__State_Task_ = {
   DRAFT: "draft",
   WAITING: "waiting",
   WORKING: "working",
+  QUIET: "quiet",
   YOUR_TURN: "needs you",
   APPLIED: "applied",
   CANCELED: "canceled",
@@ -567,6 +580,7 @@ interface _Counts_Task_ {
   count_Undecided: number
   count_Conflicts: number
   count_Running: number
+  count_Quiet: number
   count_Waiting: number
   count_Staged: number
 }
@@ -607,6 +621,14 @@ function partsOf__Counts_Task(
         {
           kind: "AGENT" as const,
           text: `${counts_Task.count_Running} running`
+        }
+      ],
+    ...counts_Task.count_Quiet === 0
+      ? []
+      : [
+        {
+          kind: "QUIET" as const,
+          text: `${counts_Task.count_Quiet} quiet`
         }
       ],
     ...counts_Task.count_Waiting === 0
@@ -712,8 +734,12 @@ function footerOf__Tasks({
       count: tasks.filter((standing_Task) => standing_Task.count_Running > 0).length
     },
     {
+      kind: "QUIET" as const,
+      count: tasks.filter((standing_Task) => standing_Task.count_Running === 0 && standing_Task.count_Quiet > 0).length
+    },
+    {
       kind: "WAITING" as const,
-      count: tasks.filter((standing_Task) => standing_Task.count_Running === 0 && standing_Task.count_Waiting > 0).length
+      count: tasks.filter((standing_Task) => standing_Task.count_Running + standing_Task.count_Quiet === 0 && standing_Task.count_Waiting > 0).length
     },
     {
       kind: "DRAFTS" as const,
@@ -744,6 +770,7 @@ const WORDSMAP__KIND_COUNT: _WordsMap__Kind_Count_ = {
   YOURS: (count) => `${count} ${count === 1 ? "needs" : "need"} you`,
   CONFLICTS: (count) => `${count} ${count === 1 ? "conflict" : "conflicts"}`,
   WORKING: (count) => `${count} working`,
+  QUIET: (count) => `${count} quiet`,
   WAITING: (count) => `${count} waiting`,
   DRAFTS: (count) => `${count} ${count === 1 ? "draft" : "drafts"}`
 }
@@ -753,8 +780,9 @@ function figureOf__Counts_Requests(
 ): _Figure_Card_ | null {
   const parts = [
     ...counts_Requests.STAGED === 0 ? [] : [`${counts_Requests.STAGED} staged`],
-    ...counts_Requests.WAITING === 0 ? [] : [`${counts_Requests.WAITING} waiting`],
-    ...counts_Requests.RUNNING === 0 ? [] : [`${counts_Requests.RUNNING} running`]
+    ...counts_Requests.RUNNING === 0 ? [] : [`${counts_Requests.RUNNING} running`],
+    ...counts_Requests.QUIET === 0 ? [] : [`${counts_Requests.QUIET} quiet`],
+    ...counts_Requests.WAITING === 0 ? [] : [`${counts_Requests.WAITING} waiting`]
   ]
   return parts.length === 0
     ? null
@@ -775,9 +803,11 @@ function stateOf__Document({
 }: _Api___stateOf__Document_): _State_Document_ {
   return counts_Requests.RUNNING > 0
     ? "WORKING"
-    : counts_Requests.WAITING > 0
-      ? "WAITING"
-      : counts_Requests.STAGED > 0 || decidedOf__Counts(counts_Proposals) < totalOf__Counts(counts_Proposals)
+    : counts_Requests.QUIET > 0
+      ? "QUIET"
+      : counts_Requests.WAITING > 0
+        ? "WAITING"
+        : counts_Requests.STAGED > 0 || decidedOf__Counts(counts_Proposals) < totalOf__Counts(counts_Proposals)
       ? "YOUR_TURN"
       : totalOf__Counts(counts_Proposals) > 0
         ? "DONE"
@@ -793,6 +823,7 @@ const LABELMAP__STATE_DOCUMENT: _LabelMap__State_Document_ = {
   YOUR_TURN: "Your turn",
   WAITING: "Waiting",
   WORKING: "Working",
+  QUIET: "Quiet",
   DONE: "Done"
 }
 
@@ -827,7 +858,11 @@ function itemOf__Request_Task({
     }),
     status: request_Task.status,
     progress: PROGRESSMAP__STATUS_REQUEST[request_Task.status],
-    detail_Progress: request_Task.status === "ADDRESSED" ? detailOf__Request(request_Task) : null,
+    detail_Progress: request_Task.status === "ADDRESSED"
+      ? detailOf__Request(request_Task)
+      : request_Task.status === "QUIET"
+        ? quietOf__Minutes(request_Task.minutes_Quiet)
+        : null,
     isRunning: request_Task.status === "RUNNING",
     isStartable: request_Task.status === "STAGED",
     isRemovable: request_Task.status === "STAGED",
@@ -978,6 +1013,7 @@ const LABELMAP__STATE_TASK: _LabelMap__State_Task_ = {
   DRAFT: "Draft",
   WAITING: "Waiting",
   WORKING: "Working",
+  QUIET: "Quiet",
   YOUR_TURN: "Your turn",
   APPLIED: "Applied",
   CANCELED: "Canceled",
@@ -999,6 +1035,7 @@ const ENDSMAP__STATE_TASK: _EndsMap__State_Task_ = {
   ],
   WAITING: (count_Left) => endsOf__Task_Open(count_Left),
   WORKING: (count_Left) => endsOf__Task_Open(count_Left),
+  QUIET: (count_Left) => endsOf__Task_Open(count_Left),
   YOUR_TURN: (count_Left) => endsOf__Task_Open(count_Left),
   APPLIED: () => [],
   CANCELED: () => [],
@@ -1040,6 +1077,7 @@ const PROGRESSMAP__STATUS_REQUEST: _ProgressMap__Status_Request_ = {
   STAGED: "staged",
   WAITING: "waiting",
   RUNNING: "running",
+  QUIET: "quiet",
   ADDRESSED: "done"
 }
 
@@ -1051,7 +1089,20 @@ const ISWITHAGENTMAP__STATUS_REQUEST: _IsWithAgentMap__Status_Request_ = {
   STAGED: false,
   WAITING: true,
   RUNNING: true,
+  QUIET: true,
   ADDRESSED: false
+}
+
+function countWithAgentOf__Counts(
+  counts_Requests: _Counts_Requests_
+): number {
+  return counts_Requests.WAITING + counts_Requests.RUNNING + counts_Requests.QUIET
+}
+
+function quietOf__Minutes(
+  minutes_Quiet: number
+): string {
+  return `${minutes_Quiet} min`
 }
 
 type _IsAgentsMap__Kind_Part_ = {
@@ -1063,6 +1114,7 @@ const ISAGENTSMAP__KIND_PART: _IsAgentsMap__Kind_Part_ = {
   YOURS: false,
   STAGED: false,
   AGENT: true,
+  QUIET: true,
   WAITING: true
 }
 
@@ -1149,6 +1201,7 @@ interface _Request_Host_ {
   notes: string
   reference: _Selected_Text_ | null
   status: _Status_Request_
+  minutes_Quiet: number
 }
 
 interface _Task_Host_ {
@@ -1180,6 +1233,7 @@ interface _Counts_Requests_ {
   STAGED: number
   WAITING: number
   RUNNING: number
+  QUIET: number
 }
 
 interface _Request_Task_ {
@@ -1187,6 +1241,7 @@ interface _Request_Task_ {
   notes: string
   aim: _Aim_Request_
   status: _Status_Request_
+  minutes_Quiet: number
   sources_Answering: Array<string>
 }
 
@@ -3892,7 +3947,7 @@ function frameOf__Drawn({
           }),
           status: request_Host.status,
           progress: PROGRESSMAP__STATUS_REQUEST[request_Host.status],
-          detail_Progress: null,
+          detail_Progress: request_Host.status === "QUIET" ? quietOf__Minutes(request_Host.minutes_Quiet) : null,
           isRunning: request_Host.status === "RUNNING",
           isStartable: isOpen && !isWithAgent && request_Host.status === "STAGED",
           isRemovable: request_Host.status === "STAGED",
@@ -4170,7 +4225,8 @@ function headOf__Frame({
   const counts_Requests: _Counts_Requests_ = {
     STAGED: statuses.filter((status) => status === "STAGED").length,
     WAITING: statuses.filter((status) => status === "WAITING").length,
-    RUNNING: statuses.filter((status) => status === "RUNNING").length
+    RUNNING: statuses.filter((status) => status === "RUNNING").length,
+    QUIET: statuses.filter((status) => status === "QUIET").length
   }
   const count_Startable = proposals_Listed
     .filter((proposal_Host) => proposal_Host.state === "OPEN" && !proposal_Host.requests.some((request_Host) => ISWITHAGENTMAP__STATUS_REQUEST[request_Host.status]))
@@ -4199,11 +4255,11 @@ function headOf__Frame({
           label: `Start all (${count_Startable})`,
           title: `Starts all ${count_Startable} ${count_Startable === 1 ? "request" : "requests"} staged for the proposals listed in ${label_Range}`
         },
-      stop_All: counts_Requests.WAITING + counts_Requests.RUNNING === 0
+      stop_All: countWithAgentOf__Counts(counts_Requests) === 0
         ? null
         : {
-          label: `Stop all (${counts_Requests.WAITING + counts_Requests.RUNNING})`,
-          title: `Stops all ${counts_Requests.WAITING + counts_Requests.RUNNING} with the agent for the proposals listed in ${label_Range}, staging them again`
+          label: `Stop all (${countWithAgentOf__Counts(counts_Requests)})`,
+          title: `Stops all ${countWithAgentOf__Counts(counts_Requests)} with the agent for the proposals listed in ${label_Range}, staging them again`
         },
       actions: []
     }
