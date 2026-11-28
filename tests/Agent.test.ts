@@ -72,3 +72,24 @@ test("done on a job offered and never checked in on takes it and hands it back a
   const answer = agent.called({ kind_Call: "DONE", id_Job: "j-1", note: "Nothing needs to change.", said: {}, copy: COPY_NONE, clashesOf: () => [], at: 10, command_Agent: COMMAND })
   expect([answer.kind, shell.jobOf("j-1")?.state.kind]).toEqual(["HANDED_BACK", "DONE"])
 })
+
+test("asked what it changed with its moves said, each change says its part in a move, the edits in the text one moves numbered after the rest; a move that can't be, said why; and every answer of what it changed telling the agent to say its moves", () => {
+  const { shell, agent } = wired()
+  const textOf = (text: string) => ({ lines: parseTexts_Line(text), marks: [] })
+  shell.handle({ kind: "OPEN_DOCUMENT", path: "retry.js", text: textOf("function attempts() {\n  return 5\n}\n\nexport async function retry(fn) {\n  for (let attempt = 0; attempt < attempts(); attempt += 1) {\n    try {\n      return await fn()\n    } catch {\n      await sleep(100)\n    }\n  }\n}\n\nfunction sleep(ms) {\n  return new Promise((resolve) => setTimeout(resolve, ms))\n}\n"), isPresent: true })
+  shell.handle({ kind: "DRAFT", request: madeOf("a"), isStarting: true, path: "README.md" })
+  offered(agent, ANY, 0)
+  const called = (kind_Call: "CHECK" | "CHANGES", said: object, copy: _Copy_Agent_) => agent.called({ kind_Call, id_Job: "j-1", note: "", said, copy, clashesOf: () => [], at: 10, command_Agent: COMMAND })
+  called("CHECK", {}, COPY_NONE)
+  const document = shell.documentOf("retry.js")
+  const copy: _Copy_Agent_ = { kind: "MADE", path: "/copy", files: [{ given: { path: "retry.js", version: document.version, text_Document: document.text, proposed: [], sources: [], text: document.text, isPresent: true }, effect: "CHANGE", text_Copy: textOf("function sleep(ms) { // moved\n  return new Promise((resolve) => setTimeout(resolve, ms))\n}\n\nfunction attempts() {\n  return 5\n}\n\nexport async function retry(fn) {\n  for (let attempt = 0; attempt < attempts(); attempt += 1) {\n    try {\n      return await fn()\n    } catch {\n      await sleep(100)\n    }\n  }\n}\n") }], unplaceables: [] }
+  const plain = called("CHANGES", {}, copy)
+  const moved = called("CHANGES", { moves: [{ from: 2, to: 1 }] }, copy)
+  const wrong = called("CHANGES", { moves: [{ from: 1, to: 1 }, { to: 2 }] }, copy)
+  const listedOf = (answer: _Answer_Agent_) => answer.kind === "CHANGES" ? { stamp: answer.stamp, changes: answer.changes.map((change) => [change.number, change.move, change.lines, change.before.length, change.after]), issues: answer.issues } : answer.kind
+  const SLEEP = "function sleep(ms) { // moved\n  return new Promise((resolve) => setTimeout(resolve, ms))\n}\n\n"
+  expect(listedOf(plain)).toEqual({ stamp: "0de00673", changes: [[1, "", "1", 0, SLEEP], [2, "", "12–16", 83, ""]], issues: [] })
+  expect(listedOf(moved)).toEqual({ stamp: "0de00673", changes: [[1, "move 2 to 1 puts its text here", "1", 0, SLEEP], [2, "move 2 to 1 takes its text from here", "12–16", 83, ""], [3, "an edit in the text move 2 to 1 moves", "15", 0, " // moved"]], issues: [] })
+  expect(listedOf(wrong)).toEqual({ stamp: "0de00673", changes: [[1, "", "1", 0, SLEEP], [2, "", "12–16", 83, ""]], issues: ["move 2 isn't {\"from\": <the change taking its text out>, \"to\": <the change putting it in>}", "change 1 isn't only text taken out, so move 1 to 1 can't take its text from there", "change 1 is in more than one move, or both sides of one"] })
+  expect(plain.kind === "CHANGES" && plain.next.includes("say every move, edited or not, under \"moves\"")).toBe(true)
+})

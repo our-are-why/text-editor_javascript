@@ -1,5 +1,6 @@
 import {
   changesOf__Copy,
+  movedOf__Changes,
   stampOf__Changes,
   landingOf__Grouping,
   LANDING_NONE,
@@ -9,7 +10,9 @@ import {
   type _File_Copy_,
   type _Unplaceable_Copy_,
   type _Change_Copy_,
+  type _Move_Copy_,
   type _Grouping_Job_,
+  type _Move_Grouped_,
   type _Proposal_Grouped_,
   type _Nothing_Grouped_,
   type _Checked_Landing_,
@@ -76,6 +79,9 @@ export {
   groupingOf__Said,
   type _Api___groupingOf__Said_,
   type _Said_Grouping_,
+  movesOf__Said,
+  type _Api___movesOf__Said_,
+  type _Said_Moves_,
   type _Proposal_Said_,
   recordOf,
   type _Api___recordOf_,
@@ -216,12 +222,14 @@ interface _STILL_ON__Answer_Agent_ extends __BASE_Answer_Agent_<"STILL_ON"> {}
 interface _CHANGES_Answer_Agent_ extends __BASE_Answer_Agent_<"CHANGES"> {
   stamp: string
   changes: Array<_Change_Said_>
+  issues: Array<string>
 }
 
 interface _Change_Said_ {
   number: number
   path: string
   file: string
+  move: string
   lines: string
   before: string
   after: string
@@ -357,6 +365,7 @@ const CHANGESMAP__STANDING_JOB: _AnswerMap__Standing_Job_ = {
   BEING_WORKED_ON: ({
     task,
     job_Shell,
+    said,
     copy,
     command_Agent
   }) => answeredOf__Copy({
@@ -368,6 +377,14 @@ const CHANGESMAP__STANDING_JOB: _AnswerMap__Standing_Job_ = {
       const changes = changesOf__Copy({
         files: copy_Made.files
       })
+      const said_Moves = movesOf__Said({
+        said
+      })
+      const moved = movedOf__Changes({
+        files: copy_Made.files,
+        changes,
+        moves: said_Moves.moves
+      })
       return {
         commands_Shell: [],
         answer_Agent: {
@@ -375,9 +392,14 @@ const CHANGESMAP__STANDING_JOB: _AnswerMap__Standing_Job_ = {
           stamp: stampOf__Changes({
             changes
           }),
-          changes: changes.map((change) => saidOf__Change({
-            change
+          changes: moved.changes.map((change) => saidOf__Change({
+            change,
+            moves: moved.moves
           })),
+          issues: [
+            ...said_Moves.issues,
+            ...moved.issues
+          ],
           next: changes.length === 0 && copy_Made.unplaceables.length === 0
             ? `You've changed nothing in your copy. If nothing needs to change, run \`${command_Agent} done ${job_Shell.id} "<for each request, why nothing needs to change>"\`.`
             : nextOf__Grouping({
@@ -649,17 +671,28 @@ function answeredOf__Copy({
 
 interface _Api___saidOf__Change_ {
   change: _Change_Copy_
+  moves: Array<_Move_Copy_>
 }
 
 function saidOf__Change({
-  change
+  change,
+  moves
 }: _Api___saidOf__Change_): _Change_Said_ {
   const line_From = change.range.from.line + 1
   const line_To = change.range.to.line + 1
+  const move = moves.find((move_Each) => move_Each.change_From.number === change.number || move_Each.change_To.number === change.number || move_Each.numbers_Inside.includes(change.number))
+  const name_Move = move === undefined ? "" : `move ${move.change_From.number} to ${move.change_To.number}`
   return {
     number: change.number,
     path: change.path,
     file: SAIDMAP__EFFECT[change.effect],
+    move: move === undefined
+      ? ""
+      : move.change_From.number === change.number
+        ? `${name_Move} takes its text from here`
+        : move.change_To.number === change.number
+          ? `${name_Move} puts its text here`
+          : `an edit in the text ${name_Move} moves`,
     lines: line_From === line_To ? String(line_From) : `${line_From}–${line_To}`,
     before: change.before,
     after: change.after
@@ -693,6 +726,9 @@ function groupingOf__Said({
     value: said
   })
   const isGrouped = "proposals" in record || "nothing" in record
+  const said_Moves = movesOf__Said({
+    said
+  })
   const proposals_Said = Array.isArray(record["proposals"]) ? record["proposals"] : []
   const nothings_Said = Array.isArray(record["nothing"]) ? record["nothing"] : []
   const stringOf = (value: unknown) => typeof value === "string" ? value : ""
@@ -737,11 +773,13 @@ function groupingOf__Said({
       ...isGrouped ? [] : ["there are no proposals: give \"proposals\", and \"nothing\" for the requests that need nothing"],
       ..."proposals" in record && !Array.isArray(record["proposals"]) ? ["\"proposals\" isn't a list"] : [],
       ..."nothing" in record && !Array.isArray(record["nothing"]) ? ["\"nothing\" isn't a list"] : [],
+      ...said_Moves.issues,
       ...proposals.flatMap((proposal) => proposal.issues),
       ...nothings.flatMap((nothing, index) => nothing.id_Request === "" ? [`"nothing" ${index + 1} names no request`] : [])
     ],
     grouping: {
       stamp: stringOf(record["stamp"]),
+      moves: said_Moves.moves,
       proposals: proposals.map((proposal) => ({
         aim: proposal.aim,
         title: proposal.title,
@@ -751,6 +789,40 @@ function groupingOf__Said({
       })),
       nothings
     }
+  }
+}
+
+interface _Api___movesOf__Said_ {
+  said: unknown
+}
+
+interface _Said_Moves_ {
+  issues: Array<string>
+  moves: Array<_Move_Grouped_>
+}
+
+function movesOf__Said({
+  said
+}: _Api___movesOf__Said_): _Said_Moves_ {
+  const record = recordOf({
+    value: said
+  })
+  const numberOf = (value: unknown) => typeof value === "number" && Number.isInteger(value) && value > 0 ? value : 0
+  const moves = (Array.isArray(record["moves"]) ? record["moves"] : []).map((move_Said): _Move_Grouped_ => {
+    const move_Record = recordOf({
+      value: move_Said
+    })
+    return {
+      number_From: numberOf(move_Record["from"]),
+      number_To: numberOf(move_Record["to"])
+    }
+  })
+  return {
+    issues: [
+      ..."moves" in record && !Array.isArray(record["moves"]) ? ["\"moves\" isn't a list"] : [],
+      ...moves.flatMap((move, index) => move.number_From === 0 || move.number_To === 0 ? [`move ${index + 1} isn't {"from": <the change taking its text out>, "to": <the change putting it in>}`] : [])
+    ],
+    moves: moves.filter((move) => move.number_From !== 0 && move.number_To !== 0)
   }
 }
 
@@ -783,10 +855,11 @@ function nextOf__Grouping({
 }: _Api___nextOf__Grouping_): string {
   return [
     "These are your changes, numbered, each what was there and what's there now. Group them into proposals, each one idea, decided whole, in one file: give each a title, why, the numbers of its changes, and the ids of the requests it answers.",
+    `Text you moved shows as a change taking it out and one putting it in: say every move, edited or not, under "moves", {"from": <the one taking it out>, "to": <the one putting it in>}, and put both in one proposal, which reviews it as a move. Any edits you made in the moved text are numbered after the rest once the move's said: ask \`${command_Agent} changes ${job_Shell.id} <file>\` with your file to see them; they go in a proposal apart from the move's, as they're drawn inside it.`,
     "A file you made or deleted is one change, the whole of its text, said \"made\" or \"deleted\": give it a proposal of its own, which reviews it as a new file or a deletion.",
     job_Shell.sources.length > 0 ? `A change to a proposal you're revising, ${job_Shell.sources.join(", ")}, goes in its revision, with "revises" its id instead of a title, its why saying what this round changed.` : "",
     "For a request that needs nothing changed, say why under \"nothing\".",
-    `Write it as JSON, to a file outside your copy: {"stamp": "<the stamp above>", "proposals": [{"title": "...", "why": "...", "changes": [1, 2], "answers": ["<request id>"]}], "nothing": [{"request": "<request id>", "why": "..."}]}.`,
+    `Write it as JSON, to a file outside your copy: {"stamp": "<the stamp above>", "moves": [{"from": 3, "to": 7}], "proposals": [{"title": "...", "why": "...", "changes": [1, 2], "answers": ["<request id>"]}], "nothing": [{"request": "<request id>", "why": "..."}]}.`,
     `Check it with \`${command_Agent} verify ${job_Shell.id} <file>\` as often as you like, then hand back with \`${command_Agent} done ${job_Shell.id} "<a note on the job as a whole>" <file>\`.`
   ].filter((sentence) => sentence !== "").join(" ")
 }

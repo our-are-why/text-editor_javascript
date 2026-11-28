@@ -17,6 +17,7 @@ import {
   carriedOf__Head,
   textWith__Sources,
   flatOf__Text,
+  refusalsIn__Source,
   refusalsAcross__Sources,
   checkedOf__Head,
   settledOf__Head,
@@ -248,10 +249,16 @@ class _Shell_ {
           head
         }).proposed.filter((changes_Source) => !ids_Landing.includes(changes_Source.source))
       const refusals_Before = new Set(refusalsAcross__Sources(proposed_Task).map((refusal) => JSON.stringify(refusal)))
-      return refusalsAcross__Sources([
-        ...proposed_Task,
-        ...carrieds_Path.map((carried) => carried.changes_Source)
-      ])
+      return [
+        ...carrieds_Path.flatMap((carried) => refusalsIn__Source({
+          document: this.documentOf(path).text,
+          changes_Source: carried.changes_Source
+        })),
+        ...refusalsAcross__Sources([
+          ...proposed_Task,
+          ...carrieds_Path.map((carried) => carried.changes_Source)
+        ])
+      ]
         .filter((refusal) => !refusals_Before.has(JSON.stringify(refusal)))
         .map((refusal) => {
           const isIn = (source: string) => source === refusal.source || refusal.reason.includes(`${source}'s`)

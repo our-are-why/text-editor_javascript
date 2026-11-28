@@ -4,7 +4,7 @@ import { _Documents_, parseTexts_Line, flatOf__Text, textWith__Sources, refusals
 import { _Host_ } from "../source/ui/host/index.ts"
 import { viewModelOf__Model, MODULE_PLAINTEXT } from "../source/ui/editor/index.ts"
 import { MODULE_READING_TEXT } from "../source/ui/editor/readings/text.ts"
-import { _Shell_, changesOf__Copy, stampOf__Changes, landingOf__Grouping, LANDING_NONE, type _Grouping_Job_, type _Job_Shell_, type _Landing_Handed_, type _File_Copy_, type _Given_Job_ } from "../source/core/shell/index.ts"
+import { _Shell_, changesOf__Copy, stampOf__Changes, landingOf__Grouping, movedOf__Changes, LANDING_NONE, type _Grouping_Job_, type _Job_Shell_, type _Landing_Handed_, type _File_Copy_, type _Given_Job_, type _Move_Grouped_, type _Proposal_Grouped_ } from "../source/core/shell/index.ts"
 
 // an agent's working copy as the core sees it: what it's given, each file
 // of its task as the task has it; what it changed, numbered, narrowed to
@@ -31,13 +31,13 @@ const takenOf = (shell: _Shell_, id_Job: string) => {
   if (job_Shell === undefined || job_Shell.state.kind !== "BEING_WORKED_ON") throw new Error(`${id_Job} isn't taken`)
   return { job_Shell, givens: job_Shell.state.givens }
 }
-const checkedOf = (shell: _Shell_, job_Shell: _Job_Shell_, text_Copy: string, grouping: (stamp: string) => Omit<_Grouping_Job_, "stamp">) => {
+const checkedOf = (shell: _Shell_, job_Shell: _Job_Shell_, text_Copy: string, grouping: (stamp: string) => Omit<_Grouping_Job_, "stamp" | "moves">) => {
   const given = job_Shell.state.kind === "BEING_WORKED_ON" ? job_Shell.state.givens[0] : undefined
   const task = shell.taskOf(job_Shell.id_Task)
   if (given === undefined || task === undefined) throw new Error("no given")
   const files = [{ given, effect: "CHANGE" as const, text_Copy: textOf(text_Copy) }]
   const stamp = stampOf__Changes({ changes: changesOf__Copy({ files }) })
-  return landingOf__Grouping({ task, job_Shell, files, unplaceables: [], grouping: { stamp, ...grouping(stamp) } })
+  return landingOf__Grouping({ task, job_Shell, files, unplaceables: [], grouping: { stamp, moves: [], ...grouping(stamp) } })
 }
 
 test("an agent's changes in its copy, numbered across its files, each narrowed to the words that differ, what was there and what's there now", () => {
@@ -75,7 +75,7 @@ test("a hand back's issues, each said: a stamp that's not the changes', a change
   const checked_Bad = checkedOf(shell, job_Shell, text_Copy, () => ({ proposals: [{ aim: { kind: "NEW" }, title: "", why: "", numbers: [1, 9], ids_Request: ["r-9"] }], nothings: [] }))
   const task = shell.taskOf("T-1")!
   const given = job_Shell.state.kind === "BEING_WORKED_ON" ? job_Shell.state.givens[0]! : undefined!
-  const checked_Stale = landingOf__Grouping({ task, job_Shell, files: [{ given, effect: "CHANGE", text_Copy: textOf(text_Copy) }], unplaceables: [{ path: "notes.md", why: "was made in your copy" }], grouping: { stamp: "old", proposals: [], nothings: [{ id_Request: "r-1", why: "" }] } })
+  const checked_Stale = landingOf__Grouping({ task, job_Shell, files: [{ given, effect: "CHANGE", text_Copy: textOf(text_Copy) }], unplaceables: [{ path: "notes.md", why: "was made in your copy" }], grouping: { stamp: "old", moves: [], proposals: [], nothings: [{ id_Request: "r-1", why: "" }] } })
   const checked_Twice = checkedOf(shell, job_Shell, text_Copy, () => ({ proposals: [{ aim: { kind: "NEW" }, title: "One", why: "Why.", numbers: [1, 2], ids_Request: ["r-1"] }, { aim: { kind: "NEW" }, title: "Two", why: "Why.", numbers: [2], ids_Request: ["r-3"] }], nothings: [] }))
   expect(checked_Bad.issues).toEqual([
     "there's no change 9",
@@ -107,7 +107,7 @@ const filesLanded = (shell: _Shell_, job_Shell: _Job_Shell_, files: Array<_File_
   const task = shell.taskOf(job_Shell.id_Task)
   if (task === undefined) throw new Error("no task")
   const changes = changesOf__Copy({ files })
-  const checked = landingOf__Grouping({ task, job_Shell, files, unplaceables: [], grouping: { stamp: stampOf__Changes({ changes }), proposals: titles.map((title, index) => ({ aim: { kind: "NEW" as const }, title, why: "Why.", numbers: [index + 1], ids_Request: [id_Request] })), nothings: [] } })
+  const checked = landingOf__Grouping({ task, job_Shell, files, unplaceables: [], grouping: { stamp: stampOf__Changes({ changes }), moves: [], proposals: titles.map((title, index) => ({ aim: { kind: "NEW" as const }, title, why: "Why.", numbers: [index + 1], ids_Request: [id_Request] })), nothings: [] } })
   if (checked.issues.length === 0) shell.handle({ kind: "HAND_BACK", id_Job: job_Shell.id, landing: checked.landing, note: "" })
   return { changes, checked }
 }
@@ -163,13 +163,110 @@ test("a file deleted in the copy lands as a deletion: one change, its whole text
   const given = second.givens[0]!
   const task = shell.taskOf("T-1")!
   const files: Array<_File_Copy_> = [{ given, effect: "MAKE", text_Copy: textOf(TEXT) }]
-  const revised = landingOf__Grouping({ task, job_Shell: second.job_Shell, files, unplaceables: [], grouping: { stamp: stampOf__Changes({ changes: changesOf__Copy({ files }) }), proposals: [{ aim: { kind: "REVISION", id_Proposal: "j-1.1" }, title: "", why: "Kept.", numbers: [1], ids_Request: ["r-2"] }], nothings: [] } })
+  const revised = landingOf__Grouping({ task, job_Shell: second.job_Shell, files, unplaceables: [], grouping: { stamp: stampOf__Changes({ changes: changesOf__Copy({ files }) }), moves: [], proposals: [{ aim: { kind: "REVISION", id_Proposal: "j-1.1" }, title: "", why: "Kept.", numbers: [1], ids_Request: ["r-2"] }], nothings: [] } })
   expect([given.isPresent, flatOf__Text(given.text)]).toEqual([false, ""])
   expect(revised.issues).toEqual(["change 1 makes retry.js: a file made or deleted goes in a new proposal of its own, not a revision"])
   shell.handle({ kind: "HAND_BACK", id_Job: "j-2", landing: LANDING_NONE, note: "Left as it was." })
   shell.handle({ kind: "DECIDE", id_Task: "T-1", id_Proposal: "j-1.1", decision: "ACCEPTED" })
   shell.handle({ kind: "END", id_Task: "T-1", kind_End: "APPLY" })
   expect([shell.documentOf("retry.js").isPresent, flatOf__Text(shell.documentOf("retry.js").text)]).toEqual([false, ""])
+})
+
+// text an agent moved in its copy: a file of functions, one moved, as the
+// agent says, its two sides one move, and an edit in it, if any, a proposal
+// of its own; what lands applied all of it the copy, every way round
+const blockOf = (name: string, value: string) => `function ${name}() {\n  return ${value}\n}\n`
+const FUNCTIONS = [
+  "function attempts() {\n  return 5\n}\n",
+  "function delayOf(attempt) {\n  const base = 100\n  return base * 2 ** attempt\n}\n",
+  "export async function retry(fn) {\n  for (let attempt = 0; attempt < attempts(); attempt += 1) {\n    try {\n      return await fn()\n    } catch {\n      await sleep(delayOf(attempt))\n    }\n  }\n}\n",
+  "function sleep(ms) {\n  return new Promise((resolve) => setTimeout(resolve, ms))\n}\n"
+]
+const movesLanded = (text_Before: string, text_After: string, sides: (changes: Array<{ number: number, before: string, after: string }>) => Array<_Move_Grouped_>, proposals: (moves: Array<{ numbers: Array<number>, numbers_Inside: Array<number> }>, numbers: Array<number>) => Array<Omit<_Proposal_Grouped_, "aim" | "why" | "ids_Request">>) => {
+  const shell = shellMade()
+  shell.handle({ kind: "OPEN_DOCUMENT", path: "moves.js", text: textOf(text_Before), isPresent: true })
+  shell.handle({ kind: "DRAFT", request: madeOf("r-1", "Tidy it."), isStarting: true, path: "retry.js" })
+  const { job_Shell } = takenOf(shell, "j-1")
+  const files: Array<_File_Copy_> = [{ given: givenOf(shell, "moves.js"), effect: "CHANGE", text_Copy: textOf(text_After) }]
+  const changes = changesOf__Copy({ files })
+  const moves = sides(changes)
+  const moved = movedOf__Changes({ files, changes, moves })
+  const grouped = proposals(moved.moves.map((move) => ({ numbers: [move.change_From.number, move.change_To.number], numbers_Inside: move.numbers_Inside })), moved.changes.map((change) => change.number))
+  const checked = landingOf__Grouping({ task: shell.taskOf("T-1")!, job_Shell, files, unplaceables: [], grouping: { stamp: stampOf__Changes({ changes }), moves, proposals: grouped.map((proposal) => ({ ...proposal, aim: { kind: "NEW" as const }, why: "Why.", ids_Request: ["r-1"] })), nothings: [] } })
+  const clashes = checked.issues.length > 0 ? [] : shell.clashesOf({ id_Task: "T-1", landing: checked.landing })
+  if (checked.issues.length === 0 && clashes.length === 0) shell.handle({ kind: "HAND_BACK", id_Job: "j-1", landing: checked.landing, note: "" })
+  const head = shell.taskOf("T-1")?.heads.find((head_Each) => head_Each.path === "moves.js")
+  const textWith = (sources: Array<string>) => flatOf__Text(textWith__Sources({ model_TextEditor: { document: shell.documentOf("moves.js").text, proposed: head?.proposed ?? [] }, sources }))
+  return { shell, changes, moved, checked, clashes, head, textWith }
+}
+const sidesOf = (changes: Array<{ number: number, before: string, after: string }>): Array<_Move_Grouped_> => {
+  const removal = changes.filter((change) => change.after === "").toSorted((change, change_Other) => change_Other.before.length - change.before.length)[0]
+  const insertion = changes.filter((change) => change.before === "").toSorted((change, change_Other) => change_Other.after.length - change.after.length)[0]
+  return removal === undefined || insertion === undefined ? [] : [{ number_From: removal.number, number_To: insertion.number }]
+}
+
+test("every way a function's moved in a file of four, edited inside or not, said as one move: its sides found, slid till they match, landed as one move, an edit in it a proposal of its own drawn inside it, and what lands, applied, the copy", () => {
+  const failures: Array<string> = []
+  for (const [index_From, block] of FUNCTIONS.entries()) {
+    for (const index_To of FUNCTIONS.keys()) {
+      if (index_To === index_From) continue
+      for (const isEdited of [false, true]) {
+        const rest = FUNCTIONS.filter((_, index) => index !== index_From)
+        const block_Moved = isEdited ? block.replace(") {\n", ") { // moved\n") : block
+        const text_After = [...rest.slice(0, index_To), block_Moved, ...rest.slice(index_To)].join("\n")
+        const landed = movesLanded(FUNCTIONS.join("\n"), text_After, sidesOf, (moves, numbers) => [
+          { title: "Move it", numbers: moves.flatMap((move) => move.numbers) },
+          ...moves.some((move) => move.numbers_Inside.length > 0) ? [{ title: "Edit it", numbers: moves.flatMap((move) => move.numbers_Inside) }] : [],
+          ...numbers.filter((number) => !moves.some((move) => move.numbers.includes(number) || move.numbers_Inside.includes(number))).length > 0 ? [{ title: "The rest", numbers: numbers.filter((number) => !moves.some((move) => move.numbers.includes(number) || move.numbers_Inside.includes(number))) }] : []
+        ])
+        const name = `${"abcd"[index_From]} to ${index_To}${isEdited ? ", edited" : ""}`
+        const proposal_Move = landed.checked.landing.proposals[0]
+        if (landed.moved.moves.length !== 1) failures.push(`${name}: no move found in ${landed.changes.length} changes`)
+        else if (landed.checked.issues.length > 0 || landed.clashes.length > 0) failures.push(`${name}: ${[...landed.checked.issues, ...landed.clashes].join("; ")}`)
+        else if (proposal_Move?.changes.filter((change) => change.kind === "MOVE").length !== 1) failures.push(`${name}: no one move`)
+        else if (landed.textWith(landed.checked.landing.proposals.map((proposal) => proposal.id)) !== text_After) failures.push(`${name}: applied, not the copy`)
+      }
+    }
+  }
+  expect(failures).toEqual([])
+})
+
+test("a function moved down, the comparison's sides each turned by a closing brace and a line, slid till they're the same text: one move, nothing else, drawn as one; and one moved to the top of a file, whose last function has no line after it, its sides slid to the shape that leaves least at its edges: the function moved whole, the line before it taken out and a line put in after it the move's own changes", () => {
+  const helper = "const x = 1\n\nfunction helper() {\n  return x\n}\n\nexport function main() {\n  return helper()\n}\n"
+  const helper_Moved = "const x = 1\n\nexport function main() {\n  return helper()\n}\n\nfunction helper() {\n  return x\n}\n"
+  const down = movesLanded(helper, helper_Moved, sidesOf, (moves) => [{ title: "Helpers after", numbers: moves.flatMap((move) => move.numbers) }])
+  const top = movesLanded(FUNCTIONS.join("\n"), [FUNCTIONS[3], ...FUNCTIONS.slice(0, 3)].join("\n"), sidesOf, (moves) => [{ title: "d first", numbers: moves.flatMap((move) => move.numbers) }])
+  expect(down.changes.map((change) => [change.before, change.after])).toEqual([["\nfunction helper() {\n  return x\n}\n", ""], ["", "\n}\n\nfunction helper() {\n  return x"]])
+  expect([down.checked.issues, down.clashes, down.checked.landing.proposals[0]?.changes]).toEqual([[], [], [{ kind: "MOVE", range: { from: { line: 1, offset: 0 }, to: { line: 5, offset: 0 } }, at: { line: 9, offset: 0 } }]])
+  expect(itemsDrawnOf(down.shell, "moves.js")).toEqual([["j-1.1", ""], ["j-1.1", ""]])
+  expect(down.textWith(["j-1.1"])).toBe(helper_Moved)
+  expect([top.checked.issues, top.clashes, top.checked.landing.proposals[0]?.changes.map((change) => change.kind === "MOVE" ? ["MOVE", change.range.from.line, change.range.to.line, change.at.line] : ["REPLACE", change.range.from.line, change.range.to.line, flatOf__Text(change.next)])]).toEqual([[], [], [["REPLACE", 0, 0, "\n"], ["REPLACE", 18, 19, ""], ["MOVE", 19, 22, 0]]])
+  expect(top.textWith(["j-1.1"])).toBe([FUNCTIONS[3], ...FUNCTIONS.slice(0, 3)].join("\n"))
+})
+
+test("a move's issues, each said: its sides in two proposals; an edit in it in the move's own; a side that isn't only text taken out or put in; one that's no change; a move between two files; text put in that isn't mostly what's taken out; one change in two moves; and a move in a revision", () => {
+  const text_After = [FUNCTIONS[1], FUNCTIONS[2], FUNCTIONS[0]!.replace(") {\n", ") { // moved\n"), FUNCTIONS[3]].join("\n")
+  const split = movesLanded(FUNCTIONS.join("\n"), text_After, sidesOf, (moves) => [{ title: "Out", numbers: [moves[0]!.numbers[0]!] }, { title: "In", numbers: [moves[0]!.numbers[1]!, ...moves[0]!.numbers_Inside] }])
+  const swapped = movesLanded(FUNCTIONS.join("\n"), text_After, (changes) => sidesOf(changes).map((move) => ({ number_From: move.number_To, number_To: move.number_From })), (_, numbers) => [{ title: "All", numbers }])
+  const unlike = movesLanded(FUNCTIONS.join("\n"), [FUNCTIONS[1], FUNCTIONS[2], "const LIMIT = 10\n", FUNCTIONS[3]].join("\n"), sidesOf, (_, numbers) => [{ title: "All", numbers }])
+  const twice = movesLanded(FUNCTIONS.join("\n"), text_After, (changes) => [...sidesOf(changes), ...sidesOf(changes), { number_From: 9, number_To: 1 }], (_, numbers) => [{ title: "All", numbers }])
+  expect(split.checked.issues).toEqual(["changes 1 and 2 are move 1 to 2, so they go in one proposal", "change 3 is an edit in the text move 1 to 2 moves, drawn inside the move, so it goes in a proposal apart from the move's"])
+  expect(swapped.checked.issues).toEqual(["change 2 isn't only text taken out, so move 2 to 1 can't take its text from there", "change 1 isn't only text put in, so move 2 to 1 can't put its text there"])
+  expect(unlike.checked.issues).toEqual(["what change 2 puts in isn't mostly what change 1 takes out, starting as it does, so move 1 to 2 can't be drawn as a move: say them apart"])
+  expect(twice.checked.issues).toEqual(["change 1 is in more than one move, or both sides of one", "change 2 is in more than one move, or both sides of one", "move 9 to 1 takes its text from change 9, but there's no change 9", "change 1 isn't only text put in, so move 9 to 1 can't put its text there"])
+  const shell = shellMade()
+  shell.handle({ kind: "OPEN_DOCUMENT", path: "moves.js", text: textOf(FUNCTIONS.join("\n")), isPresent: true })
+  shell.handle({ kind: "DRAFT", request: madeOf("r-1", "Tidy it."), isStarting: true, path: "retry.js" })
+  const { job_Shell, givens } = takenOf(shell, "j-1")
+  const files: Array<_File_Copy_> = [{ given: givens[0]!, effect: "CHANGE", text_Copy: textOf(TEXT.replace("const ATTEMPTS = 5;\n", "")) }, { given: givenOf(shell, "moves.js"), effect: "CHANGE", text_Copy: textOf(FUNCTIONS.join("\n") + "const ATTEMPTS = 5;\n") }]
+  const changes = changesOf__Copy({ files })
+  const across = landingOf__Grouping({ task: shell.taskOf("T-1")!, job_Shell, files, unplaceables: [], grouping: { stamp: stampOf__Changes({ changes }), moves: sidesOf(changes), proposals: [{ aim: { kind: "REVISION", id_Proposal: "p" }, title: "", why: "Why.", numbers: [1, 2], ids_Request: ["r-1"] }], nothings: [] } })
+  expect(changes.map((change) => [change.number, change.path])).toEqual([[1, "moves.js"], [2, "retry.js"]])
+  expect(across.issues.filter((issue) => issue.startsWith("move "))).toEqual(["move 2 to 1 goes from retry.js to moves.js: a move stays in its file, for now, so say it as text taken out of one and put in the other"])
+  const files_Moved: Array<_File_Copy_> = [{ given: givenOf(shell, "moves.js"), effect: "CHANGE", text_Copy: textOf(text_After) }]
+  const changes_Moved = changesOf__Copy({ files: files_Moved })
+  const revised = landingOf__Grouping({ task: shell.taskOf("T-1")!, job_Shell, files: files_Moved, unplaceables: [], grouping: { stamp: stampOf__Changes({ changes: changes_Moved }), moves: sidesOf(changes_Moved), proposals: [{ aim: { kind: "REVISION", id_Proposal: "p" }, title: "", why: "Why.", numbers: changes_Moved.map((change) => change.number), ids_Request: ["r-1"] }], nothings: [] } })
+  expect(revised.issues.filter((issue) => issue.startsWith("move "))).toEqual(["move 1 to 2 is in a revision: a move goes in a new proposal, for now"])
 })
 
 // a job's work handed back on a task with changes of its own, the case's

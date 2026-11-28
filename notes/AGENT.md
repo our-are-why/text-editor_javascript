@@ -370,7 +370,25 @@ into proposals and into frames, which leans on what it reads, 5, and on
    proposal landed on the task's head for review, its requests answered by
    it, the file untouched till you decide; done in words, as before, while
    the copy's unchanged, and refused with changes in it, so none's dropped.
-   Not yet: moves, the text between two ideas, the preview, and frames.
+   **Moves, the same day:** the agent says each, `"moves": [{"from": 3,
+   "to": 7}]`, its two sides a change taking text out and one putting it
+   in, in one file, both in one proposal. Each side slid along the file as
+   far as the text around it lets it, which changes nothing, as a diff
+   turns a moved function by its closing brace and the line after it: the
+   nearest pair that's the same text landed as one move, whole lines
+   first; or else the pair leaving least at its edges, whose text put in
+   starts as the text taken out does and is mostly it, its middle moved,
+   what's taken out around the middle and put in after it the move's own
+   changes, a line put in before it slid back a character, and each edit in
+   the middle a change of its own, numbered after the rest, shown by
+   `changes <job> <file>`, in a proposal apart, drawn inside the move, as
+   one proposal's changes can't overlap. Refused: a side that isn't only
+   text taken out or put in, or no change; a move across files; text put
+   in that isn't mostly what's taken out; a change in two moves; a move's
+   sides in two proposals, or an edit in it in the move's; a move in a
+   revision. Two neighbours much alike, swapped, the diff reads as their
+   lines changed, not moved, so there's no move to say. Not yet: the text
+   between two ideas, the preview, and frames.
 
    **Decided 2026-11-26,** for frames: a task's, built up over its life,
    established rather than final. **Fixed:** a file's lines are divided

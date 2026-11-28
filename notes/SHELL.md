@@ -319,8 +319,8 @@ What's built first, each a step that works on its own:
    core's pipeline, `Copy_Shell.ts`, numbering an agent's changes,
    checking how it groups them and mapping them onto the file; the agent's
    adapter answering `changes`, `verify` and `done`; proposals, new and
-   revised, landed for review; nesting as the editor draws it, and files
-   made or deleted, the same day. Not yet: moves, the text between two
+   revised, landed for review; nesting as the editor draws it, files made
+   or deleted, and moves, the same day. Not yet: the text between two
    ideas, the preview, frames, and projects that aren't git's;
 5. tests spinning up a demo, as the browser tests open the playground now.
 

@@ -230,6 +230,7 @@ await Bun.write(path_Grouping, JSON.stringify({
     }
   ]
 }))
+const ran_Changes_Said = await doctorIn(dir_Copy, "changes", "j-3", path_Grouping)
 const ran_Verified = await doctorIn(dir_Copy, "verify", "j-3", path_Grouping)
 const ran_Landed = await doctorIn(dir_Copy, "done", "j-3", "Named its backoff.", path_Grouping)
 const landed_Copy = {
@@ -397,10 +398,11 @@ test("help says the loop, each of the agent's commands, and the person's", () =>
 test("a job taken is given a working copy, a git worktree of the project outside it, its files as given, nothing changed in it to git, doctor found from inside it; a file deleted there, the request's and the program's first, one made and an edit, numbered, the file each made or deleted one change of its whole text, said so, its grouping verified and handed back, a proposal landed for review for each, a deletion, a new file and a change, its request answered by them, the project itself unchanged; the deletion and the new file accepted and the task applied, the one deleted and the other made, the project's files listed as they now are, and its first file one still there; the copy taken away once the task ends", () => {
   expect([ran_Copied.answer["kind"], copy_Given]).toEqual(["TAKEN", { isOutside: true, isAsGiven: true, diff: "", worktrees: true }])
   expect(ran_Changes.answer["changes"]).toEqual([
-    { number: 1, path: "README.md", file: "deleted", lines: `1–${text_README.split("\n").length}`, before: text_README, after: "" },
-    { number: 2, path: "docs/backoff.md", file: "made", lines: "1", before: "", after: text_Backoff },
-    { number: 3, path: "retry.js", file: "changed", lines: "4", before: "5", after: "3" }
+    { number: 1, path: "README.md", file: "deleted", move: "", lines: `1–${text_README.split("\n").length}`, before: text_README, after: "" },
+    { number: 2, path: "docs/backoff.md", file: "made", move: "", lines: "1", before: "", after: text_Backoff },
+    { number: 3, path: "retry.js", file: "changed", move: "", lines: "4", before: "5", after: "3" }
   ])
+  expect([ran_Changes_Said.answer["kind"], ran_Changes_Said.answer["stamp"], ran_Changes_Said.answer["issues"]]).toEqual(["CHANGES", ran_Changes.answer["stamp"], []])
   expect([ran_Verified.answer["kind"], ran_Verified.answer["issues"]]).toEqual(["VERIFIED", []])
   expect([ran_Landed.answer["kind"], ran_Landed.answer["reports"]]).toEqual(["HANDED_BACK", ["docs/backoff.md is in no request of this job: its changes are proposed all the same, for review", "retry.js is in no request of this job: its changes are proposed all the same, for review"]])
   expect(landed_Copy).toEqual({

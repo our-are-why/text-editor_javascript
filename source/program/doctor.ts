@@ -24,8 +24,10 @@ const USAGE = `doctor, the agent's side. Working through it is a loop: run \`${C
       take a job you're offered, which gives you a working copy of the project
       to change, then check in on it between big steps: says if it's been
       stopped; the note, what you're doing
-  ${COMMAND_DOCTOR} changes <job>
-      what you've changed in your copy, numbered, and how to hand it back
+  ${COMMAND_DOCTOR} changes <job> [<file>]
+      what you've changed in your copy, numbered, and how to hand it back;
+      with your proposals' file, the edits inside each move it says numbered
+      too
   ${COMMAND_DOCTOR} verify <job> <file>
       check how you've grouped your changes into proposals, written as JSON
       to a file outside your copy, or - to read it from standard input
@@ -130,7 +132,7 @@ if (command === "open") {
       values.task
     )
   }
-  const path_Grouping = command === "verify" ? second : command === "done" ? third : undefined
+  const path_Grouping = command === "verify" || command === "changes" ? second : command === "done" ? third : undefined
   const text_Grouping = path_Grouping === undefined ? undefined : path_Grouping === "-" ? await Bun.stdin.text() : await Bun.file(path_Grouping).text().catch(() => undefined)
   if (path_Grouping !== undefined && text_Grouping === undefined) {
     console.log(JSON.stringify({
