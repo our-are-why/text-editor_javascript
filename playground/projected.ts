@@ -131,7 +131,8 @@ function carriedOf__Model({
       path: path_Carried,
       version,
       proposed: model_TextEditor.proposed,
-      stale
+      stale,
+      frames: []
     }
   })
   return {

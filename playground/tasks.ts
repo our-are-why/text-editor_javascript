@@ -20,6 +20,7 @@ import type {
 import {
   type _Model_TextEditor_,
   type _Stale_Source_,
+  type _Frame_Head_,
   versionOf__Text,
   type _Head_Document_
 } from "../source/core/documents/index.ts"
@@ -49,6 +50,7 @@ interface _Api___seededOf__Example_ {
   model_TextEditor: _Model_TextEditor_
   proposals: Array<_Proposal_Host_>
   stale: Array<_Stale_Source_>
+  frames: Array<_Frame_Head_>
   about_Task: _About_Task_
   tasks_Other: Array<_Other_Task_>
   tasks_Resolved: Array<_Resolved_Task_>
@@ -120,6 +122,7 @@ function seededOf__Example({
   model_TextEditor,
   proposals,
   stale,
+  frames,
   about_Task,
   tasks_Other,
   tasks_Resolved,
@@ -144,7 +147,8 @@ function seededOf__Example({
           path: name_Document,
           version,
           proposed: model_TextEditor.proposed,
-          stale
+          stale,
+          frames
         }
       ],
       name_Document,

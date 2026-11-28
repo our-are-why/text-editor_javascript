@@ -4,7 +4,8 @@ import type {
 } from "../tasks/index.ts"
 import type {
   _Changes_Source_,
-  _Text_Model_
+  _Text_Model_,
+  _Frame_Head_
 } from "../documents/index.ts"
 
 export {
@@ -92,6 +93,7 @@ interface _Given_Job_ {
   sources: Array<string>
   text: _Text_Model_
   isPresent: boolean
+  frames: Array<_Frame_Head_>
 }
 
 interface _DONE_State_Job_ extends __BASE_State_Job_<"DONE"> {

@@ -262,13 +262,10 @@ What's built first, each a step that works on its own:
    crossing a file's opening is dropped. Tested by a demo opened in
    Chromium. Not yet: a file's language, every file drawn as plain text,
    as the syntax modules are the playground's; a file's line endings,
-   written with `\n`; the frame ranges a host gives, which widen and join
-   the frames the editor draws round the changes, every frame drawn as in
-   the playground but none of them widened, as nothing keeps the ranges
-   till frames are kept with the task, and given the editor only as it's
-   made, not as it's updated, which a page opening file after file will
-   need; and the shell's changes to the text while the page's own edits
-   are on their way, which the page leaves till they've arrived;
+   written with `\n`; and the shell's changes to the text while the
+   page's own edits are on their way, which the page leaves till they've
+   arrived. The frame ranges a host gives, once kept by nothing, the task's
+   frames since 2026-11-28, given the editor on every update;
 3. the agent endpoint and the `doctor` command, Start queuing a job an
    agent in the demo takes. **Built 2026-11-27:** each round the shell
    starts queued as a job, `j-` and the round's number, carrying what it
@@ -320,8 +317,8 @@ What's built first, each a step that works on its own:
    checking how it groups them and mapping them onto the file; the agent's
    adapter answering `changes`, `verify` and `done`; proposals, new and
    revised, landed for review; nesting as the editor draws it, files made
-   or deleted, and moves, the same day. Not yet: the text between two
-   ideas, the preview, frames, and projects that aren't git's;
+   or deleted, moves, and frames, the same day. Not yet: the text between
+   two ideas, the preview, and projects that aren't git's;
 5. tests spinning up a demo, as the browser tests open the playground now.
 
 ## open

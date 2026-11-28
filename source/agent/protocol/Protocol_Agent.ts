@@ -1,6 +1,8 @@
 import {
   changesOf__Copy,
   movedOf__Changes,
+  framesOf__Copy,
+  givensOf__Copy,
   stampOf__Changes,
   landingOf__Grouping,
   LANDING_NONE,
@@ -13,6 +15,7 @@ import {
   type _Move_Copy_,
   type _Grouping_Job_,
   type _Move_Grouped_,
+  type _Frame_Grouped_,
   type _Proposal_Grouped_,
   type _Nothing_Grouped_,
   type _Checked_Landing_,
@@ -82,6 +85,9 @@ export {
   movesOf__Said,
   type _Api___movesOf__Said_,
   type _Said_Moves_,
+  framesOf__Said,
+  type _Api___framesOf__Said_,
+  type _Said_Frames_,
   type _Proposal_Said_,
   recordOf,
   type _Api___recordOf_,
@@ -222,6 +228,7 @@ interface _STILL_ON__Answer_Agent_ extends __BASE_Answer_Agent_<"STILL_ON"> {}
 interface _CHANGES_Answer_Agent_ extends __BASE_Answer_Agent_<"CHANGES"> {
   stamp: string
   changes: Array<_Change_Said_>
+  frames: Array<_Frame_Grouped_>
   issues: Array<string>
 }
 
@@ -396,6 +403,12 @@ const CHANGESMAP__STANDING_JOB: _AnswerMap__Standing_Job_ = {
             change,
             moves: moved.moves
           })),
+          frames: framesOf__Copy({
+            givens: givensOf__Copy({
+              job_Shell,
+              files: copy_Made.files
+            })
+          }),
           issues: [
             ...said_Moves.issues,
             ...moved.issues
@@ -729,6 +742,9 @@ function groupingOf__Said({
   const said_Moves = movesOf__Said({
     said
   })
+  const said_Frames = framesOf__Said({
+    said
+  })
   const proposals_Said = Array.isArray(record["proposals"]) ? record["proposals"] : []
   const nothings_Said = Array.isArray(record["nothing"]) ? record["nothing"] : []
   const stringOf = (value: unknown) => typeof value === "string" ? value : ""
@@ -774,12 +790,14 @@ function groupingOf__Said({
       ..."proposals" in record && !Array.isArray(record["proposals"]) ? ["\"proposals\" isn't a list"] : [],
       ..."nothing" in record && !Array.isArray(record["nothing"]) ? ["\"nothing\" isn't a list"] : [],
       ...said_Moves.issues,
+      ...said_Frames.issues,
       ...proposals.flatMap((proposal) => proposal.issues),
       ...nothings.flatMap((nothing, index) => nothing.id_Request === "" ? [`"nothing" ${index + 1} names no request`] : [])
     ],
     grouping: {
       stamp: stringOf(record["stamp"]),
       moves: said_Moves.moves,
+      frames: said_Frames.frames,
       proposals: proposals.map((proposal) => ({
         aim: proposal.aim,
         title: proposal.title,
@@ -826,6 +844,43 @@ function movesOf__Said({
   }
 }
 
+interface _Api___framesOf__Said_ {
+  said: unknown
+}
+
+interface _Said_Frames_ {
+  issues: Array<string>
+  frames: Array<_Frame_Grouped_>
+}
+
+function framesOf__Said({
+  said
+}: _Api___framesOf__Said_): _Said_Frames_ {
+  const record = recordOf({
+    value: said
+  })
+  const frames = (Array.isArray(record["frames"]) ? record["frames"] : []).map((frame_Said): _Frame_Grouped_ => {
+    const frame_Record = recordOf({
+      value: frame_Said
+    })
+    const path = frame_Record["path"]
+    const first = frame_Record["first"]
+    const last = frame_Record["last"]
+    return {
+      path: typeof path === "string" ? path : "",
+      first: typeof first === "number" && Number.isInteger(first) ? first : 0,
+      last: typeof last === "number" && Number.isInteger(last) ? last : 0
+    }
+  })
+  return {
+    issues: [
+      ..."frames" in record && !Array.isArray(record["frames"]) ? ["\"frames\" isn't a list"] : [],
+      ...frames.flatMap((frame, index) => frame.path === "" || frame.first === 0 || frame.last === 0 ? [`frame ${index + 1} isn't {"path": "<a file>", "first": <its first line>, "last": <its last line>}`] : [])
+    ],
+    frames: frames.filter((frame) => frame.path !== "" && frame.first !== 0 && frame.last !== 0)
+  }
+}
+
 interface _Proposal_Said_ extends _Proposal_Grouped_ {
   issues: Array<string>
 }
@@ -857,9 +912,10 @@ function nextOf__Grouping({
     "These are your changes, numbered, each what was there and what's there now. Group them into proposals, each one idea, decided whole, in one file: give each a title, why, the numbers of its changes, and the ids of the requests it answers.",
     `Text you moved shows as a change taking it out and one putting it in: say every move, edited or not, under "moves", {"from": <the one taking it out>, "to": <the one putting it in>}, and put both in one proposal, which reviews it as a move. Any edits you made in the moved text are numbered after the rest once the move's said: ask \`${command_Agent} changes ${job_Shell.id} <file>\` with your file to see them; they go in a proposal apart from the move's, as they're drawn inside it.`,
     "A file you made or deleted is one change, the whole of its text, said \"made\" or \"deleted\": give it a proposal of its own, which reviews it as a new file or a deletion.",
+    "Each change is read in a frame, lines shown together for review, a function, say; the frames there now are listed, in your copy's lines. For a change on lines no frame holds, say its frame under \"frames\", {\"path\": \"<the file>\", \"first\": <its first line>, \"last\": <its last line>}, in your copy's lines, the narrowest whole unit holding it: a function, a loop, a branch of an if, or a declaration at the top level in code; a paragraph, a list, a code block or a table in Markdown. A frame reaching lines of another makes one frame with it.",
     job_Shell.sources.length > 0 ? `A change to a proposal you're revising, ${job_Shell.sources.join(", ")}, goes in its revision, with "revises" its id instead of a title, its why saying what this round changed.` : "",
     "For a request that needs nothing changed, say why under \"nothing\".",
-    `Write it as JSON, to a file outside your copy: {"stamp": "<the stamp above>", "moves": [{"from": 3, "to": 7}], "proposals": [{"title": "...", "why": "...", "changes": [1, 2], "answers": ["<request id>"]}], "nothing": [{"request": "<request id>", "why": "..."}]}.`,
+    `Write it as JSON, to a file outside your copy: {"stamp": "<the stamp above>", "moves": [{"from": 3, "to": 7}], "frames": [{"path": "<the file>", "first": 12, "last": 30}], "proposals": [{"title": "...", "why": "...", "changes": [1, 2], "answers": ["<request id>"]}], "nothing": [{"request": "<request id>", "why": "..."}]}.`,
     `Check it with \`${command_Agent} verify ${job_Shell.id} <file>\` as often as you like, then hand back with \`${command_Agent} done ${job_Shell.id} "<a note on the job as a whole>" <file>\`.`
   ].filter((sentence) => sentence !== "").join(" ")
 }

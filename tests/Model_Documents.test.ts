@@ -90,7 +90,7 @@ const carrying = fc.record({
 const rangeIn = (flat: string, from: number, to: number): _Range_Text_ => ({ from: positionOf__Index({ text_Model: textOf(flat), index: from }), to: positionOf__Index({ text_Model: textOf(flat), index: to }) })
 const headCarried = (flat: string, change: { from: number, to: number, next: string }, edit: { from: number, to: number, next: string }) => {
   const model = after({ documents: [] }, { kind: "OPEN", path: "retry.js", text: textOf(flat), isPresent: true })
-  const head: _Head_Document_ = { path: "retry.js", version: versionOf(flat), proposed: [replacing("T-1", rangeIn(flat, change.from, change.to), change.next)], stale: [] }
+  const head: _Head_Document_ = { path: "retry.js", version: versionOf(flat), proposed: [replacing("T-1", rangeIn(flat, change.from, change.to), change.next)], stale: [], frames: [] }
   const edited = documentIn(after(model, { kind: "EDIT", path: "retry.js", version: versionOf(flat), transaction: editOf(rangeIn(flat, edit.from, edit.to), edit.next) }), "retry.js")
   return { edited, carried: carriedOf__Head({ document: edited, head }) }
 }
@@ -135,7 +135,7 @@ test("a change an edit cut into, or replaced, or took the place of, is stale, ca
 test("stale stays stale as it's carried further, a source's other changes carried as they are; a head already on the document as it is, as it was", () => {
   const model = after({ documents: [] }, { kind: "OPEN", path: "retry.js", text: textOf("let n = attempts;"), isPresent: true })
   const version = versionOf("let n = attempts;")
-  const head: _Head_Document_ = { path: "retry.js", version, proposed: [{ source: "T-1", changes: [{ kind: "REPLACE", range: on(4, 5), next: textOf("round") }, { kind: "REPLACE", range: on(8, 16), next: textOf("tries") }] }], stale: [{ source: "T-1", changes_Stale: [{ index: 0, over: { kind: "RANGE", version: "v0", text: textOf("x"), written: { lines: textOf("x"), change: { kind: "REPLACE", range: on(0, 1), next: textOf("round") } } } }], count_Dropped: 0 }] }
+  const head: _Head_Document_ = { path: "retry.js", version, proposed: [{ source: "T-1", changes: [{ kind: "REPLACE", range: on(4, 5), next: textOf("round") }, { kind: "REPLACE", range: on(8, 16), next: textOf("tries") }] }], stale: [{ source: "T-1", changes_Stale: [{ index: 0, over: { kind: "RANGE", version: "v0", text: textOf("x"), written: { lines: textOf("x"), change: { kind: "REPLACE", range: on(0, 1), next: textOf("round") } } } }], count_Dropped: 0 }], frames: [] }
   const edited = documentIn(after(model, { kind: "EDIT", path: "retry.js", version, transaction: editOf(on(0, 3), "const") }), "retry.js")
   const carried = carriedOf__Head({ document: edited, head })
   expect(carried.proposed[0]?.changes.map((change) => change.range)).toEqual([on(6, 7), on(10, 18)])
@@ -146,7 +146,7 @@ test("stale stays stale as it's carried further, a source's other changes carrie
 test("a move carried across an edit outside it moves the same text to the same place; an edit cutting through where it lands makes it stale; one whose text's all gone, dropped, counted", () => {
   const model = after({ documents: [] }, { kind: "OPEN", path: "retry.js", text: textOf("abc def ghi"), isPresent: true })
   const version = versionOf("abc def ghi")
-  const headOf = (at: number): _Head_Document_ => ({ path: "retry.js", version, proposed: [{ source: "T-1", changes: [{ kind: "MOVE", range: on(0, 4), at: { line: 0, offset: at } }] }], stale: [] })
+  const headOf = (at: number): _Head_Document_ => ({ path: "retry.js", version, proposed: [{ source: "T-1", changes: [{ kind: "MOVE", range: on(0, 4), at: { line: 0, offset: at } }] }], stale: [], frames: [] })
   const carriedAcross = (head: _Head_Document_, transaction: _Transaction_Model_) => carriedOf__Head({ document: documentIn(after(model, { kind: "EDIT", path: "retry.js", version, transaction }), "retry.js"), head })
   const outside = carriedAcross(headOf(8), editOf(on(5, 6), "E"))
   expect([outside.proposed[0]?.changes[0], outside.stale]).toEqual([{ kind: "MOVE", range: on(0, 4), at: { line: 0, offset: 8 } }, []])
@@ -158,7 +158,7 @@ test("a move carried across an edit outside it moves the same text to the same p
 test("a stale change keeps the version it was written on and the text it was written over, the stretch it covers, an insertion's line, a move's from its words to where they land; once the document's back at that version, by undo or by hand, it's clean, no conflict left, or, a change of text, once it has that text there again, its stretch whole, as a head carried, or one rechecked as it is; an insertion's line alone saying nothing, a blank line like any other; a document's text at a version it's moved on from worked back from the edits since", () => {
   const model = after({ documents: [] }, { kind: "OPEN", path: "retry.js", text: textOf("let n = attempts;"), isPresent: true })
   const v1 = versionOf("let n = attempts;")
-  const head: _Head_Document_ = { path: "retry.js", version: v1, proposed: [replacing("T-1", on(8, 16), "tries")], stale: [] }
+  const head: _Head_Document_ = { path: "retry.js", version: v1, proposed: [replacing("T-1", on(8, 16), "tries")], stale: [], frames: [] }
   const typed = documentIn(after(model, { kind: "EDIT", path: "retry.js", version: v1, transaction: editOf(on(10, 10), "X") }), "retry.js")
   const conflicted = carriedOf__Head({ document: typed, head })
   expect(staleOf(conflicted)).toEqual([{ source: "T-1", indexes: [0], texts: ["RANGE attempts"], count_Dropped: 0 }])
@@ -172,7 +172,7 @@ test("a stale change keeps the version it was written on and the text it was wri
   expect(checkedOf__Head({ document: retyped, head: { ...conflicted, version: retyped.version } }).stale).toEqual([])
   const elsewhere = documentIn(after({ documents: [typed] }, { kind: "EDIT", path: "retry.js", version: typed.version, transaction: editOf(on(0, 3), "const") }), "retry.js")
   expect(staleOf(carriedOf__Head({ document: elsewhere, head: conflicted }))).toEqual(staleOf(conflicted))
-  const inserting: _Head_Document_ = { path: "retry.js", version: v1, proposed: [replacing("T-1", on(6, 6), " /* tries */")], stale: [] }
+  const inserting: _Head_Document_ = { path: "retry.js", version: v1, proposed: [replacing("T-1", on(6, 6), " /* tries */")], stale: [], frames: [] }
   const cut = documentIn(after(model, { kind: "EDIT", path: "retry.js", version: v1, transaction: editOf(on(4, 8), "") }), "retry.js")
   const insertion_Cut = carriedOf__Head({ document: cut, head: inserting })
   expect(staleOf(insertion_Cut)).toEqual([{ source: "T-1", indexes: [0], texts: ["LINE let n = attempts;"], count_Dropped: 0 }])
@@ -180,7 +180,7 @@ test("a stale change keeps the version it was written on and the text it was wri
   expect(carriedOf__Head({ document: restored, head: insertion_Cut }).stale).toEqual([])
   const blank = after({ documents: [] }, { kind: "OPEN", path: "notes.md", text: textOf("\n\n"), isPresent: true })
   const blank_Cut = documentIn(after(blank, { kind: "EDIT", path: "notes.md", version: versionOf("\n\n"), transaction: editOf({ from: { line: 0, offset: 0 }, to: { line: 2, offset: 0 } }, "") }), "notes.md")
-  const insertion_Blank = carriedOf__Head({ document: blank_Cut, head: { path: "notes.md", version: versionOf("\n\n"), proposed: [replacing("T-1", { from: { line: 1, offset: 0 }, to: { line: 1, offset: 0 } }, "x")], stale: [] } })
+  const insertion_Blank = carriedOf__Head({ document: blank_Cut, head: { path: "notes.md", version: versionOf("\n\n"), proposed: [replacing("T-1", { from: { line: 1, offset: 0 }, to: { line: 1, offset: 0 } }, "x")], stale: [], frames: [] } })
   expect(staleOf(insertion_Blank)).toEqual([{ source: "T-1", indexes: [0], texts: ["LINE "], count_Dropped: 0 }])
   const blank_Typed = documentIn(after({ documents: [blank_Cut] }, { kind: "EDIT", path: "notes.md", version: blank_Cut.version, transaction: editOf(on(0, 0), "y") }), "notes.md")
   expect(staleOf(carriedOf__Head({ document: blank_Typed, head: insertion_Blank }))).toEqual(staleOf(insertion_Blank))
@@ -191,7 +191,7 @@ test("a stale change keeps the version it was written on and the text it was wri
 const editedOf = (multilineText: string, range: _Range_Text_, next: string) => documentIn(after({ documents: [] }, { kind: "OPEN", path: "retry.js", text: textOf(multilineText), isPresent: true }, { kind: "EDIT", path: "retry.js", version: versionOf(multilineText), transaction: editOf(range, next) }), "retry.js")
 const carriedOn = (multilineText: string, proposed: Array<_Changes_Source_>, range: _Range_Text_, next: string) => {
   const document = editedOf(multilineText, range, next)
-  return { document, head: carriedOf__Head({ document, head: { path: "retry.js", version: versionOf(multilineText), proposed, stale: [] } }) }
+  return { document, head: carriedOf__Head({ document, head: { path: "retry.js", version: versionOf(multilineText), proposed, stale: [], frames: [] } }) }
 }
 const textOfHead = (document: _Document_Documents_, head: _Head_Document_) => flatOf(textWith__Sources({ model_TextEditor: { document: document.text, proposed: head.proposed }, sources: head.proposed.map((changes_Source) => changes_Source.source) }))
 // what the file did to the lines a stale change was written on, each stretch
@@ -267,10 +267,10 @@ test("Release lets go of the edits nothing's stated against, kept from the oldes
   expect(documentIn(after(model, { kind: "RELEASE", path: "retry.js", versions: [v3] }), "retry.js").edits).toEqual([])
   expect(after(model, { kind: "RELEASE", path: "retry.js", versions: [v1] })).toBe(model)
   const released = after(model, { kind: "RELEASE", path: "retry.js", versions: [] })
-  expect(() => carriedOf__Head({ document: documentIn(released, "retry.js"), head: { path: "retry.js", version: v1, proposed: [], stale: [] } })).toThrow("edits from")
+  expect(() => carriedOf__Head({ document: documentIn(released, "retry.js"), head: { path: "retry.js", version: v1, proposed: [], stale: [], frames: [] } })).toThrow("edits from")
   const back = documentIn(after(opened, { kind: "EDIT", path: "retry.js", version: v1, transaction: editOf(on(4, 5), "round") }, { kind: "EDIT", path: "retry.js", version: v2, transaction: editOf(on(4, 9), "n") }), "retry.js")
   expect(back.version).toBe(v1)
-  const head: _Head_Document_ = { path: "retry.js", version: v1, proposed: [replacing("T-1", on(4, 5), "round")], stale: [] }
+  const head: _Head_Document_ = { path: "retry.js", version: v1, proposed: [replacing("T-1", on(4, 5), "round")], stale: [], frames: [] }
   expect(carriedOf__Head({ document: back, head })).toBe(head)
 })
 
@@ -279,7 +279,7 @@ test("Apply makes a head the document: the sources it's told to, your edits and 
   const proposed = [replacing("yours", on(4, 5), "round"), replacing("P-1", on(8, 16), "tries")]
   const applied = documentIn(after(opened, { kind: "APPLY", path: "retry.js", version, proposed, sources: ["yours"], isPresent: true }), "retry.js")
   expect([flatOf(applied.text), applied.version, applied.edits.map((edit) => edit.version_From)]).toEqual(["let round = attempts", versionOf("let round = attempts"), [version]])
-  const other = carriedOf__Head({ document: applied, head: { path: "retry.js", version, proposed: [replacing("T-2", on(8, 16), "count")], stale: [] } })
+  const other = carriedOf__Head({ document: applied, head: { path: "retry.js", version, proposed: [replacing("T-2", on(8, 16), "count")], stale: [], frames: [] } })
   expect([other.proposed[0]?.changes[0]?.range, other.stale]).toEqual([on(12, 20), []])
   expect(after(opened, { kind: "APPLY", path: "retry.js", version, proposed, sources: [], isPresent: true })).toBe(opened)
   expect(() => after(opened, { kind: "APPLY", path: "retry.js", version: versionOf("elsewhere"), proposed, sources: ["yours"], isPresent: true })).toThrow("isn't on retry.js as it is")

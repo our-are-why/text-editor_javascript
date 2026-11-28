@@ -15,6 +15,7 @@ import {
 } from "../tasks/index.ts"
 import {
   carriedOf__Head,
+  mergedOf__Frames,
   textWith__Sources,
   flatOf__Text,
   refusalsIn__Source,
@@ -228,7 +229,8 @@ class _Shell_ {
               changes: proposal.changes
             }
           ],
-          stale: []
+          stale: [],
+          frames: []
         }
       }).proposed.map((changes_Source) => ({
         proposal,
@@ -294,12 +296,13 @@ class _Shell_ {
         task,
         path
       })
-      const proposed = head === undefined
-        ? []
+      const head_Carried = head === undefined
+        ? undefined
         : carriedOf__Head({
           document,
           head
-        }).proposed
+        })
+      const proposed = head_Carried?.proposed ?? []
       const sources = proposed.flatMap((changes_Source) => isOwn__Source({
         task,
         source: changes_Source.source
@@ -325,7 +328,8 @@ class _Shell_ {
           document,
           sources,
           text
-        })
+        }),
+        frames: head_Carried?.frames ?? []
       }
     })
   }
@@ -379,6 +383,36 @@ class _Shell_ {
             changes: proposal.changes
           }
         ]
+      })
+    }
+    for (const path of [...new Set(landing.frames.map((frame) => frame.path))]) {
+      if (!this.isKept(path)) continue
+      const frames_Path = landing.frames.filter((frame) => frame.path === path)
+      const frames_Carried = frames_Path.flatMap((frame) => carriedOf__Head({
+        document: this.documentOf(path),
+        head: {
+          path,
+          version: frame.version,
+          proposed: [],
+          stale: [],
+          frames: [
+            {
+              first: frame.first,
+              last: frame.last
+            }
+          ]
+        }
+      }).frames)
+      this.restated({
+        id_Task,
+        path,
+        change: (head) => ({
+          ...head,
+          frames: mergedOf__Frames([
+            ...head.frames,
+            ...frames_Carried
+          ])
+        })
       })
     }
     const ids_Proposed = ids_Current.filter((id) => landing.proposals.some((proposal) => proposal.ids_Request.includes(id)))
@@ -460,7 +494,8 @@ class _Shell_ {
         path,
         version: this.documentOf(path).version,
         proposed: [],
-        stale: []
+        stale: [],
+        frames: []
       })
     })
   }
@@ -519,7 +554,8 @@ class _Shell_ {
         path,
         version,
         proposed,
-        stale: []
+        stale: [],
+        frames: []
       }
     })
     const [

@@ -147,7 +147,7 @@ test("the file an editor shows, deleted by a task applied, nothing proposing it,
     shell.handle({ kind: "TAKE", id_Job, note: "" })
     const document = shell.documentOf(path)
     const lines = document.text.lines
-    shell.handle({ kind: "HAND_BACK", id_Job, landing: { proposals: [{ id: `${id_Job}.1`, path, effect, title: effect, rationale: "", version: document.version, changes: [{ kind: "REPLACE", range: { from: { line: 0, offset: 0 }, to: { line: lines.length - 1, offset: (lines.at(-1) ?? "").length } }, next: textOf(next) }], ids_Request: [`r-${id_Job}`] }], nothings: [] }, note: "" })
+    shell.handle({ kind: "HAND_BACK", id_Job, landing: { proposals: [{ id: `${id_Job}.1`, path, effect, title: effect, rationale: "", version: document.version, changes: [{ kind: "REPLACE", range: { from: { line: 0, offset: 0 }, to: { line: lines.length - 1, offset: (lines.at(-1) ?? "").length } }, next: textOf(next) }], ids_Request: [`r-${id_Job}`] }], nothings: [], frames: [] }, note: "" })
     return shell.taskOf(`T-${id_Job.slice(2)}`)?.id ?? ""
   }
   host.asked({ kind: "OPEN_FILE", path: "retry.js" })

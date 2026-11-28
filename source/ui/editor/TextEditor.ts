@@ -151,6 +151,7 @@ class _TextEditor_<State> {
     this.files = update_Host.files
     this.rounds_Landed = update_Host.rounds_Landed
     this.isListening_Agent = update_Host.isListening_Agent
+    this.ranges_Frame = update_Host.ranges_Frame
     if (!isKept_Model) this.history = HISTORY_EMPTY
     this.viewer.show(this.projected())
   }
@@ -222,6 +223,7 @@ interface _Update_Host_ {
   files: Array<string>
   rounds_Landed: Array<_Landed_Round_>
   isListening_Agent: boolean
+  ranges_Frame: Array<_Range_Lines_>
 }
 
 interface _Setup_TextEditor_<State> {

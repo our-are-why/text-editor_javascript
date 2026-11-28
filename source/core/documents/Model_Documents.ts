@@ -15,7 +15,8 @@ import {
   type _Run_Comparison_,
   indexOf__Position,
   type _Kind_Run_,
-  positionOf__Index
+  positionOf__Index,
+  carried__Position
 } from "./Model_TextEditor.ts"
 
 export {
@@ -41,8 +42,12 @@ export {
   transactionOf__Texts,
   type _Api___transactionOf__Texts_,
   carriedOf__Head,
+  carriedOf__Frame,
+  type _Api___carriedOf__Frame_,
+  mergedOf__Frames,
   type _Api___carriedOf__Head_,
   type _Head_Document_,
+  type _Frame_Head_,
   type _Stale_Source_,
   type _Stale_Change_,
   type _Over_Change_,
@@ -683,6 +688,12 @@ interface _Head_Document_ {
   version: string
   proposed: Array<_Changes_Source_>
   stale: Array<_Stale_Source_>
+  frames: Array<_Frame_Head_>
+}
+
+interface _Frame_Head_ {
+  first: number
+  last: number
 }
 
 interface _Stale_Source_ {
@@ -739,8 +750,87 @@ function carriedOf__Head({
     path: head.path,
     version: document.version,
     proposed: carried.flatMap((carried_Source) => carried_Source.changes_Source === null ? [] : [carried_Source.changes_Source]),
-    stale: carried.flatMap((carried_Source) => carried_Source.stale_Source === null ? [] : [carried_Source.stale_Source])
+    stale: carried.flatMap((carried_Source) => carried_Source.stale_Source === null ? [] : [carried_Source.stale_Source]),
+    frames: mergedOf__Frames(head.frames.map((frame) => carriedOf__Frame({
+      frame,
+      text_Head,
+      transactions
+    })))
   }
+}
+
+interface _Api___carriedOf__Frame_ {
+  frame: _Frame_Head_
+  text_Head: _Text_Model_
+  transactions: Array<_Transaction_Model_>
+}
+
+function carriedOf__Frame({
+  frame,
+  text_Head,
+  transactions
+}: _Api___carriedOf__Frame_): _Frame_Head_ {
+  const range = transactions
+    .flatMap((transaction) => transaction.steps)
+    .flatMap((step_Transaction) => step_Transaction.kind === "TEXT" && step_Transaction.id_Text.kind === "DOCUMENT" ? [step_Transaction] : [])
+    .reduce(
+      (range_Carried: _Range_Text_, step_Text) => ({
+        from: carried__Position({
+          position: range_Carried.from,
+          range: step_Text.range,
+          next: step_Text.next,
+          bias: "BEFORE"
+        }),
+        to: carried__Position({
+          position: range_Carried.to,
+          range: step_Text.range,
+          next: step_Text.next,
+          bias: "AFTER"
+        })
+      }),
+      {
+        from: {
+          line: frame.first,
+          offset: 0
+        },
+        to: {
+          line: frame.last,
+          offset: Array.from(text_Head.lines[frame.last] ?? "").length
+        }
+      }
+    )
+  return {
+    first: range.from.line,
+    last: Math.max(range.from.line, range.to.line)
+  }
+}
+
+function mergedOf__Frames(
+  frames: Array<_Frame_Head_>
+): Array<_Frame_Head_> {
+  return frames
+    .toSorted((
+      frame,
+      frame_Other
+    ) => frame.first - frame_Other.first || frame.last - frame_Other.last)
+    .reduce(
+      (merged: Array<_Frame_Head_>, frame) => {
+        const frame_Last = merged.at(-1)
+        return frame_Last !== undefined && frame.first <= frame_Last.last
+          ? [
+            ...merged.slice(0, -1),
+            {
+              first: frame_Last.first,
+              last: Math.max(frame_Last.last, frame.last)
+            }
+          ]
+          : [
+            ...merged,
+            frame
+          ]
+      },
+      []
+    )
 }
 
 interface _Api___textAt__Version_ {
@@ -1359,7 +1449,8 @@ function settledOf__Head({
           }
         ]
     }),
-    stale: head_Carried.stale.filter((stale_Each) => stale_Each !== stale_Source)
+    stale: head_Carried.stale.filter((stale_Each) => stale_Each !== stale_Source),
+    frames: head_Carried.frames
   }
 }
 

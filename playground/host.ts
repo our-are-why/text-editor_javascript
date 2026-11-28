@@ -109,6 +109,10 @@ function hostedOf__Editor<State>({
     model_TextEditor,
     proposals,
     stale,
+    frames: ranges_Frame.map((range_Frame) => ({
+      first: range_Frame.first - 1,
+      last: range_Frame.last - 1
+    })),
     about_Task,
     tasks_Other,
     tasks_Resolved,
@@ -267,7 +271,7 @@ function hostedOf__Editor<State>({
     rounds_Landed: shown_Host.update_Host.rounds_Landed,
     isListening_Agent: shown_Host.update_Host.isListening_Agent,
     source_Yours: PROPOSAL_YOURS.source,
-    ranges_Frame,
+    ranges_Frame: shown_Host.update_Host.ranges_Frame,
     observers: [
       {
         applied: (applied_Edit) => {

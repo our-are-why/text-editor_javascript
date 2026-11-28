@@ -4,7 +4,7 @@ import { _Documents_, parseTexts_Line, flatOf__Text, textWith__Sources, refusals
 import { _Host_ } from "../source/ui/host/index.ts"
 import { viewModelOf__Model, MODULE_PLAINTEXT } from "../source/ui/editor/index.ts"
 import { MODULE_READING_TEXT } from "../source/ui/editor/readings/text.ts"
-import { _Shell_, changesOf__Copy, stampOf__Changes, landingOf__Grouping, movedOf__Changes, LANDING_NONE, type _Grouping_Job_, type _Job_Shell_, type _Landing_Handed_, type _File_Copy_, type _Given_Job_, type _Move_Grouped_, type _Proposal_Grouped_ } from "../source/core/shell/index.ts"
+import { _Shell_, changesOf__Copy, stampOf__Changes, landingOf__Grouping, movedOf__Changes, framesOf__Copy, LANDING_NONE, type _Grouping_Job_, type _Job_Shell_, type _Landing_Handed_, type _File_Copy_, type _Given_Job_, type _Move_Grouped_, type _Proposal_Grouped_ } from "../source/core/shell/index.ts"
 
 // an agent's working copy as the core sees it: what it's given, each file
 // of its task as the task has it; what it changed, numbered, narrowed to
@@ -31,13 +31,15 @@ const takenOf = (shell: _Shell_, id_Job: string) => {
   if (job_Shell === undefined || job_Shell.state.kind !== "BEING_WORKED_ON") throw new Error(`${id_Job} isn't taken`)
   return { job_Shell, givens: job_Shell.state.givens }
 }
-const checkedOf = (shell: _Shell_, job_Shell: _Job_Shell_, text_Copy: string, grouping: (stamp: string) => Omit<_Grouping_Job_, "stamp" | "moves">) => {
+// every file framed whole, so no change is on lines no frame holds
+const framesWholeOf = (files: Array<_File_Copy_>) => files.map((file) => ({ path: file.given.path, first: 1, last: file.given.text.lines.length }))
+const checkedOf = (shell: _Shell_, job_Shell: _Job_Shell_, text_Copy: string, grouping: (stamp: string) => Omit<_Grouping_Job_, "stamp" | "moves" | "frames">) => {
   const given = job_Shell.state.kind === "BEING_WORKED_ON" ? job_Shell.state.givens[0] : undefined
   const task = shell.taskOf(job_Shell.id_Task)
   if (given === undefined || task === undefined) throw new Error("no given")
   const files = [{ given, effect: "CHANGE" as const, text_Copy: textOf(text_Copy) }]
   const stamp = stampOf__Changes({ changes: changesOf__Copy({ files }) })
-  return landingOf__Grouping({ task, job_Shell, files, unplaceables: [], grouping: { stamp, moves: [], ...grouping(stamp) } })
+  return landingOf__Grouping({ task, job_Shell, files, unplaceables: [], grouping: { stamp, moves: [], frames: framesWholeOf(files), ...grouping(stamp) } })
 }
 
 test("an agent's changes in its copy, numbered across its files, each narrowed to the words that differ, what was there and what's there now", () => {
@@ -75,7 +77,7 @@ test("a hand back's issues, each said: a stamp that's not the changes', a change
   const checked_Bad = checkedOf(shell, job_Shell, text_Copy, () => ({ proposals: [{ aim: { kind: "NEW" }, title: "", why: "", numbers: [1, 9], ids_Request: ["r-9"] }], nothings: [] }))
   const task = shell.taskOf("T-1")!
   const given = job_Shell.state.kind === "BEING_WORKED_ON" ? job_Shell.state.givens[0]! : undefined!
-  const checked_Stale = landingOf__Grouping({ task, job_Shell, files: [{ given, effect: "CHANGE", text_Copy: textOf(text_Copy) }], unplaceables: [{ path: "notes.md", why: "was made in your copy" }], grouping: { stamp: "old", moves: [], proposals: [], nothings: [{ id_Request: "r-1", why: "" }] } })
+  const checked_Stale = landingOf__Grouping({ task, job_Shell, files: [{ given, effect: "CHANGE", text_Copy: textOf(text_Copy) }], unplaceables: [{ path: "notes.md", why: "was made in your copy" }], grouping: { stamp: "old", moves: [], frames: [{ path: "retry.js", first: 1, last: given.text.lines.length }], proposals: [], nothings: [{ id_Request: "r-1", why: "" }] } })
   const checked_Twice = checkedOf(shell, job_Shell, text_Copy, () => ({ proposals: [{ aim: { kind: "NEW" }, title: "One", why: "Why.", numbers: [1, 2], ids_Request: ["r-1"] }, { aim: { kind: "NEW" }, title: "Two", why: "Why.", numbers: [2], ids_Request: ["r-3"] }], nothings: [] }))
   expect(checked_Bad.issues).toEqual([
     "there's no change 9",
@@ -100,14 +102,14 @@ test("a hand back's issues, each said: a stamp that's not the changes', a change
 // one proposal a file, and landed, as a hand back lands them
 const givenOf = (shell: _Shell_, path: string): _Given_Job_ => {
   const document = shell.documentOf(path)
-  return { path, version: document.version, text_Document: document.text, proposed: [], sources: [], text: document.text, isPresent: document.isPresent }
+  return { path, version: document.version, text_Document: document.text, proposed: [], sources: [], text: document.text, isPresent: document.isPresent, frames: [] }
 }
 const absentOpened = (shell: _Shell_, path: string) => shell.handle({ kind: "OPEN_DOCUMENT", path, text: textOf(""), isPresent: false })
 const filesLanded = (shell: _Shell_, job_Shell: _Job_Shell_, files: Array<_File_Copy_>, titles: Array<string>, id_Request: string) => {
   const task = shell.taskOf(job_Shell.id_Task)
   if (task === undefined) throw new Error("no task")
   const changes = changesOf__Copy({ files })
-  const checked = landingOf__Grouping({ task, job_Shell, files, unplaceables: [], grouping: { stamp: stampOf__Changes({ changes }), moves: [], proposals: titles.map((title, index) => ({ aim: { kind: "NEW" as const }, title, why: "Why.", numbers: [index + 1], ids_Request: [id_Request] })), nothings: [] } })
+  const checked = landingOf__Grouping({ task, job_Shell, files, unplaceables: [], grouping: { stamp: stampOf__Changes({ changes }), moves: [], frames: framesWholeOf(files), proposals: titles.map((title, index) => ({ aim: { kind: "NEW" as const }, title, why: "Why.", numbers: [index + 1], ids_Request: [id_Request] })), nothings: [] } })
   if (checked.issues.length === 0) shell.handle({ kind: "HAND_BACK", id_Job: job_Shell.id, landing: checked.landing, note: "" })
   return { changes, checked }
 }
@@ -163,7 +165,7 @@ test("a file deleted in the copy lands as a deletion: one change, its whole text
   const given = second.givens[0]!
   const task = shell.taskOf("T-1")!
   const files: Array<_File_Copy_> = [{ given, effect: "MAKE", text_Copy: textOf(TEXT) }]
-  const revised = landingOf__Grouping({ task, job_Shell: second.job_Shell, files, unplaceables: [], grouping: { stamp: stampOf__Changes({ changes: changesOf__Copy({ files }) }), moves: [], proposals: [{ aim: { kind: "REVISION", id_Proposal: "j-1.1" }, title: "", why: "Kept.", numbers: [1], ids_Request: ["r-2"] }], nothings: [] } })
+  const revised = landingOf__Grouping({ task, job_Shell: second.job_Shell, files, unplaceables: [], grouping: { stamp: stampOf__Changes({ changes: changesOf__Copy({ files }) }), moves: [], frames: framesWholeOf(files), proposals: [{ aim: { kind: "REVISION", id_Proposal: "j-1.1" }, title: "", why: "Kept.", numbers: [1], ids_Request: ["r-2"] }], nothings: [] } })
   expect([given.isPresent, flatOf__Text(given.text)]).toEqual([false, ""])
   expect(revised.issues).toEqual(["change 1 makes retry.js: a file made or deleted goes in a new proposal of its own, not a revision"])
   shell.handle({ kind: "HAND_BACK", id_Job: "j-2", landing: LANDING_NONE, note: "Left as it was." })
@@ -192,7 +194,7 @@ const movesLanded = (text_Before: string, text_After: string, sides: (changes: A
   const moves = sides(changes)
   const moved = movedOf__Changes({ files, changes, moves })
   const grouped = proposals(moved.moves.map((move) => ({ numbers: [move.change_From.number, move.change_To.number], numbers_Inside: move.numbers_Inside })), moved.changes.map((change) => change.number))
-  const checked = landingOf__Grouping({ task: shell.taskOf("T-1")!, job_Shell, files, unplaceables: [], grouping: { stamp: stampOf__Changes({ changes }), moves, proposals: grouped.map((proposal) => ({ ...proposal, aim: { kind: "NEW" as const }, why: "Why.", ids_Request: ["r-1"] })), nothings: [] } })
+  const checked = landingOf__Grouping({ task: shell.taskOf("T-1")!, job_Shell, files, unplaceables: [], grouping: { stamp: stampOf__Changes({ changes }), moves, frames: framesWholeOf(files), proposals: grouped.map((proposal) => ({ ...proposal, aim: { kind: "NEW" as const }, why: "Why.", ids_Request: ["r-1"] })), nothings: [] } })
   const clashes = checked.issues.length > 0 ? [] : shell.clashesOf({ id_Task: "T-1", landing: checked.landing })
   if (checked.issues.length === 0 && clashes.length === 0) shell.handle({ kind: "HAND_BACK", id_Job: "j-1", landing: checked.landing, note: "" })
   const head = shell.taskOf("T-1")?.heads.find((head_Each) => head_Each.path === "moves.js")
@@ -260,13 +262,65 @@ test("a move's issues, each said: its sides in two proposals; an edit in it in t
   const { job_Shell, givens } = takenOf(shell, "j-1")
   const files: Array<_File_Copy_> = [{ given: givens[0]!, effect: "CHANGE", text_Copy: textOf(TEXT.replace("const ATTEMPTS = 5;\n", "")) }, { given: givenOf(shell, "moves.js"), effect: "CHANGE", text_Copy: textOf(FUNCTIONS.join("\n") + "const ATTEMPTS = 5;\n") }]
   const changes = changesOf__Copy({ files })
-  const across = landingOf__Grouping({ task: shell.taskOf("T-1")!, job_Shell, files, unplaceables: [], grouping: { stamp: stampOf__Changes({ changes }), moves: sidesOf(changes), proposals: [{ aim: { kind: "REVISION", id_Proposal: "p" }, title: "", why: "Why.", numbers: [1, 2], ids_Request: ["r-1"] }], nothings: [] } })
+  const across = landingOf__Grouping({ task: shell.taskOf("T-1")!, job_Shell, files, unplaceables: [], grouping: { stamp: stampOf__Changes({ changes }), moves: sidesOf(changes), frames: framesWholeOf(files), proposals: [{ aim: { kind: "REVISION", id_Proposal: "p" }, title: "", why: "Why.", numbers: [1, 2], ids_Request: ["r-1"] }], nothings: [] } })
   expect(changes.map((change) => [change.number, change.path])).toEqual([[1, "moves.js"], [2, "retry.js"]])
   expect(across.issues.filter((issue) => issue.startsWith("move "))).toEqual(["move 2 to 1 goes from retry.js to moves.js: a move stays in its file, for now, so say it as text taken out of one and put in the other"])
   const files_Moved: Array<_File_Copy_> = [{ given: givenOf(shell, "moves.js"), effect: "CHANGE", text_Copy: textOf(text_After) }]
   const changes_Moved = changesOf__Copy({ files: files_Moved })
-  const revised = landingOf__Grouping({ task: shell.taskOf("T-1")!, job_Shell, files: files_Moved, unplaceables: [], grouping: { stamp: stampOf__Changes({ changes: changes_Moved }), moves: sidesOf(changes_Moved), proposals: [{ aim: { kind: "REVISION", id_Proposal: "p" }, title: "", why: "Why.", numbers: changes_Moved.map((change) => change.number), ids_Request: ["r-1"] }], nothings: [] } })
+  const revised = landingOf__Grouping({ task: shell.taskOf("T-1")!, job_Shell, files: files_Moved, unplaceables: [], grouping: { stamp: stampOf__Changes({ changes: changes_Moved }), moves: sidesOf(changes_Moved), frames: framesWholeOf(files_Moved), proposals: [{ aim: { kind: "REVISION", id_Proposal: "p" }, title: "", why: "Why.", numbers: changes_Moved.map((change) => change.number), ids_Request: ["r-1"] }], nothings: [] } })
   expect(revised.issues.filter((issue) => issue.startsWith("move "))).toEqual(["move 1 to 2 is in a revision: a move goes in a new proposal, for now"])
+})
+
+// frames, lines read together, the task's: an agent framing what it changed
+// on lines no frame holds, in its copy's lines, past what you typed; landed
+// on the task's head, merged where they share lines, carried across edits,
+// and drawn whole by the editor
+const framedLanded = (shell: _Shell_, job_Shell: _Job_Shell_, id_Request: string, edit: (text: string) => string, frames: Array<{ path: string, first: number, last: number }>) => {
+  const given = job_Shell.state.kind === "BEING_WORKED_ON" ? job_Shell.state.givens.find((given_Each) => given_Each.path === "retry.js") : undefined
+  if (given === undefined) throw new Error("no given")
+  const files: Array<_File_Copy_> = [{ given, effect: "CHANGE", text_Copy: textOf(edit(flatOf__Text(given.text))) }]
+  const changes = changesOf__Copy({ files })
+  const checked = landingOf__Grouping({ task: shell.taskOf("T-1")!, job_Shell, files, unplaceables: [], grouping: { stamp: stampOf__Changes({ changes }), moves: [], frames, proposals: [{ aim: { kind: "NEW" }, title: "Agent's", why: "Why.", numbers: changes.map((change) => change.number), ids_Request: [id_Request] }], nothings: [] } })
+  if (checked.issues.length === 0) shell.handle({ kind: "HAND_BACK", id_Job: job_Shell.id, landing: checked.landing, note: "" })
+  return { given, checked, listed: framesOf__Copy({ givens: [given] }) }
+}
+const framesOf = (shell: _Shell_) => shell.taskOf("T-1")?.heads.find((head) => head.path === "retry.js")?.frames
+
+test("an agent's change on lines no frame holds refused till it frames it, in its copy's lines past the line you typed above it; its frame landed on the task's head in the file's lines; the next job given it in its copy's lines, a change in it needing no other, a frame reaching it making one frame with it; carried across your typing, growing with what's typed in it; and the editor drawing the change's frame whole", () => {
+  const shell = shellMade()
+  shell.handle({ kind: "DRAFT", request: madeOf("r-1", "Tidy it."), isStarting: false, path: "retry.js" })
+  yoursBy(shell, [replaceOf(0, 0, 0, "// top\n")])
+  const first = jobFor(shell, "r-2")
+  const bare = framedLanded(shell, first.job_Shell, "r-2", (text) => text.replace("= 5;", "= 3;"), [])
+  const framed = framedLanded(shell, first.job_Shell, "r-2", (text) => text.replace("= 5;", "= 3;"), [{ path: "retry.js", first: 2, last: 3 }])
+  const frames_First = framesOf(shell)
+  const second = jobFor(shell, "r-3")
+  const inside = framedLanded(shell, second.job_Shell, "r-3", (text) => text.replace("= 100;", "= 50;"), [{ path: "retry.js", first: 3, last: 5 }])
+  const frames_Second = framesOf(shell)
+  shell.handle({ kind: "EDIT", path: "retry.js", transaction: { steps: [{ kind: "TEXT", id_Text: { kind: "DOCUMENT" }, range: { from: { line: 2, offset: 0 }, to: { line: 2, offset: 0 } }, next: textOf("// gap\n") }] }, mode: { kind: "MANUAL" } })
+  const host = new _Host_({ name_Document: "retry.js", target_Mode: { kind: "TASK", id: "T-1" }, files: ["retry.js"], isListening_Agent: false, at: Date.now(), attributes: new Map(), state_Shell: shell.state(), suffix_Id: "", observers: [{ sent: () => {}, opening: () => {}, gone: () => {}, shown: () => {}, boarded: () => {} }] })
+  const update_Host = host.showing()?.update_Host
+  if (update_Host === undefined) throw new Error("nothing shown")
+  const viewModel = viewModelOf__Model({ ...update_Host, source_Yours: "yours", module_Language: MODULE_PLAINTEXT, module_Reading: MODULE_READING_TEXT })
+  expect(flatOf__Text(first.givens[0]!.text).startsWith("// top\nconst ATTEMPTS = 5;")).toBe(true)
+  expect(bare.checked.issues).toEqual(["change 1, on line 2 of retry.js, is on lines no frame holds: say the frame it's read in under \"frames\", {\"path\": \"retry.js\", \"first\": <line>, \"last\": <line>}, in your copy's lines, the narrowest whole unit holding it"])
+  expect(framed.checked.issues).toEqual([])
+  expect(framed.checked.landing.frames.map((frame) => [frame.path, frame.first, frame.last])).toEqual([["retry.js", 0, 1]])
+  expect(frames_First).toEqual([{ first: 0, last: 1 }])
+  expect(second.givens[0]?.frames).toEqual([{ first: 0, last: 1 }])
+  expect(inside.listed).toEqual([{ path: "retry.js", first: 2, last: 3 }])
+  expect(inside.checked.issues).toEqual([])
+  expect(frames_Second).toEqual([{ first: 0, last: 3 }])
+  expect(framesOf(shell)).toEqual([{ first: 0, last: 4 }])
+  expect([update_Host.ranges_Frame, viewModel.blocks.flatMap((block) => block.kind === "FRAME" ? [block.range] : [])]).toEqual([[{ first: 1, last: 5 }], [{ first: 1, last: 5 }]])
+})
+
+test("a frame said wrong, each said: on a file the job wasn't given and didn't change, and on lines that aren't the file's", () => {
+  const shell = shellMade()
+  shell.handle({ kind: "DRAFT", request: madeOf("r-1", "Tidy it."), isStarting: true, path: "retry.js" })
+  const { job_Shell } = takenOf(shell, "j-1")
+  const checked = framedLanded(shell, job_Shell, "r-1", (text) => text.replace("= 5;", "= 3;"), [{ path: "notes.md", first: 1, last: 2 }, { path: "retry.js", first: 3, last: 2 }, { path: "retry.js", first: 1, last: 9 }, { path: "retry.js", first: 1, last: 1 }])
+  expect(checked.checked.issues).toEqual(["frame 1 is on notes.md, which isn't a file you were given or changed", "frame 2, lines 3–2 of retry.js, isn't lines of it as you were given it, 1 to 5", "frame 3, lines 1–9 of retry.js, isn't lines of it as you were given it, 1 to 5"])
 })
 
 // a job's work handed back on a task with changes of its own, the case's
@@ -274,7 +328,7 @@ test("a move's issues, each said: its sides in two proposals; an edit in it in t
 // typed in the task, and proposals, open or accepted, a move among them
 const landedBy = (shell: _Shell_, id_Job: string, id_Proposal: string, changes: [_Change_, ...Array<_Change_>]) => {
   shell.handle({ kind: "TAKE", id_Job, note: "" })
-  shell.handle({ kind: "HAND_BACK", id_Job, landing: { proposals: [{ id: id_Proposal, path: "retry.js", effect: "CHANGE", title: id_Proposal, rationale: "", version: shell.documentOf("retry.js").version, changes, ids_Request: [] }], nothings: [] }, note: "" })
+  shell.handle({ kind: "HAND_BACK", id_Job, landing: { proposals: [{ id: id_Proposal, path: "retry.js", effect: "CHANGE", title: id_Proposal, rationale: "", version: shell.documentOf("retry.js").version, changes, ids_Request: [] }], nothings: [], frames: [] }, note: "" })
 }
 const yoursBy = (shell: _Shell_, changes: [_Change_, ...Array<_Change_>]) => shell.handle({ kind: "EDIT", path: "retry.js", transaction: { steps: [{ kind: "SOURCE", source: "yours", changes }] }, mode: { kind: "TASK", id_Task: "T-1", proposed: [{ source: "yours", changes }] } })
 const replaceOf = (line: number, from: number, to: number, next: string): _Change_ => ({ kind: "REPLACE", range: { from: { line, offset: from }, to: { line, offset: to } }, next: textOf(next) })

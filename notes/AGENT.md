@@ -388,7 +388,7 @@ into proposals and into frames, which leans on what it reads, 5, and on
    sides in two proposals, or an edit in it in the move's; a move in a
    revision. Two neighbours much alike, swapped, the diff reads as their
    lines changed, not moved, so there's no move to say. Not yet: the text
-   between two ideas, the preview, and frames.
+   between two ideas, and the preview.
 
    **Decided 2026-11-26,** for frames: a task's, built up over its life,
    established rather than final. **Fixed:** a file's lines are divided
@@ -428,7 +428,20 @@ into proposals and into frames, which leans on what it reads, 5, and on
    host writes out by hand; then joining and splitting by hand; then the
    file's kinds' defaults, as the agent's starting point, JavaScript's
    blocks needing more than the playground's tokenizer has, nesting at
-   least, Markdown's constructs found by line already.
+   least, Markdown's constructs found by line already. **The first built
+   2026-11-28:** a task's head keeps its frames, whole lines in its
+   version, carried across edits through the same steps as its changes,
+   typing on a frame's first or last line staying in it, and merged where
+   they share lines; a job given each file's frames as the task has them,
+   `changes` listing them in the copy's lines, past your edits and
+   accepted changes; the agent saying a frame for each change on lines no
+   frame holds, `"frames": [{"path": "retry.js", "first": 12, "last":
+   30}]`, in its copy's lines, refused till it does, each change's lines
+   said, and a frame on a file it wasn't given or on lines not the file's;
+   its frames mapped onto the file's lines and landed on the head with its
+   proposals; the host giving the editor the head's frames on every
+   update, as `ranges_Frame`, the playground's examples seeding theirs as
+   their task's.
 
 ### what an agent reads, and what it remembers
 

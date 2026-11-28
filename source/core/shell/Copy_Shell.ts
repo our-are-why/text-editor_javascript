@@ -14,7 +14,9 @@ import {
   type _NonEmpty_,
   type _Piece_Applied_,
   type _Position_Text_,
-  type _Run_Comparison_
+  type _Run_Comparison_,
+  type _Frame_Head_,
+  mergedOf__Frames
 } from "../documents/index.ts"
 import type {
   _Effect_Proposal_Tasks_,
@@ -39,6 +41,19 @@ export {
   type _Api___stampOf__Changes_,
   landingOf__Grouping,
   type _Api___landingOf__Grouping_,
+  givensOf__Copy,
+  type _Api___givensOf__Copy_,
+  framedOf__Grouping,
+  type _Api___framedOf__Grouping_,
+  type _Framed_Grouping_,
+  linesOf__Given,
+  type _Api___linesOf__Given_,
+  unframedOf__Changes,
+  type _Api___unframedOf__Changes_,
+  isFramed__Lines,
+  type _Api___isFramed__Lines_,
+  framesOf__Copy,
+  type _Api___framesOf__Copy_,
   movedOf__Changes,
   type _Api___movedOf__Changes_,
   type _Moved_Changes_,
@@ -60,6 +75,7 @@ export {
   type _Unplaceable_Copy_,
   type _Grouping_Job_,
   type _Move_Grouped_,
+  type _Frame_Grouped_,
   type _Proposal_Grouped_,
   type _Aim_Grouped_,
   type __BASE_Aim_Grouped_,
@@ -68,6 +84,7 @@ export {
   type _Nothing_Grouped_,
   type _Checked_Landing_,
   type _Landing_Handed_,
+  type _Frame_Handed_,
   type _Proposal_Handed_,
   type _Nothing_Handed_,
   handedOf__Proposal,
@@ -235,8 +252,15 @@ interface _Unplaceable_Copy_ {
 interface _Grouping_Job_ {
   stamp: string
   moves: Array<_Move_Grouped_>
+  frames: Array<_Frame_Grouped_>
   proposals: Array<_Proposal_Grouped_>
   nothings: Array<_Nothing_Grouped_>
+}
+
+interface _Frame_Grouped_ {
+  path: string
+  first: number
+  last: number
 }
 
 interface _Move_Grouped_ {
@@ -278,6 +302,14 @@ interface _Checked_Landing_ {
 interface _Landing_Handed_ {
   proposals: Array<_Proposal_Handed_>
   nothings: Array<_Nothing_Handed_>
+  frames: Array<_Frame_Handed_>
+}
+
+interface _Frame_Handed_ {
+  path: string
+  version: string
+  first: number
+  last: number
 }
 
 interface _Proposal_Handed_ {
@@ -312,6 +344,13 @@ function landingOf__Grouping({
     moves: grouping.moves
   })
   const changes = moved.changes
+  const framed = framedOf__Grouping({
+    givens: givensOf__Copy({
+      job_Shell,
+      files
+    }),
+    frames: grouping.frames
+  })
   const numbers_Grouped = grouping.proposals.flatMap((proposal) => proposal.numbers)
   const ids_Job = job_Shell.requests.map((request) => request.id)
   const ids_Task = task.requests.map((request) => request.id)
@@ -344,6 +383,14 @@ function landingOf__Grouping({
       move,
       proposals: grouping.proposals
     })),
+    ...framed.issues,
+    ...unframedOf__Changes({
+      task,
+      job_Shell,
+      files,
+      changes,
+      frames: framed.frames
+    }),
     ...numbers_Grouped.flatMap((number) => changes.some((change) => change.number === number) ? [] : [`there's no change ${number}`]),
     ...changes.flatMap((change) => {
       const count = numbers_Grouped.filter((number) => number === change.number).length
@@ -370,9 +417,263 @@ function landingOf__Grouping({
       nothings: grouping.nothings.map((nothing) => ({
         id_Request: nothing.id_Request,
         note: nothing.why
-      }))
+      })),
+      frames: framed.frames
     }
   }
+}
+
+interface _Api___givensOf__Copy_ {
+  job_Shell: _Job_Shell_
+  files: Array<_File_Copy_>
+}
+
+function givensOf__Copy({
+  job_Shell,
+  files
+}: _Api___givensOf__Copy_): Array<_Given_Job_> {
+  return [
+    ...files.map((file) => file.given),
+    ...(job_Shell.state.kind === "BEING_WORKED_ON" ? job_Shell.state.givens : []).filter((given) => !files.some((file) => file.given.path === given.path))
+  ]
+}
+
+interface _Api___framedOf__Grouping_ {
+  givens: Array<_Given_Job_>
+  frames: Array<_Frame_Grouped_>
+}
+
+interface _Framed_Grouping_ {
+  issues: Array<string>
+  frames: Array<_Frame_Handed_>
+}
+
+function framedOf__Grouping({
+  givens,
+  frames
+}: _Api___framedOf__Grouping_): _Framed_Grouping_ {
+  const placeds = frames.map((frame, index): _Framed_Grouping_ => {
+    const given = givens.find((given_Each) => given_Each.path === frame.path)
+    const count_Lines = given?.text.lines.length ?? 0
+    if (given === undefined) {
+      return {
+        issues: [`frame ${index + 1} is on ${frame.path}, which isn't a file you were given or changed`],
+        frames: []
+      }
+    }
+    if (frame.first < 1 || frame.last < frame.first || frame.last > count_Lines) {
+      return {
+        issues: [`frame ${index + 1}, lines ${frame.first}–${frame.last} of ${frame.path}, isn't lines of it as you were given it, 1 to ${count_Lines}`],
+        frames: []
+      }
+    }
+    const lines = linesOf__Given({
+      given,
+      first: frame.first - 1,
+      last: frame.last - 1
+    })
+    return {
+      issues: [],
+      frames: [
+        {
+          path: frame.path,
+          version: given.version,
+          first: lines.first,
+          last: lines.last
+        }
+      ]
+    }
+  })
+  return {
+    issues: placeds.flatMap((placed) => placed.issues),
+    frames: placeds.flatMap((placed) => placed.frames)
+  }
+}
+
+interface _Api___linesOf__Given_ {
+  given: _Given_Job_
+  first: number
+  last: number
+}
+
+function linesOf__Given({
+  given,
+  first,
+  last
+}: _Api___linesOf__Given_): _Frame_Head_ {
+  const indexIn__Document = (position: _Position_Text_) => indexOf__Position({
+    text_Model: given.text_Document,
+    position
+  })
+  const from = indexOf__Position({
+    text_Model: given.text,
+    position: {
+      line: first,
+      offset: 0
+    }
+  })
+  const to = indexOf__Position({
+    text_Model: given.text,
+    position: {
+      line: last,
+      offset: Array.from(given.text.lines[last] ?? "").length
+    }
+  })
+  const indexes = segmentsOf__Given({
+    given
+  })
+    .filter((segment) => from === to || segment.from === segment.to ? segment.from <= to && from <= segment.to : segment.from < to && from < segment.to)
+    .flatMap((segment) => {
+      const piece = segment.piece
+      if (piece.kind === "DOCUMENT") {
+        const index = indexIn__Document(piece.range.from) - segment.from
+        return [
+          index + Math.max(from, segment.from),
+          index + Math.min(to, segment.to)
+        ]
+      }
+      const change = given.proposed.find((changes_Source) => changes_Source.source === piece.source)?.changes[piece.index]
+      return change === undefined
+        ? []
+        : [
+          indexIn__Document(change.range.from),
+          indexIn__Document(change.range.to)
+        ]
+    })
+  const lineOf = (index: number) => positionOf__Index({
+    text_Model: given.text_Document,
+    index
+  }).line
+  return {
+    first: indexes.length === 0 ? 0 : lineOf(Math.min(...indexes)),
+    last: indexes.length === 0 ? 0 : lineOf(Math.max(...indexes))
+  }
+}
+
+interface _Api___unframedOf__Changes_ {
+  task: _Task_Tasks_
+  job_Shell: _Job_Shell_
+  files: Array<_File_Copy_>
+  changes: Array<_Change_Copy_>
+  frames: Array<_Frame_Handed_>
+}
+
+function unframedOf__Changes({
+  task,
+  job_Shell,
+  files,
+  changes,
+  frames
+}: _Api___unframedOf__Changes_): Array<string> {
+  return files.flatMap((file) => {
+    const given = file.given
+    const segments = segmentsOf__Given({
+      given
+    })
+    const frames_File = mergedOf__Frames([
+      ...given.frames,
+      ...frames.flatMap((frame) => frame.path === given.path
+        ? [
+          {
+            first: frame.first,
+            last: frame.last
+          }
+        ]
+        : [])
+    ])
+    return changes.filter((change) => change.path === given.path).flatMap((change) => {
+      const span = spanOf__Change({
+        task,
+        job_Shell,
+        given,
+        segments,
+        change
+      })
+      if (span.kind === "REFUSED") return []
+      const from = positionOf__Index({
+        text_Model: given.text_Document,
+        index: span.from
+      })
+      const to = positionOf__Index({
+        text_Model: given.text_Document,
+        index: span.to
+      })
+      const line_From = change.range.from.line + 1
+      const line_To = change.range.to.line + 1
+      return isFramed__Lines({
+        frames: frames_File,
+        first: from.line,
+        last: to.offset === 0 && to.line > from.line ? to.line - 1 : to.line
+      })
+        ? []
+        : [`change ${change.number}, on ${line_From === line_To ? `line ${line_From}` : `lines ${line_From}–${line_To}`} of ${given.path}, is on lines no frame holds: say the frame it's read in under "frames", {"path": "${given.path}", "first": <line>, "last": <line>}, in your copy's lines, the narrowest whole unit holding it`]
+    })
+  })
+}
+
+interface _Api___isFramed__Lines_ {
+  frames: Array<_Frame_Head_>
+  first: number
+  last: number
+}
+
+function isFramed__Lines({
+  frames,
+  first,
+  last
+}: _Api___isFramed__Lines_): boolean {
+  let line = first
+  for (const frame of frames) {
+    if (frame.first <= line && line <= frame.last) line = frame.last + 1
+  }
+  return line > last
+}
+
+interface _Api___framesOf__Copy_ {
+  givens: Array<_Given_Job_>
+}
+
+function framesOf__Copy({
+  givens
+}: _Api___framesOf__Copy_): Array<_Frame_Grouped_> {
+  return givens.flatMap((given) => {
+    const segments = segmentsOf__Given({
+      given
+    })
+    const indexIn__Document = (position: _Position_Text_) => indexOf__Position({
+      text_Model: given.text_Document,
+      position
+    })
+    const indexIn__Given = (index_Document: number) => {
+      for (const segment of segments) {
+        const piece = segment.piece
+        if (piece.kind !== "DOCUMENT") continue
+        const from = indexIn__Document(piece.range.from)
+        if (from <= index_Document && index_Document <= indexIn__Document(piece.range.to)) return segment.from + index_Document - from
+      }
+      for (const segment of segments) {
+        const piece = segment.piece
+        const range = piece.kind === "CHANGE" ? given.proposed.find((changes_Source) => changes_Source.source === piece.source)?.changes[piece.index]?.range : undefined
+        if (range !== undefined && indexIn__Document(range.from) <= index_Document && index_Document <= indexIn__Document(range.to)) return segment.from
+      }
+      return 0
+    }
+    const lineOf = (index_Document: number) => positionOf__Index({
+      text_Model: given.text,
+      index: indexIn__Given(index_Document)
+    }).line + 1
+    return given.frames.map((frame) => ({
+      path: given.path,
+      first: lineOf(indexIn__Document({
+        line: frame.first,
+        offset: 0
+      })),
+      last: lineOf(indexIn__Document({
+        line: frame.last,
+        offset: Array.from(given.text_Document.lines[frame.last] ?? "").length
+      }))
+    }))
+  })
 }
 
 interface _Api___movedOf__Changes_ {
@@ -1356,11 +1657,13 @@ function landingOf__Base({
           }
         ]
     }),
-    nothings: []
+    nothings: [],
+    frames: []
   }
 }
 
 const LANDING_NONE: _Landing_Handed_ = {
   proposals: [],
-  nothings: []
+  nothings: [],
+  frames: []
 }

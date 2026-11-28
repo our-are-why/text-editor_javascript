@@ -205,7 +205,8 @@ class _Host_ {
       tasks: update_Host.tasks,
       files: update_Host.files,
       rounds_Landed: update_Host.rounds_Landed,
-      isListening_Agent: update_Host.isListening_Agent
+      isListening_Agent: update_Host.isListening_Agent,
+      ranges_Frame: update_Host.ranges_Frame
     }
   }
 
@@ -275,7 +276,11 @@ class _Host_ {
       rounds_Landed: roundsOf__Stale({
         stale: head?.stale ?? []
       }),
-      isListening_Agent: this.isListening_Agent
+      isListening_Agent: this.isListening_Agent,
+      ranges_Frame: (head?.frames ?? []).map((frame) => ({
+        first: frame.first + 1,
+        last: frame.last + 1
+      }))
     }
   }
 

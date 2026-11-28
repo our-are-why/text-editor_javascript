@@ -209,6 +209,23 @@ const ran_Changes = await doctorIn(dir_Copy, "changes", "j-3")
 const path_Grouping = join(dir_Demos, "grouping.json")
 await Bun.write(path_Grouping, JSON.stringify({
   stamp: ran_Changes.answer["stamp"],
+  frames: [
+    {
+      path: "README.md",
+      first: 1,
+      last: text_README.split("\n").length
+    },
+    {
+      path: "docs/backoff.md",
+      first: 1,
+      last: 1
+    },
+    {
+      path: "retry.js",
+      first: 4,
+      last: 5
+    }
+  ],
   proposals: [
     {
       title: "Drop the README",
@@ -236,6 +253,7 @@ const ran_Landed = await doctorIn(dir_Copy, "done", "j-3", "Named its backoff.",
 const landed_Copy = {
   proposals: program.shell.taskOf("T-1")?.proposals.map((proposal) => [proposal.id, proposal.effect, proposal.title]),
   status: requestOf("Wait for an agent that's here.")?.status,
+  frames: program.shell.taskOf("T-1")?.heads.map((head) => [head.path, head.frames]),
   isUnchanged: await Bun.file(join(dir_Demo, "README.md")).text() === text_README && await Bun.file(join(dir_Demo, "retry.js")).text() === text_Retry && !(await Bun.file(join(dir_Demo, "docs", "backoff.md")).exists()),
   files: program.files
 }
@@ -402,12 +420,13 @@ test("a job taken is given a working copy, a git worktree of the project outside
     { number: 2, path: "docs/backoff.md", file: "made", move: "", lines: "1", before: "", after: text_Backoff },
     { number: 3, path: "retry.js", file: "changed", move: "", lines: "4", before: "5", after: "3" }
   ])
-  expect([ran_Changes_Said.answer["kind"], ran_Changes_Said.answer["stamp"], ran_Changes_Said.answer["issues"]]).toEqual(["CHANGES", ran_Changes.answer["stamp"], []])
+  expect([ran_Changes.answer["frames"], ran_Changes_Said.answer["kind"], ran_Changes_Said.answer["stamp"], ran_Changes_Said.answer["issues"]]).toEqual([[], "CHANGES", ran_Changes.answer["stamp"], []])
   expect([ran_Verified.answer["kind"], ran_Verified.answer["issues"]]).toEqual(["VERIFIED", []])
   expect([ran_Landed.answer["kind"], ran_Landed.answer["reports"]]).toEqual(["HANDED_BACK", ["docs/backoff.md is in no request of this job: its changes are proposed all the same, for review", "retry.js is in no request of this job: its changes are proposed all the same, for review"]])
   expect(landed_Copy).toEqual({
     proposals: [["j-3.1", "REMOVE", "Drop the README"], ["j-3.2", "MAKE", "Say how it backs off"], ["j-3.3", "CHANGE", "Fewer attempts"]],
     status: { kind: "ADDRESSED", answer: { kind: "PROPOSALS", ids_Proposal: ["j-3.1", "j-3.2", "j-3.3"] } },
+    frames: [["README.md", [{ first: 0, last: text_README.split("\n").length - 1 }]], ["docs/backoff.md", [{ first: 0, last: 0 }]], ["retry.js", [{ first: 3, last: 4 }]]],
     isUnchanged: true,
     files: ["README.md", "package.json", "retry.js"]
   })

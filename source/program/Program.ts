@@ -571,7 +571,8 @@ class _Program_ {
           proposed: [],
           sources: [],
           text: document.text,
-          isPresent: document.isPresent
+          isPresent: document.isPresent,
+          frames: []
         },
         effect: changed.effect,
         text_Copy
