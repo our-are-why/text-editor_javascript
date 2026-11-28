@@ -21,7 +21,7 @@ test("a request with the agent is waiting while its job's queued, no agent on it
     jobs: [],
     observers: [{ changed: (state_Shell) => host?.heard({ at: Date.now(), state_Shell, files, isListening_Agent: false, count_Edit: 0 }), started: () => {}, stopped: () => {}, landed: () => {} }]
   })
-  shell.handle({ kind: "OPEN_DOCUMENT", path: "README.md", text: { lines: parseTexts_Line("# retry\n"), marks: [] } })
+  shell.handle({ kind: "OPEN_DOCUMENT", path: "README.md", text: { lines: parseTexts_Line("# retry\n"), marks: [] }, isPresent: true })
   const shown: Array<_Update_Host_> = []
   const boarded: Array<_Update_Board_> = []
   host = new _Host_({
@@ -86,7 +86,7 @@ test("a job being worked on that nothing's heard of for five minutes is quiet, i
     jobs: [],
     observers: [{ changed: (state_Shell) => host?.heard({ state_Shell, files, isListening_Agent: true, at: Date.now(), count_Edit: 0 }), started: () => {}, stopped: () => {}, landed: () => {} }]
   })
-  shell.handle({ kind: "OPEN_DOCUMENT", path: "README.md", text: { lines: parseTexts_Line("# retry\n"), marks: [] } })
+  shell.handle({ kind: "OPEN_DOCUMENT", path: "README.md", text: { lines: parseTexts_Line("# retry\n"), marks: [] }, isPresent: true })
   const shown: Array<_Update_Host_> = []
   host = new _Host_({ name_Document: "README.md", target_Mode: { kind: "MANUAL" }, files, isListening_Agent: true, at: Date.now(), attributes: new Map(), state_Shell: shell.state(), suffix_Id: "", observers: [{ sent: (command_Shell) => shell.handle(command_Shell), opening: () => {}, shown: (update_Host) => shown.push(update_Host), boarded: () => {} }] })
   host.showing()

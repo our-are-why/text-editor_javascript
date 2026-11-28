@@ -20,7 +20,7 @@ const wired = () => {
     observers: [{ changed: (state_Shell) => agent?.heard(state_Shell), started: () => {}, stopped: () => {}, landed: () => {} }]
   })
   agent = new _Agent_({ state_Shell: shell.state(), observers: [{ sent: (command_Shell) => shell.handle(command_Shell) }] })
-  shell.handle({ kind: "OPEN_DOCUMENT", path: "README.md", text: { lines: parseTexts_Line("# retry\n"), marks: [] } })
+  shell.handle({ kind: "OPEN_DOCUMENT", path: "README.md", text: { lines: parseTexts_Line("# retry\n"), marks: [] }, isPresent: true })
   return { shell, agent }
 }
 const madeOf = (notes: string) => ({ id: `r-${notes}`, notes, aim: { kind: "DOCUMENT" as const, path: "README.md", words: { kind: "ALL" as const } } })

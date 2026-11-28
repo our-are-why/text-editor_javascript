@@ -472,6 +472,7 @@ function proposalsHostOf__Task({
         source: proposal.id,
         title: proposal.title,
         state: proposal.decision,
+        effect: proposal.effect,
         status: SHOWNMAP_STATE[proposal.decision].status,
         rationale: proposal.rationale,
         requests: task.requests.flatMap((request): Array<_Request_Host_> => request.aim.kind === "PROPOSAL" && request.aim.id_Proposal === proposal.id && request.status.kind !== "ADDRESSED"
@@ -506,6 +507,7 @@ const PROPOSAL_YOURS: _Proposal_Host_ = {
   source: "yours",
   title: "Your edits",
   state: "OPEN",
+  effect: "CHANGE",
   status: "",
   rationale: "",
   requests: [],

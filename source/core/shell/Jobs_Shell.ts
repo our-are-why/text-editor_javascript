@@ -91,6 +91,7 @@ interface _Given_Job_ {
   proposed: Array<_Changes_Source_>
   sources: Array<string>
   text: _Text_Model_
+  isPresent: boolean
 }
 
 interface _DONE_State_Job_ extends __BASE_State_Job_<"DONE"> {

@@ -31,6 +31,7 @@ import {
   type _ViewModel_TextEditor_,
   type _State_Proposal_,
   type _Decision_Proposal_,
+  type _Effect_Proposal_,
   type _Status_Request_,
   type _Stale_Item_,
   type _Task_Header_,
@@ -1189,6 +1190,7 @@ interface _Proposal_Host_ {
   source: string
   title: string
   state: _Decision_Proposal_
+  effect: _Effect_Proposal_
   status: string
   rationale: string
   requests: Array<_Request_Host_>
@@ -3925,6 +3927,7 @@ function frameOf__Drawn({
         title: proposal_Host.title,
         state,
         status: STATUSMAP__STATE_PROPOSAL[state] ?? proposal_Host.status,
+        label_Effect: LABELMAP__EFFECT_PROPOSAL[proposal_Host.effect],
         places: placesOf__Source({
           model_TextEditor,
           source: proposal_Host.source,
@@ -4287,6 +4290,16 @@ const STATUSMAP__STATE_PROPOSAL: _StatusMap__State_Proposal_ = {
   ACCEPTED: null,
   REJECTED: null,
   WITHDRAWN: null
+}
+
+type _LabelMap__Effect_Proposal_ = {
+  [Effect in _Effect_Proposal_]: string
+}
+
+const LABELMAP__EFFECT_PROPOSAL: _LabelMap__Effect_Proposal_ = {
+  CHANGE: "",
+  MAKE: "New file",
+  REMOVE: "Deletes the file"
 }
 
 interface _Api___placesOf__Source_ {

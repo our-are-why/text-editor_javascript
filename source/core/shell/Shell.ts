@@ -16,6 +16,7 @@ import {
 import {
   carriedOf__Head,
   textWith__Sources,
+  flatOf__Text,
   refusalsAcross__Sources,
   checkedOf__Head,
   settledOf__Head,
@@ -87,6 +88,8 @@ export {
   type _HAND_BACK__Command_Shell_,
   type _HandlerMap__Shell_,
   HANDLERMAP__SHELL,
+  isPresentWith__Sources,
+  type _Api___isPresentWith__Sources_,
   waitingOf__Task,
   type _Api___waitingOf__Task_,
   isAsked__Proposal,
@@ -149,7 +152,8 @@ class _Shell_ {
       documents: this.documents.model_Documents.documents.map((document) => ({
         path: document.path,
         version: document.version,
-        text: document.text
+        text: document.text,
+        isPresent: document.isPresent
       })),
       dismissed: this.stateOf__Dismissed(),
       jobs: this.jobs
@@ -295,18 +299,25 @@ class _Shell_ {
       }) || job_Shell.sources.includes(changes_Source.source)
         ? [changes_Source.source]
         : [])
+      const text = textWith__Sources({
+        model_TextEditor: {
+          document: document.text,
+          proposed
+        },
+        sources
+      })
       return {
         path,
         version: document.version,
         text_Document: document.text,
         proposed,
         sources,
-        text: textWith__Sources({
-          model_TextEditor: {
-            document: document.text,
-            proposed
-          },
-          sources
+        text,
+        isPresent: isPresentWith__Sources({
+          task,
+          document,
+          sources,
+          text
         })
       }
     })
@@ -342,6 +353,7 @@ class _Shell_ {
         proposal: {
           id: proposal.id,
           path: proposal.path,
+          effect: proposal.effect,
           title: proposal.title,
           rationale: proposal.rationale
         },
@@ -720,17 +732,31 @@ class _Shell_ {
     if (task === undefined || task.kind !== "RESOLVED" || task.resolution.how !== "APPLIED") return
     for (const head of task.heads) {
       if (!this.isKept(head.path)) continue
+      const document = this.documentOf(head.path)
+      const sources = head.proposed.flatMap((changes_Source) => isOwn__Source({
+        task,
+        source: changes_Source.source
+      })
+        ? [changes_Source.source]
+        : [])
       this.documents.handle({
         kind: "APPLY",
         path: head.path,
         version: head.version,
         proposed: head.proposed,
-        sources: head.proposed.flatMap((changes_Source) => isOwn__Source({
+        sources,
+        isPresent: isPresentWith__Sources({
           task,
-          source: changes_Source.source
+          document,
+          sources,
+          text: textWith__Sources({
+            model_TextEditor: {
+              document: document.text,
+              proposed: head.proposed
+            },
+            sources
+          })
         })
-          ? [changes_Source.source]
-          : [])
       })
       this.carried({
         path: head.path,
@@ -778,6 +804,7 @@ interface _Document_Shell_ {
   path: string
   version: string
   text: _Text_Model_
+  isPresent: boolean
 }
 
 interface _Dismissed_Task_ {
@@ -905,6 +932,7 @@ interface __BASE_Command_Shell_<Kind extends string> {
 interface _OPEN_DOCUMENT__Command_Shell_ extends __BASE_Command_Shell_<"OPEN_DOCUMENT"> {
   path: string
   text: _Text_Model_
+  isPresent: boolean
 }
 
 interface _EDIT_Command_Shell_ extends __BASE_Command_Shell_<"EDIT"> {
@@ -1025,7 +1053,8 @@ const HANDLERMAP__SHELL: _HandlerMap__Shell_ = {
     shell.documents.handle({
       kind: "OPEN",
       path: command_Shell.path,
-      text: command_Shell.text
+      text: command_Shell.text,
+      isPresent: command_Shell.isPresent
     })
   },
   EDIT: ({
@@ -1267,6 +1296,26 @@ const HANDLERMAP__SHELL: _HandlerMap__Shell_ = {
     })
     for (const observer of shell.observers) observer.landed(landing_Job)
   }
+}
+
+interface _Api___isPresentWith__Sources_ {
+  task: _Task_Tasks_
+  document: _Document_Documents_
+  sources: Array<string>
+  text: _Text_Model_
+}
+
+function isPresentWith__Sources({
+  task,
+  document,
+  sources,
+  text
+}: _Api___isPresentWith__Sources_): boolean {
+  const effects = task.proposals.flatMap((proposal) => proposal.path === document.path && sources.includes(proposal.id) ? [proposal.effect] : [])
+  const isEmpty = flatOf__Text(text) === ""
+  return effects.includes("REMOVE") && isEmpty
+    ? false
+    : document.isPresent || effects.includes("MAKE") || !isEmpty
 }
 
 interface _Api___waitingOf__Task_ {

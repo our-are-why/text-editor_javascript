@@ -13,9 +13,13 @@ import {
   type _Change_,
   type _NonEmpty_,
   type _Piece_Applied_,
-  type _Position_Text_
+  type _Position_Text_,
+  type _Run_Comparison_
 } from "../documents/index.ts"
-import type { _Task_Tasks_ } from "../tasks/index.ts"
+import type {
+  _Effect_Proposal_Tasks_,
+  _Task_Tasks_
+} from "../tasks/index.ts"
 import type {
   _Job_Shell_,
   _Given_Job_
@@ -26,6 +30,11 @@ export {
   type _Api___changesOf__Copy_,
   type _File_Copy_,
   type _Change_Copy_,
+  wholeOf__File,
+  type _Api___wholeOf__File_,
+  endOf__Text,
+  type _Api___endOf__Text_,
+  POSITION_START,
   stampOf__Changes,
   type _Api___stampOf__Changes_,
   landingOf__Grouping,
@@ -45,6 +54,8 @@ export {
   handedOf__Proposal,
   type _Api___handedOf__Proposal_,
   type _Handed_Proposal_,
+  type _WordsMap__Effect_,
+  WORDSMAP__EFFECT,
   placedOf__Changes,
   type _Api___placedOf__Changes_,
   type _Placed_Changes_,
@@ -57,6 +68,7 @@ export {
   segmentsOf__Given,
   type _Api___segmentsOf__Given_,
   type _Segment_Given_,
+  PIECE_START,
   nameOf__Source,
   type _Api___nameOf__Source_,
   appliedOf__Changes_Copy,
@@ -72,12 +84,14 @@ interface _Api___changesOf__Copy_ {
 
 interface _File_Copy_ {
   given: _Given_Job_
+  effect: _Effect_Proposal_Tasks_
   text_Copy: _Text_Model_
 }
 
 interface _Change_Copy_ {
   number: number
   path: string
+  effect: _Effect_Proposal_Tasks_
   range: _Range_Text_
   before: string
   after: string
@@ -91,19 +105,26 @@ function changesOf__Copy({
       file,
       file_Other
     ) => file.given.path < file_Other.given.path ? -1 : file.given.path > file_Other.given.path ? 1 : 0)
-    .flatMap((file) => comparisonOf__Texts({
-      text_Before: file.given.text,
-      text_After: file.text_Copy
-    })
-      .flatMap((run) => narrowedOf__Run({
-        run,
+    .flatMap((file) => (file.effect === "CHANGE"
+      ? comparisonOf__Texts({
         text_Before: file.given.text,
         text_After: file.text_Copy
-      }))
+      })
+        .flatMap((run) => narrowedOf__Run({
+          run,
+          text_Before: file.given.text,
+          text_After: file.text_Copy
+        }))
+      : [
+        wholeOf__File({
+          file
+        })
+      ])
       .flatMap((run) => run.kind === "CHANGED"
         ? [
           {
             path: file.given.path,
+            effect: file.effect,
             range: run.range_Before,
             before: flatOf__Text(textIn__Range({
               text_Model: file.given.text,
@@ -120,6 +141,48 @@ function changesOf__Copy({
       number: index + 1,
       ...change
     }))
+}
+
+interface _Api___wholeOf__File_ {
+  file: _File_Copy_
+}
+
+function wholeOf__File({
+  file
+}: _Api___wholeOf__File_): _Run_Comparison_ {
+  return {
+    kind: "CHANGED",
+    range_Before: {
+      from: POSITION_START,
+      to: endOf__Text({
+        text_Model: file.given.text
+      })
+    },
+    range_After: {
+      from: POSITION_START,
+      to: endOf__Text({
+        text_Model: file.text_Copy
+      })
+    }
+  }
+}
+
+interface _Api___endOf__Text_ {
+  text_Model: _Text_Model_
+}
+
+function endOf__Text({
+  text_Model
+}: _Api___endOf__Text_): _Position_Text_ {
+  return positionOf__Index({
+    text_Model,
+    index: Array.from(flatOf__Text(text_Model)).length
+  })
+}
+
+const POSITION_START: _Position_Text_ = {
+  line: 0,
+  offset: 0
 }
 
 interface _Api___stampOf__Changes_ {
@@ -195,6 +258,7 @@ interface _Landing_Handed_ {
 interface _Proposal_Handed_ {
   id: string
   path: string
+  effect: _Effect_Proposal_Tasks_
   title: string
   rationale: string
   version: string
@@ -341,7 +405,8 @@ function handedOf__Proposal({
     ...proposal.aim.kind === "REVISION" && proposal_Task !== undefined && !job_Shell.sources.includes(proposal_Task.id) ? [`proposal ${proposal_Task.id} isn't one this job revises, so it isn't in your copy`] : [],
     ...changes_Own.length === 0 && proposal.numbers.length === 0 ? [`${name} has no changes`] : [],
     ...paths.length > 1 ? [`${name} changes more than one file, ${paths.join(", ")}: make one proposal a file, for now`] : [],
-    ...proposal_Task !== undefined && path !== undefined && proposal_Task.path !== path ? [`proposal ${proposal_Task.id} is on ${proposal_Task.path}, but its revision's changes are on ${path}`] : []
+    ...proposal_Task !== undefined && path !== undefined && proposal_Task.path !== path ? [`proposal ${proposal_Task.id} is on ${proposal_Task.path}, but its revision's changes are on ${path}`] : [],
+    ...aim.kind === "REVISION" ? changes_Own.flatMap((change) => change.effect === "CHANGE" ? [] : [`change ${change.number} ${WORDSMAP__EFFECT[change.effect]} ${change.path}: a file made or deleted goes in a new proposal of its own, not a revision`]) : []
   ]
   if (issues_Said.length > 0 || path === undefined || file === undefined) {
     return {
@@ -379,6 +444,7 @@ function handedOf__Proposal({
       {
         id: proposal_Task?.id ?? id,
         path,
+        effect: proposal_Task?.effect ?? file.effect,
         title: proposal.title.trim() === "" ? proposal_Task?.title ?? "" : proposal.title,
         rationale: proposal.why.trim() === "" ? proposal_Task?.rationale ?? "" : proposal.why,
         version: file.given.version,
@@ -390,6 +456,16 @@ function handedOf__Proposal({
       }
     ]
   }
+}
+
+type _WordsMap__Effect_ = {
+  [Effect in _Effect_Proposal_Tasks_]: string
+}
+
+const WORDSMAP__EFFECT: _WordsMap__Effect_ = {
+  CHANGE: "changes",
+  MAKE: "makes",
+  REMOVE: "deletes"
 }
 
 interface _Api___revisedOf__Changes_ {
@@ -431,6 +507,7 @@ function revisedOf__Changes({
       files: [
         {
           given: given_Without,
+          effect: "CHANGE",
           text_Copy: text_Revised
         }
       ]
@@ -627,18 +704,19 @@ function segmentsOf__Given({
     },
     sources: given.sources,
     range: {
-      from: {
-        line: 0,
-        offset: 0
-      },
-      to: positionOf__Index({
-        text_Model: given.text_Document,
-        index: Array.from(flatOf__Text(given.text_Document)).length
+      from: POSITION_START,
+      to: endOf__Text({
+        text_Model: given.text_Document
       })
     }
   })
   let index = 0
-  return pieces.map((piece) => {
+  return (pieces.some((piece) => piece.kind === "DOCUMENT")
+    ? pieces
+    : [
+      PIECE_START,
+      ...pieces
+    ]).map((piece) => {
     const from = index
     index += Array.from(piece.text).length
     return {
@@ -647,6 +725,17 @@ function segmentsOf__Given({
       to: index
     }
   })
+}
+
+const PIECE_START: _Piece_Applied_ = {
+  kind: "DOCUMENT",
+  text: "",
+  range: {
+    from: POSITION_START,
+    to: POSITION_START
+  },
+  marks: [],
+  move: null
 }
 
 interface _Api___nameOf__Source_ {
@@ -707,6 +796,7 @@ function landingOf__Base({
           {
             id: source,
             path: job_Shell.path,
+            effect: proposal.effect,
             title: proposal.title,
             rationale: proposal.rationale,
             version: job_Shell.version,

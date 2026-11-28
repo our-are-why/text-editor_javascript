@@ -17,6 +17,7 @@ import {
 import { constants } from "node:fs"
 import { createHash } from "node:crypto"
 import { flatOf__Text } from "../core/documents/index.ts"
+import type { _Effect_Proposal_Tasks_ } from "../core/tasks/index.ts"
 import type { _Given_Job_ } from "../core/shell/index.ts"
 
 export {
@@ -136,6 +137,15 @@ async function copiedOf__Job({
   }
   for (const given of givens) {
     const path_Copy = join(dir_Copy, given.path)
+    if (!given.isPresent) {
+      await rm(
+        path_Copy,
+        {
+          force: true
+        }
+      )
+      continue
+    }
     await mkdir(
       dirname(path_Copy),
       {
@@ -238,6 +248,7 @@ interface _Read_Copy_ {
 
 interface _Changed_Copy_ {
   path: string
+  effect: _Effect_Proposal_Tasks_
   text_Given: string
   text_Copy: string
 }
@@ -258,25 +269,32 @@ async function readOf__Copy({
   const changeds: Array<_Changed_Copy_> = []
   const unplaceds: Array<_Unplaced_Copy_> = []
   for (const entry of entries) {
-    if (entry.isGone || entry.isNew) {
-      unplaceds.push({
-        path: entry.path,
-        why: entry.isGone ? "was taken away in your copy: doctor lands changes only to the files it has, for now" : "was made in your copy: doctor lands changes only to the files it has, for now"
-      })
-      continue
-    }
-    const bytes = await readFile(join(dir_Copy, entry.path))
-    if (bytes.subarray(0, 8000).includes(0)) {
+    if (entry.isGone && entry.isNew) continue
+    const effect: _Effect_Proposal_Tasks_ = entry.isGone ? "REMOVE" : entry.isNew ? "MAKE" : "CHANGE"
+    const bytes_Given = effect === "MAKE" ? Buffer.alloc(0) : (await Bun.$`git -C ${dir_Copy} show ${`HEAD:${entry.path}`}`.quiet()).stdout
+    const bytes_Copy = effect === "REMOVE" ? Buffer.alloc(0) : await readFile(join(dir_Copy, entry.path))
+    if ([
+      bytes_Given,
+      bytes_Copy
+    ].some((bytes) => bytes.subarray(0, 8000).includes(0))) {
       unplaceds.push({
         path: entry.path,
         why: "isn't text: doctor lands changes only to text files"
       })
       continue
     }
+    if (effect !== "CHANGE" && (effect === "MAKE" ? bytes_Copy : bytes_Given).length === 0) {
+      unplaceds.push({
+        path: entry.path,
+        why: effect === "MAKE" ? "was made empty in your copy: doctor can't yet propose an empty file, so give it its text, or leave it out" : "was empty, and is deleted in your copy: doctor can't yet propose deleting an empty file, so leave it"
+      })
+      continue
+    }
     changeds.push({
       path: entry.path,
-      text_Given: (await Bun.$`git -C ${dir_Copy} show ${`HEAD:${entry.path}`}`.quiet()).text(),
-      text_Copy: bytes.toString("utf8")
+      effect,
+      text_Given: bytes_Given.toString("utf8"),
+      text_Copy: bytes_Copy.toString("utf8")
     })
   }
   return {

@@ -54,6 +54,7 @@ export {
   type _Item_Proposals_,
   type _State_Proposal_,
   type _Decision_Proposal_,
+  type _Effect_Proposal_,
   type _Status_Request_,
   type _Stale_Item_,
   type _Kind_Stale_,
@@ -532,6 +533,7 @@ interface _Item_Proposals_ {
   title: string
   state: _State_Proposal_
   status: string
+  label_Effect: string
   places: _Places_Item_
   neighbors: _Neighbors_Item_
   rationale: string
@@ -599,6 +601,8 @@ interface _Confirm_Item_ {
 type _State_Proposal_ = _Decision_Proposal_ | "REQUESTED" | "REVISING"
 
 type _Decision_Proposal_ = "OPEN" | "ACCEPTED" | "REJECTED" | "WITHDRAWN"
+
+type _Effect_Proposal_ = "CHANGE" | "MAKE" | "REMOVE"
 
 type _Places_Item_ = _NONE_Places_Item_ | _COUNT_Places_Item_ | _MOVE_Places_Item_
 

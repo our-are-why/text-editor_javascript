@@ -48,6 +48,7 @@ import {
   isGit__Project,
   copiedOf__Job,
   readOf__Copy,
+  isThere,
   removedOf__Copy
 } from "./Copy_Program.ts"
 
@@ -530,16 +531,35 @@ class _Program_ {
       if (given !== undefined) {
         files.push({
           given,
+          effect: changed.effect,
           text_Copy
         })
         continue
       }
-      if (this.files.includes(changed.path)) await this.kept(changed.path)
+      const isMade = changed.effect === "MAKE"
+      if (isMade && !this.shell.isKept(changed.path) && !await isThere({
+        path: join(this.dir_Project, changed.path)
+      })) {
+        this.shell.handle({
+          kind: "OPEN_DOCUMENT",
+          path: changed.path,
+          text: {
+            lines: parseTexts_Line(""),
+            marks: []
+          },
+          isPresent: false
+        })
+      }
+      if (!isMade && this.files.includes(changed.path)) await this.kept(changed.path)
       const document = this.shell.isKept(changed.path) ? this.shell.documentOf(changed.path) : undefined
-      if (document === undefined || flatOf__Text(document.text) !== changed.text_Given) {
+      if (document === undefined || document.isPresent === isMade || flatOf__Text(document.text) !== changed.text_Given) {
         unplaceables.push({
           path: changed.path,
-          why: document === undefined ? "isn't one of the files doctor lists for the project" : "has changed in the project since your copy was made: doctor can't place your changes on it"
+          why: isMade
+            ? "was made in your copy, but the project has one there now: doctor can't place yours over it"
+            : document === undefined
+              ? "isn't one of the files doctor lists for the project"
+              : "has changed in the project since your copy was made: doctor can't place your changes on it"
         })
         continue
       }
@@ -550,8 +570,10 @@ class _Program_ {
           text_Document: document.text,
           proposed: [],
           sources: [],
-          text: document.text
+          text: document.text,
+          isPresent: document.isPresent
         },
+        effect: changed.effect,
         text_Copy
       })
     }
@@ -595,7 +617,8 @@ class _Program_ {
     this.shell.handle({
       kind: "OPEN_DOCUMENT",
       path,
-      text: text_Model
+      text: text_Model,
+      isPresent: true
     })
   }
 
@@ -657,12 +680,32 @@ class _Program_ {
     model_Documents: _Model_Documents_
   ): void {
     for (const document of model_Documents.documents) {
+      if (!document.isPresent) {
+        if (!this.texts_Written.has(document.path)) continue
+        this.texts_Written.delete(document.path)
+        this.files = this.files.filter((path) => path !== document.path)
+        this.writing = this.writing
+          .then(() => rm(
+            join(this.dir_Project, document.path),
+            {
+              force: true
+            }
+          ))
+          .catch((error: unknown) => console.error(`doctor couldn't delete ${document.path}:`, error))
+        continue
+      }
       const text = flatOf__Text(document.text)
       if (this.texts_Written.get(document.path) === text) continue
       this.texts_Written.set(
         document.path,
         text
       )
+      if (!this.files.includes(document.path)) {
+        this.files = [
+          ...this.files,
+          document.path
+        ].toSorted()
+      }
       this.writing = this.writing
         .then(() => writtenOf__File({
           dir_Project: this.dir_Project,
@@ -857,6 +900,12 @@ async function writtenOf__File({
   await writeFile(
     path_Writing,
     text
+  )
+  await mkdir(
+    dirname(join(dir_Project, path)),
+    {
+      recursive: true
+    }
   )
   await rename(
     path_Writing,

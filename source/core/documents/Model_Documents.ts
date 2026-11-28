@@ -91,6 +91,7 @@ interface _Document_Documents_ {
   path: string
   version: string
   text: _Text_Model_
+  isPresent: boolean
   edits: Array<_Edit_Documents_>
 }
 
@@ -110,6 +111,7 @@ interface __BASE_Command_Documents_<Kind extends string> {
 interface _OPEN_Command_Documents_ extends __BASE_Command_Documents_<"OPEN"> {
   path: string
   text: _Text_Model_
+  isPresent: boolean
 }
 
 interface _EDIT_Command_Documents_ extends __BASE_Command_Documents_<"EDIT"> {
@@ -128,6 +130,7 @@ interface _APPLY_Command_Documents_ extends __BASE_Command_Documents_<"APPLY"> {
   version: string
   proposed: Array<_Changes_Source_>
   sources: Array<string>
+  isPresent: boolean
 }
 
 interface _RELEASE_Command_Documents_ extends __BASE_Command_Documents_<"RELEASE"> {
@@ -157,14 +160,16 @@ function OPEN_modelAfter__Command({
   command
 }: _Api___modelAfter__Command_<"OPEN">): _Model_Documents_ {
   return model_Documents.documents.some((document) => document.path === command.path)
-    ? READ_modelAfter__Command({
-      model_Documents,
-      command: {
-        kind: "READ",
-        path: command.path,
-        text: command.text
-      }
-    })
+    ? !command.isPresent
+      ? model_Documents
+      : READ_modelAfter__Command({
+        model_Documents,
+        command: {
+          kind: "READ",
+          path: command.path,
+          text: command.text
+        }
+      })
     : {
       documents: [
         ...model_Documents.documents,
@@ -174,6 +179,7 @@ function OPEN_modelAfter__Command({
             text_Model: command.text
           }),
           text: command.text,
+          isPresent: command.isPresent,
           edits: []
         }
       ]
@@ -430,15 +436,19 @@ function EDIT_modelAfter__Command({
           ...steps_Rest
         ]
       }
+      const text = applied__Transaction({
+        model_TextEditor: {
+          document: document.text,
+          proposed: []
+        },
+        transaction
+      }).model_TextEditor.document
       return recordedIn__Document({
-        document,
-        text: applied__Transaction({
-          model_TextEditor: {
-            document: document.text,
-            proposed: []
-          },
-          transaction
-        }).model_TextEditor.document,
+        document: {
+          ...document,
+          isPresent: document.isPresent || flatOf__Text(text).length > 0
+        },
+        text,
         transaction
       })
     }
@@ -490,6 +500,7 @@ function recordedIn__Document({
     path: document.path,
     version,
     text,
+    isPresent: document.isPresent,
     edits: [
       ...document.edits,
       {
@@ -520,10 +531,16 @@ function READ_modelAfter__Command({
         text_Before: document.text,
         text_After: command.text
       })
-      return transaction === null
+      const document_Present = document.isPresent
         ? document
+        : {
+          ...document,
+          isPresent: true
+        }
+      return transaction === null
+        ? document_Present
         : recordedIn__Document({
-          document,
+          document: document_Present,
           text: command.text,
           transaction
         })
@@ -590,10 +607,16 @@ function APPLY_modelAfter__Command({
         text_Before: document.text,
         text_After: text
       })
-      return transaction === null
+      const document_Placed = document.isPresent === command.isPresent
         ? document
+        : {
+          ...document,
+          isPresent: command.isPresent
+        }
+      return transaction === null
+        ? document_Placed
         : recordedIn__Document({
-          document,
+          document: document_Placed,
           text,
           transaction
         })

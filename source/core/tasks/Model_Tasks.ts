@@ -34,6 +34,7 @@ export {
   type _PROPOSALS_Answer_Request_,
   type _NOTHING_Answer_Request_,
   type _Proposal_Tasks_,
+  type _Effect_Proposal_Tasks_,
   type _Decision_Proposal_Tasks_,
   type _Start_Task_,
   type __BASE_Start_Task_,
@@ -206,11 +207,14 @@ interface _NOTHING_Answer_Request_ extends __BASE_Answer_Request_<"NOTHING"> {
 interface _Proposal_Tasks_ {
   id: string
   path: string
+  effect: _Effect_Proposal_Tasks_
   title: string
   rationale: string
   made: _Stamp_Tasks_
   decision: _Decision_Proposal_Tasks_
 }
+
+type _Effect_Proposal_Tasks_ = "CHANGE" | "MAKE" | "REMOVE"
 
 type _Decision_Proposal_Tasks_ = "OPEN" | "ACCEPTED" | "REJECTED" | "WITHDRAWN"
 
@@ -314,6 +318,7 @@ interface _PROPOSE_Command_Tasks_ extends __BASE_Command_Tasks_<"PROPOSE"> {
 interface _Asked_Proposal_ {
   id: string
   path: string
+  effect: _Effect_Proposal_Tasks_
   title: string
   rationale: string
 }
@@ -708,6 +713,7 @@ function PROPOSE_modelAfter__Command({
           ? {
             ...proposal,
             path: command.proposal.path,
+            effect: command.proposal.effect,
             title: command.proposal.title,
             rationale: command.proposal.rationale,
             decision: "OPEN"
@@ -721,6 +727,7 @@ function PROPOSE_modelAfter__Command({
           {
             id: command.proposal.id,
             path: command.proposal.path,
+            effect: command.proposal.effect,
             title: command.proposal.title,
             rationale: command.proposal.rationale,
             made: command.stamp,

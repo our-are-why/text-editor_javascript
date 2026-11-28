@@ -2045,6 +2045,7 @@ function Item_ProposalList__Html({
       data-drafting={item_ProposalList.isDrafting ? "" : undefined}
     >
       <p class="heading_htmlView">
+        {item_ProposalList.label_Effect !== "" && <span class="effect_htmlView">{item_ProposalList.label_Effect}</span>}
         <span class="title_htmlView">{item_ProposalList.title}</span>
         <span class="status_htmlView">{item_ProposalList.status}</span>
       </p>

@@ -49,8 +49,8 @@ test("a start, at any scope, sets what's staged there running and the task worki
 
 test("each scope starts what's in it: a file's, its own requests and its proposals'; some proposals'; some requests; a proposal's revision never two rounds at once, what's asked of it while one runs waiting for the next", () => {
   const model = after(drafted,
-    { kind: "PROPOSE", id_Task: "T-1", proposal: { id: "p-1", path: "retry.js", title: "Keep every error", rationale: "" }, stamp: stampAt("2") },
-    { kind: "PROPOSE", id_Task: "T-1", proposal: { id: "p-2", path: "README.md", title: "Say so", rationale: "" }, stamp: stampAt("2") },
+    { kind: "PROPOSE", id_Task: "T-1", proposal: { id: "p-1", path: "retry.js", effect: "CHANGE", title: "Keep every error", rationale: "" }, stamp: stampAt("2") },
+    { kind: "PROPOSE", id_Task: "T-1", proposal: { id: "p-2", path: "README.md", effect: "CHANGE", title: "Say so", rationale: "" }, stamp: stampAt("2") },
     { kind: "REQUEST", id_Task: "T-1", request: { id: "r-2", notes: "Name the counter.", aim: aimDocument("retry.js") }, stamp: stampAt("3") },
     { kind: "REQUEST", id_Task: "T-1", request: { id: "r-3", notes: "Shorter.", aim: aimProposal("p-1") }, stamp: stampAt("3") },
     { kind: "REQUEST", id_Task: "T-1", request: { id: "r-4", notes: "Plainer.", aim: aimProposal("p-2") }, stamp: stampAt("3") }
@@ -73,15 +73,15 @@ test("a request's notes edited, or the request removed, only while it's staged; 
 
 test("a proposal made, then revised by a new round, open again; decided, what was asked of it and not yet started let go; reopened, nothing let go; counted: what's open to decide, what's staged, what's running", () => {
   const proposed = after(drafted,
-    { kind: "PROPOSE", id_Task: "T-1", proposal: { id: "p-1", path: "retry.js", title: "Keep every error", rationale: "Callers need them." }, stamp: stampAt("2") },
+    { kind: "PROPOSE", id_Task: "T-1", proposal: { id: "p-1", path: "retry.js", effect: "CHANGE", title: "Keep every error", rationale: "Callers need them." }, stamp: stampAt("2") },
     { kind: "REQUEST", id_Task: "T-1", request: { id: "r-2", notes: "Shorter.", aim: aimProposal("p-1") }, stamp: stampAt("3") }
   )
   expect(countsOf__Task({ task: taskIn(proposed, "T-1") })).toEqual({ count_Undecided: 1, count_Conflicts: 0, count_Staged: 2, count_Running: 0 })
   const accepted = after(proposed, { kind: "DECIDE", id_Task: "T-1", id_Proposal: "p-1", decision: "ACCEPTED" })
   expect([taskIn(accepted, "T-1").proposals[0]?.decision, statusesIn(accepted, "T-1"), countsOf__Task({ task: taskIn(accepted, "T-1") })]).toEqual(["ACCEPTED", ["r-1 STAGED"], { count_Undecided: 0, count_Conflicts: 0, count_Staged: 1, count_Running: 0 }])
   expect(statusesIn(after(accepted, { kind: "DECIDE", id_Task: "T-1", id_Proposal: "p-1", decision: "OPEN" }), "T-1")).toEqual(["r-1 STAGED"])
-  const revised = after(accepted, { kind: "PROPOSE", id_Task: "T-1", proposal: { id: "p-1", path: "retry.js", title: "Keep each error", rationale: "Shorter." }, stamp: stampAt("4") })
-  expect(taskIn(revised, "T-1").proposals).toEqual([{ id: "p-1", path: "retry.js", title: "Keep each error", rationale: "Shorter.", made: stampAt("2"), decision: "OPEN" }])
+  const revised = after(accepted, { kind: "PROPOSE", id_Task: "T-1", proposal: { id: "p-1", path: "retry.js", effect: "CHANGE", title: "Keep each error", rationale: "Shorter." }, stamp: stampAt("4") })
+  expect(taskIn(revised, "T-1").proposals).toEqual([{ id: "p-1", path: "retry.js", effect: "CHANGE", title: "Keep each error", rationale: "Shorter.", made: stampAt("2"), decision: "OPEN" }])
   expect(after(accepted, { kind: "DECIDE", id_Task: "T-1", id_Proposal: "p-1", decision: "ACCEPTED" })).toBe(accepted)
 })
 
@@ -104,9 +104,9 @@ test("the ways a task ends: Apply, once nothing's running; Cancel, a started tas
 
 test("the files a task touches, each once, in the order it met them: its proposals', its requests' on a file, and those it's summarized on", () => {
   const model = after(drafted,
-    { kind: "PROPOSE", id_Task: "T-1", proposal: { id: "p-1", path: "retry.js", title: "", rationale: "" }, stamp: stampAt("2") },
+    { kind: "PROPOSE", id_Task: "T-1", proposal: { id: "p-1", path: "retry.js", effect: "CHANGE", title: "", rationale: "" }, stamp: stampAt("2") },
     { kind: "REQUEST", id_Task: "T-1", request: { id: "r-2", notes: "", aim: aimDocument("README.md") }, stamp: stampAt("2") },
-    { kind: "PROPOSE", id_Task: "T-1", proposal: { id: "p-2", path: "retry.js", title: "", rationale: "" }, stamp: stampAt("2") },
+    { kind: "PROPOSE", id_Task: "T-1", proposal: { id: "p-2", path: "retry.js", effect: "CHANGE", title: "", rationale: "" }, stamp: stampAt("2") },
     { kind: "SUMMARIZE", id_Task: "T-1", summary: "Tidies it.", summaries_Document: [{ path: "CHANGELOG.md", summary: "Says so." }] }
   )
   expect(pathsOf__Task({ task: taskIn(model, "T-1") })).toEqual(["retry.js", "README.md", "CHANGELOG.md"])
@@ -124,7 +124,7 @@ test("the tasks held, each command taken, its observers told only when something
 
 test("an addressed request dismissed, let go; one not yet addressed, kept; a proposal decided while a revision of it runs, what's running let go with what's staged, what's addressed kept", () => {
   const model = after(drafted,
-    { kind: "PROPOSE", id_Task: "T-1", proposal: { id: "p-1", path: "retry.js", title: "", rationale: "" }, stamp: stampAt("2") },
+    { kind: "PROPOSE", id_Task: "T-1", proposal: { id: "p-1", path: "retry.js", effect: "CHANGE", title: "", rationale: "" }, stamp: stampAt("2") },
     { kind: "REQUEST", id_Task: "T-1", request: { id: "r-2", notes: "Shorter.", aim: aimProposal("p-1") }, stamp: stampAt("2") },
     { kind: "START", id_Task: "T-1", scope: { kind: "REQUESTS", ids_Request: ["r-1", "r-2"] }, stamp: stampAt("3") },
     { kind: "ADDRESS", id_Task: "T-1", ids_Request: ["r-1"], answer: { kind: "NOTHING", note: "" } },
@@ -160,9 +160,9 @@ test("a task's changes on a document, its head there, restated as they now stand
 
 test("a conflict is a change of the task's own the document moved under, yours or a proposal accepted, each stale change one, each dropped one too; a proposal still to decide only stale, one rejected neither; Apply held while there's any, as it is while anything runs", () => {
   const proposed = after(drafted,
-    { kind: "PROPOSE", id_Task: "T-1", proposal: { id: "p-1", path: "retry.js", title: "", rationale: "" }, stamp: stampAt("2") },
-    { kind: "PROPOSE", id_Task: "T-1", proposal: { id: "p-2", path: "retry.js", title: "", rationale: "" }, stamp: stampAt("2") },
-    { kind: "PROPOSE", id_Task: "T-1", proposal: { id: "p-3", path: "retry.js", title: "", rationale: "" }, stamp: stampAt("2") },
+    { kind: "PROPOSE", id_Task: "T-1", proposal: { id: "p-1", path: "retry.js", effect: "CHANGE", title: "", rationale: "" }, stamp: stampAt("2") },
+    { kind: "PROPOSE", id_Task: "T-1", proposal: { id: "p-2", path: "retry.js", effect: "CHANGE", title: "", rationale: "" }, stamp: stampAt("2") },
+    { kind: "PROPOSE", id_Task: "T-1", proposal: { id: "p-3", path: "retry.js", effect: "CHANGE", title: "", rationale: "" }, stamp: stampAt("2") },
     { kind: "DECIDE", id_Task: "T-1", id_Proposal: "p-2", decision: "ACCEPTED" },
     { kind: "DECIDE", id_Task: "T-1", id_Proposal: "p-3", decision: "REJECTED" },
     { kind: "START", id_Task: "T-1", scope: { kind: "TASK" }, stamp: stampAt("3") },

@@ -275,8 +275,18 @@ into proposals and into frames, which leans on what it reads, 5, and on
    hand back, so what lands always draws: a change sharing another's span,
    or crossing its edge; and a change in part of the text another put in,
    which the editor has no way to nest either, typing there editing that
-   change itself. Not yet: files made or taken away in the copy; projects
-   that aren't git's; the form edited, for files stored otherwise.
+   change itself. **Files made or deleted, the same day:** a file made in
+   the copy, or deleted, one change, the whole of its text, said made or
+   deleted, in a proposal of its own, never a revision, the proposal saying
+   what it does to its file, the tasks part's, a change, a new file or a
+   deletion, drawn so before its title; a file the project hasn't, opened
+   absent and empty, the documents part's documents present or not; a job
+   given a task's files as the task has them, a file absent while no
+   accepted proposal makes it, or once an accepted one deletes it; and
+   applying the task writing a file made, its folders too, and deleting one
+   deleted, the project's files listed as they now are. Not yet: a rename,
+   said as a file deleted and another made; projects that aren't git's; the
+   form edited, for files stored otherwise.
 
 4. **How it's grouped: proposals, and frames.** Two groupings, kept apart. A
    proposal is what's decided together, one idea, what you accept, reject or
@@ -350,14 +360,14 @@ into proposals and into frames, which leans on what it reads, 5, and on
    <file>`, handing back, refused with the same list: a stamp not the
    changes', a change in no proposal or two, a request unanswered or that
    isn't, a proposal without its title or why, more than one file in a
-   proposal, a file it can't place, a change in part of another's text, or
-   across a move's edge, or sharing another's span, or crossing its edge;
-   reported, never refused: a request outside the job answered, a file no
-   request in the job is on. Each proposal landed on the task's head for
-   review, its requests answered by it, the file untouched till you decide;
-   done in words, as before, while the copy's unchanged, and refused with
-   changes in it, so none's dropped. Not yet: moves, the text between two
-   ideas, the preview, and frames.
+   proposal, a file made or deleted in a revision, a file it can't place, a
+   change in part of another's text, or across a move's edge, or sharing
+   another's span, or crossing its edge; reported, never refused: a request
+   outside the job answered, a file no request in the job is on. Each
+   proposal landed on the task's head for review, its requests answered by
+   it, the file untouched till you decide; done in words, as before, while
+   the copy's unchanged, and refused with changes in it, so none's dropped.
+   Not yet: moves, the text between two ideas, the preview, and frames.
 
    **Decided 2026-11-26,** for frames: a task's, built up over its life,
    established rather than final. **Fixed:** a file's lines are divided

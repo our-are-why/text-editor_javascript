@@ -1262,7 +1262,7 @@ function proposalOf({
   title,
   rationale
 }: _Api___proposalOf_): _Proposal_Host_ {
-  return { source, title, state: "OPEN", status: "", rationale, requests: [], actions: ACTIONS_REVIEW, attributes: {} }
+  return { source, title, state: "OPEN", effect: "CHANGE", status: "", rationale, requests: [], actions: ACTIONS_REVIEW, attributes: {} }
 }
 
 interface _Api___requestedOf_ {

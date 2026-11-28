@@ -4,7 +4,7 @@ import { _Documents_, parseTexts_Line, flatOf__Text, textWith__Sources, refusals
 import { _Host_ } from "../source/ui/host/index.ts"
 import { viewModelOf__Model, MODULE_PLAINTEXT } from "../source/ui/editor/index.ts"
 import { MODULE_READING_TEXT } from "../source/ui/editor/readings/text.ts"
-import { _Shell_, changesOf__Copy, stampOf__Changes, landingOf__Grouping, type _Grouping_Job_, type _Job_Shell_, type _Landing_Handed_ } from "../source/core/shell/index.ts"
+import { _Shell_, changesOf__Copy, stampOf__Changes, landingOf__Grouping, LANDING_NONE, type _Grouping_Job_, type _Job_Shell_, type _Landing_Handed_, type _File_Copy_, type _Given_Job_ } from "../source/core/shell/index.ts"
 
 // an agent's working copy as the core sees it: what it's given, each file
 // of its task as the task has it; what it changed, numbered, narrowed to
@@ -22,7 +22,7 @@ const shellMade = () => {
     jobs: [],
     observers: [{ changed: () => {}, started: () => {}, stopped: () => {}, landed: () => {} }]
   })
-  shell.handle({ kind: "OPEN_DOCUMENT", path: "retry.js", text: textOf(TEXT) })
+  shell.handle({ kind: "OPEN_DOCUMENT", path: "retry.js", text: textOf(TEXT), isPresent: true })
   return shell
 }
 const takenOf = (shell: _Shell_, id_Job: string) => {
@@ -35,7 +35,7 @@ const checkedOf = (shell: _Shell_, job_Shell: _Job_Shell_, text_Copy: string, gr
   const given = job_Shell.state.kind === "BEING_WORKED_ON" ? job_Shell.state.givens[0] : undefined
   const task = shell.taskOf(job_Shell.id_Task)
   if (given === undefined || task === undefined) throw new Error("no given")
-  const files = [{ given, text_Copy: textOf(text_Copy) }]
+  const files = [{ given, effect: "CHANGE" as const, text_Copy: textOf(text_Copy) }]
   const stamp = stampOf__Changes({ changes: changesOf__Copy({ files }) })
   return landingOf__Grouping({ task, job_Shell, files, unplaceables: [], grouping: { stamp, ...grouping(stamp) } })
 }
@@ -44,7 +44,7 @@ test("an agent's changes in its copy, numbered across its files, each narrowed t
   const shell = shellMade()
   shell.handle({ kind: "DRAFT", request: madeOf("r-1", "Tidy it."), isStarting: true, path: "retry.js" })
   const { givens } = takenOf(shell, "j-1")
-  const changes = changesOf__Copy({ files: [{ given: givens[0]!, text_Copy: textOf(TEXT.replace("= 5;", "= 3;").replace("retry()", "retry(attempt)")) }] })
+  const changes = changesOf__Copy({ files: [{ given: givens[0]!, effect: "CHANGE", text_Copy: textOf(TEXT.replace("= 5;", "= 3;").replace("retry()", "retry(attempt)")) }] })
   expect(changes.map((change) => [change.number, change.path, change.range.from.line + 1, change.before, change.after])).toEqual([[1, "retry.js", 1, "5", "3"], [2, "retry.js", 4, "", "attempt"]])
 })
 
@@ -75,7 +75,7 @@ test("a hand back's issues, each said: a stamp that's not the changes', a change
   const checked_Bad = checkedOf(shell, job_Shell, text_Copy, () => ({ proposals: [{ aim: { kind: "NEW" }, title: "", why: "", numbers: [1, 9], ids_Request: ["r-9"] }], nothings: [] }))
   const task = shell.taskOf("T-1")!
   const given = job_Shell.state.kind === "BEING_WORKED_ON" ? job_Shell.state.givens[0]! : undefined!
-  const checked_Stale = landingOf__Grouping({ task, job_Shell, files: [{ given, text_Copy: textOf(text_Copy) }], unplaceables: [{ path: "notes.md", why: "was made in your copy" }], grouping: { stamp: "old", proposals: [], nothings: [{ id_Request: "r-1", why: "" }] } })
+  const checked_Stale = landingOf__Grouping({ task, job_Shell, files: [{ given, effect: "CHANGE", text_Copy: textOf(text_Copy) }], unplaceables: [{ path: "notes.md", why: "was made in your copy" }], grouping: { stamp: "old", proposals: [], nothings: [{ id_Request: "r-1", why: "" }] } })
   const checked_Twice = checkedOf(shell, job_Shell, text_Copy, () => ({ proposals: [{ aim: { kind: "NEW" }, title: "One", why: "Why.", numbers: [1, 2], ids_Request: ["r-1"] }, { aim: { kind: "NEW" }, title: "Two", why: "Why.", numbers: [2], ids_Request: ["r-3"] }], nothings: [] }))
   expect(checked_Bad.issues).toEqual([
     "there's no change 9",
@@ -95,12 +95,89 @@ test("a hand back's issues, each said: a stamp that's not the changes', a change
   expect([checked_Twice.issues, checked_Twice.reports]).toEqual([["change 2 is in more than one proposal"], ["request r-3 isn't this job's, so answering it here leaves it as it is"]])
 })
 
+// files made or deleted in a copy: a file the project hasn't opened absent,
+// empty, as the program opens it, given as it is; a copy's files grouped,
+// one proposal a file, and landed, as a hand back lands them
+const givenOf = (shell: _Shell_, path: string): _Given_Job_ => {
+  const document = shell.documentOf(path)
+  return { path, version: document.version, text_Document: document.text, proposed: [], sources: [], text: document.text, isPresent: document.isPresent }
+}
+const absentOpened = (shell: _Shell_, path: string) => shell.handle({ kind: "OPEN_DOCUMENT", path, text: textOf(""), isPresent: false })
+const filesLanded = (shell: _Shell_, job_Shell: _Job_Shell_, files: Array<_File_Copy_>, titles: Array<string>, id_Request: string) => {
+  const task = shell.taskOf(job_Shell.id_Task)
+  if (task === undefined) throw new Error("no task")
+  const changes = changesOf__Copy({ files })
+  const checked = landingOf__Grouping({ task, job_Shell, files, unplaceables: [], grouping: { stamp: stampOf__Changes({ changes }), proposals: titles.map((title, index) => ({ aim: { kind: "NEW" as const }, title, why: "Why.", numbers: [index + 1], ids_Request: [id_Request] })), nothings: [] } })
+  if (checked.issues.length === 0) shell.handle({ kind: "HAND_BACK", id_Job: job_Shell.id, landing: checked.landing, note: "" })
+  return { changes, checked }
+}
+// each proposal the editor lists in a file's frames, and what it says it
+// does to the file, through the host, as a page draws it
+const itemsDrawnOf = (shell: _Shell_, path: string) => {
+  const host = new _Host_({ name_Document: path, target_Mode: { kind: "TASK", id: "T-1" }, files: ["retry.js"], isListening_Agent: false, at: Date.now(), attributes: new Map(), state_Shell: shell.state(), suffix_Id: "", observers: [{ sent: () => {}, opening: () => {}, shown: () => {}, boarded: () => {} }] })
+  const update_Host = host.showing()?.update_Host
+  if (update_Host === undefined) throw new Error("nothing shown")
+  const viewModel = viewModelOf__Model({ ...update_Host, source_Yours: "yours", ranges_Frame: [], module_Language: MODULE_PLAINTEXT, module_Reading: MODULE_READING_TEXT })
+  return viewModel.blocks.flatMap((block) => block.kind === "FRAME" ? block.parts.flatMap((part) => part.kind === "PROPOSAL_LIST" ? part.items.map((item) => [item.source, item.label_Effect]) : []) : [])
+}
+const BACKOFF = "# Backoff\n\nEach retry waits twice as long as the one before.\n"
+
+test("a file made in the copy lands as a new file: one change, its whole text, on the file opened absent and empty, the proposal said to make it and drawn as a new file; the file not there till it's accepted and the task applied, a job given it meanwhile as the task has it, there once accepted; one rejected never made", () => {
+  const shell = shellMade()
+  shell.handle({ kind: "DRAFT", request: madeOf("r-1", "Say how it backs off."), isStarting: true, path: "retry.js" })
+  const first = takenOf(shell, "j-1")
+  absentOpened(shell, "docs/backoff.md")
+  absentOpened(shell, "docs/jitter.md")
+  const { changes, checked } = filesLanded(shell, first.job_Shell, [
+    { given: givenOf(shell, "docs/backoff.md"), effect: "MAKE", text_Copy: textOf(BACKOFF) },
+    { given: givenOf(shell, "docs/jitter.md"), effect: "MAKE", text_Copy: textOf("# Jitter\n") }
+  ], ["Say how it backs off", "Say it jitters"], "r-1")
+  expect(changes.map((change) => [change.number, change.path, change.effect, change.before, change.after])).toEqual([[1, "docs/backoff.md", "MAKE", "", BACKOFF], [2, "docs/jitter.md", "MAKE", "", "# Jitter\n"]])
+  expect(checked.issues).toEqual([])
+  expect(checked.landing.proposals.map((proposal) => [proposal.id, proposal.path, proposal.effect, proposal.changes])).toEqual([
+    ["j-1.1", "docs/backoff.md", "MAKE", [{ kind: "REPLACE", range: { from: { line: 0, offset: 0 }, to: { line: 0, offset: 0 } }, next: textOf(BACKOFF) }]],
+    ["j-1.2", "docs/jitter.md", "MAKE", [{ kind: "REPLACE", range: { from: { line: 0, offset: 0 }, to: { line: 0, offset: 0 } }, next: textOf("# Jitter\n") }]]
+  ])
+  expect(itemsDrawnOf(shell, "docs/backoff.md")).toEqual([["j-1.1", "New file"]])
+  expect(shell.documentOf("docs/backoff.md").isPresent).toBe(false)
+  shell.handle({ kind: "DECIDE", id_Task: "T-1", id_Proposal: "j-1.1", decision: "ACCEPTED" })
+  shell.handle({ kind: "DECIDE", id_Task: "T-1", id_Proposal: "j-1.2", decision: "REJECTED" })
+  shell.handle({ kind: "REQUEST", id_Task: "T-1", request: madeOf("r-2", "Check it."), isStarting: true, path: "retry.js" })
+  const second = takenOf(shell, "j-2")
+  expect(second.givens.map((given) => [given.path, given.isPresent, flatOf__Text(given.text)])).toEqual([["retry.js", true, TEXT], ["docs/backoff.md", true, BACKOFF], ["docs/jitter.md", false, ""]])
+  shell.handle({ kind: "HAND_BACK", id_Job: "j-2", landing: LANDING_NONE, note: "Nothing to change." })
+  shell.handle({ kind: "END", id_Task: "T-1", kind_End: "APPLY" })
+  expect(["docs/backoff.md", "docs/jitter.md"].map((path) => [path, shell.documentOf(path).isPresent, flatOf__Text(shell.documentOf(path).text)])).toEqual([["docs/backoff.md", true, BACKOFF], ["docs/jitter.md", false, ""]])
+})
+
+test("a file deleted in the copy lands as a deletion: one change, its whole text taken away, the proposal said to delete it and drawn so; once accepted a job given it absent, as the task has it, its revision refused to make it again, as a file made goes in a proposal of its own; the task applied, the file absent", () => {
+  const shell = shellMade()
+  shell.handle({ kind: "DRAFT", request: madeOf("r-1", "Drop it."), isStarting: true, path: "retry.js" })
+  const first = takenOf(shell, "j-1")
+  const { changes, checked } = filesLanded(shell, first.job_Shell, [{ given: first.givens[0]!, effect: "REMOVE", text_Copy: textOf("") }], ["Drop retry.js"], "r-1")
+  expect(changes.map((change) => [change.number, change.effect, change.range, change.before, change.after])).toEqual([[1, "REMOVE", { from: { line: 0, offset: 0 }, to: { line: 4, offset: 0 } }, TEXT, ""]])
+  expect([checked.issues, checked.landing.proposals.map((proposal) => [proposal.id, proposal.effect])]).toEqual([[], [["j-1.1", "REMOVE"]]])
+  expect(itemsDrawnOf(shell, "retry.js")).toEqual([["j-1.1", "Deletes the file"]])
+  shell.handle({ kind: "REQUEST", id_Task: "T-1", request: { id: "r-2", notes: "Keep it after all.", aim: { kind: "PROPOSAL", id_Proposal: "j-1.1", words: { kind: "ALL" } } }, isStarting: true, path: "retry.js" })
+  const second = takenOf(shell, "j-2")
+  const given = second.givens[0]!
+  const task = shell.taskOf("T-1")!
+  const files: Array<_File_Copy_> = [{ given, effect: "MAKE", text_Copy: textOf(TEXT) }]
+  const revised = landingOf__Grouping({ task, job_Shell: second.job_Shell, files, unplaceables: [], grouping: { stamp: stampOf__Changes({ changes: changesOf__Copy({ files }) }), proposals: [{ aim: { kind: "REVISION", id_Proposal: "j-1.1" }, title: "", why: "Kept.", numbers: [1], ids_Request: ["r-2"] }], nothings: [] } })
+  expect([given.isPresent, flatOf__Text(given.text)]).toEqual([false, ""])
+  expect(revised.issues).toEqual(["change 1 makes retry.js: a file made or deleted goes in a new proposal of its own, not a revision"])
+  shell.handle({ kind: "HAND_BACK", id_Job: "j-2", landing: LANDING_NONE, note: "Left as it was." })
+  shell.handle({ kind: "DECIDE", id_Task: "T-1", id_Proposal: "j-1.1", decision: "ACCEPTED" })
+  shell.handle({ kind: "END", id_Task: "T-1", kind_End: "APPLY" })
+  expect([shell.documentOf("retry.js").isPresent, flatOf__Text(shell.documentOf("retry.js").text)]).toEqual([false, ""])
+})
+
 // a job's work handed back on a task with changes of its own, the case's
 // first job landing them, as given, whatever the editor would draw: yours,
 // typed in the task, and proposals, open or accepted, a move among them
 const landedBy = (shell: _Shell_, id_Job: string, id_Proposal: string, changes: [_Change_, ...Array<_Change_>]) => {
   shell.handle({ kind: "TAKE", id_Job, note: "" })
-  shell.handle({ kind: "HAND_BACK", id_Job, landing: { proposals: [{ id: id_Proposal, path: "retry.js", title: id_Proposal, rationale: "", version: shell.documentOf("retry.js").version, changes, ids_Request: [] }], nothings: [] }, note: "" })
+  shell.handle({ kind: "HAND_BACK", id_Job, landing: { proposals: [{ id: id_Proposal, path: "retry.js", effect: "CHANGE", title: id_Proposal, rationale: "", version: shell.documentOf("retry.js").version, changes, ids_Request: [] }], nothings: [] }, note: "" })
 }
 const yoursBy = (shell: _Shell_, changes: [_Change_, ...Array<_Change_>]) => shell.handle({ kind: "EDIT", path: "retry.js", transaction: { steps: [{ kind: "SOURCE", source: "yours", changes }] }, mode: { kind: "TASK", id_Task: "T-1", proposed: [{ source: "yours", changes }] } })
 const replaceOf = (line: number, from: number, to: number, next: string): _Change_ => ({ kind: "REPLACE", range: { from: { line, offset: from }, to: { line, offset: to } }, next: textOf(next) })
@@ -112,7 +189,7 @@ const handedOf = (shell: _Shell_, job_Shell: _Job_Shell_, id_Request: string, ed
   const given = job_Shell.state.kind === "BEING_WORKED_ON" ? job_Shell.state.givens[0] : undefined
   if (given === undefined) throw new Error("no given")
   const text_Copy = edit(flatOf__Text(given.text))
-  const numbers = changesOf__Copy({ files: [{ given, text_Copy: textOf(text_Copy) }] }).map((change) => change.number)
+  const numbers = changesOf__Copy({ files: [{ given, effect: "CHANGE", text_Copy: textOf(text_Copy) }] }).map((change) => change.number)
   const checked = checkedOf(shell, job_Shell, text_Copy, () => ({ proposals: [{ aim: { kind: "NEW" }, title: "Agent's", why: "Why.", numbers, ids_Request: [id_Request] }], nothings: [] }))
   return { checked, clashes: checked.issues.length > 0 ? [] : shell.clashesOf({ id_Task: "T-1", landing: checked.landing }) }
 }

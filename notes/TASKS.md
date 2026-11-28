@@ -572,7 +572,8 @@ playground's host, `playground/host.ts`, plays all four for now, faked.
   requests, each with who made it and when, its aim, the task, a file or a
   proposal, its words all of it or quoted, and its status, staged, with the
   agent or addressed, with the proposals that answer it or a note that nothing
-  needed changing; its proposals, each its file, title, why and decision;
+  needed changing; its proposals, each its file, what it does to it,
+  changes it, makes it or deletes it, its title, why and decision;
   the moves as commands, each a pure function, `modelAfter__Command`, by a
   map of them, `HANDLERMAP__TASKS`: draft, with the first request; request,
   edit and remove, a request's only while it's staged; start and stop, at

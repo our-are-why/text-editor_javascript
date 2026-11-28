@@ -15,7 +15,10 @@ import {
   type _Checked_Landing_,
   type _Landing_Handed_
 } from "../../core/shell/index.ts"
-import type { _Task_Tasks_ } from "../../core/tasks/index.ts"
+import type {
+  _Task_Tasks_,
+  _Effect_Proposal_Tasks_
+} from "../../core/tasks/index.ts"
 
 export {
   type _From_Wait_,
@@ -68,6 +71,8 @@ export {
   type _Read_Copy_,
   saidOf__Change,
   type _Api___saidOf__Change_,
+  type _SaidMap__Effect_,
+  SAIDMAP__EFFECT,
   groupingOf__Said,
   type _Api___groupingOf__Said_,
   type _Said_Grouping_,
@@ -216,6 +221,7 @@ interface _CHANGES_Answer_Agent_ extends __BASE_Answer_Agent_<"CHANGES"> {
 interface _Change_Said_ {
   number: number
   path: string
+  file: string
   lines: string
   before: string
   after: string
@@ -653,10 +659,21 @@ function saidOf__Change({
   return {
     number: change.number,
     path: change.path,
+    file: SAIDMAP__EFFECT[change.effect],
     lines: line_From === line_To ? String(line_From) : `${line_From}–${line_To}`,
     before: change.before,
     after: change.after
   }
+}
+
+type _SaidMap__Effect_ = {
+  [Effect in _Effect_Proposal_Tasks_]: string
+}
+
+const SAIDMAP__EFFECT: _SaidMap__Effect_ = {
+  CHANGE: "changed",
+  MAKE: "made",
+  REMOVE: "deleted"
 }
 
 interface _Api___groupingOf__Said_ {
@@ -766,6 +783,7 @@ function nextOf__Grouping({
 }: _Api___nextOf__Grouping_): string {
   return [
     "These are your changes, numbered, each what was there and what's there now. Group them into proposals, each one idea, decided whole, in one file: give each a title, why, the numbers of its changes, and the ids of the requests it answers.",
+    "A file you made or deleted is one change, the whole of its text, said \"made\" or \"deleted\": give it a proposal of its own, which reviews it as a new file or a deletion.",
     job_Shell.sources.length > 0 ? `A change to a proposal you're revising, ${job_Shell.sources.join(", ")}, goes in its revision, with "revises" its id instead of a title, its why saying what this round changed.` : "",
     "For a request that needs nothing changed, say why under \"nothing\".",
     `Write it as JSON, to a file outside your copy: {"stamp": "<the stamp above>", "proposals": [{"title": "...", "why": "...", "changes": [1, 2], "answers": ["<request id>"]}], "nothing": [{"request": "<request id>", "why": "..."}]}.`,

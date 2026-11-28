@@ -124,7 +124,7 @@ const shellMade = () => {
     jobs: [],
     observers: [{ changed: () => {}, started: (job_Shell) => told.started.push(job_Shell.id), stopped: (stop_Shell) => told.stopped.push(stop_Shell), landed: (landing_Job) => told.landed.push(landing_Job) }]
   })
-  shell.handle({ kind: "OPEN_DOCUMENT", path: "README.md", text: { lines: parseTexts_Line("# retry\n"), marks: [] } })
+  shell.handle({ kind: "OPEN_DOCUMENT", path: "README.md", text: { lines: parseTexts_Line("# retry\n"), marks: [] }, isPresent: true })
   return { shell, told }
 }
 const madeOf = (notes: string) => ({ id: `r-${notes}`, notes, aim: { kind: "DOCUMENT" as const, path: "README.md", words: { kind: "ALL" as const } } })

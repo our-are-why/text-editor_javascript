@@ -94,7 +94,8 @@ function carriedOf__Model({
   documents.handle({
     kind: "OPEN",
     path: path_Carried,
-    text: model_TextEditor.document
+    text: model_TextEditor.document,
+    isPresent: true
   })
   const documentOf = (): _Document_Documents_ => {
     const document = documents.model_Documents.documents[0]

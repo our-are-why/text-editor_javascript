@@ -487,6 +487,15 @@
   font-weight: 600;
 }
 
+/* what it does to its file, when it makes the file or deletes it, before
+   its title, so it's read first: a fact, as where it is is, small, upright
+   and grey */
+.htmlView_editor .effect_htmlView {
+  margin-inline-end: 0.5em;
+  color: var(--view-places-ink, color-mix(in srgb, CanvasText 60%, transparent));
+  font-size: 0.86em;
+}
+
 /* the dot between its title and its state, the title's, so it stays still
    whatever its state's label does, in the state's ink */
 .htmlView_editor .heading_htmlView:has(> .status_htmlView:not(:empty)) > .title_htmlView::after {

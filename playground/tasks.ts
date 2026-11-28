@@ -305,6 +305,7 @@ function taskOf__Content({
       ...proposals.map((proposal_Host): _Proposal_Tasks_ => ({
         id: proposal_Host.source,
         path: name_Document,
+        effect: "CHANGE",
         title: proposal_Host.title,
         rationale: proposal_Host.rationale,
         made: stamp,
@@ -418,6 +419,7 @@ function countedOn__Path({
     proposal: {
       id: `${path} ${index + 1}`,
       path,
+      effect: "CHANGE" as const,
       title: `Proposal ${index + 1} in ${path}`,
       rationale: "",
       made: stamp,

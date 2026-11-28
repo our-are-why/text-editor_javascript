@@ -38,6 +38,7 @@ import {
 import {
   type _Action_Item_,
   type _Decision_Proposal_,
+  type _Effect_Proposal_,
   MODULE_PLAINTEXT,
   viewModelOf__Blocks,
   type _Line_Run_,
@@ -99,6 +100,7 @@ export {
   ISAGENTSMAP__KIND_PART,
   type _Action_Item_,
   type _Decision_Proposal_,
+  type _Effect_Proposal_,
   MODULE_PLAINTEXT,
   viewModelOf__Blocks,
   type _Line_Run_,

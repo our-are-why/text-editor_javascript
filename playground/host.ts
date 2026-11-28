@@ -125,7 +125,8 @@ function hostedOf__Editor<State>({
   documents.handle({
     kind: "OPEN",
     path: name_Document,
-    text: model_TextEditor.document
+    text: model_TextEditor.document,
+    isPresent: true
   })
   // what a Stop was asked at, the editor's or the board's, which the core,
   // knowing nothing of either, says nothing of when it reports what it put

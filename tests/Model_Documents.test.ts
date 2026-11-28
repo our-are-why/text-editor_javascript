@@ -17,7 +17,7 @@ const documentIn = (model_Documents: _Model_Documents_, path: string): _Document
 const flatOf = (text_Model: _Text_Model_) => text_Model.lines.join("\n")
 const versionOf = (multilineText: string) => versionOf__Text({ text_Model: textOf(multilineText) })
 const sha256OfBun = (text: string) => new Bun.CryptoHasher("sha256").update(text).digest("hex")
-const opened = after({ documents: [] }, { kind: "OPEN", path: "retry.js", text: textOf("let n = attempts") })
+const opened = after({ documents: [] }, { kind: "OPEN", path: "retry.js", text: textOf("let n = attempts"), isPresent: true })
 // what's stale of a head, each source's stale changes by their index and the
 // text each was written over, and how many it dropped
 const staleOf = (head: _Head_Document_) => head.stale.map((stale_Source) => ({ source: stale_Source.source, indexes: stale_Source.changes_Stale.map((stale_Change) => stale_Change.index), texts: stale_Source.changes_Stale.map((stale_Change) => `${stale_Change.over.kind} ${flatOf(stale_Change.over.text)}`), count_Dropped: stale_Source.count_Dropped }))
@@ -37,9 +37,9 @@ test("a document's version is the SHA-256 of its text, its lines joined by \\n, 
 })
 
 test("a document opened is kept as it is: its version, its copy, no edits; opened again as it was, nothing changes; changed since, what changed recorded as an edit, as when it's read", () => {
-  expect(documentIn(opened, "retry.js")).toEqual({ path: "retry.js", version: versionOf("let n = attempts"), text: textOf("let n = attempts"), edits: [] })
-  expect(after(opened, { kind: "OPEN", path: "retry.js", text: textOf("let n = attempts") })).toBe(opened)
-  const changed = documentIn(after(opened, { kind: "OPEN", path: "retry.js", text: textOf("let n = tries") }), "retry.js")
+  expect(documentIn(opened, "retry.js")).toEqual({ path: "retry.js", version: versionOf("let n = attempts"), text: textOf("let n = attempts"), isPresent: true, edits: [] })
+  expect(after(opened, { kind: "OPEN", path: "retry.js", text: textOf("let n = attempts"), isPresent: true })).toBe(opened)
+  const changed = documentIn(after(opened, { kind: "OPEN", path: "retry.js", text: textOf("let n = tries"), isPresent: true }), "retry.js")
   expect([changed.version, flatOf(changed.text), changed.edits.map((edit) => [edit.version_From, edit.version_To])]).toEqual([versionOf("let n = tries"), "let n = tries", [[versionOf("let n = attempts"), versionOf("let n = tries")]]])
 })
 
@@ -89,7 +89,7 @@ const carrying = fc.record({
 })
 const rangeIn = (flat: string, from: number, to: number): _Range_Text_ => ({ from: positionOf__Index({ text_Model: textOf(flat), index: from }), to: positionOf__Index({ text_Model: textOf(flat), index: to }) })
 const headCarried = (flat: string, change: { from: number, to: number, next: string }, edit: { from: number, to: number, next: string }) => {
-  const model = after({ documents: [] }, { kind: "OPEN", path: "retry.js", text: textOf(flat) })
+  const model = after({ documents: [] }, { kind: "OPEN", path: "retry.js", text: textOf(flat), isPresent: true })
   const head: _Head_Document_ = { path: "retry.js", version: versionOf(flat), proposed: [replacing("T-1", rangeIn(flat, change.from, change.to), change.next)], stale: [] }
   const edited = documentIn(after(model, { kind: "EDIT", path: "retry.js", version: versionOf(flat), transaction: editOf(rangeIn(flat, edit.from, edit.to), edit.next) }), "retry.js")
   return { edited, carried: carriedOf__Head({ document: edited, head }) }
@@ -133,7 +133,7 @@ test("a change an edit cut into, or replaced, or took the place of, is stale, ca
 })
 
 test("stale stays stale as it's carried further, a source's other changes carried as they are; a head already on the document as it is, as it was", () => {
-  const model = after({ documents: [] }, { kind: "OPEN", path: "retry.js", text: textOf("let n = attempts;") })
+  const model = after({ documents: [] }, { kind: "OPEN", path: "retry.js", text: textOf("let n = attempts;"), isPresent: true })
   const version = versionOf("let n = attempts;")
   const head: _Head_Document_ = { path: "retry.js", version, proposed: [{ source: "T-1", changes: [{ kind: "REPLACE", range: on(4, 5), next: textOf("round") }, { kind: "REPLACE", range: on(8, 16), next: textOf("tries") }] }], stale: [{ source: "T-1", changes_Stale: [{ index: 0, over: { kind: "RANGE", version: "v0", text: textOf("x"), written: { lines: textOf("x"), change: { kind: "REPLACE", range: on(0, 1), next: textOf("round") } } } }], count_Dropped: 0 }] }
   const edited = documentIn(after(model, { kind: "EDIT", path: "retry.js", version, transaction: editOf(on(0, 3), "const") }), "retry.js")
@@ -144,7 +144,7 @@ test("stale stays stale as it's carried further, a source's other changes carrie
 })
 
 test("a move carried across an edit outside it moves the same text to the same place; an edit cutting through where it lands makes it stale; one whose text's all gone, dropped, counted", () => {
-  const model = after({ documents: [] }, { kind: "OPEN", path: "retry.js", text: textOf("abc def ghi") })
+  const model = after({ documents: [] }, { kind: "OPEN", path: "retry.js", text: textOf("abc def ghi"), isPresent: true })
   const version = versionOf("abc def ghi")
   const headOf = (at: number): _Head_Document_ => ({ path: "retry.js", version, proposed: [{ source: "T-1", changes: [{ kind: "MOVE", range: on(0, 4), at: { line: 0, offset: at } }] }], stale: [] })
   const carriedAcross = (head: _Head_Document_, transaction: _Transaction_Model_) => carriedOf__Head({ document: documentIn(after(model, { kind: "EDIT", path: "retry.js", version, transaction }), "retry.js"), head })
@@ -156,7 +156,7 @@ test("a move carried across an edit outside it moves the same text to the same p
 })
 
 test("a stale change keeps the version it was written on and the text it was written over, the stretch it covers, an insertion's line, a move's from its words to where they land; once the document's back at that version, by undo or by hand, it's clean, no conflict left, or, a change of text, once it has that text there again, its stretch whole, as a head carried, or one rechecked as it is; an insertion's line alone saying nothing, a blank line like any other; a document's text at a version it's moved on from worked back from the edits since", () => {
-  const model = after({ documents: [] }, { kind: "OPEN", path: "retry.js", text: textOf("let n = attempts;") })
+  const model = after({ documents: [] }, { kind: "OPEN", path: "retry.js", text: textOf("let n = attempts;"), isPresent: true })
   const v1 = versionOf("let n = attempts;")
   const head: _Head_Document_ = { path: "retry.js", version: v1, proposed: [replacing("T-1", on(8, 16), "tries")], stale: [] }
   const typed = documentIn(after(model, { kind: "EDIT", path: "retry.js", version: v1, transaction: editOf(on(10, 10), "X") }), "retry.js")
@@ -178,7 +178,7 @@ test("a stale change keeps the version it was written on and the text it was wri
   expect(staleOf(insertion_Cut)).toEqual([{ source: "T-1", indexes: [0], texts: ["LINE let n = attempts;"], count_Dropped: 0 }])
   const restored = documentIn(after({ documents: [cut] }, { kind: "EDIT", path: "retry.js", version: cut.version, transaction: cut.edits[0]!.transaction_Inverse }), "retry.js")
   expect(carriedOf__Head({ document: restored, head: insertion_Cut }).stale).toEqual([])
-  const blank = after({ documents: [] }, { kind: "OPEN", path: "notes.md", text: textOf("\n\n") })
+  const blank = after({ documents: [] }, { kind: "OPEN", path: "notes.md", text: textOf("\n\n"), isPresent: true })
   const blank_Cut = documentIn(after(blank, { kind: "EDIT", path: "notes.md", version: versionOf("\n\n"), transaction: editOf({ from: { line: 0, offset: 0 }, to: { line: 2, offset: 0 } }, "") }), "notes.md")
   const insertion_Blank = carriedOf__Head({ document: blank_Cut, head: { path: "notes.md", version: versionOf("\n\n"), proposed: [replacing("T-1", { from: { line: 1, offset: 0 }, to: { line: 1, offset: 0 } }, "x")], stale: [] } })
   expect(staleOf(insertion_Blank)).toEqual([{ source: "T-1", indexes: [0], texts: ["LINE "], count_Dropped: 0 }])
@@ -188,7 +188,7 @@ test("a stale change keeps the version it was written on and the text it was wri
 
 // a document opened, edited once, and a head written before the edit
 // carried across it, with what the head's text would be
-const editedOf = (multilineText: string, range: _Range_Text_, next: string) => documentIn(after({ documents: [] }, { kind: "OPEN", path: "retry.js", text: textOf(multilineText) }, { kind: "EDIT", path: "retry.js", version: versionOf(multilineText), transaction: editOf(range, next) }), "retry.js")
+const editedOf = (multilineText: string, range: _Range_Text_, next: string) => documentIn(after({ documents: [] }, { kind: "OPEN", path: "retry.js", text: textOf(multilineText), isPresent: true }, { kind: "EDIT", path: "retry.js", version: versionOf(multilineText), transaction: editOf(range, next) }), "retry.js")
 const carriedOn = (multilineText: string, proposed: Array<_Changes_Source_>, range: _Range_Text_, next: string) => {
   const document = editedOf(multilineText, range, next)
   return { document, head: carriedOf__Head({ document, head: { path: "retry.js", version: versionOf(multilineText), proposed, stale: [] } }) }
@@ -277,16 +277,16 @@ test("Release lets go of the edits nothing's stated against, kept from the oldes
 test("Apply makes a head the document: the sources it's told to, your edits and what's accepted, applied, the rest not; recorded as an edit, so another task's head is carried across it; a head not on the document as it is is refused", () => {
   const version = documentIn(opened, "retry.js").version
   const proposed = [replacing("yours", on(4, 5), "round"), replacing("P-1", on(8, 16), "tries")]
-  const applied = documentIn(after(opened, { kind: "APPLY", path: "retry.js", version, proposed, sources: ["yours"] }), "retry.js")
+  const applied = documentIn(after(opened, { kind: "APPLY", path: "retry.js", version, proposed, sources: ["yours"], isPresent: true }), "retry.js")
   expect([flatOf(applied.text), applied.version, applied.edits.map((edit) => edit.version_From)]).toEqual(["let round = attempts", versionOf("let round = attempts"), [version]])
   const other = carriedOf__Head({ document: applied, head: { path: "retry.js", version, proposed: [replacing("T-2", on(8, 16), "count")], stale: [] } })
   expect([other.proposed[0]?.changes[0]?.range, other.stale]).toEqual([on(12, 20), []])
-  expect(after(opened, { kind: "APPLY", path: "retry.js", version, proposed, sources: [] })).toBe(opened)
-  expect(() => after(opened, { kind: "APPLY", path: "retry.js", version: versionOf("elsewhere"), proposed, sources: ["yours"] })).toThrow("isn't on retry.js as it is")
+  expect(after(opened, { kind: "APPLY", path: "retry.js", version, proposed, sources: [], isPresent: true })).toBe(opened)
+  expect(() => after(opened, { kind: "APPLY", path: "retry.js", version: versionOf("elsewhere"), proposed, sources: ["yours"], isPresent: true })).toThrow("isn't on retry.js as it is")
 })
 
 test("Collect lets go of the copies no open task needs; all still needed, nothing changes", () => {
-  const two = after(opened, { kind: "OPEN", path: "README.md", text: textOf("# retry") })
+  const two = after(opened, { kind: "OPEN", path: "README.md", text: textOf("# retry"), isPresent: true })
   expect(after(two, { kind: "COLLECT", paths: ["retry.js"] }).documents.map((document) => document.path)).toEqual(["retry.js"])
   expect(after(two, { kind: "COLLECT", paths: ["retry.js", "README.md"] })).toBe(two)
 })
@@ -294,7 +294,7 @@ test("Collect lets go of the copies no open task needs; all still needed, nothin
 test("_Documents_ holds the documents, taking each command, telling its observers only what changed", () => {
   const told: Array<_Model_Documents_> = []
   const documents = new _Documents_({ model_Documents: opened, observers: [{ changed: (model_Documents) => told.push(model_Documents) }] })
-  documents.handle({ kind: "OPEN", path: "retry.js", text: textOf("let n = attempts") })
+  documents.handle({ kind: "OPEN", path: "retry.js", text: textOf("let n = attempts"), isPresent: true })
   expect(told).toEqual([])
   documents.handle({ kind: "READ", path: "retry.js", text: textOf("let n = tries") })
   expect([told.length, flatOf(documentIn(documents.model_Documents, "retry.js").text)]).toEqual([1, "let n = tries"])
