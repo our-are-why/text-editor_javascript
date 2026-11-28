@@ -270,12 +270,20 @@ async function startedOf__Doctor({
     }
   )
   subprocess.unref()
+  let isExited = false
+  subprocess.on(
+    "exit",
+    () => {
+      isExited = true
+    }
+  )
   for (let count_Tries = 0; count_Tries < 100; count_Tries += 1) {
     await new Promise((resolve) => setTimeout(resolve, 150))
     const endpoint = await liveOf__Endpoint({
       dir_Project
     })
     if (endpoint !== undefined) return endpoint
+    if (isExited) throw new Error(`doctor wouldn't open on ${dir_Project}: it opens a git repository's root with at least one commit, so this may not be one; run \`doctor open\` there in a terminal to see why`)
   }
   throw new Error(`doctor didn't open on ${dir_Project} in 15 seconds`)
 }

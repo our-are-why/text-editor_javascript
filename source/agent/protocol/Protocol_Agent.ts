@@ -44,9 +44,6 @@ export {
   type _Standing_Job_,
   MS_LAPSE__OFFER,
   type _Copy_Agent_,
-  type __BASE_Copy_Agent_,
-  type _NONE_Copy_Agent_,
-  type _MADE_Copy_Agent_,
   answerOf__Offer,
   type _Api___answerOf__Offer_,
   type _Answer_Agent_,
@@ -78,9 +75,6 @@ export {
   type _Api___issuesOf__Checked_,
   answeredOf__Untaken,
   type _Api___answeredOf__Untaken_,
-  answeredOf__Copy,
-  type _Api___answeredOf__Copy_,
-  type _Read_Copy_,
   saidOf__Change,
   type _Api___saidOf__Change_,
   type _SaidMap__Effect_,
@@ -156,17 +150,7 @@ type _Standing_Job_ = _State_Job_["kind"] | "OFFERED"
 
 const MS_LAPSE__OFFER = 60_000
 
-type _Copy_Agent_ = _NONE_Copy_Agent_ | _MADE_Copy_Agent_
-
-interface __BASE_Copy_Agent_<Kind extends string> {
-  kind: Kind
-}
-
-interface _NONE_Copy_Agent_ extends __BASE_Copy_Agent_<"NONE"> {
-  why: string
-}
-
-interface _MADE_Copy_Agent_ extends __BASE_Copy_Agent_<"MADE"> {
+interface _Copy_Agent_ {
   path: string
   files: Array<_File_Copy_>
   unplaceables: Array<_Unplaceable_Copy_>
@@ -175,7 +159,6 @@ interface _MADE_Copy_Agent_ extends __BASE_Copy_Agent_<"MADE"> {
 interface _Api___answerOf__Offer_ {
   id_Job: string
   brief: unknown
-  copy: _Copy_Agent_
   command_Agent: string
   command_Wait: string
 }
@@ -183,7 +166,6 @@ interface _Api___answerOf__Offer_ {
 function answerOf__Offer({
   id_Job,
   brief,
-  copy,
   command_Agent,
   command_Wait
 }: _Api___answerOf__Offer_): _JOB_Answer_Agent_ {
@@ -196,9 +178,7 @@ function answerOf__Offer({
     next: [
       `You're offered job ${id_Job}: what it asks is under "requests" in its brief; the rest of its task is there to inform you, not for you to do.`,
       `First, take it: run \`${command_Agent} check ${id_Job} "starting"\` now, or it's offered to another agent in a minute.`,
-      copy.kind === "MADE"
-        ? "Taking it gives you a working copy of the project, as the task has it, to change as you see fit."
-        : `There's no working copy for this project: ${copy.why}. Change no file, and answer in words.`,
+      "Taking it gives you a working copy of the project, as the task has it, to change as you see fit.",
       `Between big steps, check in with \`${command_Agent} check ${id_Job} "<what you're doing>"\`: it says whether the job's been stopped.`,
       `When it's done, hand it back, as taking it tells you, then run \`${command_Wait}\` for the next job.`
     ].join(" ")
@@ -338,15 +318,13 @@ const CHECKMAP__STANDING_JOB: _AnswerMap__Standing_Job_ = {
     ],
     answer_Agent: {
       kind: "TAKEN",
-      copy: copy.kind === "MADE" ? copy.path : "",
-      next: copy.kind === "MADE"
-        ? [
-          `Job ${job_Shell.id}'s yours. Your working copy's at ${copy.path}: the whole project as the task has it: its files with the task's accepted changes and the edits made in it written in, and any proposal you're asked to revise in place.`,
-          "It's a git worktree of the project, committed as it was given, so git diff there shows only what you've changed. Work there as you would anywhere: edit, run the tests, try things; node_modules, if the project has it, is the project's own, linked in, so don't install into it.",
-          "Don't change the project itself, only the copy.",
-          `Check in between big steps with \`${command_Agent} check ${job_Shell.id} "<what you're doing>"\`. When you're done, run \`${command_Agent} changes ${job_Shell.id}\` to see what you changed, numbered, and how to hand it back.`
-        ].join(" ")
-        : `Job ${job_Shell.id}'s yours. There's no working copy for this project: ${copy.why}. Change no file. Check in between big steps with \`${command_Agent} check ${job_Shell.id} "<what you're doing>"\`, and when it's done run \`${command_Agent} done ${job_Shell.id} "<for each request, what you'd change and why, or why nothing needs to>"\`.`
+      copy: copy.path,
+      next: [
+        `Job ${job_Shell.id}'s yours. Your working copy's at ${copy.path}: the whole project as the task has it: its files with the task's accepted changes and the edits made in it written in, and any proposal you're asked to revise in place.`,
+        "It's a git worktree of the project, committed as it was given, so git diff there shows only what you've changed. Work there as you would anywhere: edit, run the tests, try things; node_modules, if the project has it, is the project's own, linked in, so don't install into it.",
+        "Don't change the project itself, only the copy.",
+        `Check in between big steps with \`${command_Agent} check ${job_Shell.id} "<what you're doing>"\`. When you're done, run \`${command_Agent} changes ${job_Shell.id}\` to see what you changed, numbered, and how to hand it back.`
+      ].join(" ")
     }
   }),
   BEING_WORKED_ON: ({
@@ -403,54 +381,48 @@ const CHANGESMAP__STANDING_JOB: _AnswerMap__Standing_Job_ = {
     said,
     copy,
     command_Agent
-  }) => answeredOf__Copy({
-    task,
-    job_Shell,
-    copy,
-    command_Agent,
-    read: (copy_Made) => {
-      const changes = changesOf__Copy({
-        files: copy_Made.files
-      })
-      const said_Moves = movesOf__Said({
-        said
-      })
-      const moved = movedOf__Changes({
-        files: copy_Made.files,
-        changes,
-        moves: said_Moves.moves
-      })
-      return {
-        commands_Shell: [],
-        answer_Agent: {
-          kind: "CHANGES",
-          stamp: stampOf__Changes({
-            changes
-          }),
-          changes: moved.changes.map((change) => saidOf__Change({
-            change,
-            moves: moved.moves
-          })),
-          frames: framesOf__Copy({
-            givens: givensOf__Copy({
-              job_Shell,
-              files: copy_Made.files
-            })
-          }),
-          issues: [
-            ...said_Moves.issues,
-            ...moved.issues
-          ],
-          next: changes.length === 0 && copy_Made.unplaceables.length === 0
-            ? `You've changed nothing in your copy. If nothing needs to change, run \`${command_Agent} done ${job_Shell.id} "<for each request, why nothing needs to change>"\`.`
-            : nextOf__Grouping({
-              job_Shell,
-              command_Agent
-            })
-        }
+  }) => {
+    const changes = changesOf__Copy({
+      files: copy.files
+    })
+    const said_Moves = movesOf__Said({
+      said
+    })
+    const moved = movedOf__Changes({
+      files: copy.files,
+      changes,
+      moves: said_Moves.moves
+    })
+    return {
+      commands_Shell: [],
+      answer_Agent: {
+        kind: "CHANGES",
+        stamp: stampOf__Changes({
+          changes
+        }),
+        changes: moved.changes.map((change) => saidOf__Change({
+          change,
+          moves: moved.moves
+        })),
+        frames: framesOf__Copy({
+          givens: givensOf__Copy({
+            job_Shell,
+            files: copy.files
+          })
+        }),
+        issues: [
+          ...said_Moves.issues,
+          ...moved.issues
+        ],
+        next: changes.length === 0 && copy.unplaceables.length === 0
+          ? `You've changed nothing in your copy. If nothing needs to change, run \`${command_Agent} done ${job_Shell.id} "<for each request, why nothing needs to change>"\`.`
+          : nextOf__Grouping({
+            job_Shell,
+            command_Agent
+          })
       }
     }
-  }),
+  },
   DONE: CHECKMAP__STANDING_JOB.DONE,
   CANCELLED: CHECKMAP__STANDING_JOB.CANCELLED
 }
@@ -465,40 +437,34 @@ const VERIFYMAP__STANDING_JOB: _AnswerMap__Standing_Job_ = {
     copy,
     clashesOf,
     command_Agent
-  }) => answeredOf__Copy({
-    task,
-    job_Shell,
-    copy,
-    command_Agent,
-    read: (copy_Made) => {
-      const said_Grouping = groupingOf__Said({
-        said
-      })
-      const checked = landingOf__Grouping({
-        task,
-        job_Shell,
-        files: copy_Made.files,
-        unplaceables: copy_Made.unplaceables,
-        grouping: said_Grouping.grouping
-      })
-      const issues = issuesOf__Checked({
-        said_Grouping,
-        checked,
-        clashesOf
-      })
-      return {
-        commands_Shell: [],
-        answer_Agent: {
-          kind: "VERIFIED",
-          issues,
-          reports: checked.reports,
-          next: issues.length === 0
-            ? `It's good to hand back: see how it'll be drawn for review with \`${command_Agent} preview ${job_Shell.id} <the same file>\` if you like, then run \`${command_Agent} done ${job_Shell.id} "<a note on the job as a whole>" <the same file>\`.`
-            : `Fix each issue, in your copy or in your proposals, then verify again, or preview how they'll be drawn with \`${command_Agent} preview ${job_Shell.id} <file>\`; ask \`${command_Agent} changes ${job_Shell.id}\` again if you've changed the copy since, as its numbers and stamp move with it.`
-        }
+  }) => {
+    const said_Grouping = groupingOf__Said({
+      said
+    })
+    const checked = landingOf__Grouping({
+      task,
+      job_Shell,
+      files: copy.files,
+      unplaceables: copy.unplaceables,
+      grouping: said_Grouping.grouping
+    })
+    const issues = issuesOf__Checked({
+      said_Grouping,
+      checked,
+      clashesOf
+    })
+    return {
+      commands_Shell: [],
+      answer_Agent: {
+        kind: "VERIFIED",
+        issues,
+        reports: checked.reports,
+        next: issues.length === 0
+          ? `It's good to hand back: see how it'll be drawn for review with \`${command_Agent} preview ${job_Shell.id} <the same file>\` if you like, then run \`${command_Agent} done ${job_Shell.id} "<a note on the job as a whole>" <the same file>\`.`
+          : `Fix each issue, in your copy or in your proposals, then verify again, or preview how they'll be drawn with \`${command_Agent} preview ${job_Shell.id} <file>\`; ask \`${command_Agent} changes ${job_Shell.id}\` again if you've changed the copy since, as its numbers and stamp move with it.`
       }
     }
-  }),
+  },
   DONE: CHECKMAP__STANDING_JOB.DONE,
   CANCELLED: CHECKMAP__STANDING_JOB.CANCELLED
 }
@@ -550,11 +516,9 @@ const DONEMAP__STANDING_JOB: _AnswerMap__Standing_Job_ = {
       said
     })
     if (!said_Grouping.isGrouped) {
-      const count_Changed = copy.kind === "MADE"
-        ? changesOf__Copy({
-          files: copy.files
-        }).length + copy.unplaceables.length
-        : 0
+      const count_Changed = changesOf__Copy({
+        files: copy.files
+      }).length + copy.unplaceables.length
       return count_Changed > 0
         ? {
           commands_Shell: [],
@@ -580,50 +544,42 @@ const DONEMAP__STANDING_JOB: _AnswerMap__Standing_Job_ = {
           }
         }
     }
-    return answeredOf__Copy({
+    const checked = landingOf__Grouping({
       task,
       job_Shell,
-      copy,
-      command_Agent,
-      read: (copy_Made) => {
-        const checked = landingOf__Grouping({
-          task,
-          job_Shell,
-          files: copy_Made.files,
-          unplaceables: copy_Made.unplaceables,
-          grouping: said_Grouping.grouping
-        })
-        const issues = issuesOf__Checked({
-          said_Grouping,
-          checked,
-          clashesOf
-        })
-        return issues.length > 0
-          ? {
-            commands_Shell: [],
-            answer_Agent: {
-              kind: "REFUSED",
-              issues,
-              next: `Nothing's handed back. Fix each issue, check with \`${command_Agent} verify ${job_Shell.id} <file>\`, and hand back again.`
-            }
-          }
-          : {
-            commands_Shell: [
-              {
-                kind: "HAND_BACK",
-                id_Job: job_Shell.id,
-                landing: checked.landing,
-                note
-              }
-            ],
-            answer_Agent: {
-              kind: "HANDED_BACK",
-              reports: checked.reports,
-              next: `Handed back: ${checked.landing.proposals.length} ${checked.landing.proposals.length === 1 ? "proposal" : "proposals"}, for review. Leave the copy as it is. Run \`${command_Agent} wait\` for the next job, with the same --for as before if you gave one.`
-            }
-          }
-      }
+      files: copy.files,
+      unplaceables: copy.unplaceables,
+      grouping: said_Grouping.grouping
     })
+    const issues = issuesOf__Checked({
+      said_Grouping,
+      checked,
+      clashesOf
+    })
+    return issues.length > 0
+      ? {
+        commands_Shell: [],
+        answer_Agent: {
+          kind: "REFUSED",
+          issues,
+          next: `Nothing's handed back. Fix each issue, check with \`${command_Agent} verify ${job_Shell.id} <file>\`, and hand back again.`
+        }
+      }
+      : {
+        commands_Shell: [
+          {
+            kind: "HAND_BACK",
+            id_Job: job_Shell.id,
+            landing: checked.landing,
+            note
+          }
+        ],
+        answer_Agent: {
+          kind: "HANDED_BACK",
+          reports: checked.reports,
+          next: `Handed back: ${checked.landing.proposals.length} ${checked.landing.proposals.length === 1 ? "proposal" : "proposals"}, for review. Leave the copy as it is. Run \`${command_Agent} wait\` for the next job, with the same --for as before if you gave one.`
+        }
+      }
   },
   DONE: CHECKMAP__STANDING_JOB.DONE,
   CANCELLED: ({
@@ -648,47 +604,41 @@ const PREVIEWMAP__STANDING_JOB: _AnswerMap__Standing_Job_ = {
     copy,
     clashesOf,
     command_Agent
-  }) => answeredOf__Copy({
-    task,
-    job_Shell,
-    copy,
-    command_Agent,
-    read: (copy_Made) => {
-      const said_Grouping = groupingOf__Said({
-        said
-      })
-      const checked = landingOf__Grouping({
-        task,
-        job_Shell,
-        files: copy_Made.files,
-        unplaceables: copy_Made.unplaceables,
-        grouping: said_Grouping.grouping
-      })
-      const issues = issuesOf__Checked({
-        said_Grouping,
-        checked,
-        clashesOf
-      })
-      return {
-        commands_Shell: [],
-        answer_Agent: {
-          kind: "PREVIEW",
-          issues,
-          files: previewOf__Landing({
-            task,
-            job_Shell,
-            files: copy_Made.files,
-            landing: checked.landing
-          }).map((file_Preview) => saidOf__File_Preview({
-            file_Preview
-          })),
-          next: issues.length === 0
-            ? `This is how your proposals will be drawn for review: each file's frames, the lines read together, in your copy's lines, each listing the proposals in it, yours and the task's, and what each change does. If it reads as you mean, run \`${command_Agent} done ${job_Shell.id} "<a note on the job as a whole>" <the same file>\`; if not, change your proposals or frames and preview again.`
-            : `Only the proposals with no issue are shown. Fix each issue, in your copy or in your proposals, then preview again.`
-        }
+  }) => {
+    const said_Grouping = groupingOf__Said({
+      said
+    })
+    const checked = landingOf__Grouping({
+      task,
+      job_Shell,
+      files: copy.files,
+      unplaceables: copy.unplaceables,
+      grouping: said_Grouping.grouping
+    })
+    const issues = issuesOf__Checked({
+      said_Grouping,
+      checked,
+      clashesOf
+    })
+    return {
+      commands_Shell: [],
+      answer_Agent: {
+        kind: "PREVIEW",
+        issues,
+        files: previewOf__Landing({
+          task,
+          job_Shell,
+          files: copy.files,
+          landing: checked.landing
+        }).map((file_Preview) => saidOf__File_Preview({
+          file_Preview
+        })),
+        next: issues.length === 0
+          ? `This is how your proposals will be drawn for review: each file's frames, the lines read together, in your copy's lines, each listing the proposals in it, yours and the task's, and what each change does. If it reads as you mean, run \`${command_Agent} done ${job_Shell.id} "<a note on the job as a whole>" <the same file>\`; if not, change your proposals or frames and preview again.`
+          : `Only the proposals with no issue are shown. Fix each issue, in your copy or in your proposals, then preview again.`
       }
     }
-  }),
+  },
   DONE: CHECKMAP__STANDING_JOB.DONE,
   CANCELLED: CHECKMAP__STANDING_JOB.CANCELLED
 }
@@ -817,33 +767,6 @@ function answeredOf__Untaken({
       command_Agent
     })
   }
-}
-
-interface _Api___answeredOf__Copy_ {
-  task: _Task_Tasks_
-  job_Shell: _Job_Shell_
-  copy: _Copy_Agent_
-  command_Agent: string
-  read: _Read_Copy_
-}
-
-type _Read_Copy_ = (copy_Made: _MADE_Copy_Agent_) => _Answered_Call_
-
-function answeredOf__Copy({
-  job_Shell,
-  copy,
-  command_Agent,
-  read
-}: _Api___answeredOf__Copy_): _Answered_Call_ {
-  return copy.kind === "MADE"
-    ? read(copy)
-    : {
-      commands_Shell: [],
-      answer_Agent: answerOf__Refused({
-        issues: [`job ${job_Shell.id} has no working copy: ${copy.why}; answer in words, with \`${command_Agent} done ${job_Shell.id} "<note>"\``],
-        command_Agent
-      })
-    }
 }
 
 interface _Api___saidOf__Change_ {

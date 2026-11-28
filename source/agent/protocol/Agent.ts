@@ -52,7 +52,6 @@ class _Agent_ {
   offeredOf({
     from,
     at,
-    copyOf,
     command_Agent,
     command_Wait
   }: _Api___offeredOf__Agent_): _Answer_Agent_ | undefined {
@@ -80,7 +79,6 @@ class _Agent_ {
         task,
         ids_Request: job_Shell.requests.map((request) => request.id)
       }),
-      copy: copyOf(job_Shell),
       command_Agent,
       command_Wait
     })
@@ -137,7 +135,6 @@ interface _Observer_Agent_ {
 interface _Api___offeredOf__Agent_ {
   from: _From_Wait_
   at: number
-  copyOf: (job_Shell: _Job_Shell_) => _Copy_Agent_
   command_Agent: string
   command_Wait: string
 }

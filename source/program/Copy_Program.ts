@@ -23,8 +23,12 @@ import type { _Given_Job_ } from "../core/shell/index.ts"
 export {
   dirOf__Copies,
   type _Api___dirOf__Copies_,
-  isGit__Project,
-  type _Api___isGit__Project_,
+  checkedOf__Project,
+  type _Api___checkedOf__Project_,
+  type _Checked_Project_,
+  type __BASE_Checked_Project_,
+  type _GIT_Checked_Project_,
+  type _REFUSED_Checked_Project_,
   copiedOf__Job,
   type _Api___copiedOf__Job_,
   entriesOf__Status,
@@ -56,16 +60,48 @@ function dirOf__Copies({
   return join(dir_Cache, "doctor", `${basename(dir_Project)}-${hash}`)
 }
 
-interface _Api___isGit__Project_ {
+interface _Api___checkedOf__Project_ {
   dir_Project: string
 }
 
-async function isGit__Project({
+type _Checked_Project_ = _GIT_Checked_Project_ | _REFUSED_Checked_Project_
+
+interface __BASE_Checked_Project_<Kind extends string> {
+  kind: Kind
+}
+
+interface _GIT_Checked_Project_ extends __BASE_Checked_Project_<"GIT"> {}
+
+interface _REFUSED_Checked_Project_ extends __BASE_Checked_Project_<"REFUSED"> {
+  why: string
+}
+
+async function checkedOf__Project({
   dir_Project
-}: _Api___isGit__Project_): Promise<boolean> {
+}: _Api___checkedOf__Project_): Promise<_Checked_Project_> {
   const top = await Bun.$`git -C ${dir_Project} rev-parse --show-toplevel`.quiet().nothrow()
+  if (top.exitCode !== 0) {
+    return {
+      kind: "REFUSED",
+      why: `${dir_Project} isn't a git repository, and doctor works on git projects: run git init there and make a first commit, then open it again`
+    }
+  }
+  const dir_Root = await realpath(top.text().trim())
+  if (dir_Root !== await realpath(dir_Project)) {
+    return {
+      kind: "REFUSED",
+      why: `${dir_Project} is inside the git repository at ${dir_Root}: open doctor there, on the repository's root`
+    }
+  }
   const head = await Bun.$`git -C ${dir_Project} rev-parse --verify -q HEAD`.quiet().nothrow()
-  return top.exitCode === 0 && head.exitCode === 0 && await realpath(top.text().trim()) === await realpath(dir_Project)
+  return head.exitCode === 0
+    ? {
+      kind: "GIT"
+    }
+    : {
+      kind: "REFUSED",
+      why: `${dir_Project} has no commit yet, and doctor's working copies start from one: make a first commit, then open it again`
+    }
 }
 
 interface _Api___copiedOf__Job_ {

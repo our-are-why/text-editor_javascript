@@ -7,7 +7,8 @@ import {
   openedOf__Program,
   addressesOf__Program,
   endpointOf__Folder,
-  dirOf__Copies
+  dirOf__Copies,
+  checkedOf__Project
 } from "./index.ts"
 
 const COMMAND_DOCTOR = commandOf__Doctor()
@@ -75,6 +76,13 @@ const isJob = first !== undefined && (command === "check" || command === "change
 
 if (command === "open") {
   const dir_Project = resolve(first ?? ".")
+  const checked = await checkedOf__Project({
+    dir_Project
+  })
+  if (checked.kind === "REFUSED") {
+    console.log(`doctor won't open: ${checked.why}.`)
+    process.exit(1)
+  }
   const files = await filesOf__Project({
     dir_Project
   })

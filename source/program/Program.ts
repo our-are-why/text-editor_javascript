@@ -45,7 +45,7 @@ import {
   type _Answer_Agent_
 } from "../agent/protocol/index.ts"
 import {
-  isGit__Project,
+  checkedOf__Project,
   copiedOf__Job,
   readOf__Copy,
   isThere,
@@ -98,7 +98,6 @@ class _Program_ {
   token_Page: string
   token_Agent: string
   command_Agent: string
-  isGit: boolean
   dir_Copies: string
   ids_Copied: Set<string>
   texts_Written: Map<string, string>
@@ -123,7 +122,6 @@ class _Program_ {
     token_Page,
     token_Agent,
     command_Agent,
-    isGit,
     dir_Copies,
     port
   }: _Api__Program_) {
@@ -133,7 +131,6 @@ class _Program_ {
     this.token_Page = token_Page
     this.token_Agent = token_Agent
     this.command_Agent = command_Agent
-    this.isGit = isGit
     this.dir_Copies = dir_Copies
     this.ids_Copied = new Set()
     this.texts_Written = new Map()
@@ -424,7 +421,6 @@ class _Program_ {
     const answer_Agent = this.agent.offeredOf({
       from,
       at: Date.now(),
-      copyOf: (job_Shell) => this.copyOf(job_Shell),
       command_Agent: this.command_Agent,
       command_Wait
     })
@@ -445,27 +441,32 @@ class _Program_ {
     const body: unknown = await request.json().catch(() => ({}))
     const note = typeof body === "object" && body !== null && "note" in body && typeof body.note === "string" ? body.note : ""
     const job_Shell = this.shell.jobOf(id_Job)
-    const copy = job_Shell === undefined
-      ? COPY_UNKNOWN
-      : kind_Call !== "CHECK" && job_Shell.state.kind === "BEING_WORKED_ON" && this.isGit
-        ? await this.read(job_Shell)
-        : this.copyOf(job_Shell)
+    if (job_Shell === undefined) {
+      return responseOf__Answer({
+        answer_Agent: answerOf__Refused({
+          issues: [`there's no job ${id_Job}`],
+          command_Agent: this.command_Agent
+        }),
+        status: 409
+      })
+    }
+    const copy = kind_Call !== "CHECK" && job_Shell.state.kind === "BEING_WORKED_ON"
+      ? await this.read(job_Shell)
+      : this.copyOf(job_Shell)
     const answered = this.agent.called({
       kind_Call,
       id_Job,
       note,
       said: body,
       copy,
-      clashesOf: (landing) => job_Shell === undefined
-        ? []
-        : this.shell.clashesOf({
-          id_Task: job_Shell.id_Task,
-          landing
-        }),
+      clashesOf: (landing) => this.shell.clashesOf({
+        id_Task: job_Shell.id_Task,
+        landing
+      }),
       at: Date.now(),
       command_Agent: this.command_Agent
     })
-    const answer_Agent = answered.kind === "TAKEN" && copy.kind === "MADE"
+    const answer_Agent = answered.kind === "TAKEN"
       ? await this.copied(id_Job).then(
         () => answered,
         (error: unknown): _Answer_Agent_ => ({
@@ -484,17 +485,11 @@ class _Program_ {
   copyOf(
     job_Shell: _Job_Shell_
   ): _Copy_Agent_ {
-    return this.isGit
-      ? {
-        kind: "MADE",
-        path: join(this.dir_Copies, job_Shell.id_Task),
-        files: [],
-        unplaceables: []
-      }
-      : {
-        kind: "NONE",
-        why: "doctor makes working copies of git projects for now, opened at their repository's root, with a commit"
-      }
+    return {
+      path: join(this.dir_Copies, job_Shell.id_Task),
+      files: [],
+      unplaceables: []
+    }
   }
 
   async copied(
@@ -579,7 +574,6 @@ class _Program_ {
       })
     }
     return {
-      kind: "MADE",
       path: dir_Copy,
       files,
       unplaceables
@@ -748,7 +742,6 @@ interface _Api__Program_ {
   token_Page: string
   token_Agent: string
   command_Agent: string
-  isGit: boolean
   dir_Copies: string
   port: number
 }
@@ -838,11 +831,6 @@ const CALLMAP__WORD: _CallMap__Word_ = {
   verify: "VERIFY",
   preview: "PREVIEW",
   done: "DONE"
-}
-
-const COPY_UNKNOWN: _Copy_Agent_ = {
-  kind: "NONE",
-  why: "there's no such job"
 }
 
 interface _Api___responseOf__Answer_ {
@@ -944,6 +932,10 @@ async function openedOf__Program({
   dir_Copies,
   port
 }: _Api___openedOf__Program_): Promise<_Program_> {
+  const checked = await checkedOf__Project({
+    dir_Project
+  })
+  if (checked.kind === "REFUSED") throw new Error(checked.why)
   if (!files.includes(path_First)) throw new Error(`${path_First} isn't one of the project's files`)
   const program = new _Program_({
     dir_Project,
@@ -955,9 +947,6 @@ async function openedOf__Program({
     token_Page: tokenOf(),
     token_Agent: tokenOf(),
     command_Agent: commandOf__Doctor(),
-    isGit: await isGit__Project({
-      dir_Project
-    }),
     dir_Copies,
     port
   })
@@ -992,13 +981,7 @@ interface _Api___filesOf__Project_ {
 async function filesOf__Project({
   dir_Project
 }: _Api___filesOf__Project_): Promise<Array<string>> {
-  const listed = await Bun.$`git ls-files --cached --others --exclude-standard -z`.cwd(dir_Project).nothrow().quiet()
-  const paths = listed.exitCode === 0
-    ? listed.stdout.toString().split("\0").filter((path) => path !== "")
-    : await Array.fromAsync(new Bun.Glob("**/*").scan({
-      cwd: dir_Project,
-      onlyFiles: true
-    }))
+  const paths = (await Bun.$`git ls-files --cached --others --exclude-standard -z`.cwd(dir_Project).quiet()).stdout.toString().split("\0").filter((path) => path !== "")
   const paths_Text = await Promise.all(paths
     .filter((path) => !path.startsWith(`${DIR_DOCTOR}/`) && !path.split("/").includes("node_modules"))
     .map(async (path) => {

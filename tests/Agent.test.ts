@@ -10,7 +10,7 @@ import { _Agent_, MS_LAPSE__OFFER, type _Answer_Agent_, type _From_Wait_, type _
 // it; the core holding the jobs, the adapter only its offers
 
 const COMMAND = "doctor"
-const COPY_NONE: _Copy_Agent_ = { kind: "NONE", why: "these tests make no copies" }
+const COPY_EMPTY: _Copy_Agent_ = { path: "/copy", files: [], unplaceables: [] }
 const wired = () => {
   let agent: _Agent_ | undefined
   const shell = new _Shell_({
@@ -26,7 +26,7 @@ const wired = () => {
 const madeOf = (notes: string) => ({ id: `r-${notes}`, notes, aim: { kind: "DOCUMENT" as const, path: "README.md", words: { kind: "ALL" as const } } })
 const ANY: _From_Wait_ = { kind: "ANY" }
 const offered = (agent: _Agent_, from: _From_Wait_, at: number) => {
-  const answer: _Answer_Agent_ | undefined = agent.offeredOf({ from, at, copyOf: () => COPY_NONE, command_Agent: COMMAND, command_Wait: `${COMMAND} wait` })
+  const answer: _Answer_Agent_ | undefined = agent.offeredOf({ from, at, command_Agent: COMMAND, command_Wait: `${COMMAND} wait` })
   return answer === undefined ? "none" : answer.kind === "JOB" ? answer.job.id : answer.kind
 }
 
@@ -44,7 +44,7 @@ test("a wait's offered the first job it may take, of any task, one at a time wit
 
 test("a check-in on a job offered takes it in the core, later ones keeping it heard of; handed back, it's done, its request addressed with the agent's note; once done, refused; an offer lapsed is told so; a job stopped is answered stopped, what it hands back refused; a job that isn't, refused", () => {
   const { shell, agent } = wired()
-  const called = (kind_Call: "CHECK" | "DONE", id_Job: string, note: string, at: number) => agent.called({ kind_Call, id_Job, note, said: {}, copy: COPY_NONE, clashesOf: () => [], at, command_Agent: COMMAND }).kind
+  const called = (kind_Call: "CHECK" | "DONE", id_Job: string, note: string, at: number) => agent.called({ kind_Call, id_Job, note, said: {}, copy: COPY_EMPTY, clashesOf: () => [], at, command_Agent: COMMAND }).kind
   shell.handle({ kind: "DRAFT", request: madeOf("a"), isStarting: true, path: "README.md" })
   offered(agent, ANY, 0)
   const answers_Worked = [called("CHECK", "j-1", "starting", 10), called("CHECK", "j-1", "reading README.md", 20)]
@@ -69,7 +69,7 @@ test("done on a job offered and never checked in on takes it and hands it back a
   const { shell, agent } = wired()
   shell.handle({ kind: "DRAFT", request: madeOf("a"), isStarting: true, path: "README.md" })
   offered(agent, ANY, 0)
-  const answer = agent.called({ kind_Call: "DONE", id_Job: "j-1", note: "Nothing needs to change.", said: {}, copy: COPY_NONE, clashesOf: () => [], at: 10, command_Agent: COMMAND })
+  const answer = agent.called({ kind_Call: "DONE", id_Job: "j-1", note: "Nothing needs to change.", said: {}, copy: COPY_EMPTY, clashesOf: () => [], at: 10, command_Agent: COMMAND })
   expect([answer.kind, shell.jobOf("j-1")?.state.kind]).toEqual(["HANDED_BACK", "DONE"])
 })
 
@@ -80,9 +80,9 @@ test("asked what it changed with its moves said, each change says its part in a 
   shell.handle({ kind: "DRAFT", request: madeOf("a"), isStarting: true, path: "README.md" })
   offered(agent, ANY, 0)
   const called = (kind_Call: "CHECK" | "CHANGES", said: object, copy: _Copy_Agent_) => agent.called({ kind_Call, id_Job: "j-1", note: "", said, copy, clashesOf: () => [], at: 10, command_Agent: COMMAND })
-  called("CHECK", {}, COPY_NONE)
+  called("CHECK", {}, COPY_EMPTY)
   const document = shell.documentOf("retry.js")
-  const copy: _Copy_Agent_ = { kind: "MADE", path: "/copy", files: [{ given: { path: "retry.js", version: document.version, text_Document: document.text, proposed: [], sources: [], text: document.text, isPresent: true, frames: [] }, effect: "CHANGE", text_Copy: textOf("function sleep(ms) { // moved\n  return new Promise((resolve) => setTimeout(resolve, ms))\n}\n\nfunction attempts() {\n  return 5\n}\n\nexport async function retry(fn) {\n  for (let attempt = 0; attempt < attempts(); attempt += 1) {\n    try {\n      return await fn()\n    } catch {\n      await sleep(100)\n    }\n  }\n}\n") }], unplaceables: [] }
+  const copy: _Copy_Agent_ = { path: "/copy", files: [{ given: { path: "retry.js", version: document.version, text_Document: document.text, proposed: [], sources: [], text: document.text, isPresent: true, frames: [] }, effect: "CHANGE", text_Copy: textOf("function sleep(ms) { // moved\n  return new Promise((resolve) => setTimeout(resolve, ms))\n}\n\nfunction attempts() {\n  return 5\n}\n\nexport async function retry(fn) {\n  for (let attempt = 0; attempt < attempts(); attempt += 1) {\n    try {\n      return await fn()\n    } catch {\n      await sleep(100)\n    }\n  }\n}\n") }], unplaceables: [] }
   const plain = called("CHANGES", {}, copy)
   const moved = called("CHANGES", { moves: [{ from: 2, to: 1 }] }, copy)
   const wrong = called("CHANGES", { moves: [{ from: 1, to: 1 }, { to: 2 }] }, copy)

@@ -258,8 +258,13 @@ into proposals and into frames, which leans on what it reads, 5, and on
    the version each was given at, its node_modules linked in, doctor's
    endpoint in it so the command works from inside, all committed as given,
    so the agent's own git diff shows only its changes; taken away as the
-   task ends. A project that isn't one has no copy, its agent answering in
-   words as before. The pipeline the core's, the shell's, plain: the copy
+   task ends. **Git only, decided 2026-11-28:** doctor opens only a git
+   repository's root with a commit, `doctor open` refusing any other folder
+   and saying why, a folder outside git, one inside a repository, naming its
+   root, or a repository with no commit yet, and VS Code saying so when
+   doctor won't start; so every job has its copy, the agent's answer in
+   words left only for a job that needs nothing changed, and the project's
+   files are git's. The pipeline the core's, the shell's, plain: the copy
    compared with what was given, by the documents part's comparison narrowed
    to the words that differ, numbered across files and stamped; each change
    mapped back through the pieces of the text given onto the file's own
@@ -287,8 +292,7 @@ into proposals and into frames, which leans on what it reads, 5, and on
    deleted, the project's files listed as they now are, the first a page
    opens one still there, and an editor showing one deleted, nothing
    proposing it, taken back to the file it showed before, its tab closed in
-   VS Code. Not yet: a rename,
-   said as a file deleted and another made; projects that aren't git's; the
+   VS Code. Not yet: a rename, said as a file deleted and another made; the
    form edited, for files stored otherwise.
 
 4. **How it's grouped: proposals, and frames.** Two groupings, kept apart. A

@@ -4,6 +4,7 @@ import {
 } from "bun:test"
 import {
   mkdtemp,
+  mkdir,
   rm
 } from "node:fs/promises"
 import { tmpdir } from "node:os"
@@ -11,7 +12,8 @@ import { join } from "node:path"
 import { madeOf__Demo } from "../scripts/demo.ts"
 import {
   filesOf__Project,
-  openedOf__Program
+  openedOf__Program,
+  checkedOf__Project
 } from "../source/program/index.ts"
 import type {
   _Message_Page_,
@@ -43,6 +45,17 @@ const dir_Demo = await madeOf__Demo({
   name_Sample: "retry",
   dir_Demos
 })
+const dir_Loose = await mkdtemp(join(dir_Demos, "loose-"))
+await Bun.write(join(dir_Loose, "notes.md"), "# notes\n")
+const dir_Fresh = join(dir_Demos, "fresh")
+await mkdir(dir_Fresh)
+await Bun.write(join(dir_Fresh, "notes.md"), "# notes\n")
+await Bun.$`git -C ${dir_Fresh} init -q`.quiet()
+const dir_Sub = join(dir_Demo, "sub")
+await mkdir(dir_Sub)
+const checked_Projects = await Promise.all([dir_Loose, dir_Sub, dir_Fresh, dir_Demo].map((dir_Project) => checkedOf__Project({ dir_Project })))
+const opened_Loose = await openedOf__Program({ dir_Project: dir_Loose, files: ["notes.md"], path_First: "notes.md", dir_Copies: join(dir_Demos, "copies-loose"), port: 0 }).then(() => "opened", (error: unknown) => error instanceof Error ? error.message : String(error))
+const ran_Loose = await Bun.$`bun ${join(import.meta.dir, "..", "source", "program", "doctor.ts")} open ${dir_Loose}`.quiet().nothrow()
 const program = await openedOf__Program({
   dir_Project: dir_Demo,
   files: await filesOf__Project({
@@ -468,6 +481,17 @@ test("two pages are told the core's state alike: a file one opens, and a task on
       path_First: "docs/backoff.md"
     }
   ])
+})
+
+test("doctor opens only a git repository's root with a commit: a folder outside git, one inside a repository, and a repository with no commit each refused with why, by the program and by doctor open, which leaves no .doctor behind", async () => {
+  expect(checked_Projects).toEqual([
+    { kind: "REFUSED", why: `${dir_Loose} isn't a git repository, and doctor works on git projects: run git init there and make a first commit, then open it again` },
+    { kind: "REFUSED", why: `${dir_Sub} is inside the git repository at ${dir_Demo}: open doctor there, on the repository's root` },
+    { kind: "REFUSED", why: `${dir_Fresh} has no commit yet, and doctor's working copies start from one: make a first commit, then open it again` },
+    { kind: "GIT" }
+  ])
+  expect(opened_Loose).toBe(checked_Projects[0]?.kind === "REFUSED" ? checked_Projects[0].why : "")
+  expect([ran_Loose.exitCode, ran_Loose.stdout.toString().trim(), await Bun.file(join(dir_Loose, ".doctor", "endpoint.json")).exists()]).toEqual([1, `doctor won't open: ${dir_Loose} isn't a git repository, and doctor works on git projects: run git init there and make a first commit, then open it again.`, false])
 })
 
 test("a wait open as doctor stops is answered closed, so none hangs", () => {
